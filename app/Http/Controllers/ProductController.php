@@ -48,10 +48,17 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'product'    => 'required|mimes:csv,txt',
+            'product'    => 'required|mimes:xls,xlsx,csv,txt',
+            // 'product'    => 'required|mimes:xls,xlsx',
         ]);
-        Product::truncate();
-        Excel::import(new ProductImport, request()->file('product'));
+        // Product::truncate(); $request->file('file')->store('files')
+        // Excel::import(new ProductImport, request()->file('product')->store('files'));
+        try {
+            Excel::import(new ProductImport, $request->file('product')->store('files'));
+        } catch (\Exception $e) {
+            // return $e->getMessage();
+            return redirect()->back()->with('message', $e->getMessage());
+        }
         return redirect()->back()->with('message', 'Data Imported Successfully');
     }
 
