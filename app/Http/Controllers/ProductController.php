@@ -48,7 +48,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'product'    => 'required',
+            'product'    => 'required|mimes:csv,txt',
         ]);
         Product::truncate();
         Excel::import(new ProductImport, request()->file('product'));
