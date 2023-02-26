@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
+
+// Route::post('/cart/change', [CartController::class, 'change'])->name('cart.change');
+Route::delete('/product', [ProductController::class, 'destroy'])->name('product.destroy');
+Route::resource('product', ProductController::class)->except('create', 'show', 'destroy');
