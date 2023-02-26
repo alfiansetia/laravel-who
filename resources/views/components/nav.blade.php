@@ -16,7 +16,7 @@
                 <a class="nav-link" href="{{ route('product.index') }}">Product</a>
             </li>
             <li class="nav-item <?= $title == 'Data Category' ? "active" : '' ?>">
-                <a class="nav-link" href="{{ route('home') }}">Category</a>
+                <a class="nav-link" href="{{ route('problem.index') }}">Problem</a>
             </li>
             <li class="nav-item <?= $title == 'Data AKL' ? "active" : '' ?>">
                 <a class="nav-link" href="{{ route('home') }}">AKL</a>

@@ -11,15 +11,11 @@
                 <thead class="thead-dark">
                     <tr>
                         <th class="text-center" style="width: 30px;">No</th>
-                        <th>KODE</th>
-                        <th>NAME</th>
-                        <th>GROUP</th>
-                        <th>AKL</th>
-                        <th>AKL EXP</th>
-                        <th>AKL FILE</th>
-                        <th>CATEGORY</th>
-                        <th>VENDOR</th>
-                        <th>DESC</th>
+                        <th>DATE</th>
+                        <th>TYPE</th>
+                        <th>NUMBER</th>
+                        <th>PIC</th>
+                        <th>STATUS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,7 +56,7 @@
     $(document).ready(function() {
         var table = $('#table').DataTable({
             rowId: 'id',
-            ajax: "{{ route('product.index') }}",
+            ajax: "{{ route('problem.index') }}",
             dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
                 "<'table-responsive'tr>" +
                 "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
@@ -86,30 +82,25 @@
                         return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
                     }
                 }, {
-                    data: "code",
+                    data: "date",
                 },
                 {
-                    data: "name",
+                    data: "type",
                 },
                 {
-                    data: "group",
-                    visible: false,
+                    data: "number",
                 },
                 {
-                    data: "akl",
+                    data: "pic",
                 },
                 {
-                    data: "akl_exp",
+                    data: "status",
                     render: function(data, type, row, meta) {
                         let text;
-                        let now = moment(new Date()); //todays date
-                        let end = moment(data); // another date
-                        let duration = moment.duration(now.diff(end));
-                        let days = duration.asDays();
-                        if (days >= 0) {
-                            text = `<span class="badge badge-danger">${data == null ? '' : data}</span>`;
+                        if (data != 'done') {
+                            text = `<span class="badge badge-danger">${data}</span>`;
                         } else {
-                            text = `<span class="badge badge-success">${data == null ? '' : data}</span>`;
+                            text = `<span class="badge badge-success">${data}</span>`;
                         }
                         if (type == 'display') {
                             return text;
@@ -117,20 +108,6 @@
                             return data;
                         }
                     }
-                },
-                {
-                    data: "akl_file",
-                },
-                {
-                    data: "category",
-                    visible: false,
-                },
-                {
-                    data: "vendor",
-                    visible: false,
-                },
-                {
-                    data: "desc",
                 },
             ],
             buttons: [, {
