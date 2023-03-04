@@ -29,6 +29,15 @@ class ProductController extends Controller
 
     }
 
+    public function getdata()
+    {
+        return response()->json([
+            'status' => true,
+            'message' => '',
+            'data' => Product::get(),
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -48,7 +57,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'product'    => 'required|mimes:xls,xlsx,csv,txt',
+            'product'    => 'required|mimes:csv',
             // 'product'    => 'required|mimes:xls,xlsx',
         ]);
         // Product::truncate(); $request->file('file')->store('files')
