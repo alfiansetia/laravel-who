@@ -29,13 +29,18 @@ class ProductController extends Controller
 
     }
 
-    public function getdata()
+    public function getdata(Request $request)
     {
-        return response()->json([
-            'status' => true,
-            'message' => '',
-            'data' => Product::get(),
-        ]);
+        $keyword = $request->q;
+        $products = Product::where(function ($query) use ($keyword) {
+                    $query->where('name', 'LIKE', '%'.$keyword.'%')->orWhere('code', 'LIKE', '%'.$keyword.'%');
+                })->paginate(20);
+        return response()->json($products, 200);
+        // return response()->json([
+            // 'status' => true,
+            // 'message' => '',
+            // 'data' => Product::get(),
+        // ]);
     }
 
     /**
