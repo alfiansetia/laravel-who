@@ -6,6 +6,7 @@ use App\Imports\ProductImport;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Models\Role;
 
 class ProductController extends Controller
 {
@@ -43,14 +44,10 @@ class ProductController extends Controller
         // ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function tes()
     {
-        //
+        $data = Role::where('name', 'admin')->get();
+        return response()->json($data);
     }
 
     /**
