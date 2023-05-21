@@ -1,8 +1,4 @@
 <?php
-use Tymon\JWTAuth\Providers\JWT\Provider;
-
-$algorithm = Provider::ALGO_HS256;
-
 
 /*
  * This file is part of jwt-auth.
@@ -135,7 +131,7 @@ return [
     |
     */
 
-    'algo' => env('JWT_ALGO', $algorithm),
+    'algo' => env('JWT_ALGO', Tymon\JWTAuth\Providers\JWT\Provider::ALGO_HS256),
 
     /*
     |--------------------------------------------------------------------------
