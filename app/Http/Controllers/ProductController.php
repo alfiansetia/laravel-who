@@ -17,6 +17,8 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        // return date('Y-m-d', strtotime('31/12/2025'));
+
         if ($request->ajax()) {
             return response()->json([
                 'status' => true,
@@ -59,8 +61,8 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'product'    => 'required|mimes:csv',
-            // 'product'    => 'required|mimes:xls,xlsx',
+            // 'product'    => 'required|mimes:csv',
+            'product'    => 'required|mimes:xls,xlsx',
         ]);
         // Product::truncate(); $request->file('file')->store('files')
         // Excel::import(new ProductImport, request()->file('product')->store('files'));

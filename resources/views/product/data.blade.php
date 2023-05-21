@@ -55,7 +55,12 @@
         </div>
     </div>
 </div>
+@if(session()->has('message'))
+<script>
+    alert("{{ session('message') }}")
+</script>
 
+@endif
 <script>
     $(document).ready(function() {
         var table = $('#table').DataTable({
