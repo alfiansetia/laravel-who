@@ -125,6 +125,7 @@
                 },
                 {
                     data: "akl_file",
+                    visible: false,
                 },
                 {
                     data: "category",
