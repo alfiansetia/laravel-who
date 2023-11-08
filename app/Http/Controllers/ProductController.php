@@ -21,7 +21,6 @@ class ProductController extends Controller
 
         if ($request->ajax()) {
             return response()->json([
-                'status' => true,
                 'message' => '',
                 'data' => Product::get(),
             ]);
@@ -36,13 +35,13 @@ class ProductController extends Controller
     {
         $keyword = $request->q;
         $products = Product::where(function ($query) use ($keyword) {
-                    $query->where('name', 'LIKE', '%'.$keyword.'%')->orWhere('code', 'LIKE', '%'.$keyword.'%');
-                })->paginate(20);
+            $query->where('name', 'LIKE', '%' . $keyword . '%')->orWhere('code', 'LIKE', '%' . $keyword . '%');
+        })->paginate(20);
         return response()->json($products, 200);
         // return response()->json([
-            // 'status' => true,
-            // 'message' => '',
-            // 'data' => Product::get(),
+        // 'status' => true,
+        // 'message' => '',
+        // 'data' => Product::get(),
         // ]);
     }
 
@@ -68,11 +67,11 @@ class ProductController extends Controller
         // Excel::import(new ProductImport, request()->file('product')->store('files'));
         try {
             Excel::import(new ProductImport, $request->file('product')->store('files'));
+            return redirect()->back()->with('message', 'Data Imported Successfully');
         } catch (\Exception $e) {
             // return $e->getMessage();
             return redirect()->back()->with('message', $e->getMessage());
         }
-        return redirect()->back()->with('message', 'Data Imported Successfully');
     }
 
     /**

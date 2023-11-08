@@ -37,3 +37,7 @@ Route::resource('problem', ProblemController::class)->except('create', 'show', '
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('products/download-sample', function () {
+    return response()->download(public_path('source/product.xls'));
+})->name('product.download.sample');
