@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,6 @@ Route::delete('/product', [ProductController::class, 'destroy'])->name('product.
 Route::resource('product', ProductController::class)->except('create', 'show', 'destroy');
 
 
-Route::resource('problem', ProblemController::class)->except('create', 'show', 'destroy');
-
 // Auth::routes();
 
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -41,3 +40,6 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('products/download-sample', function () {
     return response()->download(public_path('source/product.xls'));
 })->name('product.download.sample');
+
+
+Route::resource('alamat', AlamatController::class)->only(['index', 'show', 'store', 'create']);

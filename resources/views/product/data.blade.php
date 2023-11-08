@@ -29,7 +29,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Import Data</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -124,7 +124,7 @@
                         text: '<i class="fas fa-cogs mr-1"></i>Actions',
                         autoClose: true, // Menutup menu saat tombol submenu dipilih
                         buttons: [{
-                                text: '<i class="fa fa-plus mr-1"></i>Add',
+                                text: '<i class="fa fa-plus mr-1"></i>Import Data',
                                 className: 'btn btn-sm btn-primary bs-tooltip',
                                 attr: {
                                     'data-toggle': 'tooltip',
@@ -133,17 +133,6 @@
                                 action: function(e, dt, node, config) {
                                     $('#modalAdd').modal('show');
                                     $('#name').focus();
-                                }
-                            },
-                            {
-                                text: '<i class="fas fa-trash mr-1"></i>Del',
-                                className: 'btn btn-sm btn-danger',
-                                attr: {
-                                    'data-toggle': 'tooltip',
-                                    'title': 'Delete Selected Data'
-                                },
-                                action: function(e, dt, node, config) {
-                                    deleteData()
                                 }
                             },
                             {
@@ -156,6 +145,17 @@
                                 action: function(e, dt, node, config) {
                                     let url = "{{ route('product.download.sample') }}"
                                     window.open(url, "_blank")
+                                }
+                            },
+                            {
+                                text: '<i class="fas fa-trash mr-1"></i>Delete Data',
+                                className: 'btn btn-sm btn-danger',
+                                attr: {
+                                    'data-toggle': 'tooltip',
+                                    'title': 'Delete Selected Data'
+                                },
+                                action: function(e, dt, node, config) {
+                                    deleteData()
                                 }
                             },
                         ]
