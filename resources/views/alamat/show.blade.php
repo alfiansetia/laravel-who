@@ -117,16 +117,18 @@
         <tr>
             <td class="style18" colspan="4">{!! nl2br(e($data->alamat)) !!}</td>
         </tr>
+        @if (!empty($data->up))
+            <tr>
+                <td class="style18" style="width: 17%">UP</td>
+                <td class="style18" colspan="3">: {{ $data->up }}</td>
+            </tr>
+        @endif
         <tr>
-            <td class="style18" style="width: 17%">UP</td>
-            <td class="style18" colspan="3">: {{ $data->up }}</td>
-        </tr>
-        <tr>
-            <td class="style18">Tlp</td>
+            <td class="style18" style="width: 17%">Tlp</td>
             <td class="style18" colspan="3">: {{ $data->tlp }}</td>
         </tr>
         <tr>
-            <td class="style18">No DO</td>
+            <td class="style18" style="width: 17%">No DO</td>
             <td class="style18" colspan="3">: {{ $data->do }} @if (!empty($data->epur))
                     ( {{ $data->epur }})
                 @endif

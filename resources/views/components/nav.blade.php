@@ -17,11 +17,11 @@
             <li class="nav-item <?= $title == 'Data Product' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('product.index') }}">Product</a>
             </li>
-            <li class="nav-item <?= $title == 'Data Category' ? 'active' : '' ?>">
+            <li class="nav-item <?= $title == 'Data Alamat' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('alamat.create') }}">Alamat</a>
             </li>
-            <li class="nav-item <?= $title == 'Data AKL' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('home') }}">AKL</a>
+            <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('kontak.index') }}">Kontak</a>
             </li>
         </ul>
     </div>

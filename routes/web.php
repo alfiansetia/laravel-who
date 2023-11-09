@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlamatController;
+use App\Http\Controllers\KontakController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Auth;
@@ -43,3 +44,9 @@ Route::get('products/download-sample', function () {
 
 
 Route::resource('alamat', AlamatController::class)->only(['index', 'show', 'store', 'create']);
+
+Route::delete('/kontak', [KontakController::class, 'destroy'])->name('kontak.destroy');
+Route::resource('kontak', KontakController::class)->except('create', 'destroy');
+Route::get('kontak/download-sample', function () {
+    return response()->download(public_path('source/kontak.xls'));
+})->name('kontak.download.sample');

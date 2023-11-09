@@ -2,7 +2,6 @@
 @push('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
-    <link rel="stylesheet" href="https://editor.datatables.net/extensions/Editor/css/editor.dataTables.min.css">
 @endpush
 
 @section('content')
@@ -10,7 +9,10 @@
 
         <div class="card card-primary mt-3">
             <div class="card-header">
-                <h3 class="card-title">{{ $title }}</h3>
+                <h3 class="card-title">{{ $title }} </h3>
+                <select name="" id="select_kontak" class="form-control select2" style="width: 100%">
+                    <option value="">Pilih</option>
+                </select>
             </div>
 
             <form method="POST" action="{{ route('alamat.store') }}" id="form">
@@ -19,11 +21,11 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="tujuan">Tujuan</label>
-                            <textarea name="tujuan" id="tujuan" class="form-control" placeholder="Tujuan" required>{{ $data->tujuan }}</textarea>
+                            <textarea name="tujuan" id="tujuan" class="form-control" placeholder="Tujuan" rows="4" required>{{ $data->tujuan }}</textarea>
                         </div>
                         <div class="form-group col-md-6">
                             <label for="alamat">Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control" placeholder="Alamat" required>{{ $data->alamat }}</textarea>
+                            <textarea name="alamat" id="alamat" class="form-control" placeholder="Alamat" rows="4" required>{{ $data->alamat }}</textarea>
                         </div>
                     </div>
                     <div class="form-row">
@@ -145,7 +147,6 @@
 
     @push('js')
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <script src="https://editor.datatables.net/extensions/Editor/js/dataTables.editor.min.js"></script>
     @endpush
 
     <script>
@@ -157,6 +158,27 @@
                         true, true);
                     $('#select_product').append(option);
                 }
+            });
+
+            $.get("{{ route('kontak.index') }}").done(function(res) {
+                for (let i = 0; i < res.data.length; i++) {
+                    let option = new Option(res.data[i].name, res.data[i].id,
+                        true, true);
+                    $('#select_kontak').append(option);
+                }
+            });
+
+            $('#select_kontak').select2({
+                theme: 'bootstrap4',
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                let id = data[0].id
+                $.get("{{ route('kontak.show', '') }}/" + id).done(function(res) {
+                    $('#tujuan').val(res.data.name)
+                    $('#alamat').val(res.data.street)
+                    $('#tlp').val(res.data.phone ?? '')
+                });
+
             });
 
             $('#select_product').select2({
@@ -234,6 +256,7 @@
                     up: $('#up').val(),
                     tlp: $('#tlp').val(),
                     do: $('#do').val(),
+                    epur: $('#epur').val(),
                     untuk: $('#untuk').val(),
                     nilai: $('#nilai').val(),
                     is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
