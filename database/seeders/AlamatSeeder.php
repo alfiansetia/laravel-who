@@ -17,7 +17,7 @@ class AlamatSeeder extends Seeder
     {
         $al = Alamat::create([
             'tujuan'    => 'Gudang Farmasi Dinkes Kab Asahan Dinkes Kab Balangan',
-            'alamat'    => 'Jln. Durian No.8 Kel. Kisaran Naga Kec. Kisaran Timur, \nKisaran Kabupaten Asahan \nSumatera Utara Asahan',
+            'alamat'    => 'Jln. Durian No.8 Kel. Kisaran Naga Kec. Kisaran Timur, Kisaran Kabupaten Asahan Sumatera Utara Asahan',
             'ekspedisi' => 'TIKI DARAT/TRC',
             'koli'      => 1,
             'up'        => 'Ibu Yushidar',
