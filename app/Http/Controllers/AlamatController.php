@@ -34,6 +34,7 @@ class AlamatController extends Controller
             'up'        => $request->up,
             'tlp'       => $request->tlp,
             'do'        => $request->do,
+            'epur'      => $request->epur,
             'untuk'     => $request->untuk,
             'nilai'     => $request->nilai,
             'is_do'     => $request->is_do ?? 'no',
