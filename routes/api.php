@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/tes', [ProductController::class, 'tes']);
 Route::get('/product', [ProductController::class, 'getdata'])->name('product.getdata');
 
+Route::post('import', [ProductController::class, 'import']);
+
 // Route::group([
 
 //     'middleware' => 'api',
@@ -41,7 +43,6 @@ Route::get('/product', [ProductController::class, 'getdata'])->name('product.get
 Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/products', [ApiProductController::class, 'index']);
     Route::post('me', [AuthController::class, 'me']);
-
 });
 
 // Route::get('/products', [ApiProductController::class, 'index'])->middleware('api');

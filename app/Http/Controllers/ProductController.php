@@ -5,11 +5,48 @@ namespace App\Http\Controllers;
 use App\Imports\ProductImport;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
 class ProductController extends Controller
 {
+
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product'           => 'required|array|min:1',
+            'product.*.code'    => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message'   => 'Form Not Complete!',
+                'errors'    => $validator->errors(),
+                'data'      => [],
+            ], 422);
+        }
+        $products = $request->product;
+        $chunkSize = 100;
+        $chunks = array_chunk($products, $chunkSize);
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $value) {
+                Product::updateOrCreate(
+                    ['code' => $value['code']],
+                    [
+                        'code'      => $value['code'],
+                        'name'      => $value['name'] ?? null,
+                        'akl'       => isset($value['akl']) && ($value['akl'] == 'False' || $value['akl'] == false) ? null : ($value['akl'] ?? null),
+                        'akl_exp'   => isset($value['akl_exp']) && ($value['akl_exp'] == 'False' || $value['akl_exp'] == false) ? null : ($value['akl_exp'] ?? null),
+                        'desc'      => $value['desc'] ?? null,
+                    ]
+                );
+            }
+        }
+        return response()->json([
+            'message'   => 'Success Import!',
+            'data'      => [],
+        ]);
+    }
     /**
      * Display a listing of the resource.
      *
