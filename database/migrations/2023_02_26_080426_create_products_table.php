@@ -16,14 +16,14 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->string('name')->nullable();
+            $table->text('name')->nullable();
             // $table->string('group')->nullable();
             $table->string('akl')->nullable();
             $table->date('akl_exp')->nullable();
             // $table->string('akl_file')->nullable();
             // $table->string('category')->nullable();
             // $table->string('vendor')->nullable();
-            $table->string('desc')->nullable();
+            $table->text('desc')->nullable();
             $table->timestamps();
         });
     }
