@@ -117,6 +117,7 @@
                     },
                     {
                         data: "desc",
+                        visible: false
                     },
                 ],
                 buttons: [{
