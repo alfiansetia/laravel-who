@@ -175,7 +175,7 @@
                 <td class="style14 kanan-dua kiri-dua" colspan="4" style="text-align: left">~
                     {{ $item->product->code }}
                     ({{ $item->product->name }})
-                    = {{ $item->qty }} Box</td>
+                    = {{ $item->qty }}</td>
             </tr>
             @if (!empty($item->lot))
                 <tr>

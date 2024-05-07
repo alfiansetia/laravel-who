@@ -11,7 +11,7 @@ class AlamatController extends Controller
 {
     public function create(Request $request)
     {
-        $data = Alamat::first();
+        $data = Alamat::first() ?? Alamat::factory()->create();
         $products = Product::all();
         return view('alamat.create', compact('data', 'products'))->with(['title' => 'Alamat']);
     }
