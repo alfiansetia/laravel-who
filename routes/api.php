@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
@@ -49,3 +50,5 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 Route::post('/login', LoginController::class)->name('api.login');
 Route::post('/logout', LogoutController::class)->name('api.logout');
+
+Route::get('alamat/get', [AlamatController::class, 'get']);

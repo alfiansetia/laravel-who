@@ -6,6 +6,7 @@ use App\Models\Alamat;
 use App\Models\DetailAlamat;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AlamatController extends Controller
 {
@@ -64,5 +65,58 @@ class AlamatController extends Controller
     {
         $data = $alamat;
         return view('alamat.show', compact('data'))->with(['title' => 'Detail Alamat']);
+    }
+
+    public function get(Request $request)
+    {
+        $ses_id = env('ODOO_SESSION_ID');
+        $url = 'http://map.integrasi.online:8069/web/dataset/search_read';
+
+        $headers = [
+            'accept' => 'application/json, text/javascript, */*; q=0.01',
+            'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'content-type' => 'application/json',
+            'x-requested-with' => 'XMLHttpRequest',
+            'Cookie' => $ses_id
+        ];
+
+        $data = [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'model' => 'product.template',
+                'domain' => [
+                    [
+                        'type',
+                        'in',
+                        [
+                            'consu',
+                            'product'
+                        ]
+                    ]
+                ],
+                'fields' => [
+                    'sequence',
+                    'default_code',
+                    'name',
+                    'categ_id',
+                    'akl_id',
+                    'x_studio_valid_to_akl',
+                    'type',
+                    'qty_available',
+                    'virtual_available',
+                    'uom_id',
+                    'active',
+                    'x_studio_field_i3XMM',
+                    'description'
+                ],
+                'limit' => 4000,
+                'sort' => ''
+            ],
+            'id' => 353031512
+        ];
+
+        $response = Http::withHeaders($headers)->post($url, $data);
+        return response()->json(['status' => $response->status(), 'response' => $response->json()]);
     }
 }

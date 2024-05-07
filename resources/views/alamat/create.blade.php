@@ -111,6 +111,7 @@
             <button type="submit" class="btn btn-primary">Simpan</button>
             <a id="print" href="{{ route('alamat.show', $data->id) }}" type="button" target="_blank"
                 class="btn btn-warning">Print</a>
+            <button type="button" id="btn_tes" class="btn btn-danger">TES</button>
         </div>
         </form>
     </div>
@@ -152,6 +153,11 @@
     <script>
         var data = [];
         $(document).ready(function() {
+            $('#btn_tes').click(function() {
+                $.get('{{ url('api/alamat/get') }}').done(function(result) {
+                    console.log(result);
+                })
+            })
             $.get("{{ route('product.index') }}").done(function(res) {
                 for (let i = 0; i < res.data.length; i++) {
                     let option = new Option(`${res.data[i].code} ${res.data[i].name}`, res.data[i].id,
