@@ -143,11 +143,6 @@
         var id = '';
         var data = [];
         $(document).ready(function() {
-            // $('#btn_tes').click(function() {
-            //     $.get('{{ url('api/alamat/get') }}').done(function(result) {
-            //         console.log(result);
-            //     })
-            // })
             $.get("{{ route('product.index') }}").done(function(res) {
                 for (let i = 0; i < res.data.length; i++) {
                     let option = new Option(`${res.data[i].code} ${res.data[i].name}`, res.data[i].id,
@@ -175,9 +170,8 @@
                         $('#select_do').append(option);
                     }
                     $('#select_do').val('')
-                    alert('done!')
                 }).fail(function(xhr) {
-                    alert('fail!')
+                    alert('Odoo Error!')
                 });
             })
             $('#select_do').select2({
@@ -229,6 +223,8 @@
                         $('#epur').val(epur)
 
                     }
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
                 });
 
             });

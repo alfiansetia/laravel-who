@@ -23,6 +23,9 @@
             <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('kontak.index') }}">Kontak</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
+            </li>
         </ul>
     </div>
 </nav>

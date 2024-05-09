@@ -53,6 +53,28 @@
 
     @yield('content')
 
+    <div class="modal fade" id="modal_env" tabindex="-1" aria-labelledby="modal_envLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_envLabel">ODOO SESSION</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-2">
+                        <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION">{{ $setting->odoo_session ?? '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" id="btn_modal_env" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 @if (session()->has('message'))
@@ -68,6 +90,27 @@
             });
         }).ajaxStop($.unblockUI);
         bsCustomFileInput.init()
+
+        $('#btn_modal_env').click(function() {
+            let env_value = $('#odoo_env').val()
+            if (env_value == '') {
+                alert('Cannot empty!')
+                return
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('api.setting.env') }}",
+                data: {
+                    env_value: env_value
+                }
+            }).done(function(result) {
+                $('#modal_env').modal('hide')
+                alert(result.message)
+            }).fail(function(xhr) {
+                let message = xhr.responseJSON.message || 'Error!'
+                alert(message)
+            })
+        })
     })
 
     function multiCheck(tb_var) {

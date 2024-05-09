@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -10,16 +11,17 @@ class DOController extends Controller
 {
     public function index(Request $request)
     {
+        $setting = Setting::first();
+        $ses_id = $setting->odoo_session ?? '';
         $search = $request->param ?? 'CENT/OUT/';
-        $ses_id = env('ODOO_SESSION_ID');
         $url = 'http://map.integrasi.online:8069/web/dataset/search_read';
 
         $headers = [
-            'accept' => 'application/json, text/javascript, */*; q=0.01',
-            'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'content-type' => 'application/json',
-            'x-requested-with' => 'XMLHttpRequest',
-            'Cookie' => $ses_id
+            'accept'            => 'application/json, text/javascript, */*; q=0.01',
+            'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'content-type'      => 'application/json',
+            'x-requested-with'  => 'XMLHttpRequest',
+            'Cookie'            => 'session_id=' . $ses_id,
         ];
 
         $data = [
@@ -92,9 +94,10 @@ class DOController extends Controller
         return $this->handle($url, $data, $headers);
     }
 
-    public function detail(Request $request, int $id)
+    public function detail(int $id)
     {
-        $ses_id = env('ODOO_SESSION_ID');
+        $setting = Setting::first();
+        $ses_id = $setting->odoo_session ?? '';
         $id = intval($id);
         $url = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.picking/read';
         $headers = [
@@ -102,7 +105,7 @@ class DOController extends Controller
             'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
             'content-type'      => 'application/json',
             'x-requested-with'  => 'XMLHttpRequest',
-            'Cookie'            => $ses_id
+            'Cookie'            => 'session_id=' . $ses_id,
         ];
         $data = [
             'jsonrpc'   => '2.0',

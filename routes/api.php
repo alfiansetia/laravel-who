@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
@@ -66,3 +67,5 @@ Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
 Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
+
+Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');

@@ -113,7 +113,6 @@
         <div class="card-footer">
             <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
             <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
-            <button type="button" id="btn_tes" class="btn btn-primary">Simpan</button>
             </form>
         </div>
         @if (session()->has('message'))
@@ -128,9 +127,6 @@
 
         <script>
             $(document).ready(function() {
-                $('#btn_tes').click(function() {
-                    block()
-                })
                 $('#btn_get_do').click(function() {
                     let param = $('#input_do').val()
                     $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
@@ -149,9 +145,8 @@
                             $('#select_do').append(option);
                         }
                         $('#select_do').val('')
-                        alert('done!')
                     }).fail(function(xhr) {
-                        alert('fail!')
+                        alert('Odoo Error!')
                     });
                 })
                 $('#select_do').select2({
@@ -203,6 +198,8 @@
                             $('#epur').val(epur)
 
                         }
+                    }).fail(function(xhr) {
+                        alert('Odoo Error!')
                     });
 
                 });
