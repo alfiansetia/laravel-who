@@ -48,6 +48,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/block-ui@2.70.1/jquery.blockUI.min.js"></script>
     @stack('js')
 
     @yield('content')
@@ -61,6 +62,11 @@
 @endif
 <script>
     $(document).ready(function() {
+        $(document).ajaxStart(function() {
+            $.blockUI({
+                message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...'
+            });
+        }).ajaxStop($.unblockUI);
         bsCustomFileInput.init()
     })
 

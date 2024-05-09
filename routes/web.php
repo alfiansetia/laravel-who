@@ -43,7 +43,7 @@ Route::get('products/download-sample', function () {
 })->name('product.download.sample');
 
 
-Route::resource('alamat', AlamatController::class)->only(['index', 'show', 'store', 'create']);
+Route::resource('alamat', AlamatController::class);
 
 Route::delete('/kontak', [KontakController::class, 'destroy'])->name('kontak.destroy');
 Route::resource('kontak', KontakController::class)->except('create', 'destroy');

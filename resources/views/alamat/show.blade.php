@@ -123,10 +123,12 @@
                 <td class="style18" colspan="3">: {{ $data->up }}</td>
             </tr>
         @endif
-        <tr>
-            <td class="style18" style="width: 17%">Tlp</td>
-            <td class="style18" colspan="3">: {{ $data->tlp }}</td>
-        </tr>
+        @if (!empty($data->tlp))
+            <tr>
+                <td class="style18" style="width: 17%">Tlp</td>
+                <td class="style18" colspan="3">: {{ $data->tlp }}</td>
+            </tr>
+        @endif
         <tr>
             <td class="style18" style="width: 17%">No DO</td>
             <td class="style18" colspan="3">: {{ $data->do }} @if (!empty($data->epur))

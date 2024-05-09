@@ -1,6 +1,8 @@
 <?php
 
-use App\Http\Controllers\AlamatController;
+use App\Http\Controllers\Api\AlamatController;
+use App\Http\Controllers\Api\DetailAlamatController;
+use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
@@ -51,4 +53,16 @@ Route::middleware(['jwt.auth'])->group(function () {
 Route::post('/login', LoginController::class)->name('api.login');
 Route::post('/logout', LogoutController::class)->name('api.logout');
 
-Route::get('alamat/get', [AlamatController::class, 'get']);
+// Route::get('alamat/get', [AlamatController::class, 'get'])->name('api.do.list');
+// Route::get('alamat/get_detail', [AlamatController::class, 'get_detail'])->name('api.do.detail');
+
+// Route::post('alamat_detail/{id}', [AlamatController::class, 'edit_detail']);
+// Route::get('alamat_detail_ist/{id}', [AlamatController::class, 'detail'])->name('api.alamat.list.detail');
+// Route::post('detail_alamat_store/{id}', [DetailAlamatController::class, 'store'])->name('api.alamat.store.detail');
+// Route::post('detail_alamat_delete/{id}', [DetailAlamatController::class, 'destroy'])->name('api.alamat.destroy.detail');
+
+Route::get('do', [DOController::class, 'index'])->name('api.do.index');
+Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
+
+Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
+Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
