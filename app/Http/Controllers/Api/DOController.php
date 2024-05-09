@@ -22,6 +22,7 @@ class DOController extends Controller
         $setting = Setting::first();
         $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
     }
+
     public function index(Request $request)
     {
         $search = $request->param ?? 'CENT/OUT/';

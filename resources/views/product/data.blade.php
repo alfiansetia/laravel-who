@@ -159,6 +159,23 @@
                                     deleteData()
                                 }
                             },
+                            {
+                                text: '<i class="fas fa-sync mr-1"></i>Syncronize from Odoo',
+                                className: 'btn btn-sm btn-danger',
+                                attr: {
+                                    'data-toggle': 'tooltip',
+                                    'title': 'Syncronize from Odoo'
+                                },
+                                action: function(e, dt, node, config) {
+                                    $.post("{{ route('api.product_sync') }}")
+                                        .done(function(res) {
+                                            table.ajax.reload()
+                                            alert(res.message)
+                                        }).fail(function(xhr) {
+                                            alert('Odoo Error!')
+                                        });
+                                }
+                            },
                         ]
                     },
                     {
