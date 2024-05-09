@@ -9,21 +9,23 @@ use Illuminate\Support\Facades\Http;
 
 class DOController extends Controller
 {
-    public function index(Request $request)
+    private $headers = [
+        'accept'            => 'application/json, text/javascript, */*; q=0.01',
+        'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type'      => 'application/json',
+        'x-requested-with'  => 'XMLHttpRequest',
+        'Cookie'            => '',
+    ];
+
+    public function __construct()
     {
         $setting = Setting::first();
-        $ses_id = $setting->odoo_session ?? '';
+        $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
+    }
+    public function index(Request $request)
+    {
         $search = $request->param ?? 'CENT/OUT/';
         $url = 'http://map.integrasi.online:8069/web/dataset/search_read';
-
-        $headers = [
-            'accept'            => 'application/json, text/javascript, */*; q=0.01',
-            'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'content-type'      => 'application/json',
-            'x-requested-with'  => 'XMLHttpRequest',
-            'Cookie'            => 'session_id=' . $ses_id,
-        ];
-
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',
@@ -91,22 +93,13 @@ class DOController extends Controller
             ],
             'id' => 654266576
         ];
-        return $this->handle($url, $data, $headers);
+        return $this->handle($url, $data, $this->headers);
     }
 
     public function detail(int $id)
     {
-        $setting = Setting::first();
-        $ses_id = $setting->odoo_session ?? '';
         $id = intval($id);
         $url = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.picking/read';
-        $headers = [
-            'accept'            => 'application/json, text/javascript, */*; q=0.01',
-            'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'content-type'      => 'application/json',
-            'x-requested-with'  => 'XMLHttpRequest',
-            'Cookie'            => 'session_id=' . $ses_id,
-        ];
         $data = [
             'jsonrpc'   => '2.0',
             'method'    => 'call',
@@ -215,7 +208,7 @@ class DOController extends Controller
             ],
             'id' => 334664946
         ];
-        return $this->handle($url, $data, $headers);
+        return $this->handle($url, $data, $this->headers);
     }
 
     private function handle($url, $data, $headers)
