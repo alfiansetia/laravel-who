@@ -14,7 +14,7 @@
                     <div class="form-group col-md-6">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="CENT/OUT/">
+                                value="{{ $data->do ?? 'CENT/OUT/' }}">
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary" id="btn_get_do">GET</button>
                             </div>
@@ -125,6 +125,7 @@
             <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
             <button type="button" id="add" class="btn btn-info">Tambah Product</button>
             <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
+            <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
         </div>
         </form>
     </div>
@@ -385,6 +386,18 @@
                         alert(xhr.responseJSON.message);
                     }
                 });
+            })
+
+            $('#btn_sync').click(function() {
+                let url = "{{ route('api.do.detail.sync', $data->id) }}"
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                }).done(function(result) {
+                    table.ajax.reload()
+                }).fail(function(xhr) {
+                    alert(xhr.responseJSON.message || 'Error!')
+                })
             })
 
         });

@@ -64,6 +64,7 @@ Route::post('/logout', LogoutController::class)->name('api.logout');
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
+Route::get('do/{alamat}/sync', [DOController::class, 'sync'])->name('api.do.detail.sync');
 
 Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');

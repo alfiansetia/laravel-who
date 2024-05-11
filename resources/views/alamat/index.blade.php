@@ -41,7 +41,7 @@
                 pageLength: 10,
                 lengthChange: false,
                 order: [
-                    [1, "asc"]
+                    [0, "asc"]
                 ],
                 columns: [{
                         data: 'id',
@@ -71,8 +71,6 @@
                         },
                         action: function(e, dt, node, config) {
                             window.location.href = "{{ route('alamat.create') }}"
-                            // $('#modalAdd').modal('show');
-                            // $('#name').focus();
                         }
                     },
                     {
