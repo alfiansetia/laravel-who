@@ -73,9 +73,9 @@
                 ],
                 pageLength: 10,
                 lengthChange: false,
-                order: [
-                    [1, "asc"]
-                ],
+                // order: [
+                //     [1, "asc"]
+                // ],
                 columns: [{
                         data: 'id',
                         className: "text-center",

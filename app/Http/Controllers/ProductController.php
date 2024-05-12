@@ -59,7 +59,7 @@ class ProductController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'message' => '',
-                'data' => Product::get(),
+                'data' => Product::OrderBy('code', 'ASC')->get(),
             ]);
         } else {
             return view('product.data')->with('title', 'Data Product');
