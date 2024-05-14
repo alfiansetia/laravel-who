@@ -4,6 +4,7 @@ use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -50,3 +51,6 @@ Route::resource('kontak', KontakController::class)->except('create', 'destroy');
 Route::get('kontak/download-sample', function () {
     return response()->download(public_path('source/kontak.xls'));
 })->name('kontak.download.sample');
+
+
+Route::get('stock', [StockController::class, 'index'])->name('stock.index');

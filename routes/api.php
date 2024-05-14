@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
 use App\Http\Controllers\Api\ProductController as ApiProductController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
@@ -71,3 +72,5 @@ Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.d
 
 Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
 Route::post('product_sync', [ApiProductController::class, 'sync'])->name('api.product_sync');
+
+Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
