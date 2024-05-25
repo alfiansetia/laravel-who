@@ -1,8 +1,22 @@
 @extends('template')
+@push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
+@endpush
 
 @section('content')
     <div class="container-fluid">
         <h1>{{ $title }} Center</h1>
+        <form class="form-inline">
+            <div class="form-group col-md-4 mb-2 pl-0">
+                <select name="location" class="form-control" id="location" multiple style="width: 100%">
+                    <option value="center" selected>CENTER</option>
+                    <option value="cbb">CIBUBUR</option>
+                    <option value="krtn">KARANTINA</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary ml-1 mb-2" id="refresh">REFRESH</button>
+        </form>
 
         <div class="responsive">
             <form id="selected">
@@ -26,14 +40,27 @@
             alert("{{ session('message') }}")
         </script>
     @endif
+
+    @push('js')
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @endpush
     <script>
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 // rowId: 'id',
                 ajax: {
                     url: "{{ route('api.stock.index') }}",
+                    data: function(dt) {
+                        loc = $('#location').val()
+                        if (loc.length < 1) {
+                            loc[0] = 'center'
+                            $('#location').val('center').change()
+                        }
+                        dt['location[]'] = loc
+                    },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        alert('Odoo Error, code : ' + jqXHR.status)
+                        alert((jqXHR.responseJSON.message || 'Odoo Error! ') + ', code : ' + jqXHR
+                            .status)
                         console.log(jqXHR);
                     },
                 },
@@ -147,6 +174,14 @@
                     }
                 ],
             });
+
+            $('#refresh').click(function() {
+                table.ajax.reload()
+            })
+
+            $('#location').select2({
+                allowClear: false
+            })
 
             function reload_table() {
                 table.ajax.reload()

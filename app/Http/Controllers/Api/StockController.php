@@ -15,6 +15,7 @@ class StockController extends Controller
         'content-type'      => 'application/json',
         'x-requested-with'  => 'XMLHttpRequest',
         'Cookie'            => '',
+        'Accept-Encoding'   => 'gzip, deflate',
     ];
 
     public function __construct()
@@ -22,7 +23,7 @@ class StockController extends Controller
         $setting = Setting::first();
         $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
     }
-    public function index()
+    public function index(Request $request)
     {
         $url = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.quant/read_group';
         $data = [
@@ -46,7 +47,7 @@ class StockController extends Controller
                     ],
                     'domain' => [
                         ['location_id.usage', '=', 'internal'],
-                        ['location_id', 'ilike', 'center']
+                        // ['location_id', 'ilike', 'center']
                     ],
                     'fields' => [
                         'product_id', 'location_id', 'lot_id', 'itds_expired',
@@ -60,12 +61,20 @@ class StockController extends Controller
             ],
             'id' => 432008837
         ];
+        for ($i = 0; $i < (count($request->location ?? []) - 1); $i++) {
+            array_push($data['params']['kwargs']['domain'], '|');
+        }
+
+        foreach ($request->location ?? [] as $item) {
+            array_push($data['params']['kwargs']['domain'], ['location_id', 'ilike', $item]);
+        }
+        // return response()->json(['data' => $data], 500);
         return $this->handle($url, $data, $this->headers);
     }
 
     private function handle($url, $data, $headers)
     {
-        $response = Http::withHeaders($headers)->post($url, $data);
+        $response = Http::withHeaders($headers)->timeout(60)->post($url, $data);
         $json = $response->json();
         return response()->json(['status' => $response->status(), 'data' => $json['result'] ?? []], $response->status() ?? 500);
     }
