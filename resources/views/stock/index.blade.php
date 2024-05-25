@@ -30,7 +30,13 @@
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 // rowId: 'id',
-                ajax: "{{ route('api.stock.index') }}",
+                ajax: {
+                    url: "{{ route('api.stock.index') }}",
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('Odoo Error, code : ' + jqXHR.status)
+                        console.log(jqXHR);
+                    },
+                },
                 dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
