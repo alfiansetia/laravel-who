@@ -22,6 +22,9 @@
             <li class="nav-item <?= $title == 'Data Stock' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('stock.index') }}">Stock</a>
             </li>
+            <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
+            </li>
             <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('kontak.index') }}">Kontak</a>
             </li>

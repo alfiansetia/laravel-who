@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AlamatController;
+use App\Http\Controllers\Api\BastController;
 use App\Http\Controllers\Api\DetailAlamatController;
+use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\LogoutController;
@@ -74,3 +76,7 @@ Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.set
 Route::post('product_sync', [ApiProductController::class, 'sync'])->name('api.product_sync');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
+
+Route::get('bast/{bast}/sync', [BastController::class, 'sync'])->name('api.bast.sync');
+Route::apiResource('bast', BastController::class)->names('api.bast');
+Route::apiResource('detail_bast', DetailBastController::class)->names('api.detail_bast');
