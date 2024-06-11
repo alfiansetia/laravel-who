@@ -89,9 +89,10 @@ class BastController extends Controller
 
     public function sync(Bast $bast)
     {
+        $odoo_domain = env('ODOO_DOMAIN');
         try {
             $do = $bast->do;
-            $url = 'http://map.integrasi.online:8069/web/dataset/search_read';
+            $url = $odoo_domain . '/web/dataset/search_read';
             $param = [
                 'jsonrpc' => '2.0',
                 'method' => 'call',
@@ -144,7 +145,7 @@ class BastController extends Controller
             if (count($json['result']['records'] ?? []) > 0) {
                 $id = intval($json['result']['records'][0]['id']);
             }
-            $url2 = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.picking/read';
+            $url2 = $odoo_domain . '/web/dataset/call_kw/stock.picking/read';
             $param2 = [
                 'jsonrpc'   => '2.0',
                 'method'    => 'call',
@@ -256,7 +257,7 @@ class BastController extends Controller
             $json2 = $this->handle_res($url2, $param2);
             $id_prod = $json2['result'][0]['move_ids_without_package'] ?? [];
 
-            $url3 = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.move/read';
+            $url3 = $odoo_domain . '/web/dataset/call_kw/stock.move/read';
             $param3 = [
                 'jsonrpc' => '2.0',
                 'method' => 'call',

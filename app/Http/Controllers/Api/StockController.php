@@ -25,7 +25,8 @@ class StockController extends Controller
     }
     public function index(Request $request)
     {
-        $url = 'http://map.integrasi.online:8069/web/dataset/call_kw/stock.quant/read_group';
+        $odoo_domain = env('ODOO_DOMAIN');
+        $url = $odoo_domain . '/web/dataset/call_kw/stock.quant/read_group';
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',

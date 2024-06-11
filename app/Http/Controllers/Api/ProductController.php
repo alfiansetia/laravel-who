@@ -32,7 +32,8 @@ class ProductController extends Controller
 
     public function sync()
     {
-        $url = 'http://map.integrasi.online:8069/web/dataset/search_read';
+        $odoo_domain = env('ODOO_DOMAIN');
+        $url = $odoo_domain . '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',
