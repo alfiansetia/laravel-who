@@ -16,11 +16,21 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group mb-2">
-                    <input type="text" class="form-control" id="qty_prod" value="100 Pcs" placeholder="QTY">
+                <div class="form-group row mb-2">
+                    <div class="col-md-6">
+                        <input type="number" class="form-control" id="qty_prod" value="100" placeholder="QTY">
+                    </div>
+                    <div class="col-md-6">
+                        <select name="satuan" class="form-control" id="satuan">
+                            <option value="Pcs">Pcs</option>
+                            <option value="Pck">Pck</option>
+                            <option value="Unit">Unit</option>
+                            <option value="EA">EA</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group mb-2">
-                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED">E002/2023.02</textarea>
+                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED" rows="7">E002/2023.02</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -43,11 +53,21 @@
             </div>
             <div class="modal-body">
                 <form action="" id="form_edit">
-                    <div class="form-group mb-2">
-                        <input type="text" class="form-control" id="qty_prod_edit" placeholder="QTY">
+                    <div class="form-group row mb-2">
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" id="qty_prod_edit" placeholder="QTY">
+                        </div>
+                        <div class="col-md-6">
+                            <select name="satuan" class="form-control" id="edit_satuan">
+                                <option value="Pcs">Pcs</option>
+                                <option value="Pck">Pck</option>
+                                <option value="Unit">Unit</option>
+                                <option value="EA">EA</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group mb-2">
-                        <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED"></textarea>
+                        <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED" rows="7"></textarea>
                     </div>
                 </form>
             </div>

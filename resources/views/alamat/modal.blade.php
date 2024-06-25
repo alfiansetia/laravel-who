@@ -17,7 +17,7 @@
                     <input type="text" class="form-control" id="qty_prod" value="100 Pcs" placeholder="QTY">
                 </div>
                 <div class="form-group mb-2">
-                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED">E002/2023.02</textarea>
+                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED" rows="7">E002/2023.02</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -44,7 +44,7 @@
                         <input type="text" class="form-control" id="qty_prod_edit" placeholder="QTY">
                     </div>
                     <div class="form-group mb-2">
-                        <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED"></textarea>
+                        <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED" rows="7"></textarea>
                     </div>
                 </form>
             </div>

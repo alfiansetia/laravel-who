@@ -17,6 +17,7 @@ class DetailBastController extends Controller
             'product'   => 'required|exists:products,id',
             'qty'       => 'required',
             'lot'       => 'nullable',
+            'satuan'    => 'required|in:Pcs,Pck,Unit,EA',
         ]);
         if ($validate->fails()) {
             return response()->json(['message' => $validate->getMessageBag()], 422);
@@ -26,6 +27,7 @@ class DetailBastController extends Controller
             'product_id'    => $request->product,
             'qty'           => $request->qty,
             'lot'           => $request->lot,
+            'satuan'        => $request->satuan,
         ]);
         return response()->json(['message' => 'Success!']);
     }
@@ -36,10 +38,12 @@ class DetailBastController extends Controller
         $this->validate($request, [
             'qty'       => 'required',
             'lot'       => 'nullable',
+            'satuan'    => 'required|in:Pcs,Pck,Unit,EA',
         ]);
         $detail_bast->update([
-            'qty' => $request->qty,
-            'lot' => $request->lot,
+            'qty'       => $request->qty,
+            'lot'       => $request->lot,
+            'satuan'    => $request->satuan,
         ]);
         return response()->json(['message' => 'Success!']);
     }

@@ -61,6 +61,7 @@
                             <th>#</th>
                             <th>Product</th>
                             <th>Qty</th>
+                            <th>Satuan</th>
                             <th>Lot</th>
                             <th>Aksi</th>
                         </tr>
@@ -71,8 +72,21 @@
         <div class="card-footer">
             <a href="{{ route('bast.index') }}" class="btn btn-secondary">Kembali</a>
             <button type="button" id="add" class="btn btn-info">Tambah Product</button>
-            <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
+            <button type="submit" id="btn_simpan" class="btn btn-primary">SAVE</button>
             <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+                    aria-expanded="false">
+                    Download
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=tanda_terima"
+                        target="_blank">Tanda Terima</a>
+                    <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=training"
+                        target="_blank">Daftar Training</a>
+                    <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=bast" target="_blank">BAST</a>
+                </div>
+            </div>
         </div>
         </form>
     </div>
@@ -197,6 +211,8 @@
                 }, {
                     data: "qty",
                 }, {
+                    data: "satuan",
+                }, {
                     data: "lot",
                 }, {
                     data: "id",
@@ -227,6 +243,7 @@
                         product: selectedData[0].id,
                         qty: $('#qty_prod').val(),
                         lot: $('#lot_prod').val(),
+                        satuan: $('#satuan').val(),
                     }
                 }).done(function(result) {
                     $('#product_modal').modal('hide')
@@ -243,7 +260,8 @@
                     url: url,
                     data: {
                         qty: $('#qty_prod_edit').val(),
-                        lot: $('#lot_prod_edit').val()
+                        lot: $('#lot_prod_edit').val(),
+                        satuan: $('#edit_satuan').val(),
                     }
                 }).done(function(result) {
                     table.ajax.reload()
@@ -274,6 +292,7 @@
                 var row = table.row($(this).closest('tr'));
                 id = row.id();
                 let data = row.data()
+                $('#edit_satuan').val(data.satuan).trigger('change')
                 $('#qty_prod_edit').val(data.qty)
                 $('#lot_prod_edit').val(data.lot)
                 $('#form_edit').attr('action', "{{ url('api/detail_bast/') }}/" + id)
@@ -295,7 +314,7 @@
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        window.open("{{ route('bast.show', $data->id) }}", '_blank')
+                        // window.open("{{ route('bast.show', $data->id) }}", '_blank')
                     },
                     error: function(xhr, status, error) {
                         alert(xhr.responseJSON.message);
