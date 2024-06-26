@@ -60,7 +60,7 @@ class BastController extends Controller
         $items = [];
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
-            $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => $text]);
         }
         $template = new TemplateProcessor($file);
@@ -77,7 +77,7 @@ class BastController extends Controller
         $items = [];
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
-            $text = '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            $text = '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => $text]);
         }
         $template = new TemplateProcessor($file);
@@ -94,7 +94,7 @@ class BastController extends Controller
         $items = [];
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
-            $text =  '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            $text =  '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => $text]);
         }
         $template = new TemplateProcessor($file);
