@@ -26,6 +26,7 @@
                             <option value="Pck">Pck</option>
                             <option value="Unit">Unit</option>
                             <option value="EA">EA</option>
+                            <option value="Box">Box</option>
                         </select>
                     </div>
                 </div>
@@ -63,6 +64,7 @@
                                 <option value="Pck">Pck</option>
                                 <option value="Unit">Unit</option>
                                 <option value="EA">EA</option>
+                                <option value="Box">Box</option>
                             </select>
                         </div>
                     </div>
