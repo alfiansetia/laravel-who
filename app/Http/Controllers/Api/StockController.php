@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\StockResource;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -77,6 +78,6 @@ class StockController extends Controller
     {
         $response = Http::withHeaders($headers)->timeout(60)->post($url, $data);
         $json = $response->json();
-        return response()->json(['status' => $response->status(), 'data' => $json['result'] ?? []], $response->status() ?? 500);
+        return response()->json(['status' => $response->status(), 'data' => StockResource::collection($json['result']) ?? []], $response->status() ?? 500);
     }
 }

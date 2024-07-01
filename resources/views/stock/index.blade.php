@@ -23,8 +23,8 @@
                 <table class="table table-sm table-hover" id="table" style="width: 100%;">
                     <thead class="thead-dark">
                         <tr>
-                            <th class="text-center" style="width: 30px;">No</th>
-                            <th>PRODUCT</th>
+                            <th>KODE</th>
+                            <th>NAME</th>
                             <th>QTY</th>
                         </tr>
                     </thead>
@@ -78,31 +78,12 @@
                 pageLength: 10,
                 lengthChange: false,
                 columns: [{
-                        data: 'product_id',
-                        className: "text-center",
-                        searchable: false,
-                        render: function(data, type, row, meta) {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        }
+                        data: "code",
                     }, {
-                        data: "product_id",
-                        render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                return data[1]
-                            } else {
-                                return data
-                            }
-                        }
+                        data: "name",
                     },
                     {
                         data: "quantity",
-                        render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                return hrg(data)
-                            } else {
-                                return data
-                            }
-                        }
                     },
                 ],
                 buttons: [{
