@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 // Auth::routes(['verify' => true]);
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('product.index');
 });
 // Route::get('/', function () {
 //     return view('welcome');
