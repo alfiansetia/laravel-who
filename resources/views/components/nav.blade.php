@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-    <a class="navbar-brand" href="{{ route('home') }}">
+    <a class="navbar-brand" href="{{ route('product.index') }}">
         <img src="{{ asset('images/asa.png') }}" height="30" class="d-inline-block align-top" alt="">
         {{-- <b>SAVE</b> --}}
     </a>
