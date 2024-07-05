@@ -19,6 +19,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.5.0/css/select.bootstrap4.css" />
     @stack('css')
     <title>{{ $title }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
 </head>
 
 
