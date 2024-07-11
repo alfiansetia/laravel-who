@@ -146,7 +146,7 @@
         $(document).ready(function() {
             $.get("{{ route('product.index') }}").done(function(res) {
                 for (let i = 0; i < res.data.length; i++) {
-                    let option = new Option(`${res.data[i].code} ${res.data[i].name}`, res.data[i].id,
+                    let option = new Option(`${res.data[i].code} ${res.data[i].name || ''}`, res.data[i].id,
                         true, true);
                     $('#select_product').append(option);
                     $('#select_product2').append(option);
@@ -265,7 +265,7 @@
                     data: "product_id",
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
-                            return row.product.code + ' ' + row.product.name
+                            return row.product.code + ' ' + (row.product.name || '')
                         } else {
                             return data
                         }

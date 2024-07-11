@@ -253,6 +253,10 @@
                 })
             })
 
+            $('#form_edit').submit(function(e) {
+                e.preventDefault()
+            })
+
             $('#btn_modal_save_edit').click(function() {
                 let url = $('#form_edit').attr('action')
                 $.ajax({
