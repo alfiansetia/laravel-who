@@ -25,9 +25,9 @@
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
             </li>
-            <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
+            {{-- <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('kontak.index') }}">Kontak</a>
-            </li>
+            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
             </li>
