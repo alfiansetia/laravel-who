@@ -6,6 +6,7 @@ use App\Models\Bast;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
+use Illuminate\Support\Str;
 
 class BastController extends Controller
 {
@@ -67,8 +68,10 @@ class BastController extends Controller
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $template->saveAs(public_path('master/tanda_terima ' . $bast->name . '.docx'));
-        return response()->download(public_path('master/tanda_terima ' . $bast->name . '.docx'))->deleteFileAfterSend();
+        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name);
+        $path = public_path('master/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
     }
 
     private function training(Bast $bast)
@@ -84,8 +87,10 @@ class BastController extends Controller
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $template->saveAs(public_path('master/training_' . $bast->name . '.docx'));
-        return response()->download(public_path('master/training_' . $bast->name . '.docx'))->deleteFileAfterSend();
+        $name = Str::slug('training_' . $bast->do . '_' . $bast->name);
+        $path = public_path('master/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
     }
 
     private function bast(Bast $bast)
@@ -102,7 +107,9 @@ class BastController extends Controller
         $template->setValue('city', $bast->city);
         $template->setValue('address', $bast->address);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $template->saveAs(public_path('master/bast_' . $bast->name . '.docx'));
-        return response()->download(public_path('master/bast_' . $bast->name . '.docx'))->deleteFileAfterSend();
+        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name);
+        $path = public_path('master/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
     }
 }
