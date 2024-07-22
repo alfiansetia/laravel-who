@@ -68,7 +68,7 @@ class BastController extends Controller
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name);
+        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
@@ -87,7 +87,7 @@ class BastController extends Controller
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('training_' . $bast->do . '_' . $bast->name);
+        $name = Str::slug('training_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
@@ -107,7 +107,7 @@ class BastController extends Controller
         $template->setValue('city', $bast->city);
         $template->setValue('address', $bast->address);
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name);
+        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
