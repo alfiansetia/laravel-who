@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\BastController;
+use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
@@ -56,3 +57,5 @@ Route::get('kontak/download-sample', function () {
 
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
 Route::resource('bast', BastController::class);
+
+Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
