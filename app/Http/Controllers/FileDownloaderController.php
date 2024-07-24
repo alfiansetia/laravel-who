@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Traits\ResponseTrait;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 
 class FileDownloaderController extends Controller
 {
