@@ -58,6 +58,7 @@ class BastController extends Controller
 
     private function tanda_terima(Bast $bast)
     {
+        ob_start();
         $file = public_path('master/tanda_terima.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
@@ -65,12 +66,6 @@ class BastController extends Controller
             $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => $text]);
         }
-        Settings::setOutputEscapingEnabled(true);
-        Settings::setCompatibility(false);
-
-        // assert($zipClass == Settings::ZIPARCHIVE || $zipClass == Settings::PCLZIP);
-
-        Settings::setZipClass(Settings::ZIPARCHIVE);
         $template = new TemplateProcessor($file);
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
@@ -78,6 +73,7 @@ class BastController extends Controller
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
         $template->saveAs($path);
+        ob_end_clean();
         return response()->download($path)->deleteFileAfterSend();
     }
 
