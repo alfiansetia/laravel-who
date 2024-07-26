@@ -65,13 +65,14 @@ class BastController extends Controller
             $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => $text]);
         }
+        Settings::setOutputEscapingEnabled(true);
+        Settings::setCompatibility(false);
         $template = new TemplateProcessor($file);
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
-        Settings::setOutputEscapingEnabled(true);
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
     }
