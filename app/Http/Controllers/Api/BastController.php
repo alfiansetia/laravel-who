@@ -13,13 +13,6 @@ use Illuminate\Http\Request;
 
 class BastController extends Controller
 {
-    use ResponseTrait;
-
-    public function __construct()
-    {
-        $setting = Setting::first();
-        $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
-    }
 
     public function index()
     {
