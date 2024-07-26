@@ -67,6 +67,10 @@ class BastController extends Controller
         }
         Settings::setOutputEscapingEnabled(true);
         Settings::setCompatibility(false);
+
+        // assert($zipClass == Settings::ZIPARCHIVE || $zipClass == Settings::PCLZIP);
+
+        Settings::setZipClass(Settings::ZIPARCHIVE);
         $template = new TemplateProcessor($file);
         $template->setValue('name', $bast->name);
         $template->setValue('city', $bast->city);
