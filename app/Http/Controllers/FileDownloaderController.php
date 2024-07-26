@@ -2,37 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
-use App\Traits\ResponseTrait;
+use App\Services\OdooService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 
 class FileDownloaderController extends Controller
 {
-    use ResponseTrait;
-    private $headers_file = [];
 
-    public function __construct()
+    public function download(string $id_so = null)
     {
-        $setting = Setting::first();
-        $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
-        $this->headers_file['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
-    }
-
-    public function download(string $so = null)
-    {
-        if (!$so) {
+        if (!$id_so) {
             abort(404);
         }
-        $odoo_domain = env('ODOO_DOMAIN');
         $data = [
             "jsonrpc" => "2.0",
             "method" => "call",
             "params" => [
                 "args" => [
                     [
-                        intval($so)
+                        intval($id_so)
                     ],
                     [
                         "lang" => "en_US",
@@ -54,12 +43,15 @@ class FileDownloaderController extends Controller
             ["id" => 425211742]
         ];
         try {
-            $url = $odoo_domain . '/web/dataset/call_button';
-            $response = Http::withHeaders($this->headers)->post($url, $data);
-            $json = $response->json();
-            $data_url = $odoo_domain . $json['result']['url'];
-            $fileResponse = Http::withHeaders($this->headers_file)->get($data_url);
+            $url_param =  '/web/dataset/call_button';
+            $service = new OdooService();
+            $json = $service->method('POST')->url_param($url_param)->data($data)->get();
+            $data_url = $json['result']['url'];
+            $fileResponse = $service->as_file()->url_param($data_url)->method('GET')->get();
             $full = $fileResponse->header('Content-Disposition');
+            if (!$full) {
+                throw new Exception('File Not Found');
+            }
             $rep = str_replace("attachment; filename*=UTF-8''", '', $full);
             $jadi = urldecode($rep);
             $filePath = public_path('files/' . $jadi);
@@ -68,7 +60,7 @@ class FileDownloaderController extends Controller
             }
             file_put_contents($filePath, $fileResponse->body());
             return response()->download($filePath)->deleteFileAfterSend();
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) {  
             abort(404, $th->getMessage());
         }
     }

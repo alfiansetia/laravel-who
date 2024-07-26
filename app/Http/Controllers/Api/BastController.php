@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bast;
 use App\Models\DetailBast;
 use App\Models\Product;
-use App\Models\Setting;
 use App\Services\DoService;
-use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
 
 class BastController extends Controller

@@ -26,7 +26,7 @@ Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
 Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
-Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product_sync');
+Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product.sync');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 

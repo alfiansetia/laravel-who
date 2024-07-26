@@ -102,12 +102,12 @@
                             'title': 'Syncronize from Odoo'
                         },
                         action: function(e, dt, node, config) {
-                            $.post("{{ route('api.product_sync') }}")
+                            $.post("{{ route('api.product.sync') }}")
                                 .done(function(res) {
                                     table.ajax.reload()
                                     alert(res.message)
                                 }).fail(function(xhr) {
-                                    alert('Odoo Error!')
+                                    alert(xhr.responseJSON.message || 'Odoo Error!')
                                 });
                         }
                     }, {

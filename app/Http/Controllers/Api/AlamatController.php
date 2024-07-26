@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Alamat;
-use App\Models\Bast;
 use App\Models\DetailAlamat;
 use App\Models\Product;
 use App\Services\DoService;
@@ -80,10 +79,10 @@ class AlamatController extends Controller
         return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);
     }
 
-    public function destroy(Bast $bast)
+    public function destroy(Alamat $alamat)
     {
-        $bast->delete();
-        return response()->json(['message' => 'success!', 'data' => $bast]);
+        $alamat->delete();
+        return response()->json(['message' => 'success!', 'data' => $alamat]);
     }
 
     public function sync(Alamat $alamat)

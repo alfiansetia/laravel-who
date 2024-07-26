@@ -14,9 +14,9 @@ class OdooService
     protected $data_param = [];
     protected $method = 'GET';
 
-    private $headers = [];
+    protected $state_file = false;
 
-    private $headers_file = [];
+    private $headers = [];
 
     public function __construct()
     {
@@ -60,9 +60,15 @@ class OdooService
 
     public function as_file()
     {
+        $this->state_file = true;
         $this->headers = [];
-        $this->headers_file['Cookie'] = 'session_id=' . $this->session;
+        $this->headers['Cookie'] = 'session_id=' . $this->session;
         return $this;
+    }
+
+    public function get_headers()
+    {
+        return $this->headers;
     }
 
     public function get()
@@ -75,6 +81,9 @@ class OdooService
         }
         if (!$response->successful()) {
             $response->throw();
+        }
+        if ($this->state_file) {
+            return $response;
         }
         return $response->json();
     }

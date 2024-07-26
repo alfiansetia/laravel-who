@@ -4,25 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Setting;
+use App\Services\OdooService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class ProductController extends Controller
 {
-    private $headers = [
-        'accept'            => 'application/json, text/javascript, */*; q=0.01',
-        'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-        'content-type'      => 'application/json',
-        'x-requested-with'  => 'XMLHttpRequest',
-        'Cookie'            => '',
-    ];
-
-    public function __construct()
-    {
-        $setting = Setting::first();
-        $this->headers['Cookie'] = 'session_id=' . ($setting->odoo_session ?? '');
-    }
 
     public function index()
     {
@@ -32,8 +18,6 @@ class ProductController extends Controller
 
     public function sync()
     {
-        $odoo_domain = env('ODOO_DOMAIN');
-        $url = $odoo_domain . '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',
@@ -69,11 +53,10 @@ class ProductController extends Controller
             ],
             'id' => 353031512
         ];
-
-        $response = Http::withHeaders($this->headers)->post($url, $data);
-        $json = $response->json();
-        $message = 'Odoo Error!';
-        if ($response->successful()) {
+        try {
+            $url_param = '/web/dataset/search_read';
+            $service = new OdooService();
+            $json = $service->url_param($url_param)->data($data)->method('POST')->as_json()->get();
             $records = $json['result']['records'] ?? [];
             $chunks = array_chunk($records, 100);
             foreach ($chunks as $chunk) {
@@ -89,8 +72,9 @@ class ProductController extends Controller
                     ]);
                 }
             }
-            $message = 'Success!';
+            return response()->json(['message' => 'Success!', 'data' => $json['result']],);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
-        return response()->json(['message' => $message, 'status' => $response->status(), 'data' => $json['result'] ?? []], $response->status() ?? 500);
     }
 }
