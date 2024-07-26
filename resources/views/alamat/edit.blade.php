@@ -144,7 +144,7 @@
         var id = '';
         var data = [];
         $(document).ready(function() {
-            $.get("{{ route('product.index') }}").done(function(res) {
+            $.get("{{ route('api.product.index') }}").done(function(res) {
                 for (let i = 0; i < res.data.length; i++) {
                     let option = new Option(`${res.data[i].code} ${res.data[i].name || ''}`, res.data[i].id,
                         true, true);
@@ -389,7 +389,7 @@
             })
 
             $('#btn_sync').click(function() {
-                let url = "{{ route('api.do.detail.sync', $data->id) }}"
+                let url = "{{ route('api.alamat.sync', $data->id) }}"
                 $.ajax({
                     type: 'GET',
                     url: url,

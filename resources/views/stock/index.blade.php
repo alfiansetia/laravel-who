@@ -87,22 +87,6 @@
                     },
                 ],
                 buttons: [{
-                        extend: "collection",
-                        text: '<i class="fas fa-cogs mr-1"></i>Actions',
-                        autoClose: true, // Menutup menu saat tombol submenu dipilih
-                        buttons: [{
-                            text: '<i class="fas fa-sync mr-1"></i>Syncronize from Odoo',
-                            className: 'btn btn-sm btn-danger',
-                            attr: {
-                                'data-toggle': 'tooltip',
-                                'title': 'Syncronize from Odoo'
-                            },
-                            action: function(e, dt, node, config) {
-                                reload_table()
-                            }
-                        }, ]
-                    },
-                    {
                         extend: "colvis",
                         attr: {
                             'data-toggle': 'tooltip',

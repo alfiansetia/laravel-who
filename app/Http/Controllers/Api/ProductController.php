@@ -21,13 +21,13 @@ class ProductController extends Controller
     public function __construct()
     {
         $setting = Setting::first();
-        $this->headers['Cookie'] = 'session_id=' . $setting->odoo_session ?? '';
+        $this->headers['Cookie'] = 'session_id=' . ($setting->odoo_session ?? '');
     }
 
     public function index()
     {
-        $data = Product::paginate(20);
-        return response()->json($data, 200);
+        $data = Product::orderBy('code', 'ASC')->get();
+        return response()->json(['data' => $data], 200);
     }
 
     public function sync()

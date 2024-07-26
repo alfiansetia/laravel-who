@@ -196,52 +196,8 @@
 
             multiCheck(table);
 
-            // $('#table tbody').on('click', 'tr td:not(:first-child)', function() {
-            //     id = table.row(this).id()
-            //     $.ajax({
-            //         url: "{{ route('product.index') }}" + id,
-            //         method: 'GET',
-            //         success: function(result) {
-            //             console.log(result)
-            //             $('#edit_reset').val(result.data.prod_id);
-            //             $('#edit_id').val(result.data.prod_id);
-            //             $('#edit_name').val(result.data.name);
-            //         },
-            //         beforeSend: function() {
-            //             console.log('otw')
-            //         },
-            //         error: function(xhr, status, error) {
-            //             er = xhr.responseJSON.errors
-            //             alert('Server Error');
-            //         }
-            //     });
-            //     $('#modalEdit').modal('show');
-            // });
-
             function deleteData() {
-                if (selected()) {
-                    if (confirm('Delete Selected Data?')) {
-                        $.ajaxSetup({
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            }
-                        });
-                        $.ajax({
-                            type: 'DELETE',
-                            url: "{{ route('product.destroy') }}",
-                            data: $("#selected").serialize(),
-                            beforeSend: function() {},
-                            success: function(res) {
-                                table.ajax.reload();
-                                alert(res.message)
-                            },
-                            error: function(xhr, status, error) {
-                                er = xhr.responseJSON.errors
-                                alert("Server Error")
-                            }
-                        });
-                    }
-                }
+
             }
 
             function selected() {

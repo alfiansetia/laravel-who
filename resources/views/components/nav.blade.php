@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-    <a class="navbar-brand" href="{{ route('product.index') }}">
+    <a class="navbar-brand" href="{{ route('products.index') }}">
         <img src="{{ asset('images/asa.png') }}" height="30" class="d-inline-block align-top" alt="">
         {{-- <b>SAVE</b> --}}
     </a>
@@ -10,11 +10,8 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item <?= $title == 'Dashboard' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('home') }}">Home</a>
-            </li>
             <li class="nav-item <?= $title == 'Data Product' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('product.index') }}">Product</a>
+                <a class="nav-link" href="{{ route('products.index') }}">Product</a>
             </li>
             <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('alamat.index') }}">Alamat</a>
@@ -25,9 +22,6 @@
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
             </li>
-            {{-- <li class="nav-item <?= $title == 'Data Kontak' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('kontak.index') }}">Kontak</a>
-            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
             </li>
