@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
+use PhpOffice\PhpWord\Settings;
 
 class BastController extends Controller
 {
@@ -70,6 +71,7 @@ class BastController extends Controller
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
+        Settings::setOutputEscapingEnabled(true);
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
     }
