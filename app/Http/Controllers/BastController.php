@@ -72,8 +72,9 @@ class BastController extends Controller
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
+        Settings::setOutputEscapingEnabled(true);
+        ob_clean();
         $template->saveAs($path);
-        ob_end_clean();
         return response()->download($path)->deleteFileAfterSend();
     }
 
