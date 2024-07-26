@@ -58,7 +58,6 @@ class BastController extends Controller
 
     private function tanda_terima(Bast $bast)
     {
-        // ob_start();
         $file = public_path('master/tanda_terima.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
@@ -72,8 +71,6 @@ class BastController extends Controller
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
-        // Settings::setOutputEscapingEnabled(true);
-        // ob_clean();
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
     }
@@ -85,11 +82,11 @@ class BastController extends Controller
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
             $text = '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => $text]);
+            array_push($items, ['items' => htmlentities($text)]);
         }
         $template = new TemplateProcessor($file);
-        $template->setValue('name', $bast->name);
-        $template->setValue('city', $bast->city);
+        $template->setValue('name', htmlentities($bast->name));
+        $template->setValue('city', htmlentities($bast->city));
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('training_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
@@ -104,12 +101,12 @@ class BastController extends Controller
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
             $text =  '• ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => $text]);
+            array_push($items, ['items' => htmlentities($text)]);
         }
         $template = new TemplateProcessor($file);
-        $template->setValue('name', $bast->name);
-        $template->setValue('city', $bast->city);
-        $template->setValue('address', $bast->address);
+        $template->setValue('name', htmlentities($bast->name));
+        $template->setValue('city', htmlentities($bast->city));
+        $template->setValue('address', htmlentities($bast->address));
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('bast_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
