@@ -58,22 +58,22 @@ class BastController extends Controller
 
     private function tanda_terima(Bast $bast)
     {
-        ob_start();
+        // ob_start();
         $file = public_path('master/tanda_terima.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
             $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
             $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => $text]);
+            array_push($items, ['items' => htmlentities($text)]);
         }
         $template = new TemplateProcessor($file);
-        $template->setValue('name', $bast->name);
-        $template->setValue('city', $bast->city);
+        $template->setValue('name', htmlentities($bast->name));
+        $template->setValue('city', htmlentities($bast->city));
         $template->cloneBlock('item_block', 0, true, false, $items);
         $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
         $path = public_path('master/' . $name . '.docx');
-        Settings::setOutputEscapingEnabled(true);
-        ob_clean();
+        // Settings::setOutputEscapingEnabled(true);
+        // ob_clean();
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
     }
