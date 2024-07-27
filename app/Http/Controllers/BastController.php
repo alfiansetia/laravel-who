@@ -7,7 +7,6 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
-use PhpOffice\PhpWord\Settings;
 
 class BastController extends Controller
 {
