@@ -48,7 +48,7 @@ class ProductController extends Controller
                     'x_studio_field_i3XMM',
                     'description'
                 ],
-                'limit' => 4000,
+                'limit' => 7000,
                 'sort' => 'default_code ASC',
             ],
             'id' => 353031512

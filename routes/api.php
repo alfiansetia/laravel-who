@@ -17,7 +17,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('products', [ProductController::class, 'index'])->name('api.product.index');
+Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product.sync');
 Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
+Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
@@ -28,7 +30,6 @@ Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
 Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
-Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product.sync');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 

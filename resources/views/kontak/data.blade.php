@@ -10,7 +10,6 @@
                     <thead class="thead-dark">
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
-                            <th>NO PARTNER</th>
                             <th>NAME</th>
                             <th>STREET</th>
                             <th>PHONE</th>
@@ -57,11 +56,8 @@
                         render: function(data, type, row, meta) {
                             return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
                         }
-                    },
-                    {
-                        data: "nomor_partner",
                     }, {
-                        data: "display_name",
+                        data: "name",
                     },
                     {
                         data: "street",
@@ -71,14 +67,20 @@
                     },
                 ],
                 buttons: [{
-                        text: '<i class="fas fa-sync mr-1"></i> Refresh',
+                        text: '<i class="fas fa-sync mr-1"></i>Sync from Odoo',
                         className: 'btn btn-sm btn-danger',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Refresh'
+                            'title': 'Syncronize from Odoo'
                         },
                         action: function(e, dt, node, config) {
-                            table.ajax.reload()
+                            $.post("{{ route('api.kontak.sync') }}")
+                                .done(function(res) {
+                                    table.ajax.reload()
+                                    alert(res.message)
+                                }).fail(function(xhr) {
+                                    alert(xhr.responseJSON.message || 'Odoo Error!')
+                                });
                         }
                     }, {
                         extend: "colvis",

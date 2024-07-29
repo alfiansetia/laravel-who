@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kontak;
 use App\Services\OdooService;
 use Illuminate\Http\Request;
 
@@ -10,47 +11,64 @@ class KontakController extends Controller
 {
     public function index()
     {
-        try {
-            $data = [
-                "jsonrpc" => "2.0",
-                "method" => "call",
-                "params" => [
-                    "model" => "res.partner",
-                    "domain" => [],
-                    "fields" => [
-                        "nomor_partner",
-                        "kode",
-                        "display_name",
-                        "nama_faktur",
-                        "parent_name",
-                        "street",
-                        "kota_id",
-                        "function",
-                        "phone",
-                        "user_id",
-                        "is_company",
-                        "country_id",
-                        "parent_id",
-                        "active"
-                    ],
-                    "limit" => 7000,
-                    "sort" => "",
-                    "context" => [
-                        "lang" => "en_US",
-                        "tz" => "GMT",
-                        "uid" => 192
-                    ],
+        $data = Kontak::orderBy('name', 'ASC')->get();
+        return response()->json(['data' => $data], 200);
+    }
+
+    public function sync()
+    {
+        $data = [
+            "jsonrpc" => "2.0",
+            "method" => "call",
+            "params" => [
+                "model" => "res.partner",
+                "domain" => [],
+                "fields" => [
+                    "nomor_partner",
+                    "kode",
+                    "display_name",
+                    "nama_faktur",
+                    "parent_name",
+                    "street",
+                    "kota_id",
+                    "function",
+                    "phone",
+                    "user_id",
+                    "is_company",
+                    "country_id",
+                    "parent_id",
+                    "active"
                 ],
-                ["id" => 288682884],
-            ];
+                "limit" => 10000,
+                "sort" => "",
+                "context" => [
+                    "lang" => "en_US",
+                    "tz" => "GMT",
+                    "uid" => 192
+                ],
+            ],
+            ["id" => 288682884],
+        ];
+        try {
+            $url_param = '/web/dataset/search_read';
             $service = new OdooService();
-            $response = $service->as_json()->url_param('/web/dataset/search_read')->data($data)->method('POST')->get();
-            return response()->json(['data' => $response['result']['records']]);
+            $json = $service->url_param($url_param)->data($data)->method('POST')->as_json()->get();
+            $records = $json['result']['records'] ?? [];
+            $chunks = array_chunk($records, 100);
+            foreach ($chunks as $chunk) {
+                foreach ($chunk as $item) {
+                    Kontak::query()->updateOrCreate([
+                        'name' => $item['display_name'],
+                    ], [
+                        'name'      => $item['display_name'],
+                        'street'    => $item['street'] ?? '',
+                        'phone'     => $item['phone'],
+                    ]);
+                }
+            }
+            return response()->json(['message' => 'Success!', 'data' => $json['result']],);
         } catch (\Throwable $th) {
-            return response()->json([
-                'data' => [],
-                'message' => $th->getMessage()
-            ], 500);
+            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
     }
 }
