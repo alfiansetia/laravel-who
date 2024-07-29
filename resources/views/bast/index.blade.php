@@ -13,6 +13,7 @@
                             <th>No DO</th>
                             <th>Kepada</th>
                             <th>Kota</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,6 +60,17 @@
                     },
                     {
                         data: "city",
+                    }, {
+                        data: "id",
+                        render: function(data, type, row, meta) {
+                            if (type == 'display') {
+                                let text =
+                                    `<button type="button" class="btn btn-sm btn-danger btn-delete">Delete</button>`
+                                return text
+                            } else {
+                                return data
+                            }
+                        }
                     },
                 ],
                 buttons: [{
@@ -91,9 +103,24 @@
                 ],
             });
 
-            $('#table tbody').on('click', 'tr td', function() {
+            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
                 id = table.row(this).id()
                 window.location.href = "{{ url('bast') }}/" + id + '/edit'
+            });
+
+            $('#table tbody').on('click', '.btn-delete', function() {
+                id = table.row($(this).parents('tr')[0]).id()
+                $.ajax({
+                    url: `{{ route('api.bast.index') }}/${id}`,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert(result.message)
+                        table.ajax.reload()
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON.message || 'Error!')
+                    }
+                })
             });
 
 

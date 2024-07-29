@@ -13,6 +13,7 @@
                             <th>No DO</th>
                             <th>Tujuan</th>
                             <th>Ekspedisi</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,6 +61,17 @@
                     },
                     {
                         data: "ekspedisi",
+                    }, {
+                        data: "id",
+                        render: function(data, type, row, meta) {
+                            if (type == 'display') {
+                                let text =
+                                    `<button type="button" class="btn btn-sm btn-danger btn-delete">Delete</button>`
+                                return text
+                            } else {
+                                return data
+                            }
+                        }
                     },
                 ],
                 buttons: [{
@@ -92,9 +104,25 @@
                 ],
             });
 
-            $('#table tbody').on('click', 'tr td', function() {
+            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
                 id = table.row(this).id()
                 window.location.href = "{{ url('alamat') }}/" + id + '/edit'
+            });
+
+
+            $('#table tbody').on('click', '.btn-delete', function() {
+                id = table.row($(this).parents('tr')[0]).id()
+                $.ajax({
+                    url: `{{ route('api.alamat.index') }}/${id}`,
+                    type: 'DELETE',
+                    success: function(result) {
+                        alert(result.message)
+                        table.ajax.reload()
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON.message || 'Error!')
+                    }
+                })
             });
 
 
