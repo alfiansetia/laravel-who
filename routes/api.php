@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BastController;
 use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
+use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StockController;
@@ -16,6 +17,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('products', [ProductController::class, 'index'])->name('api.product.index');
+Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
 
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
