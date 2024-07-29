@@ -16,6 +16,7 @@ class DetailAlamatController extends Controller
             'product'   => 'required|exists:products,id',
             'qty'       => 'required',
             'lot'       => 'nullable',
+            'desc'      => 'nullable',
         ]);
         if ($validate->fails()) {
             return response()->json(['message' => $validate->getMessageBag()], 422);
@@ -26,6 +27,7 @@ class DetailAlamatController extends Controller
             'product_id'    => $request->product,
             'qty'           => $request->qty,
             'lot'           => $request->lot,
+            'desc'          => $request->desc,
         ]);
         return response()->json(['message' => 'Success!']);
     }
@@ -36,10 +38,12 @@ class DetailAlamatController extends Controller
         $this->validate($request, [
             'qty'       => 'required',
             'lot'       => 'nullable',
+            'desc'      => 'nullable',
         ]);
         $detail_alamat->update([
-            'qty' => $request->qty,
-            'lot' => $request->lot,
+            'qty'   => $request->qty,
+            'lot'   => $request->lot,
+            'desc'  => $request->desc,
         ]);
         return response()->json(['message' => 'Success!']);
     }

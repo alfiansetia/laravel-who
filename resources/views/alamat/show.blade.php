@@ -179,6 +179,9 @@
                     @if (!empty($item->product->name))
                         ({{ $item->product->name }})
                     @endif
+                    @if (!empty($item->desc))
+                        ({{ $item->desc }})
+                    @endif
                     = {{ $item->qty }}
                 </td>
             </tr>

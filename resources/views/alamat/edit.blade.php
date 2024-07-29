@@ -113,6 +113,7 @@
                         <tr>
                             <th>#</th>
                             <th>Product</th>
+                            <th>Desc</th>
                             <th>Qty</th>
                             <th>Lot</th>
                             <th>Aksi</th>
@@ -271,6 +272,8 @@
                         }
                     }
                 }, {
+                    data: "desc",
+                }, {
                     data: "qty",
                 }, {
                     data: "lot",
@@ -303,6 +306,7 @@
                         product: selectedData[0].id,
                         qty: $('#qty_prod').val(),
                         lot: $('#lot_prod').val(),
+                        desc: $('#desc_prod').val(),
                     }
                 }).done(function(result) {
                     $('#product_modal').modal('hide')
@@ -319,7 +323,8 @@
                     url: url,
                     data: {
                         qty: $('#qty_prod_edit').val(),
-                        lot: $('#lot_prod_edit').val()
+                        lot: $('#lot_prod_edit').val(),
+                        desc: $('#desc_prod_edit').val(),
                     }
                 }).done(function(result) {
                     table.ajax.reload()
@@ -352,6 +357,7 @@
                 let data = row.data()
                 $('#qty_prod_edit').val(data.qty)
                 $('#lot_prod_edit').val(data.lot)
+                $('#desc_prod_edit').val(data.desc)
                 $('#form_edit').attr('action', "{{ url('api/detail_alamat/') }}/" + id)
                 $('#edit_modal').modal('show')
             });

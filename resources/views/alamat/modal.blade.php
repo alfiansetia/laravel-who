@@ -14,6 +14,9 @@
                     </select>
                 </div>
                 <div class="form-group mb-2">
+                    <input type="text" class="form-control" id="desc_prod" placeholder="DESCRIPTION">
+                </div>
+                <div class="form-group mb-2">
                     <input type="text" class="form-control" id="qty_prod" value="100 Pcs" placeholder="QTY">
                 </div>
                 <div class="form-group mb-2">
@@ -42,6 +45,9 @@
                 <form action="" id="form_edit">
                     <div class="form-group mb-2">
                         <input type="text" class="form-control" id="qty_prod_edit" placeholder="QTY">
+                    </div>
+                    <div class="form-group mb-2">
+                        <input type="text" class="form-control" id="desc_prod_edit" placeholder="DESCRIPTION">
                     </div>
                     <div class="form-group mb-2">
                         <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED" rows="7"></textarea>
