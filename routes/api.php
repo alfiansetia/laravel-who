@@ -25,6 +25,7 @@ Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
+Route::post('alamat/{alamat}/duplicate', [AlamatController::class, 'duplicate'])->name('api.alamat.duplicate');
 Route::get('alamat/{alamat}/sync', [AlamatController::class, 'sync'])->name('api.alamat.sync');
 Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');

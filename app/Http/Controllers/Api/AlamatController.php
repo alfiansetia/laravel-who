@@ -85,6 +85,19 @@ class AlamatController extends Controller
         return response()->json(['message' => 'success!', 'data' => $alamat]);
     }
 
+    public function duplicate(Alamat $alamat)
+    {
+        $data = $alamat->replicate();
+        $data->save();
+        foreach ($alamat->detail as $item) {
+            $newItem = $item->replicate();
+            $newItem->alamat_id = $data->id;
+            $newItem->save();
+        }
+
+        return response()->json(['message' => 'success!', 'data' => $data]);
+    }
+
     public function sync(Alamat $alamat)
     {
         try {

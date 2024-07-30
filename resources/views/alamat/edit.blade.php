@@ -127,6 +127,7 @@
             <button type="button" id="add" class="btn btn-info">Tambah Product</button>
             <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
             <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
+            <button type="button" id="btn_duplicate" class="btn btn-warning">Duplicate</button>
         </div>
         </form>
     </div>
@@ -403,6 +404,18 @@
                     table.ajax.reload()
                 }).fail(function(xhr) {
                     alert(xhr.responseJSON.message || 'Error!')
+                })
+            })
+
+            $('#btn_duplicate').click(function() {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('api.alamat.duplicate', $data->id) }}",
+                    data: {}
+                }).done(function(result) {
+                    window.open("{{ route('alamat.index') }}/" + result.data.id + '/edit')
+                }).fail(function(xhr) {
+                    alert('error!')
                 })
             })
 
