@@ -9,6 +9,28 @@
 
 <body>
     <style>
+        td.style22 {
+            vertical-align: middle;
+            text-align: left;
+            padding-left: 2px;
+            font-weight: bold;
+            color: #000000;
+            font-family: 'Cambria';
+            font-size: 22pt;
+            background-color: white
+        }
+
+        td.style21 {
+            vertical-align: middle;
+            text-align: left;
+            padding-left: 2px;
+            font-weight: bold;
+            color: #000000;
+            font-family: 'Cambria';
+            font-size: 21pt;
+            background-color: white
+        }
+
         td.style20 {
             vertical-align: middle;
             text-align: left;
@@ -107,7 +129,7 @@
             </td>
         </tr>
         <tr>
-            <td class="style20" rowspan="2" colspan="3">{{ strtoupper($data->tujuan) }}</td>
+            <td class="style22" rowspan="2" colspan="3">{{ strtoupper($data->tujuan) }}</td>
             <td class="style20 kiri-dua kanan-dua bawah-dua" style="color: #FF0000">
                 {!! $data->koli < 1 ? '&nbsp&nbsp' : $data->koli !!} KOLI</td>
         </tr>
