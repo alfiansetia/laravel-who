@@ -93,17 +93,17 @@
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="is_do" value="yes"
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
                                     id="is_do">
-                                <label class="form-check-label" for="is_do">Surat JALAN?</label>
+                                <label class="custom-control-label" for="is_do">Surat JALAN?</label>
                             </div>
                         </div>
                         <div class="form-group col-md-6">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="is_pk" value="yes"
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_pk" value="yes"
                                     id="is_pk">
-                                <label class="form-check-label" for="is_pk">P KAYU ?</label>
+                                <label class="custom-control-label" for="is_pk">P KAYU ?</label>
                             </div>
                         </div>
                     </div>

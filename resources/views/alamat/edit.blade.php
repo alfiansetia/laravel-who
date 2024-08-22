@@ -90,20 +90,19 @@
                                 placeholder="Nilai Barang" value="{{ $data->nilai }}">
                         </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="is_do" value="yes"
-                                    id="is_do" {{ $data->is_do == 'yes' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="is_do">Surat JALAN?</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
+                                    id="is_do" @checked($data->is_do == 'yes')>
+                                <label class="custom-control-label" for="is_do">Surat JALAN?</label>
                             </div>
                         </div>
                         <div class="form-group col-md-6">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="is_pk" value="yes"
-                                    id="is_pk" {{ $data->is_pk == 'yes' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="is_pk">P KAYU ?</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_pk" value="yes"
+                                    id="is_pk" @checked($data->is_pk == 'yes')>
+                                <label class="custom-control-label" for="is_pk">P KAYU ?</label>
                             </div>
                         </div>
                     </div>
