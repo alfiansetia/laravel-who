@@ -7,7 +7,7 @@
 
 </head>
 
-<body>
+<body style="margin: 10pt;">
     <style>
         td.style22 {
             vertical-align: middle;
@@ -234,8 +234,18 @@
         @endif
         @if ($data->is_pk == 'yes')
             <tr>
-                <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4" style="text-align: center">
+                <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4" style="text-align: center;">
                     PACKING KAYU</td>
+            </tr>
+        @endif
+        @if ($data->is_banting == 'yes')
+            <tr>
+                <td class="style70" colspan="4" style="height: 10pt"></td>
+            </tr>
+            <tr>
+                <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4"
+                    style="text-align: center;font-size: 61pt">
+                    JANGAN DIBANTING</td>
             </tr>
         @endif
 

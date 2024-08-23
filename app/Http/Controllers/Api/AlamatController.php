@@ -25,26 +25,28 @@ class AlamatController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'tujuan'    => 'required',
-            'alamat'    => 'required',
-            'do'        => 'required',
-            'is_do'     => 'nullable|in:yes,no',
-            'is_pk'     => 'nullable|in:yes,no',
+            'tujuan'        => 'required',
+            'alamat'        => 'required',
+            'do'            => 'required',
+            'is_do'         => 'nullable|in:yes,no',
+            'is_pk'         => 'nullable|in:yes,no',
+            'is_banting'    => 'nullable|in:yes,no',
         ]);
 
         $param = [
-            'tujuan'    => $request->tujuan,
-            'alamat'    => $request->alamat,
-            'ekspedisi' => $request->ekspedisi,
-            'koli'      => $request->koli,
-            'up'        => $request->up,
-            'tlp'       => $request->tlp,
-            'do'        => $request->do,
-            'epur'      => $request->epur,
-            'untuk'     => $request->untuk,
-            'nilai'     => $request->nilai,
-            'is_do'     => $request->is_do ?? 'no',
-            'is_pk'     => $request->is_pk ?? 'no',
+            'tujuan'        => $request->tujuan,
+            'alamat'        => $request->alamat,
+            'ekspedisi'     => $request->ekspedisi,
+            'koli'          => $request->koli,
+            'up'            => $request->up,
+            'tlp'           => $request->tlp,
+            'do'            => $request->do,
+            'epur'          => $request->epur,
+            'untuk'         => $request->untuk,
+            'nilai'         => $request->nilai,
+            'is_do'         => $request->is_do ?? 'no',
+            'is_pk'         => $request->is_pk ?? 'no',
+            'is_banting'    => $request->is_banting ?? 'no',
         ];
         $alamat = Alamat::create($param);
         return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);
@@ -53,27 +55,29 @@ class AlamatController extends Controller
     public function update(Request $request, Alamat $alamat)
     {
         $this->validate($request, [
-            'tujuan'    => 'required',
-            'alamat'    => 'required',
-            'do'        => 'required',
-            'is_do'     => 'nullable|in:yes,no',
-            'is_pk'     => 'nullable|in:yes,no',
+            'tujuan'        => 'required',
+            'alamat'        => 'required',
+            'do'            => 'required',
+            'is_do'         => 'nullable|in:yes,no',
+            'is_pk'         => 'nullable|in:yes,no',
+            'is_banting'    => 'nullable|in:yes,no',
             // 'detail'    => 'required|array|min:1',
         ]);
 
         $param = [
-            'tujuan'    => $request->tujuan,
-            'alamat'    => $request->alamat,
-            'ekspedisi' => $request->ekspedisi,
-            'koli'      => $request->koli,
-            'up'        => $request->up,
-            'tlp'       => $request->tlp,
-            'do'        => $request->do,
-            'epur'      => $request->epur,
-            'untuk'     => $request->untuk,
-            'nilai'     => $request->nilai,
-            'is_do'     => $request->is_do ?? 'no',
-            'is_pk'     => $request->is_pk ?? 'no',
+            'tujuan'        => $request->tujuan,
+            'alamat'        => $request->alamat,
+            'ekspedisi'     => $request->ekspedisi,
+            'koli'          => $request->koli,
+            'up'            => $request->up,
+            'tlp'           => $request->tlp,
+            'do'            => $request->do,
+            'epur'          => $request->epur,
+            'untuk'         => $request->untuk,
+            'nilai'         => $request->nilai,
+            'is_do'         => $request->is_do ?? 'no',
+            'is_pk'         => $request->is_pk ?? 'no',
+            'is_banting'    => $request->is_banting ?? 'no',
         ];
         $alamat->update($param);
         return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);

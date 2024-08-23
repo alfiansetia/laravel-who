@@ -91,18 +91,25 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
                                     id="is_do" @checked($data->is_do == 'yes')>
-                                <label class="custom-control-label" for="is_do">Surat JALAN?</label>
+                                <label class="custom-control-label" for="is_do">SURAT JALAN</label>
                             </div>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_pk" value="yes"
                                     id="is_pk" @checked($data->is_pk == 'yes')>
-                                <label class="custom-control-label" for="is_pk">P KAYU ?</label>
+                                <label class="custom-control-label" for="is_pk">PACKING KAYU</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_banting" value="yes"
+                                    id="is_banting" @checked($data->is_banting == 'yes')>
+                                <label class="custom-control-label" for="is_banting">JANGAN DIBANTING</label>
                             </div>
                         </div>
                     </div>
@@ -379,6 +386,7 @@
                     nilai: $('#nilai').val(),
                     is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
                     is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
+                    is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
                 }
                 $.ajax({
                     type: 'PUT',
