@@ -41,9 +41,9 @@
                 ],
                 pageLength: 10,
                 lengthChange: false,
-                // order: [
-                //     [0, "asc"]
-                // ],
+                order: [
+                    [0, "desc"]
+                ],
                 columns: [{
                         data: 'id',
                         render: function(data, type, row, meta) {
