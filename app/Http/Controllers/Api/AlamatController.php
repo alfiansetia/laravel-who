@@ -14,7 +14,7 @@ class AlamatController extends Controller
 
     public function index()
     {
-        return response()->json(['message' => '', 'data' => Alamat::all()]);
+        return response()->json(['message' => '', 'data' => Alamat::latest()->get()]);
     }
 
     public function show(Alamat $alamat)
