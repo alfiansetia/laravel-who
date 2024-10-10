@@ -13,6 +13,7 @@
                     <option value="center" selected>CENTER</option>
                     <option value="cbb">CIBUBUR</option>
                     <option value="krtn">KARANTINA</option>
+                    <option value="demo">DEMO</option>
                 </select>
             </div>
             <button type="button" class="btn btn-primary ml-1 mb-2" id="refresh">REFRESH</button>
