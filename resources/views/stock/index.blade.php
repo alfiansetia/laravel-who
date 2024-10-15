@@ -27,6 +27,7 @@
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>QTY</th>
+                            <th>#</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -35,6 +36,38 @@
             </form>
         </div>
     </div>
+
+    <div class="modal fade" id="modal_lot" data-backdrop="static" tabindex="-1" aria-labelledby="modal_lotLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_lotLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover" id="table_lot" style="width: 100%;cursor: pointer;">
+                        <thead>
+                            <tr>
+                                <th>LOCATION</th>
+                                <th>Lot/SN</th>
+                                <th>ED</th>
+                                <th style="width: 30px">QTY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     @if (session()->has('message'))
         <script>
@@ -47,10 +80,12 @@
     @endpush
     <script>
         $(document).ready(function() {
+            var url_index = "{{ route('api.stock.index') }}"
+            var id = 0
             var table = $('#table').DataTable({
-                // rowId: 'id',
+                rowId: 'id',
                 ajax: {
-                    url: "{{ route('api.stock.index') }}",
+                    url: url_index,
                     data: function(dt) {
                         loc = $('#location').val()
                         if (loc.length < 1) {
@@ -85,6 +120,15 @@
                     },
                     {
                         data: "quantity",
+                    }, {
+                        data: "id",
+                        render: function(data, type, row, meta) {
+                            if (type == 'display') {
+                                return `<button type="button" class="btn btn-sm btn-info btn-lot">View</button>`
+                            } else {
+                                return data
+                            }
+                        }
                     },
                 ],
                 buttons: [{
@@ -139,6 +183,110 @@
                         }],
                     }
                 ],
+            });
+
+            $('#table tbody').on('click', 'tr .btn-lot', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                let loc = $('#location').val()
+                if (loc.length < 1) {
+                    loc[0] = 'center'
+                    $('#location').val('center').change()
+                }
+                $('#table_lot').DataTable().clear().destroy();
+                table_lot = $("#table_lot").DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: `${url_index}/${id}`,
+                        data: function(dt) {
+                            loc = $('#location').val()
+                            if (loc.length < 1) {
+                                loc[0] = 'center'
+                                $('#location').val('center').change()
+                            }
+                            dt['location[]'] = loc
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert((jqXHR.responseJSON.message || 'Odoo Error! ') + ', code : ' +
+                                jqXHR
+                                .status)
+                            console.log(jqXHR);
+                        },
+                    },
+                    dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
+                        "<'table-responsive'tr>" +
+                        "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
+                    oLanguage: {
+                        "sSearchPlaceholder": "Search...",
+                        "sLengthMenu": "Results :  _MENU_",
+                    },
+                    lengthMenu: [
+                        [10, 50, 100, 500, 1000],
+                        ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
+                    ],
+                    paging: false,
+                    scrollCollapse: true,
+                    scrollY: '400px',
+                    columns: [{
+                            data: "location",
+                        }, {
+                            data: "lot",
+                        },
+                        {
+                            data: "expired",
+                        }, {
+                            data: "quantity",
+                        },
+                    ],
+                    buttons: [{
+                            extend: "colvis",
+                            attr: {
+                                'data-toggle': 'tooltip',
+                                'title': 'Column Visible'
+                            },
+                            className: 'btn btn-sm btn-primary'
+                        },
+                        {
+                            extend: "collection",
+                            text: '<i class="fas fa-download"></i>Export',
+                            attr: {
+                                'data-toggle': 'tooltip',
+                                'title': 'Export Data'
+                            },
+                            className: 'btn btn-sm btn-primary',
+                            buttons: [{
+                                extend: 'copy',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }, {
+                                extend: 'csv',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }, {
+                                extend: 'pdf',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }, {
+                                extend: 'excel',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }, {
+                                extend: 'print',
+                                exportOptions: {
+                                    columns: ':visible'
+                                }
+                            }],
+                        }
+                    ],
+                });
+
+                $('#modal_lot').modal('show')
+
             });
 
             $('#refresh').click(function() {

@@ -33,6 +33,7 @@ Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.d
 Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
+Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
 
 Route::get('bast/{bast}/sync', [BastController::class, 'sync'])->name('api.bast.sync');
 Route::apiResource('bast', BastController::class)->names('api.bast');

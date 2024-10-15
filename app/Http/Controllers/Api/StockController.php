@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LotResource;
 use App\Http\Resources\StockResource;
 use App\Services\OdooService;
 use Illuminate\Http\Request;
@@ -35,9 +36,17 @@ class StockController extends Controller
                         // ['location_id', 'ilike', 'center']
                     ],
                     'fields' => [
-                        'product_id', 'location_id', 'lot_id', 'itds_expired',
-                        'package_id', 'owner_id', 'reserved_quantity', 'quantity',
-                        'product_uom_id', 'write_date', 'company_id'
+                        'product_id',
+                        'location_id',
+                        'lot_id',
+                        'itds_expired',
+                        'package_id',
+                        'owner_id',
+                        'reserved_quantity',
+                        'quantity',
+                        'product_uom_id',
+                        'write_date',
+                        'company_id'
                     ],
                     'groupby' => ['product_id', 'location_id'],
                     'orderby' => '',
@@ -58,6 +67,70 @@ class StockController extends Controller
             $odoo_service = new OdooService();
             $data = $odoo_service->data($param)->url_param($url_param)->as_json()->method('POST')->get();
             return response()->json(['data' => StockResource::collection($data['result'] ?? [])]);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
+        }
+    }
+
+    public function lot(Request $request, int $id)
+    {
+        $param = [
+            "jsonrpc" => "2.0",
+            "method" => "call",
+            "params" => [
+                "model" => "stock.quant",
+                "domain" => [
+                    [
+                        "product_id",
+                        "in",
+                        [
+                            intval($id),
+                        ]
+                    ],
+                ],
+                "fields" => [
+                    "product_id",
+                    "location_id",
+                    "lot_id",
+                    "itds_expired",
+                    "package_id",
+                    "owner_id",
+                    "reserved_quantity",
+                    "quantity",
+                    "product_uom_id",
+                    "write_date",
+                    "company_id"
+                ],
+                "limit" => 5000,
+                "sort" => "",
+                "context" => [
+                    "lang" => "en_US",
+                    "tz" => "GMT",
+                    "uid" => 192,
+                    "active_model" => "product.template",
+                    "active_id" => 21418,
+                    "active_ids" => [
+                        21418
+                    ],
+                    "search_default_internal_loc" => 1,
+                    "search_disable_custom_filters" => true
+                ]
+            ],
+            "id" => 520742991
+        ];
+        for ($i = 0; $i < (count($request->location ?? []) - 1); $i++) {
+            array_push($param['params']['domain'], '|');
+        }
+
+        foreach ($request->location ?? [] as $item) {
+            array_push($param['params']['domain'], ['location_id', 'ilike', $item]);
+        }
+        try {
+            $url_param = '/web/dataset/search_read';
+            $odoo_service = new OdooService();
+            $data = $odoo_service->data($param)->url_param($url_param)->as_json()->method('POST')->get();
+            // return response()->json($data);
+            return response()->json(['data' => LotResource::collection($data['result']['records'] ?? [])]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
