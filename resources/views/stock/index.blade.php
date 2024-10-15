@@ -188,11 +188,14 @@
             $('#table tbody').on('click', 'tr .btn-lot', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(row).data().id
+                let code = table.row(row).data().code
+                let name = table.row(row).data().name
                 let loc = $('#location').val()
                 if (loc.length < 1) {
                     loc[0] = 'center'
                     $('#location').val('center').change()
                 }
+                $('#modal_lotLabel').html(`Lot/SN : ${code} ${name}`)
                 $('#table_lot').DataTable().clear().destroy();
                 table_lot = $("#table_lot").DataTable({
                     processing: true,
