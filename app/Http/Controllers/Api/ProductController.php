@@ -64,6 +64,7 @@ class ProductController extends Controller
                     Product::query()->updateOrCreate([
                         'code' => $item['default_code'],
                     ], [
+                        'odoo_id'   => $item['id'],
                         'code'      => $item['default_code'],
                         'name'      => $item['name'] ?? null,
                         'akl'       => $item['akl_id'] != false ? $item['akl_id'][1] : null,

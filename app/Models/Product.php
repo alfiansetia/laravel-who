@@ -13,5 +13,6 @@ class Product extends Model
 
     protected $casts = [
         'id'        => 'integer',
+        'odoo_id'   => 'integer',
     ];
 }
