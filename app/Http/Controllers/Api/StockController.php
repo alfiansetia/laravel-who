@@ -74,6 +74,10 @@ class StockController extends Controller
 
     public function lot(Request $request, int $id)
     {
+        $limit = 10;
+        if ($request->filled('limit')) {
+            $limit = intval($request->limit);
+        }
         $param = [
             "jsonrpc" => "2.0",
             "method" => "call",
@@ -101,7 +105,7 @@ class StockController extends Controller
                     "write_date",
                     "company_id"
                 ],
-                "limit" => 5000,
+                "limit" => $limit,
                 "sort" => "",
                 "context" => [
                     "lang" => "en_US",

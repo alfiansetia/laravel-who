@@ -21,13 +21,13 @@
 
         <div class="responsive">
             <form id="selected">
-                <table class="table table-sm table-hover" id="table" style="width: 100%;">
+                <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                     <thead class="thead-dark">
                         <tr>
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>QTY</th>
-                            <th>#</th>
+                            {{-- <th>#</th> --}}
                         </tr>
                     </thead>
                     <tbody>
@@ -120,16 +120,17 @@
                     },
                     {
                         data: "quantity",
-                    }, {
-                        data: "id",
-                        render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                return `<button type="button" class="btn btn-sm btn-info btn-lot">View</button>`
-                            } else {
-                                return data
-                            }
-                        }
                     },
+                    // {
+                    //     data: "id",
+                    //     render: function(data, type, row, meta) {
+                    //         if (type == 'display') {
+                    //             return `<button type="button" class="btn btn-sm btn-info btn-lot">View</button>`
+                    //         } else {
+                    //             return data
+                    //         }
+                    //     }
+                    // },
                 ],
                 buttons: [{
                         extend: "colvis",
@@ -185,11 +186,18 @@
                 ],
             });
 
-            $('#table tbody').on('click', 'tr .btn-lot', function() {
+            $('#table tbody').on('click', 'tr td', function() {
+                //     id = table.row(this).id()
+                //     window.location.href = "{{ url('alamat') }}/" + id + '/edit'
+                // });
+
+                // $('#table tbody').on('click', 'tr .btn-lot', function() {
                 row = $(this).parents('tr')[0];
-                id = table.row(row).data().id
+                id = table.row(this).id()
+                // id = table.row(row).data().id
                 let code = table.row(row).data().code
                 let name = table.row(row).data().name
+                var qty = table.row(row).data().quantity
                 let loc = $('#location').val()
                 if (loc.length < 1) {
                     loc[0] = 'center'
@@ -209,6 +217,7 @@
                                 $('#location').val('center').change()
                             }
                             dt['location[]'] = loc
+                            dt['limit'] = qty
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                             alert((jqXHR.responseJSON.message || 'Odoo Error! ') + ', code : ' +
