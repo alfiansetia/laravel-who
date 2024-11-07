@@ -120,25 +120,25 @@
                 $.get('{{ route('api.monitor.do') }}').done(function(result) {
                     let i = 1;
                     result.data.forEach(item => {
-                        table.row.add([
-                            i++,
-                            jam(item.confirmation_date_so),
-                            item.name,
-                            item.origin,
-                            '',
-                            '',
-                            item.note_to_wh
-                        ]).draw()
+                        // table.row.add([
+                        //     i++,
+                        //     jam(item.confirmation_date_so),
+                        //     item.name,
+                        //     item.origin,
+                        //     '',
+                        //     '',
+                        //     item.note_to_wh
+                        // ]).draw()
 
                         item.move_ids_without_package_detail.forEach(detail => {
                             table.row.add([
-                                '',
-                                '',
-                                '',
+                                i++,
+                                jam(item.confirmation_date_so),
+                                item.name,
                                 item.origin,
                                 detail.product_id[1],
                                 detail.product_uom_qty,
-                                ''
+                                item.note_to_wh
                             ]).draw()
                         });
                     });
