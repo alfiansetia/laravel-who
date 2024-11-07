@@ -11,6 +11,7 @@
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
                             <th>TGL</th>
+                            <th>NO DO</th>
                             <th>NO SO</th>
                             <th>ITEM</th>
                             <th>QTY</th>
@@ -122,6 +123,7 @@
                         table.row.add([
                             i++,
                             jam(item.confirmation_date_so),
+                            item.name,
                             item.origin,
                             '',
                             '',
@@ -130,6 +132,7 @@
 
                         item.move_ids_without_package_detail.forEach(detail => {
                             table.row.add([
+                                '',
                                 '',
                                 '',
                                 item.origin,
