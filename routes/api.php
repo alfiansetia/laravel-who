@@ -38,3 +38,5 @@ Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot')
 Route::get('bast/{bast}/sync', [BastController::class, 'sync'])->name('api.bast.sync');
 Route::apiResource('bast', BastController::class)->names('api.bast');
 Route::apiResource('detail_bast', DetailBastController::class)->names('api.detail_bast');
+
+Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');

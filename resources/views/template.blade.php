@@ -86,6 +86,12 @@
     </script>
 @endif
 <script>
+    function bloc() {
+        $.blockUI({
+            message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...'
+        });
+    }
+
     $(document).ready(function() {
         $(document).ajaxStart(function() {
             $.blockUI({

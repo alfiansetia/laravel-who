@@ -23,7 +23,7 @@ class OdooService
         $setting = Setting::first();
         $session = $setting->odoo_session ?? '';
         $this->session = $session;
-        $this->base_url_odoo = env('ODOO_DOMAIN');
+        $this->base_url_odoo = config('services.odoo.base_url');
         $this->as_json();
     }
 

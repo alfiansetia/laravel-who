@@ -1,4 +1,7 @@
 <?php
+
+use Illuminate\Support\Carbon;
+
 function terbilang($x)
 {
     $angka = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
@@ -28,4 +31,13 @@ function xmlEntities($str)
     $str = str_replace($html, $xml, $str);
     $str = str_ireplace($html, $xml, $str);
     return $str;
+}
+
+
+function jam($date, $hours = 7)
+{
+    if (empty($str)) {
+        return '';
+    }
+    return Carbon::parse($date)->addHours($hours)->toDateTimeString();
 }

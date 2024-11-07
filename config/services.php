@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'odoo' => [
+        'base_url' => env('ODOO_DOMAIN')
+    ]
+
 ];
