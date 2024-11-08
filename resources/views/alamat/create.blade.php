@@ -90,6 +90,12 @@
                                 placeholder="Nilai Barang" value="">
                         </div>
                     </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="note">NOTE</label>
+                            <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250"></textarea>
+                        </div>
+                    </div>
 
                     <div class="form-row">
                         <div class="form-group col-md-4">
@@ -225,6 +231,7 @@
                         epur: $('#epur').val(),
                         untuk: $('#untuk').val(),
                         nilai: $('#nilai').val(),
+                        note: $('#note').val(),
                         is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
                         is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
                         is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',

@@ -249,6 +249,17 @@
             </tr>
         @endif
 
+        @if (!empty($data->note))
+            <tr>
+                <td class="style70" colspan="4" style="height: 10pt"></td>
+            </tr>
+            <tr>
+                <td class="style22 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4"
+                    style="text-align: center; color: #FF0000">
+                    {{ $data->note }}</td>
+            </tr>
+        @endif
+
     </table>
 
 

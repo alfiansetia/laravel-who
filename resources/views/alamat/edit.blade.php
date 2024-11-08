@@ -91,6 +91,12 @@
                         </div>
                     </div>
                     <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="note">NOTE</label>
+                            <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250">{{ $data->note }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group col-md-4">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
@@ -384,6 +390,7 @@
                     epur: $('#epur').val(),
                     untuk: $('#untuk').val(),
                     nilai: $('#nilai').val(),
+                    note: $('#note').val(),
                     is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
                     is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
                     is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
