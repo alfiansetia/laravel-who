@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\KontakController;
+use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StockController;
@@ -40,3 +41,5 @@ Route::apiResource('bast', BastController::class)->names('api.bast');
 Route::apiResource('detail_bast', DetailBastController::class)->names('api.detail_bast');
 
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
+
+Route::apiResource('problem', ProblemController::class)->names('api.problem');

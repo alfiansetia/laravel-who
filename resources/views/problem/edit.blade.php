@@ -1,0 +1,438 @@
+@extends('template')
+@push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
+@endpush
+
+@section('content')
+    <div class="container-fluid">
+
+        <div class="card card-primary mt-3">
+            <div class="card-header">
+                <h3 class="card-title">{{ $title }} </h3>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
+                                value="{{ $data->do ?? 'CENT/OUT/' }}">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary" id="btn_get_do">GET</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
+                            <option value="">Pilih</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ route('alamat.update', $data->id) }}" id="form">
+                @csrf
+                @method('PUT')
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="tujuan">Tujuan</label>
+                            <textarea name="tujuan" id="tujuan" class="form-control" placeholder="Tujuan" rows="4" required>{{ $data->tujuan }}</textarea>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="alamat">Alamat</label>
+                            <textarea name="alamat" id="alamat" class="form-control" placeholder="Alamat" rows="4" required>{{ $data->alamat }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="ekspedisi">Ekspedisi</label>
+                            <input type="text" name="ekspedisi" id="ekspedisi" class="form-control"
+                                placeholder="Ekspedisi" value="{{ $data->ekspedisi }}">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="koli">Jumlah Koli</label>
+                            <input type="number" name="koli" id="koli" class="form-control" min="1"
+                                placeholder="Jumlah Koli" value="{{ $data->koli }}" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="up">UP</label>
+                            <input type="text" name="up" id="up" class="form-control" placeholder="UP"
+                                value="{{ $data->up }}">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="tlp">Tlp</label>
+                            <input type="text" name="tlp" id="tlp" class="form-control" placeholder="Tlp"
+                                value="{{ $data->tlp }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="do">No DO</label>
+                            <input type="text" name="do" id="do" class="form-control" placeholder="No DO"
+                                value="{{ $data->do }}" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="epur">Epurchasing</label>
+                            <input type="text" name="epur" id="epur" class="form-control"
+                                placeholder="Epurchasing" value="{{ $data->epur }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="untuk">Untuk</label>
+                            <input type="text" name="untuk" id="untuk" class="form-control"
+                                placeholder="Untuk" value="{{ $data->untuk }}">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="nilai">Nilai Barang</label>
+                            <input type="text" name="nilai" id="nilai" class="form-control"
+                                placeholder="Nilai Barang" value="{{ $data->nilai }}">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="note">NOTE</label>
+                            <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250">{{ $data->note }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
+                                    id="is_do" @checked($data->is_do == 'yes')>
+                                <label class="custom-control-label" for="is_do">SURAT JALAN</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_pk" value="yes"
+                                    id="is_pk" @checked($data->is_pk == 'yes')>
+                                <label class="custom-control-label" for="is_pk">PACKING KAYU</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_banting" value="yes"
+                                    id="is_banting" @checked($data->is_banting == 'yes')>
+                                <label class="custom-control-label" for="is_banting">JANGAN DIBANTING</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table" id="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Desc</th>
+                            <th>Qty</th>
+                            <th>Lot</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+        </div>
+
+        <div class="card-footer">
+            <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
+            <button type="button" id="add" class="btn btn-info">Tambah Product</button>
+            <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
+            <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
+            <button type="button" id="btn_duplicate" class="btn btn-warning">Duplicate</button>
+        </div>
+        </form>
+    </div>
+    @include('alamat.modal')
+    @if (session()->has('message'))
+        <script>
+            alert("{{ session('message') }}")
+        </script>
+    @endif
+
+    @push('js')
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @endpush
+
+    <script>
+        var id = '';
+        var data = [];
+        $(document).ready(function() {
+            $.get("{{ route('api.product.index') }}").done(function(res) {
+                for (let i = 0; i < res.data.length; i++) {
+                    let option = new Option(`${res.data[i].code} ${res.data[i].name || ''}`, res.data[i].id,
+                        true, true);
+                    $('#select_product').append(option);
+                    $('#select_product2').append(option);
+                }
+            });
+
+            $('#btn_get_do').click(function() {
+                let param = $('#input_do').val()
+                $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
+                    $('#select_do').empty()
+                    $('#select_do').append('<option value="">Pilih</option>');
+                    for (let i = 0; i < res.data.records.length; i++) {
+                        let name = res.data.records[i].name
+                        if (res.data.records[i].group_id != false) {
+                            name += ' (' + res.data.records[i].group_id[1] + ')'
+                        }
+                        if (res.data.records[i].partner_id != false) {
+                            name += ' ' + res.data.records[i].partner_id[1]
+                        }
+                        let option = new Option(name, res.data.records[i].id,
+                            true, true);
+                        $('#select_do').append(option);
+                    }
+                    $('#select_do').val('')
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
+                });
+            })
+            $('#select_do').select2({
+                theme: 'bootstrap4',
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                if (data[0].id == '') {
+                    return;
+                }
+                let sid = data[0].id
+                $.get("{{ url('api/do') }}/" + sid).done(function(res) {
+                    if (res.data.length > 0) {
+                        let tujuan = ''
+                        let ekspedisi = ''
+                        let up = ''
+                        let name = ''
+                        let epur = ''
+                        if (res.data[0].partner_id != false) {
+                            tujuan = res.data[0].partner_id[1]
+                        }
+                        if (res.data[0].ekspedisi_id != false) {
+                            ekspedisi = res.data[0].ekspedisi_id[1]
+                        }
+                        if (res.data[0].delivery_manual != false) {
+                            up = res.data[0].delivery_manual
+                        }
+                        if (res.data[0].name != false) {
+                            name = res.data[0].name
+                        }
+                        if (res.data[0].no_aks != false) {
+                            epur = res.data[0].no_aks
+                        }
+                        let alamat = res.data[0].partner_address
+                        if (res.data[0].partner_address2 != false) {
+                            alamat += '\n' + res.data[0].partner_address2
+                        }
+                        if (res.data[0].partner_address3 != false) {
+                            alamat += '\n' + res.data[0].partner_address3
+                        }
+                        if (res.data[0].partner_address4 != false) {
+                            alamat += '\n' + res.data[0].partner_address4
+                        }
+
+                        $('#do').val(name)
+                        $('#up').val(up)
+                        $('#alamat').val(alamat)
+                        $('#tujuan').val(tujuan)
+                        $('#ekspedisi').val(ekspedisi)
+                        $('#epur').val(epur)
+
+                    }
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
+                });
+
+            });
+
+            $('#select_product').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $("#product_modal"),
+            })
+
+            $('#select_product2').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $("#edit_modal"),
+            })
+
+            var table = $('#table').DataTable({
+                ajax: {
+                    url: "{{ route('api.alamat.show', $data->id) }}",
+                    dataSrc: function(result) {
+                        return result.data.detail
+                    }
+                },
+                searching: false,
+                info: false,
+                lengthChange: false,
+                paging: false,
+                rowId: 'id',
+                columns: [{
+                    data: 'id',
+                    render: function(data, type, row, meta) {
+                        if (type == 'display') {
+                            return meta.row + meta.settings._iDisplayStart + 1;
+                        } else {
+                            return data
+                        }
+                    }
+                }, {
+                    data: "product_id",
+                    render: function(data, type, row, meta) {
+                        if (type == 'display') {
+                            return row.product.code + ' ' + (row.product.name || '')
+                        } else {
+                            return data
+                        }
+                    }
+                }, {
+                    data: "desc",
+                }, {
+                    data: "qty",
+                }, {
+                    data: "lot",
+                }, {
+                    data: "id",
+                    className: "text-center",
+                    render: function(data, type, row, meta) {
+                        return `<button type="button" class="btn btn-sm btn-warning mr-1 edit">Edit</button><button type="button" class="btn btn-sm btn-primary hapus">Hapus</button>`
+                    }
+                }]
+            })
+
+            $('#add').click(function() {
+                $('#product_modal').modal('show')
+            })
+
+
+            $('#btn_modal_save').click(function() {
+                var selectedData = $('#select_product').select2('data');
+                var selectedText = selectedData[0].text;
+                if (selectedData[0].id == '') {
+                    alert('Imput product')
+                    return
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('api.detail_alamat.store') }}",
+                    data: {
+                        alamat: "{{ $data->id }}",
+                        product: selectedData[0].id,
+                        qty: $('#qty_prod').val(),
+                        lot: $('#lot_prod').val(),
+                        desc: $('#desc_prod').val(),
+                    }
+                }).done(function(result) {
+                    $('#product_modal').modal('hide')
+                    table.ajax.reload()
+                }).fail(function(xhr) {
+                    alert('error!')
+                })
+            })
+
+            $('#btn_modal_save_edit').click(function() {
+                let url = $('#form_edit').attr('action')
+                $.ajax({
+                    type: 'PUT',
+                    url: url,
+                    data: {
+                        qty: $('#qty_prod_edit').val(),
+                        lot: $('#lot_prod_edit').val(),
+                        desc: $('#desc_prod_edit').val(),
+                    }
+                }).done(function(result) {
+                    table.ajax.reload()
+                    $('#edit_modal').modal('hide')
+                }).fail(function(xhr) {
+                    alert('error!')
+                })
+            })
+
+            $('#table tbody').on('click', '.hapus', function() {
+                var row = table.row($(this).closest('tr'));
+                id = row.id();
+                // row.remove().draw(true);
+                let url = "{{ url('api/detail_alamat') }}/" + id
+                $.ajax({
+                    type: 'DELETE',
+                    url: url,
+                }).done(function(result) {
+                    table.ajax.reload()
+                    $('#edit_modal').modal('hide')
+                }).fail(function(xhr) {
+                    alert('error!')
+                })
+
+            });
+
+            $('#table tbody').on('click', '.edit', function() {
+                var row = table.row($(this).closest('tr'));
+                id = row.id();
+                let data = row.data()
+                $('#qty_prod_edit').val(data.qty)
+                $('#lot_prod_edit').val(data.lot)
+                $('#desc_prod_edit').val(data.desc)
+                $('#form_edit').attr('action', "{{ url('api/detail_alamat/') }}/" + id)
+                $('#edit_modal').modal('show')
+            });
+
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                let dt = table.rows().data().toArray();
+                let data = {
+                    // detail: dt,
+                    tujuan: $('#tujuan').val(),
+                    alamat: $('#alamat').val(),
+                    ekspedisi: $('#ekspedisi').val(),
+                    koli: $('#koli').val(),
+                    up: $('#up').val(),
+                    tlp: $('#tlp').val(),
+                    do: $('#do').val(),
+                    epur: $('#epur').val(),
+                    untuk: $('#untuk').val(),
+                    nilai: $('#nilai').val(),
+                    note: $('#note').val(),
+                    is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
+                    is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
+                    is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
+                }
+                $.ajax({
+                    type: 'PUT',
+                    url: "{{ route('api.alamat.update', $data->id) }}",
+                    data: data,
+                    beforeSend: function() {},
+                    success: function(res) {
+                        window.open("{{ route('alamat.show', $data->id) }}", '_blank')
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message);
+                    }
+                });
+            })
+
+            $('#btn_sync').click(function() {
+                let url = "{{ route('api.alamat.sync', $data->id) }}"
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                }).done(function(result) {
+                    table.ajax.reload()
+                }).fail(function(xhr) {
+                    alert(xhr.responseJSON.message || 'Error!')
+                })
+            })
+
+            $('#btn_duplicate').click(function() {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('api.alamat.duplicate', $data->id) }}",
+                    data: {}
+                }).done(function(result) {
+                    window.open("{{ route('alamat.index') }}/" + result.data.id + '/edit')
+                }).fail(function(xhr) {
+                    alert('error!')
+                })
+            })
+
+        });
+    </script>
+@endsection
