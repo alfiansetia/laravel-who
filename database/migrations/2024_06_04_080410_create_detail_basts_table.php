@@ -18,7 +18,7 @@ class CreateDetailBastsTable extends Migration
             $table->unsignedBigInteger('bast_id');
             $table->unsignedBigInteger('product_id');
             $table->string('qty')->default(0);
-            $table->enum('satuan', ['Pcs', 'Pck', 'Unit', 'EA', 'Box'])->default('Pcs');
+            $table->enum('satuan', ['Pcs', 'Pck', 'Unit', 'EA', 'Box', 'Btl', 'Vial'])->default('Pcs');
             $table->string('lot')->nullable();
             $table->timestamps();
             $table->foreign('bast_id')->references('id')->on('basts')->cascadeOnDelete()->cascadeOnUpdate();
