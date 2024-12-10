@@ -27,8 +27,8 @@
                             <option value="Unit">Unit</option>
                             <option value="EA">EA</option>
                             <option value="Box">Box</option>
-                            <option value="Box">Btl</option>
-                            <option value="Box">Vial</option>
+                            <option value="Btl">Btl</option>
+                            <option value="Vial">Vial</option>
                         </select>
                     </div>
                 </div>
