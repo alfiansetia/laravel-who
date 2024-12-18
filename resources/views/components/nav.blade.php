@@ -31,6 +31,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url('admin') }}">Admin</a>
+            </li>
         </ul>
     </div>
 </nav>

@@ -28,7 +28,17 @@ class ProblemController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $problem = Problem::create($request->only([
+            'date',
+            'number',
+            'type',
+            'stock',
+            'ri_po',
+            'status',
+            'email_on',
+            'pic',
+        ]));
+        return redirect()->route('problem.edit', $problem->id);
     }
 
     /**
@@ -44,7 +54,8 @@ class ProblemController extends Controller
      */
     public function edit(Problem $problem)
     {
-        //
+        $data = $problem->load(['items.product', 'logs']);
+        return view('problem.edit', compact('data'))->with('title', 'Data Problem');
     }
 
     /**
@@ -52,7 +63,17 @@ class ProblemController extends Controller
      */
     public function update(Request $request, Problem $problem)
     {
-        //
+        $problem->update($request->only([
+            'date',
+            'number',
+            'type',
+            'stock',
+            'ri_po',
+            'status',
+            'email_on',
+            'pic',
+        ]));
+        return redirect()->route('problem.edit', $problem->id);
     }
 
     /**
