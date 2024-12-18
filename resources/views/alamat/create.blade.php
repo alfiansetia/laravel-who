@@ -95,6 +95,11 @@
                             <label for="note">NOTE</label>
                             <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250"></textarea>
                         </div>
+
+                        <div class="form-group col-md-6">
+                            <label for="note">NOTE WH</label>
+                            <div class="text-danger font-weight-bold" id="n_t_wh"></div>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -177,6 +182,7 @@
                             let up = ''
                             let name = ''
                             let epur = ''
+                            let note_to_wh = ''
                             if (res.data[0].partner_id != false) {
                                 tujuan = res.data[0].partner_id[1]
                             }
@@ -202,6 +208,10 @@
                             if (res.data[0].partner_address4 != false) {
                                 alamat += '\n' + res.data[0].partner_address4
                             }
+                            if (res.data[0].note_to_wh != false) {
+                                note_to_wh = res.data[0].note_to_wh
+                                note_to_wh = note_to_wh.replace(/\n/g, '<br>');
+                            }
 
                             $('#do').val(name)
                             $('#up').val(up)
@@ -209,6 +219,9 @@
                             $('#tujuan').val(tujuan)
                             $('#ekspedisi').val(ekspedisi)
                             $('#epur').val(epur)
+                            $('#n_t_wh').html(note_to_wh)
+                            console.log(note_to_wh);
+
 
                         }
                     }).fail(function(xhr) {

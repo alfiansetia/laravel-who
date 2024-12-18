@@ -95,6 +95,10 @@
                             <label for="note">NOTE</label>
                             <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250">{{ $data->note }}</textarea>
                         </div>
+                        <div class="form-group col-md-6">
+                            <label for="note">NOTE WH</label>
+                            <div class="text-danger font-weight-bold" id="n_t_wh"></div>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-4">
@@ -204,6 +208,7 @@
                         let up = ''
                         let name = ''
                         let epur = ''
+                        let note_to_wh = ''
                         if (res.data[0].partner_id != false) {
                             tujuan = res.data[0].partner_id[1]
                         }
@@ -230,12 +235,18 @@
                             alamat += '\n' + res.data[0].partner_address4
                         }
 
+                        if (res.data[0].note_to_wh != false) {
+                            note_to_wh = res.data[0].note_to_wh
+                            note_to_wh = note_to_wh.replace(/\n/g, '<br>');
+                        }
+
                         $('#do').val(name)
                         $('#up').val(up)
                         $('#alamat').val(alamat)
                         $('#tujuan').val(tujuan)
                         $('#ekspedisi').val(ekspedisi)
                         $('#epur').val(epur)
+                        $('#n_t_wh').text(note_to_wh)
 
                     }
                 }).fail(function(xhr) {
