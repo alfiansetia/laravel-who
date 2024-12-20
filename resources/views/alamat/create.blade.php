@@ -74,6 +74,9 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label for="epur">Epurchasing</label>
+                            <input type="radio" name="ep" onclick="setEpur('Pembelian Offline')"> PO
+                            <input type="radio" name="ep" onclick="setEpur('Pembelian Reguler')"> REG
+                            <input type="radio" name="ep" checked onclick="setEpur('')"> NULL
                             <input type="text" name="epur" id="epur" class="form-control"
                                 placeholder="Epurchasing" value="">
                         </div>
@@ -144,6 +147,9 @@
         @endpush
 
         <script>
+            function setEpur(val) {
+                $('#epur').val(val)
+            }
             $(document).ready(function() {
                 $('#btn_get_do').click(function() {
                     let param = $('#input_do').val()
@@ -220,7 +226,7 @@
                             $('#ekspedisi').val(ekspedisi)
                             $('#epur').val(epur)
                             $('#n_t_wh').html(note_to_wh)
-                            console.log(note_to_wh);
+                            // console.log(note_to_wh);
 
 
                         }
