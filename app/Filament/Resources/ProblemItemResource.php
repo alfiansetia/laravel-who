@@ -10,6 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -38,6 +39,8 @@ class ProblemItemResource extends Resource
                 Select::make('product_id')
                     ->label('Product')
                     ->relationship('product', 'code')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 TextInput::make('qty')
                     ->label('Quantity')

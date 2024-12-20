@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('products.index');
-});
+})->name('index');
 
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');

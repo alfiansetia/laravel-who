@@ -141,6 +141,7 @@ class ProblemResource extends Resource
             ])
             ->defaultSort('id')
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -163,6 +164,7 @@ class ProblemResource extends Resource
         return [
             'index' => Pages\ListProblems::route('/'),
             'create' => Pages\CreateProblem::route('/create'),
+            'view' => Pages\ViewProblem::route('/{record}'),
             'edit' => Pages\EditProblem::route('/{record}/edit'),
         ];
     }
