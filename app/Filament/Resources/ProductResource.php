@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -54,6 +55,8 @@ class ProductResource extends Resource
             ])
             ->filters([
                 //
+                SelectFilter::make('akl')
+                    ->label('Filter by AKL'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -63,7 +66,8 @@ class ProductResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->searchable();
+            ->searchable()
+            ->defaultSort('code', 'asc');
     }
 
     public static function getRelations(): array

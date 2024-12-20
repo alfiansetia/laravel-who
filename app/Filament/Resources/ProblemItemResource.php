@@ -78,7 +78,8 @@ class ProblemItemResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->searchable();
+            ->searchable()
+            ->defaultSort('id', 'desc');
     }
 
     public static function getRelations(): array

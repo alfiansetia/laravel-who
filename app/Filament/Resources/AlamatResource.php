@@ -27,6 +27,7 @@ class AlamatResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+
     public static function form(Form $form): Form
     {
         return $form
@@ -111,7 +112,8 @@ class AlamatResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->searchable();
+            ->searchable()
+            ->defaultSort('id', 'desc');
     }
 
     public static function getRelations(): array
