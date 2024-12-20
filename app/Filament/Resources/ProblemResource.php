@@ -164,9 +164,9 @@ class ProblemResource extends Resource
     {
         return [
             'index' => Pages\ListProblems::route('/'),
-            'create' => Pages\CreateProblem::route('/create'),
-            'view' => Pages\ViewProblem::route('/{record}'),
-            'edit' => Pages\EditProblem::route('/{record}/edit'),
+            // 'create' => Pages\CreateProblem::route('/create'),
+            // 'view' => Pages\ViewProblem::route('/{record}'),
+            // 'edit' => Pages\EditProblem::route('/{record}/edit'),
         ];
     }
 }

@@ -14,6 +14,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -105,6 +107,7 @@ class AlamatResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -127,8 +130,20 @@ class AlamatResource extends Resource
     {
         return [
             'index' => Pages\ListAlamats::route('/'),
-            'create' => Pages\CreateAlamat::route('/create'),
-            'edit' => Pages\EditAlamat::route('/{record}/edit'),
+            // 'create' => Pages\CreateAlamat::route('/create'),
+            // 'edit' => Pages\EditAlamat::route('/{record}/edit'),
         ];
     }
+
+
+    // public static function infolist(Infolist $infolist): Infolist
+    // {
+    //     return $infolist
+    //         ->schema([
+    //             TextEntry::make('tujuan'),
+    //             TextEntry::make('do'),
+    //             TextEntry::make('alamat')
+    //                 ->columnSpanFull(),
+    //         ]);
+    // }
 }
