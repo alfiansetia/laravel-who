@@ -63,8 +63,8 @@ class BastResource extends Resource
     {
         return [
             'index' => Pages\ListBasts::route('/'),
-            'create' => Pages\CreateBast::route('/create'),
-            'edit' => Pages\EditBast::route('/{record}/edit'),
+            // 'create' => Pages\CreateBast::route('/create'),
+            // 'edit' => Pages\EditBast::route('/{record}/edit'),
         ];
     }
 }
