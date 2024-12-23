@@ -55,7 +55,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->brandLogo(asset('images/asa.png'))
+            ])
+            ->brandLogo(asset('images/asa.png'))
+            ->favicon(asset('images/asa.png'))
             ->homeUrl('/')
             ->simpleProfilePage(true)
             ->profile();
