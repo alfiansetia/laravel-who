@@ -100,7 +100,7 @@ class ProblemResource extends Resource
                     ])
                     ->columnSpan('full')
                     ->columns(2)
-                    ->required()
+                    // ->required()
                     ->addActionLabel('Add New Log'),
             ]);
     }
@@ -111,11 +111,11 @@ class ProblemResource extends Resource
             ->columns([
                 TextColumn::make('date')->label('Date')->date()->searchable(),
                 TextColumn::make('number')->label('Number')->searchable(),
-                TextColumn::make('type')->label('Type'),
+                // TextColumn::make('type')->label('Type'),
                 TextColumn::make('stock')->label('Stock'),
-                TextColumn::make('status')->label('Status'),
                 TextColumn::make('email_on')->label('Email On')->date(),
                 TextColumn::make('pic')->label('PIC'),
+                TextColumn::make('status')->label('Status'),
                 // TextColumn::make('created_at')->label('Created At')->dateTime()->sortable(),
                 TextColumn::make('items_count')
                     ->label('Total Items')
