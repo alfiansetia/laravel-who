@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\KontakController;
+use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SettingController;
@@ -43,3 +44,7 @@ Route::apiResource('detail_bast', DetailBastController::class)->names('api.detai
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 
 Route::apiResource('problem', ProblemController::class)->names('api.problem');
+
+Route::get('po', [POController::class, 'index'])->name('api.po.index');
+Route::get('po/order-line', [POController::class, 'order_line'])->name('api.po.order_line');
+Route::get('po/{id}', [POController::class, 'detail'])->name('api.po.detail');

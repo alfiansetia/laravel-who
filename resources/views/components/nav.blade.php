@@ -28,6 +28,9 @@
             <li class="nav-item <?= $title == 'Monitor DO' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('monitor.do') }}">DO</a>
             </li>
+            <li class="nav-item <?= $title == 'PO' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('po.index') }}">PO</a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
             </li>

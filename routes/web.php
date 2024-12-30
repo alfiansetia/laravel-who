@@ -5,6 +5,7 @@ use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KontakController;
+use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
@@ -35,3 +36,5 @@ Route::get('monitor-do', function () {
 
 
 Route::resource('problem', ProblemController::class);
+
+Route::get('po', [POController::class, 'index'])->name('po.index');

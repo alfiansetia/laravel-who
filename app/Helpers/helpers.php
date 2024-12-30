@@ -41,3 +41,38 @@ function jam($date, $hours = 7)
     }
     return Carbon::parse($date)->addHours($hours)->toDateTimeString();
 }
+
+function pecah_code($string)
+{
+    if (!is_array($string)) {
+        return [0, '-', '-'];
+    }
+    if (count($string) ?? [] > 0) {
+        $id = $string[0];
+        if (is_array($string) && isset($string[1])) {
+            $productString = $string[1];
+            preg_match('/\[(.*?)\] (.*)/', $productString, $matches);
+
+            if (isset($matches[1])) {
+                $code = $matches[1];
+            }
+
+            if (isset($matches[2])) {
+                $name = $matches[2];
+            }
+        }
+        return [$id, $code, $name];
+    } else {
+        return [0, '', ''];
+    }
+}
+
+
+function get_name($string)
+{
+    if (is_array($string) && count($string) ?? [] > 0) {
+        if (isset($string[1])) {
+            return $string[1];
+        }
+    }
+}

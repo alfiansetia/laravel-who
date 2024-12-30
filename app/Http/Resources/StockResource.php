@@ -15,25 +15,10 @@ class StockResource extends JsonResource
     public function toArray($request)
     {
         // return parent::toArray($request);
-
-        $code = '';
-        $name = '';
-        $id = '';
-        if (count($this['product_id']) ?? [] > 0) {
-            $id = $this['product_id'][0];
-            if (isset($this['product_id'][1])) {
-                $productString = $this['product_id'][1];
-                preg_match('/\[(.*?)\] (.*)/', $productString, $matches);
-
-                if (isset($matches[1])) {
-                    $code = $matches[1];
-                }
-
-                if (isset($matches[2])) {
-                    $name = $matches[2];
-                }
-            }
-        }
+        $pecah_code = pecah_code($this['product_id']);
+        $id = $pecah_code[0];
+        $code = $pecah_code[1];
+        $name = $pecah_code[2];
         return [
             'id'        => $id,
             'quantity'  => $this['quantity'],
