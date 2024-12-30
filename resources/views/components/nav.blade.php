@@ -9,7 +9,7 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav mx-auto">
             <li class="nav-item <?= $title == 'Data Product' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('products.index') }}">Product</a>
             </li>
@@ -25,17 +25,19 @@
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
             </li>
-            <li class="nav-item <?= $title == 'Monitor DO' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('monitor.do') }}">DO</a>
-            </li>
-            <li class="nav-item <?= $title == 'PO' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('po.index') }}">PO</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#modal_env">Setting</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('admin') }}">Admin</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
+                    aria-expanded="false">
+                    Other
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('monitor.do') }}">Monitor SO</a>
+                    <a class="dropdown-item" href="{{ route('po.index') }}">PO</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal"
+                        data-target="#modal_env">Setting</a>
+                    <a class="dropdown-item" href="{{ url('admin') }}">Admin</a>
+                </div>
             </li>
         </ul>
     </div>
