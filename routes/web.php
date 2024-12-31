@@ -8,6 +8,7 @@ use App\Http\Controllers\KontakController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RIController;
 use App\Http\Controllers\StockController;
 use App\Services\DoMonitorService;
 use Illuminate\Support\Facades\Route;
@@ -38,3 +39,4 @@ Route::get('monitor-do', function () {
 Route::resource('problem', ProblemController::class);
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
+Route::get('ri', [RIController::class, 'index'])->name('ri.index');

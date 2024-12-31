@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StockController;
 use Illuminate\Http\Request;
@@ -48,3 +49,7 @@ Route::apiResource('problem', ProblemController::class)->names('api.problem');
 Route::get('po', [POController::class, 'index'])->name('api.po.index');
 Route::get('po/order-line', [POController::class, 'order_line'])->name('api.po.order_line');
 Route::get('po/{id}', [POController::class, 'detail'])->name('api.po.detail');
+
+Route::get('ri', [RIController::class, 'index'])->name('api.ri.index');
+Route::get('ri/order-line', [RIController::class, 'order_line'])->name('api.ri.order_line');
+Route::get('ri/{id}', [RIController::class, 'detail'])->name('api.ri.detail');

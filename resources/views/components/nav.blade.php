@@ -33,6 +33,7 @@
                 <div class="dropdown-menu">
                     <a class="dropdown-item" href="{{ route('monitor.do') }}">Monitor SO</a>
                     <a class="dropdown-item" href="{{ route('po.index') }}">PO</a>
+                    <a class="dropdown-item" href="{{ route('ri.index') }}">RI</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal"
                         data-target="#modal_env">Setting</a>

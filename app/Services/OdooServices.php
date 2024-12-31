@@ -59,8 +59,8 @@ class OdooServices
             'content-type'      => 'application/json',
             'x-requested-with'  => 'XMLHttpRequest',
             'Accept-Encoding'   => 'gzip, deflate',
-            'Cookie'            => 'session_id=' .  static::get_session(),
         ];
+        static::set_cookie();
         return new static;
     }
 
@@ -68,7 +68,7 @@ class OdooServices
     {
         static::$state_file = true;
         static::$headers = [];
-        static::$headers['Cookie'] = 'session_id=' .  static::get_session();
+        static::set_cookie();
         return new static;
     }
 
@@ -77,19 +77,25 @@ class OdooServices
         return static::$headers;
     }
 
+    public static function set_cookie()
+    {
+        static::$headers['Cookie'] = 'session_id=' .  static::get_session();
+        return new static;
+    }
+
     public static function get()
     {
-        static::$base_url_odoo = config('services.odoo.base_url');
-        $url = static::$base_url_odoo . static::$url_param;
+        $base_url = static::get_base_url_odoo();
+        $url = $base_url . static::$url_param;
         $http = Http::withHeaders(static::$headers);
         if (static::$method === 'POST') {
             $response = $http->post($url,  static::$data_param);
         } else {
             $response = $http->get($url);
         }
-        // if (!$response->successful()) {
-        //     $response->throw();
-        // }
+        if (!$response->successful()) {
+            $response->throw();
+        }
         if (static::$state_file) {
             return $response;
         }
