@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class LotResource extends JsonResource
 {
@@ -22,6 +23,14 @@ class LotResource extends JsonResource
         $id = $pecah_code[0];
         $code = $pecah_code[1];
         $name = $pecah_code[2];
+        $expired = $this['itds_expired'];
+        try {
+            $expired = Carbon::createFromFormat('Y-m-d H:i:s', $this['itds_expired'], 'UTC')
+                ->setTimezone('Asia/Jakarta')
+                ->format('Y.m.d');
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
         return [
             'id'        => $id,
             'quantity'  => $this['quantity'],
@@ -29,7 +38,9 @@ class LotResource extends JsonResource
             'name'      => $name,
             'location'  => $loc,
             'lot'       => $lot,
-            'expired'   => $this['itds_expired'],
+            'expired'   => $expired,
+            'expired_ori'   => $this['itds_expired'],
+
         ];
     }
 }
