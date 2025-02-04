@@ -44,6 +44,7 @@ class PoResource extends JsonResource
         return [
             'id'        => $id,
             'quantity'  => $this['product_qty'],
+            'qty_ri'    => $this['qty_received'],
             'code'      => $code,
             'name'      => $name,
             'akl'       => $akl,

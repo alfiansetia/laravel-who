@@ -54,6 +54,7 @@
                                 <th>Desc</th>
                                 <th>AKL</th>
                                 <th style="width: 30px">QTY</th>
+                                <th style="width: 30px">QTY RI</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -224,6 +225,8 @@
                             data: "akl",
                         }, {
                             data: "quantity",
+                        }, {
+                            data: "qty_ri",
                         },
                     ],
                     buttons: [{
