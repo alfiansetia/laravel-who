@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Services\OdooServices;
 use Exception;
 
-class DOServices extends OdooServices
+class DoServices extends OdooServices
 {
     public function __construct() {}
 
