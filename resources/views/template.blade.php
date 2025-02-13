@@ -54,6 +54,10 @@
     <script src="https://cdn.jsdelivr.net/npm/block-ui@2.70.1/jquery.blockUI.min.js"></script>
     @stack('js')
 
+    <div id="notif">
+
+    </div>
+
     @yield('content')
 
     <div class="modal fade" id="modal_env" tabindex="-1" aria-labelledby="modal_envLabel" aria-hidden="true">
@@ -86,6 +90,26 @@
     </script>
 @endif
 <script>
+    function danger(message) {
+        let alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>`
+        $('#notif').html(alert)
+    }
+
+    function success(message) {
+        let alert = `<div class="alert alert-success alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>`
+        $('#notif').html(alert)
+    }
+
     function bloc() {
         $.blockUI({
             message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...'
@@ -158,9 +182,11 @@
         navigator.serviceWorker.register('/firebase-messaging-sw.js')
             .then(registration => {
                 console.log("✅ Service Worker terdaftar:", registration);
+                success('✅ Notifikasi sudah siap. 😁👍')
             })
             .catch(err => {
                 console.log("❌ Service Worker gagal:", err);
+                danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
             });
     }
 
@@ -172,7 +198,7 @@
         if (permission === "granted") {
             messaging.getToken().then(token => {
                 console.log("✅ Token FCM:", token);
-
+                success('✅ Notifikasi sudah siap. 😁👍')
                 fetch("{{ route('token.store') }}", {
                         method: "POST",
                         headers: {
@@ -187,9 +213,11 @@
                     .catch(err => console.error("❌ Error mengirim token:", err));
             }).catch(err => {
                 console.log("❌ Gagal mendapatkan token:", err);
+                danger('❌ Gagal Atur Notifikasi 😓')
             });
         } else {
             console.log("❌ Izin notifikasi ditolak.");
+            danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
         }
     });
 
