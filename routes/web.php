@@ -40,3 +40,8 @@ Route::resource('problem', ProblemController::class);
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
+
+
+Route::get('tes', function () {
+    return view('tes');
+});

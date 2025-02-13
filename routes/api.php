@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BastController;
 use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
+use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
@@ -53,3 +54,18 @@ Route::get('po/{id}', [POController::class, 'detail'])->name('api.po.detail');
 Route::get('ri', [RIController::class, 'index'])->name('api.ri.index');
 Route::get('ri/order-line', [RIController::class, 'order_line'])->name('api.ri.order_line');
 Route::get('ri/{id}', [RIController::class, 'detail'])->name('api.ri.detail');
+
+
+Route::apiResource('token', FcmTokenController::class)->only(['index', 'show', 'store', 'delete']);
+
+Route::get('firebase-config', function () {
+    return response()->json([
+        'apiKey'            => config('services.firebase.api_key'),
+        'authDomain'        => config('services.firebase.auth_domain'),
+        'projectId'         => config('services.firebase.project_id'),
+        'storageBucket'     => config('services.firebase.storage_bucket'),
+        'messagingSenderId' => config('services.firebase.messaging_sender_id'),
+        'appId'             => config('services.firebase.app_id'),
+        'measurementId'     => config('services.firebase.measurement_id'),
+    ]);
+});
