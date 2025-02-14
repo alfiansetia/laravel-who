@@ -54,7 +54,7 @@
     <script src="https://cdn.jsdelivr.net/npm/block-ui@2.70.1/jquery.blockUI.min.js"></script>
     @stack('js')
 
-    <div id="notif">
+    <div id="notif" class="mt-2 pl-3 pr-3">
 
     </div>
 
@@ -100,9 +100,20 @@
         $('#notif').html(alert)
     }
 
+    function test_notif() {
+        new Notification('✅ Dah Masuk niii. 😁👍', {
+            body: 'Ini Tes Notif dari saye...',
+            icon: "images/asa.png",
+            vibrate: [200, 100, 200],
+        });
+    }
+
     function success(message) {
         let alert = `<div class="alert alert-success alert-dismissible fade show" role="alert">
-            ${message}
+            ${message} 
+            <button type="button" class="btn btn-sm btn-primary" onclick="test_notif()">
+                Cobain
+            </button>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
