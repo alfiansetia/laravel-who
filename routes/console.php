@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schedule;
 
 
 Schedule::command('app:monitor-do')->everyMinute()->onSuccess(function () {
-    Log::info('Cronjob Monitor DO berhasil dijalankan');
+    // Log::info('Cronjob Monitor DO berhasil dijalankan');
 })->onFailure(function () {
-    Log::error('Cronjob Monitor DO Gagal dijalankan');
+    // Log::error('Cronjob Monitor DO Gagal dijalankan');
 });
