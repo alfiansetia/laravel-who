@@ -19,4 +19,11 @@ class AtkController extends Controller
     {
         return view('atk.import')->with(['title' => 'Import Data ATK']);
     }
+
+    public function eksport(Atk $atk)
+    {
+        // $data = Atk::with('transactions')->get();
+        $data = $atk->load('transactions');
+        return view('atk.export', compact('data'))->with(['title' => 'Import Data ATK']);
+    }
 }

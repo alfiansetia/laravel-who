@@ -43,7 +43,7 @@ Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
-
+Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.eksport');
 
 Route::get('tes', function () {
     return view('tes');
