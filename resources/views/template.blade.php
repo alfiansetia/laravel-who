@@ -89,6 +89,20 @@
         alert("{{ session('message') }}")
     </script>
 @endif
+
+
+<script>
+    if (!("Notification" in window)) {
+        console.log("This browser does not support desktop notification");
+    } else if (Notification.permission === "granted") {
+        console.log("ok");
+    } else if (Notification.permission !== "denied") {
+        console.log("false");
+    } else {
+        console.log('off')
+    }
+</script>
+
 <script>
     function danger(message) {
         let alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -123,14 +137,16 @@
 
     function bloc() {
         $.blockUI({
-            message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...'
+            message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...',
+            baseZ: 2000,
         });
     }
 
     $(document).ready(function() {
         $(document).ajaxStart(function() {
             $.blockUI({
-                message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...'
+                message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...',
+                baseZ: 2000,
             });
         }).ajaxStop($.unblockUI);
         bsCustomFileInput.init()
@@ -189,58 +205,63 @@
 
 <script>
     // Registrasi Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js')
-            .then(registration => {
-                console.log("✅ Service Worker terdaftar:", registration);
-                success('✅ Notifikasi sudah siap. 😁👍')
-            })
-            .catch(err => {
-                console.log("❌ Service Worker gagal:", err);
-                danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
-            });
-    }
-
-    firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
-
-    // Minta izin notifikasi
-    Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-            messaging.getToken().then(token => {
-                console.log("✅ Token FCM:", token);
-                success('✅ Notifikasi sudah siap. 😁👍')
-                fetch("{{ route('token.store') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            token: token,
-                            topic: "general"
-                        })
-                    }).then(response => response.json())
-                    .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))
-                    .catch(err => console.error("❌ Error mengirim token:", err));
-            }).catch(err => {
-                console.log("❌ Gagal mendapatkan token:", err);
-                danger('❌ Gagal Atur Notifikasi 😓')
-            });
-        } else {
-            console.log("❌ Izin notifikasi ditolak.");
-            danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
+    try {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+                .then(registration => {
+                    console.log("✅ Service Worker terdaftar:", registration);
+                    success('✅ Notifikasi sudah siap. 😁👍')
+                })
+                .catch(err => {
+                    console.log("❌ Service Worker gagal:", err);
+                    danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
+                });
         }
-    });
 
-    // Hilangkan new Notification(), cukup log saja
-    messaging.onMessage(payload => {
-        console.log("🔔 Notifikasi diterima (foreground):", payload);
-        new Notification(payload.notification.title, {
-            body: payload.notification.body,
-            icon: "images/asa.png",
-            vibrate: [200, 100, 200],
+        firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+
+        // Minta izin notifikasi
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                messaging.getToken().then(token => {
+                    console.log("✅ Token FCM:", token);
+                    success('✅ Notifikasi sudah siap. 😁👍')
+                    fetch("{{ route('token.store') }}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                token: token,
+                                topic: "general"
+                            })
+                        }).then(response => response.json())
+                        .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))
+                        .catch(err => console.error("❌ Error mengirim token:", err));
+                }).catch(err => {
+                    console.log("❌ Gagal mendapatkan token:", err);
+                    danger('❌ Gagal Atur Notifikasi 😓')
+                });
+            } else {
+                console.log("❌ Izin notifikasi ditolak.");
+                danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
+            }
         });
-    });
+
+        // Hilangkan new Notification(), cukup log saja
+        messaging.onMessage(payload => {
+            console.log("🔔 Notifikasi diterima (foreground):", payload);
+            new Notification(payload.notification.title, {
+                body: payload.notification.body,
+                icon: "images/asa.png",
+                vibrate: [200, 100, 200],
+            });
+        });
+        success('✅ Notifikasi sudah siap. 😁👍')
+    } catch (err) {
+        danger('❌ Notifikasi belum siap 😓, ' + err.message)
+    }
 </script>
 
 

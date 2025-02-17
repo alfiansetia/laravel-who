@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlamatController;
+use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
@@ -40,6 +41,8 @@ Route::resource('problem', ProblemController::class);
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
+Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
+Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
 
 
 Route::get('tes', function () {

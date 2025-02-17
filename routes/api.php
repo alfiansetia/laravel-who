@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AlamatController;
+use App\Http\Controllers\Api\AtkController;
+use App\Http\Controllers\Api\AtkTransactionController;
 use App\Http\Controllers\Api\BastController;
 use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
@@ -55,6 +57,9 @@ Route::get('ri', [RIController::class, 'index'])->name('api.ri.index');
 Route::get('ri/order-line', [RIController::class, 'order_line'])->name('api.ri.order_line');
 Route::get('ri/{id}', [RIController::class, 'detail'])->name('api.ri.detail');
 
+Route::apiResource('atk', AtkController::class)->names('api.atk');
+Route::post('atk-import', [AtkController::class, 'import'])->name('api.atk.import');
+Route::apiResource('atk-trx', AtkTransactionController::class)->names('api.atktrx');
 
 Route::apiResource('token', FcmTokenController::class)->only(['index', 'show', 'store', 'delete']);
 
