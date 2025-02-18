@@ -4,6 +4,7 @@ use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
+use App\Http\Controllers\FormqcController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\POController;
@@ -44,6 +45,9 @@ Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
 Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.eksport');
+
+Route::get('form-qc/', [FormqcController::class, 'create'])->name('qc.create');
+Route::post('form-qc/', [FormqcController::class, 'store'])->name('qc.store');
 
 Route::get('tes', function () {
     return view('tes');

@@ -16,9 +16,9 @@
             <li class="nav-item <?= $title == 'Data Stock' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('stock.index') }}">Stock</a>
             </li>
-            {{-- <li class="nav-item <?= $title == 'Data ATK' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('atk.index') }}">ATK</a>
-            </li> --}}
+            <li class="nav-item <?= $title == 'Form QC' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('qc.create') }}">QC</a>
+            </li>
             <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('alamat.index') }}">Alamat</a>
             </li>
