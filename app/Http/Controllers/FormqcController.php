@@ -20,20 +20,23 @@ class FormqcController extends Controller
     {
         // dd($request->all());
         try {
+            $data_kel = array_values($request->kelengkapan ?? []);
+            $data_kel_radio = array_values($request->kelengkapan_radio ?? []);
+            $data_kel_desc = array_values($request->kelengkapan_desc ?? []);
 
             $file = public_path('master/qc.docx');
             $template = new TemplateProcessor($file);
             $kel_row = 24;
-            $total = count($request->kelengkapan ?? []);
+            $total = count($data_kel);
             $template->cloneRow('kel_v', $kel_row);
 
             $i = 1;
-            foreach ($request->kelengkapan ?? [] as $index => $row) {
+            foreach ($data_kel as $index => $row) {
                 $i = $index + 1;
                 $template->setValue("kel_v#$i", $row);
-                $template->setValue("kel_y#$i", $request->kelengkapan_radio[$index] == 'yes' ? 'v' : '');
-                $template->setValue("kel_n#$i", $request->kelengkapan_radio[$index] == 'no' ? 'v' : '');
-                $template->setValue("kel_d#$i", $request->kelengkapan_desc[$index]);
+                $template->setValue("kel_y#$i", $data_kel_radio[$index] == 'yes' ? 'v' : '');
+                $template->setValue("kel_n#$i", $data_kel_radio[$index] == 'no' ? 'v' : '');
+                $template->setValue("kel_d#$i", $data_kel_desc[$index]);
             }
             for ($j = $total + 1; $j <= $kel_row; $j++) {
                 $template->setValue("kel_v#$j", '');
