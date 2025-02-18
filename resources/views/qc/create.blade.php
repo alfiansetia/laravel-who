@@ -247,7 +247,7 @@
                                             <input type="text" name="kelengkapan[${number}]" class="form-control" value="${text}" required>
                                     </div>
                                 </div>
-                                <div class="col-sm-3 text-center">
+                                <div class="col-sm-4 text-center">
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}1"
                                             class="custom-control-input" value="yes">
