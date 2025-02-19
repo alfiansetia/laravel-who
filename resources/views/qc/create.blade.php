@@ -59,6 +59,13 @@
                     <div class="row">
                         <div class="col-6">
                             <div class="form-group row">
+                                <label for="no" class="col-sm-2 col-form-label">NO</label>
+                                <div class="col-sm-10">
+                                    <input name="no" type="number" class="form-control" id="no" value="1"
+                                        min="1" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
                                 <label for="tgl" class="col-sm-2 col-form-label">Tgl</label>
                                 <div class="col-sm-10">
                                     <input name="tgl" type="date" class="form-control" id="tgl"
@@ -95,8 +102,8 @@
                             <div class="form-group row">
                                 <label for="qty" class="col-sm-2 col-form-label">QTY</label>
                                 <div class="col-sm-10">
-                                    <input name="qty" type="text" class="form-control" id="qty" value="1 Unit"
-                                        required>
+                                    <input name="qty" type="text" class="form-control" id="qty"
+                                        value="1 Unit" required>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -137,7 +144,6 @@
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </div>
         </form>
-
 
         <div class="card card-primary mt-3 mb-3">
             <div class="card-header">
@@ -247,7 +253,7 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td>QC sblmnya</td>
+                            <td>QC Sebelumnya</td>
                             <td id="t_qc_sbl"></td>
                             <td></td>
                             <td></td>
@@ -403,6 +409,27 @@
             $(id).remove()
         }
 
+        function get_prefix(str) {
+            let pref = str.includes('.') ? str.split('.')[0] : str;
+            let pl = pref.toLowerCase()
+            const lookup = {
+                'bdf': 'BEDFONT',
+                'djo': 'CHATTANOOGA',
+                'glb': 'GENERAL LIFE B',
+                'hc': 'HISENSE',
+                'ibd': 'INBODY',
+                'cw': 'CAREWELL',
+                'jpd': 'JUMPER',
+                'mrid': 'MINDRAY',
+                'lfn': 'LIFOTRONIC',
+                'pts': 'POLIMER TECHNOLOGY',
+                'nox': 'NOXBOX',
+                'nx': 'NOXBOX',
+                'var': 'VARITEKS',
+            };
+            return lookup[pref.toLowerCase()] || pref;
+        }
+
         function get_data() {
             let data = $('#select_product').select2('data');
             if (data[0].id == '') {
@@ -413,7 +440,7 @@
             }
             let sdata = data[0].element.dataset
             $('#nama_alat').val(sdata.name)
-            $('#merk').val(sdata.code)
+            $('#merk').val(get_prefix(sdata.code))
             $('#tipe').val(sdata.code)
         }
 

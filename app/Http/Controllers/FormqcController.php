@@ -91,7 +91,8 @@ class FormqcController extends Controller
                 'reagen_3d' => htmlspecialchars($request->reagen_desc[3]),
             ]);
 
-            $name = Str::slug('QC_' . $tgl . '_' . $request->type . '_' . $request->name, '_');
+            $no = $request->no;
+            $name = "$no. " . Str::slug($tgl . '_' . $request->type . '_' . $request->name, '_');
             $path = public_path('master/' . $name . '.docx');
             $template->saveAs($path);
             return response()->download($path)->deleteFileAfterSend();
