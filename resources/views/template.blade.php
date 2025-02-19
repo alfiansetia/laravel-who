@@ -254,7 +254,7 @@
             console.log("🔔 Notifikasi diterima (foreground):", payload);
             new Notification(payload.notification.title, {
                 body: payload.notification.body,
-                icon: "images/asa.png",
+                icon: "{{ asset('images/asa.png') }}",
                 vibrate: [200, 100, 200],
             });
         });
