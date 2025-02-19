@@ -1,0 +1,37 @@
+importScripts("https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js");
+
+// Konfigurasi Firebase
+firebase.initializeApp({
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: ""
+});
+
+const messaging = firebase.messaging();
+
+// Tangani notifikasi background
+messaging.onBackgroundMessage(payload => {
+    console.log("🔔 Notifikasi background:", payload);
+
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: "images/asa.png",
+        vibrate: [200, 100, 200],
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Tangani klik notifikasi agar membuka halaman web tertentu
+self.addEventListener("notificationclick", event => {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow("/")
+    );
+});
