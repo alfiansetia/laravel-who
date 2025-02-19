@@ -154,6 +154,7 @@
                 <table class="table table-sm table-bordered">
                     <thead>
                         <tr>
+                            <th>NO</th>
                             <th colspan="2">Description</th>
                             <th>Fisik Alat / Reagen</th>
                             <th>Baik</th>
@@ -169,6 +170,7 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <td class="text-center" id="t_no">1</td>
                             <td>Nama Alat</td>
                             <td id="t_name"></td>
                             <td>Kondisi Fisik</td>
@@ -183,6 +185,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>Merk</td>
                             <td id="t_merk"></td>
                             <td>Pembungkus Alat</td>
@@ -197,6 +200,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>Tipe</td>
                             <td id="t_type"></td>
                             <td>Pengaman Alat</td>
@@ -211,6 +215,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>Nomor SN / LOT</td>
                             <td id="t_sn"></td>
                             <td>Kondisi Kardus</td>
@@ -225,6 +230,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>Qty</td>
                             <td id="t_qty"></td>
                             <td>Akl di Alat</td>
@@ -239,6 +245,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>Jenis QC</td>
                             <td id="t_jenis"></td>
                             <td>Akl di Dus</td>
@@ -253,6 +260,7 @@
                             <td></td>
                         </tr>
                         <tr>
+                            <td></td>
                             <td>QC Sebelumnya</td>
                             <td id="t_qc_sbl"></td>
                             <td></td>
@@ -456,6 +464,7 @@
             })
 
             function generate_table() {
+                $('#t_no').html($('#no').val())
                 $('#t_name').html($('#nama_alat').val())
                 $('#t_merk').html($('#merk').val())
                 $('#t_type').html($('#tipe').val())
