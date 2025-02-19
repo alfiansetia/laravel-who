@@ -133,9 +133,137 @@
             <div class="card-footer">
                 <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
                 <a href="{{ route('qc.create') }}" class="btn btn-warning">Refresh</a>
+                <button type="button" id="btn_get_table" class="btn btn-info">Buat Tabel</button>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </div>
         </form>
+
+
+        <div class="card card-primary mt-3 mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Table</h3>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th colspan="2">Description</th>
+                            <th>Fisik Alat / Reagen</th>
+                            <th>Baik</th>
+                            <th>Tidak Ada</th>
+                            <th>Pemeriksaan Strip / Alat / Reagen</th>
+                            <th>Baik</th>
+                            <th>Tidak Ada</th>
+                            <th>Kelengkapan Alat Sesuai Order</th>
+                            <th>Ada</th>
+                            <th>Tidak Ada</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Nama Alat</td>
+                            <td id="t_name"></td>
+                            <td>Kondisi Fisik</td>
+                            <td class="text-center" id="t_f0_y"></td>
+                            <td class="text-center" id="t_f0_n"></td>
+                            <td>Strip ( Keakuratan )</td>
+                            <td class="text-center" id="t_r0_y"></td>
+                            <td class="text-center" id="t_r0_n"></td>
+                            <td>Buku Manual</td>
+                            <td class="text-center" id="t_k0_y"></td>
+                            <td class="text-center" id="t_k0_n"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Merk</td>
+                            <td id="t_merk"></td>
+                            <td>Pembungkus Alat</td>
+                            <td class="text-center" id="t_f1_y"></td>
+                            <td class="text-center" id="t_f1_n"></td>
+                            <td>Reagen ( Suhu )</td>
+                            <td class="text-center" id="t_r1_y"></td>
+                            <td class="text-center" id="t_r1_n"></td>
+                            <td>Kabel Power</td>
+                            <td class="text-center" id="t_k1_y"></td>
+                            <td class="text-center" id="t_k1_n"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Tipe</td>
+                            <td id="t_type"></td>
+                            <td>Pengaman Alat</td>
+                            <td class="text-center" id="t_f2_y"></td>
+                            <td class="text-center" id="t_f2_n"></td>
+                            <td>Fungsi Alat ( On/Off )</td>
+                            <td class="text-center" id="t_r2_y"></td>
+                            <td class="text-center" id="t_r2_n"></td>
+                            <td>SOP</td>
+                            <td class="text-center" id="t_k2_y"></td>
+                            <td class="text-center" id="t_k2_n"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Nomor SN / LOT</td>
+                            <td id="t_sn"></td>
+                            <td>Kondisi Kardus</td>
+                            <td class="text-center" id="t_f3_y"></td>
+                            <td class="text-center" id="t_f3_n"></td>
+                            <td>Kerja Alat</td>
+                            <td class="text-center" id="t_r3_y"></td>
+                            <td class="text-center" id="t_r3_n"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Qty</td>
+                            <td id="t_qty"></td>
+                            <td>Akl di Alat</td>
+                            <td class="text-center" id="t_f4_y"></td>
+                            <td class="text-center" id="t_f4_n"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Jenis QC</td>
+                            <td id="t_jenis"></td>
+                            <td>Akl di Dus</td>
+                            <td class="text-center" id="t_f5_y"></td>
+                            <td class="text-center" id="t_f5_n"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>QC sblmnya</td>
+                            <td id="t_qc_sbl"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     </div>
     @if (session()->has('message'))
@@ -160,14 +288,14 @@
         generate_form_fisik('Penempelan penandaan AKL dialat')
         generate_form_fisik('Penempelan nomor izin edar pada dus')
 
-        generate_form_reagen('Pemeriksaan keakuratan ')
-        generate_form_reagen('Pemeriksaan suhu ')
-        generate_form_reagen('Panel saklar ON/OFF ')
-        generate_form_reagen('Sistem kerja alat ')
+        generate_form_reagen('Pemeriksaan keakuratan')
+        generate_form_reagen('Pemeriksaan suhu')
+        generate_form_reagen('Panel saklar ON/OFF')
+        generate_form_reagen('Sistem kerja alat')
 
-        generate_form_kelengkapan('Buku Manual Bahasa Indonesia ')
-        generate_form_kelengkapan('Kabel Power ')
-        generate_form_kelengkapan('SOP ')
+        generate_form_kelengkapan('Buku Manual Bahasa Indonesia')
+        generate_form_kelengkapan('Kabel Power')
+        generate_form_kelengkapan('SOP')
 
 
         function generate_form_fisik(text) {
@@ -295,6 +423,37 @@
             }).on('change', function() {
                 get_data()
             });
+
+            $('#btn_get_table').click(function() {
+                generate_table()
+            })
+
+            function generate_table() {
+                $('#t_name').html($('#nama_alat').val())
+                $('#t_merk').html($('#merk').val())
+                $('#t_type').html($('#tipe').val())
+                $('#t_sn').html($('#sn_lot').val())
+                $('#t_qty').html($('#qty').val())
+                $('#t_jenis').html($('#jenis').val())
+                $('#t_qc_sbl').html($('#qc_sebelumnya').val())
+                for (let i = 0; i < 6; i++) {
+                    let state = $(`input[name="fisik_radio[${i}]"]:checked`).val();
+                    $(`#t_f${i}_y`).html(state == 'yes' ? 'v' : '')
+                    $(`#t_f${i}_n`).html(state == 'no' ? 'v' : '')
+                }
+
+                for (let i = 0; i < 4; i++) {
+                    let state = $(`input[name="reagen_radio[${i}]"]:checked`).val();
+                    $(`#t_r${i}_y`).html(state == 'yes' ? 'v' : '')
+                    $(`#t_r${i}_n`).html(state == 'no' ? 'v' : '')
+                }
+
+                for (let i = 0; i < 3; i++) {
+                    let state = $(`input[name="kelengkapan_radio[${i}]"]:checked`).val();
+                    $(`#t_k${i}_y`).html(state == 'yes' ? 'v' : '')
+                    $(`#t_k${i}_n`).html(state == 'no' ? 'v' : '')
+                }
+            }
 
             // $('#form').submit(function(e) {
             //     e.preventDefault();
