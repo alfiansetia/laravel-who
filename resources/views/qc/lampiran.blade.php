@@ -7,10 +7,10 @@
         <table class="table table-sm table-bordered">
             <thead>
                 <tr>
-                    <td colspan="5" id="l_code">Kode Barang</td>
+                    <td colspan="5" id="l_code">Kode Barang : </td>
                 </tr>
                 <tr>
-                    <td colspan="5" id="l_name">Nama Barang</td>
+                    <td colspan="5" id="l_name">Nama Barang : </td>
                 </tr>
                 <tr>
                     <td></td>
