@@ -23,7 +23,11 @@
             @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">{{ $title }} </h3>
+                    <h3 class="card-title">{{ $title }} <button class="btn btn-primary" type="button"
+                            data-toggle="collapse" data-target="#collapse_form" aria-expanded="false"
+                            aria-controls="collapse_form">
+                            Show
+                        </button></h3>
                     <div class="row">
                         <div class="form-group col-md-6">
                             <div class="input-group">
@@ -55,7 +59,7 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="row">
+                    <div class="row collapse" id="collapse_form">
                         <div class="col-6">
                             <div class="form-group row">
                                 <label for="no" class="col-sm-2 col-form-label">NO</label>
