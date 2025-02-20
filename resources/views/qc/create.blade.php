@@ -384,7 +384,7 @@
             function generate_rekap() {
                 let sbl = $('#qc_sebelumnya').val()
                 let jenis = $('#jenis').val()
-                if (jenis == 'Qc Ulang') {
+                if (jenis == 'QC Ulang') {
                     jenis = 'Ulang';
                 } else {
                     jenis = 'Import';
