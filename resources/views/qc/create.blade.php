@@ -20,7 +20,6 @@
     <div class="container-fluid">
 
         <form method="POST" action="{{ route('qc.store') }}" id="form">
-            @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
                     <h3 class="card-title">{{ $title }} <button class="btn btn-primary" type="button"
