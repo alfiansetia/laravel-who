@@ -87,10 +87,17 @@
                             <input type="text" name="untuk" id="untuk" class="form-control"
                                 placeholder="Untuk" value="{{ $data->untuk }}">
                         </div>
+
                         <div class="form-group col-md-6">
                             <label for="nilai">Nilai Barang</label>
-                            <input type="text" name="nilai" id="nilai" class="form-control mask_angka"
-                                placeholder="Nilai Barang" value="{{ str_replace([',', '.'], '', $data->nilai) }}">
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Rp.</div>
+                                </div>
+                                <input type="text" name="nilai" id="nilai" class="form-control mask_angka"
+                                    placeholder="Nilai Barang" value="{{ str_replace([',', '.'], '', $data->nilai) }}">
+                            </div>
+
                         </div>
                     </div>
                     <div class="form-row">
