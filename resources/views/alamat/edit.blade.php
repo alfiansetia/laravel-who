@@ -90,7 +90,7 @@
                         <div class="form-group col-md-6">
                             <label for="nilai">Nilai Barang</label>
                             <input type="text" name="nilai" id="nilai" class="form-control mask_angka"
-                                placeholder="Nilai Barang" value="{{ $data->nilai }}">
+                                placeholder="Nilai Barang" value="{{ str_replace([',', '.'], '', $data->nilai) }}">
                         </div>
                     </div>
                     <div class="form-row">
