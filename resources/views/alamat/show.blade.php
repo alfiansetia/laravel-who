@@ -217,7 +217,7 @@
         <tr>
             <td class="style14 kanan-dua kiri-dua bawah-dua" colspan="4">
                 @if (!empty($data->nilai))
-                    ( Nilai Barang ~ Rp. {{ $data->nilai }} )
+                    ( Nilai Barang ~ Rp. {{ number_format($data->nilai, 0, ',', '.') }} )
                 @endif
 
             </td>
