@@ -89,7 +89,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label for="nilai">Nilai Barang</label>
-                            <input type="text" name="nilai" id="nilai" class="form-control"
+                            <input type="text" name="nilai" id="nilai" class="form-control mask_angka"
                                 placeholder="Nilai Barang" value="{{ $data->nilai }}">
                         </div>
                     </div>

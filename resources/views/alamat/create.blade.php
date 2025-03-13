@@ -89,7 +89,7 @@
                         </div>
                         <div class="form-group col-md-6">
                             <label for="nilai">Nilai Barang</label>
-                            <input type="text" name="nilai" id="nilai" class="form-control"
+                            <input type="text" name="nilai" id="nilai" class="form-control mask_angka"
                                 placeholder="Nilai Barang" value="">
                         </div>
                     </div>
@@ -144,12 +144,27 @@
 
         @push('js')
             <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.9/jquery.inputmask.min.js"
+                integrity="sha512-F5Ul1uuyFlGnIT1dk2c4kB4DBdi5wnBJjVhL7gQlGh46Xn0VhvD8kgxLtjdZ5YN83gybk/aASUAlpdoWUjRR3g=="
+                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         @endpush
 
         <script>
             function setEpur(val) {
                 $('#epur').val(val)
             }
+
+            $('.mask_angka').inputmask({
+                alias: 'numeric',
+                groupSeparator: '.',
+                autoGroup: true,
+                digits: 0,
+                rightAlign: false,
+                removeMaskOnSubmit: true,
+                autoUnmask: true,
+                min: 0,
+            });
+
             $(document).ready(function() {
                 $('#btn_get_do').click(function() {
                     let param = $('#input_do').val()
