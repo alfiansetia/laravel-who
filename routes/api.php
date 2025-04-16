@@ -36,7 +36,9 @@ Route::get('alamat/{alamat}/sync', [AlamatController::class, 'sync'])->name('api
 Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
+Route::get('setting/env', [SettingController::class, 'index'])->name('api.setting.index');
 Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
+Route::post('setting/reload', [SettingController::class, 'reload'])->name('api.setting.reload');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');

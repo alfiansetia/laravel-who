@@ -141,7 +141,7 @@
                         <div class="col-12" id="reagen">
                         </div>
                         <h3>KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
-                                onclick="generate_form_kelengkapan('')">+ add</button></h3>
+                                onclick="generate_form_kelengkapan('', true)">+ add</button></h3>
                         <div class="col-12" id="kelengkapan">
                         </div>
                     </div>
@@ -257,7 +257,7 @@
             $('#reagen').append(html)
         }
 
-        function generate_form_kelengkapan(text) {
+        function generate_form_kelengkapan(text, checked = false) {
             number = KEL
             KEL = KEL + 1
 
@@ -273,7 +273,7 @@
                                 <div class="col-sm-4 text-center">
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}1"
-                                            class="custom-control-input" value="yes">
+                                            class="custom-control-input" value="yes" ${checked ? 'checked' : ''}>
                                         <label class="custom-control-label" for="k${number}1">Baik</label>
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
@@ -283,7 +283,7 @@
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}3"
-                                            class="custom-control-input" value="other" checked>
+                                            class="custom-control-input" value="other" ${checked ? '' : 'checked'}>
                                         <label class="custom-control-label" for="k${number}3">Kosong</label>
                                     </div>
                                 </div>

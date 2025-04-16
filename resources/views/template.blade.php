@@ -64,14 +64,17 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal_envLabel">ODOO SESSION</h5>
+                    <h5 class="modal-title" id="modal_envLabel">
+                        ODOO SESSION
+                        <button type="button" class="btn btn-danger" id="fix_session">Fix Session</button>
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-2">
-                        <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION">{{ $setting->odoo_session ?? '' }}</textarea>
+                        <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -262,6 +265,32 @@
     } catch (err) {
         danger('❌ Notifikasi belum siap 😓, ' + err.message)
     }
+</script>
+
+<script>
+    $(document).ready(function() {
+
+        $('#setting_nav').click(function() {
+            $.get(BASE_URL + '/api/setting/env')
+                .done(function(res) {
+                    $('#odoo_env').val(res.data.session)
+                    $('#modal_env').modal('show')
+                }).fail(function(xhr) {
+                    $('#modal_env').modal('hide')
+                    alert('Error!')
+                })
+        })
+
+        $('#fix_session').click(function() {
+            $.post(BASE_URL + '/api/setting/reload')
+                .done(function(res) {
+                    $('#modal_env').modal('hide')
+                    alert('Success!')
+                }).fail(function(xhr) {
+                    alert('Error!')
+                })
+        })
+    })
 </script>
 
 

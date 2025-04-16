@@ -37,8 +37,7 @@
                     <a class="dropdown-item" href="{{ route('ri.index') }}">RI</a>
                     {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal"
-                        data-target="#modal_env">Setting</a>
+                    <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a>
                     <a class="dropdown-item" href="{{ url('admin') }}">Admin</a>
                 </div>
             </li>

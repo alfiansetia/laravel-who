@@ -15,3 +15,10 @@ Schedule::command('app:monitor-do')->everyMinute()->onSuccess(function () {
 })->onFailure(function () {
     // Log::error('Cronjob Monitor DO Gagal dijalankan');
 });
+
+
+Schedule::command('app:odoo-login')->dailyAt('06:00')->onSuccess(function () {
+    // Log::info('Cronjob Monitor DO berhasil dijalankan');
+})->onFailure(function () {
+    // Log::error('Cronjob Monitor DO Gagal dijalankan');
+});
