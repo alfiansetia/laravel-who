@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Setting;
+use App\Services\TelegramServices;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
@@ -61,6 +62,8 @@ class OdooLogin extends Command
                     'odoo_session' => $sessionId
                 ]);
             }
+            $chat_id = config('services.telegram.group');
+            TelegramServices::send($chat_id, 'Success Login, session : ' . $sessionId);
             $this->info('Session ID berhasil disimpan: ' . $sessionId);
             return 0;
         } catch (\Exception $e) {
