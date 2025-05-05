@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\KontakController;
+use App\Http\Controllers\Api\PackingListController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
@@ -22,10 +23,12 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('products', [ProductController::class, 'index'])->name('api.product.index');
+Route::apiResource('products', ProductController::class)->names('api.product');
 Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product.sync');
 Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
+
+Route::apiResource('packing-list', PackingListController::class)->names('api.packing_list');
 
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');

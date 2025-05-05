@@ -140,8 +140,12 @@
                         <h3>REAGEN</h3>
                         <div class="col-12" id="reagen">
                         </div>
-                        <h3>KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
-                                onclick="generate_form_kelengkapan('', true)">+ add</button></h3>
+                        <h3>
+                            KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
+                                onclick="generate_form_kelengkapan('', true)">+ add</button>
+                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info">+ Get PL</button>
+                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                        </h3>
                         <div class="col-12" id="kelengkapan">
                         </div>
                     </div>
@@ -188,9 +192,14 @@
         generate_form_reagen('Panel saklar ON/OFF')
         generate_form_reagen('Sistem kerja alat')
 
-        generate_form_kelengkapan('Buku Manual Bahasa Indonesia')
-        generate_form_kelengkapan('Kabel Power')
-        generate_form_kelengkapan('SOP')
+        reset_kelengkapan()
+
+        function reset_kelengkapan() {
+            KEL = 0
+            generate_form_kelengkapan('Buku Manual Bahasa Indonesia')
+            generate_form_kelengkapan('Kabel Power')
+            generate_form_kelengkapan('SOP')
+        }
 
 
         function generate_form_fisik(text) {
@@ -292,6 +301,8 @@
                                 </div>
                             </div>`
             $('#kelengkapan').append(html)
+            console.log(KEL);
+
         }
 
         function del_kel(id) {
@@ -415,6 +426,39 @@
             //     e.preventDefault();
             //     console.log($('#form').serializeArray());
             // })
+
+            $('#btn_get_pl').click(function() {
+                console.log('ok');
+
+                let prod = $('#select_product').val();
+                if (prod == '' || prod == null) {
+                    alert('Product Not Found!')
+                    return;
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: `{{ route('api.product.index') }}/${prod}`,
+                    data: {},
+                    beforeSend: function() {},
+                    success: function(res) {
+                        res.data.pls.forEach(item => {
+                            generate_form_kelengkapan(`${item.item} (${item.qty})`,
+                                true)
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message || 'Error!')
+
+                    }
+                });
+            })
+
+            $('#btn_reset_pl').click(function() {
+                $('#kelengkapan').html('')
+                reset_kelengkapan()
+            })
+
 
         });
     </script>

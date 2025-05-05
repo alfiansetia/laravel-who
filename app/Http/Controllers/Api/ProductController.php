@@ -16,6 +16,21 @@ class ProductController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
+    public function show($id)
+    {
+        $data = Product::query()->with('pls')->find($id);
+        if (!$data) {
+            return response()->json([
+                'message'   => 'Not Found!',
+                'data'      => null
+            ], 404);
+        }
+        return response()->json([
+            'message'   => 'Success!',
+            'data'      => $data
+        ], 200);
+    }
+
     public function sync()
     {
         $data = [

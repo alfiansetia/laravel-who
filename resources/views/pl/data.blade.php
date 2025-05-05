@@ -1,20 +1,17 @@
-@extends('template', ['title' => 'Data Product'])
+@extends('template', ['title' => 'Packing List'])
 
 @section('content')
     <div class="container-fluid">
-        <h1>Data Product</h1>
+        <h1>Packing List</h1>
 
         <div class="responsive">
             <form id="selected">
-                <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
+                <table class="table table-sm table-hover" id="table" style="width: 100%;">
                     <thead class="thead-dark">
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
-                            <th>KODE</th>
-                            <th>NAME</th>
-                            <th>AKL</th>
-                            <th>AKL EXP</th>
-                            <th>DESC</th>
+                            <th>Kode Product</th>
+                            <th>#</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,47 +21,20 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Packing list</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table id="table_pl" class="table table-hover">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th class="text-center" style="width: 30px;">No</th>
-                                <th>ITEM</th>
-                                <th>QTY</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     @if (session()->has('message'))
         <script>
             alert("{{ session('message') }}")
         </script>
     @endif
     <script>
+        const URL_INDEX_API = "{{ route('api.packing_list.index') }}"
+        const URL_INDEX = "{{ route('pl.index') }}"
+        var id = 0;
+
         $(document).ready(function() {
-            const URL_INDEX_API = "{{ route('api.product.index') }}";
             var table = $('#table').DataTable({
                 rowId: 'id',
-                ajax: "{{ route('api.product.index') }}",
+                ajax: URL_INDEX_API,
                 dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
@@ -78,9 +48,9 @@
                 ],
                 pageLength: 10,
                 lengthChange: false,
-                // order: [
-                //     [1, "asc"]
-                // ],
+                order: [
+                    [1, "asc"]
+                ],
                 columns: [{
                         data: 'id',
                         className: "text-center",
@@ -90,56 +60,27 @@
                             return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
                         }
                     }, {
-                        data: "code",
-                    },
-                    {
-                        data: "name",
-                    },
-                    {
-                        data: "akl",
-                    },
-                    {
-                        data: "akl_exp",
+                        data: "id",
                         render: function(data, type, row, meta) {
-                            let text;
-                            let now = moment(new Date()); //todays date
-                            let end = moment(data); // another date
-                            let duration = moment.duration(now.diff(end));
-                            let days = duration.asDays();
-                            if (days >= 0) {
-                                text =
-                                    `<span class="badge badge-danger">${data == null ? '' : data}</span>`;
-                            } else {
-                                text =
-                                    `<span class="badge badge-success">${data == null ? '' : data}</span>`;
-                            }
-                            if (type == 'display') {
-                                return text;
-                            } else {
-                                return data;
-                            }
+                            return row.product.code || ''
                         }
                     },
                     {
-                        data: "desc",
-                        visible: false
+                        data: "id",
+                        render: function(data, type, row, meta) {
+                            return row.product.name || ''
+                        }
                     },
                 ],
                 buttons: [{
-                        text: '<i class="fas fa-sync mr-1"></i>Sync from Odoo',
-                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fas fa-plus mr-1"></i>Add PL',
+                        className: 'btn btn-sm btn-info',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Syncronize from Odoo'
+                            'title': 'Add PL'
                         },
                         action: function(e, dt, node, config) {
-                            $.post("{{ route('api.product.sync') }}")
-                                .done(function(res) {
-                                    table.ajax.reload()
-                                    alert(res.message)
-                                }).fail(function(xhr) {
-                                    alert(xhr.responseJSON.message || 'Odoo Error!')
-                                });
+                            window.location.href = URL_INDEX + '/create'
                         }
                     }, {
                         extend: "colvis",
@@ -159,7 +100,7 @@
                     },
                     {
                         extend: "collection",
-                        text: '<i class="fas fa-download"></i> Export',
+                        text: '<i class="fas fa-download"></i>Export',
                         attr: {
                             'data-toggle': 'tooltip',
                             'title': 'Export Data'
@@ -216,27 +157,6 @@
                     return true
                 }
             }
-
-            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
-                id = table.row(this).id()
-                $.get(URL_INDEX_API + '/' + id).done(function(res) {
-                    $('#modal_pl').modal('show')
-                    $('#table_pl tbody').empty();
-                    res.data.pls.forEach((item, index) => {
-                        $('#table_pl tbody').append(`
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${item.item}</td>
-                                <td>${item.qty}</td>
-                            </tr>
-                        `);
-                    });
-
-                }).fail(function(xhr) {
-                    alert('Data Tidak ada!')
-                })
-
-            });
 
         });
     </script>

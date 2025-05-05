@@ -26,8 +26,8 @@ class FormqcController extends Controller
 
             $file = public_path('master/qc.docx');
             $template = new TemplateProcessor($file);
-            $kel_row = 24;
             $total = count($data_kel);
+            $kel_row = max(24, $total);
             $template->cloneRow('kel_v', $kel_row);
 
             $i = 1;

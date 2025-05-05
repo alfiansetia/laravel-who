@@ -15,4 +15,9 @@ class Product extends Model
         'id'        => 'integer',
         'odoo_id'   => 'integer',
     ];
+
+    public function pls()
+    {
+        return $this->hasMany(PackingList::class);
+    }
 }
