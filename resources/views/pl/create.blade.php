@@ -43,6 +43,9 @@
                         <div class="form-group col-6">
                             <label for="import">IMPORT FROM TEXT</label>
                             <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <button type="button" id="btn_import_clear" class="input-group-text">CLEAR</button>
+                                </div>
                                 <textarea name="import" id="import" class="form-control"></textarea>
                                 <div class="input-group-append">
                                     <button type="button" id="btn_import" class="input-group-text">IMPORT</button>
@@ -272,6 +275,10 @@
                     // Refresh tabel
                     table.draw();
                 }
+            });
+
+            $('#btn_import_clear').click(function() {
+                let imp = $('#import').val('')
             });
 
 
