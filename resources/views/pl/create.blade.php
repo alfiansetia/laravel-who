@@ -282,6 +282,35 @@
             });
 
 
+            $('#table tbody').on('click', 'td:not(:first-child)', function() {
+                let cell = table.cell(this);
+                let oldValue = cell.data();
+
+                // Cegah double input
+                if ($(this).find('input').length > 0) return;
+
+                // Ganti isi jadi input
+                $(this).html(`<input type="text" class="form-control edit-input" value="${oldValue}" />`);
+                let input = $(this).find('input');
+                input.focus();
+
+                // Handle keluar dari input (blur)
+                input.on('blur', function() {
+                    let newValue = $(this).val().trim();
+
+                    // Update value di tabel
+                    cell.data(newValue).draw();
+                });
+
+                // Optional: tekan Enter untuk simpan
+                input.on('keypress', function(e) {
+                    if (e.which === 13) {
+                        $(this).blur(); // trigger blur
+                    }
+                });
+            });
+
+
 
 
 
