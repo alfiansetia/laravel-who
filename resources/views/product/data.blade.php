@@ -276,7 +276,7 @@
                             <tr>
                                 <td>${index + 1}</td>
                                 <td>${item.item}</td>
-                                <td>${item.qty}</td>
+                                <td>${item.qty || ''}</td>
                             </tr>
                         `);
                     });
