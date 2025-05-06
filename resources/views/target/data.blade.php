@@ -11,7 +11,7 @@
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
                             <th>Kode Product</th>
-                            <th>#</th>
+                            <th>Target</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +68,7 @@
                     {
                         data: "id",
                         render: function(data, type, row, meta) {
-                            return row.product.name || ''
+                            return row.target || ''
                         }
                     },
                 ],
