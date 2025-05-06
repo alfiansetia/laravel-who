@@ -29,13 +29,26 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Packing list</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">Product Detail</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table id="table_pl" class="table table-hover">
+                    <h5>Target List</h5>
+                    <table id="table_target" class="table table-sm table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center" style="width: 30px;">No</th>
+                                <th>ITEM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <h5>Packing List</h5>
+                    <table id="table_pl" class="table table-sm table-hover">
                         <thead class="thead-dark">
                             <tr>
                                 <th class="text-center" style="width: 30px;">No</th>
@@ -46,6 +59,7 @@
                         <tbody>
                         </tbody>
                     </table>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -222,6 +236,7 @@
                 $.get(URL_INDEX_API + '/' + id).done(function(res) {
                     $('#modal_pl').modal('show')
                     $('#table_pl tbody').empty();
+                    $('#table_target tbody').empty();
                     res.data.pls.forEach((item, index) => {
                         $('#table_pl tbody').append(`
                             <tr>
@@ -231,6 +246,16 @@
                             </tr>
                         `);
                     });
+                    if (res.data.target != null) {
+                        res.data.target.items.forEach((item, index) => {
+                            $('#table_target tbody').append(`
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.item}</td>
+                            </tr>
+                        `);
+                        });
+                    }
 
                 }).fail(function(xhr) {
                     alert('Data Tidak ada!')

@@ -13,6 +13,7 @@ use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\TargetController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -24,6 +25,7 @@ Route::get('products', [ProductController::class, 'index'])->name('products.inde
 Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');
 
 Route::resource('packing-list', PackingListController::class)->names('pl');
+Route::resource('target', TargetController::class)->names('target');
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 

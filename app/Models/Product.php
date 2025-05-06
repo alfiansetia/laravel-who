@@ -20,4 +20,9 @@ class Product extends Model
     {
         return $this->hasMany(PackingList::class);
     }
+
+    public function target()
+    {
+        return $this->hasOne(Target::class);
+    }
 }

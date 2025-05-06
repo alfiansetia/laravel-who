@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\StockController;
+use App\Http\Controllers\Api\TargetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
 Route::apiResource('packing-list', PackingListController::class)->names('api.packing_list');
+Route::apiResource('target', TargetController::class)->names('api.target');
 
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');

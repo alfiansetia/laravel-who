@@ -1,4 +1,4 @@
-@extends('template', ['title' => 'Create PL'])
+@extends('template', ['title' => 'Create Target'])
 @push('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
@@ -23,13 +23,13 @@
             @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Create PL </h3>
+                    <h3 class="card-title">Create Target </h3>
                 </div>
 
                 <div class="card-body">
                     <div class="row">
-                        <div class="form-group col-12">
-                            <label for="product_id">PRODUCT</label>
+                        <div class="form-group col-6">
+                            <label for="product_id">Product</label>
                             <div class="input-group">
                                 <select name="product_id" id="product_id" class="custom-select select2" style="width: 100%"
                                     required>
@@ -42,11 +42,22 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group col-6">
+                            <div class="input-group">
+                                <label for="target">TARGET</label>
+                                <div class="input-group">
+                                    <input name="target" id="target" class="form-control" required>
+                                    <div class="input-group-append">
+                                        <button type="button" id="btn_target_clear" class="input-group-text">CLEAR</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group col-lg-6">
                             <label for="import">IMPORT FROM TEXT</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <button type="button" id="btn_import_clear" class="input-group-text">X</button>
+                                    <button type="button" id="btn_import_clear" class="input-group-text">CLEAR</button>
                                 </div>
                                 <textarea name="import" id="import" class="form-control"></textarea>
                                 <div class="input-group-append">
@@ -60,7 +71,6 @@
                                     <tr>
                                         <th style="width: 30px">#</th>
                                         <th>ITEM</th>
-                                        <th>QTY</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -73,8 +83,8 @@
             </div>
 
             <div class="card-footer">
-                <a href="{{ route('pl.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('pl.create') }}" class="btn btn-warning">Refresh</a>
+                <a href="{{ route('target.index') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ route('target.create') }}" class="btn btn-warning">Refresh</a>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </div>
         </form>
@@ -93,10 +103,6 @@
                         <div class="form-group">
                             <label for="item">ITEM</label>
                             <input name="item" type="text" class="form-control" id="item">
-                        </div>
-                        <div class="form-group">
-                            <label for="item">QTY</label>
-                            <input name="qty" type="text" class="form-control" id="qty">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -138,17 +144,13 @@
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
-                        data: "item",
-                        render: function() {
-                            return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
-                        }
-                    }, {
-                        data: "item",
-                    },
-                    {
-                        data: "qty",
-                    },
-                ],
+                    data: "item",
+                    render: function() {
+                        return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
+                    }
+                }, {
+                    data: "item",
+                }, ],
                 buttons: [{
                     text: '<i class="fas fa-plus mr-1"></i>Add ITEM',
                     className: 'btn btn-sm btn-info',
@@ -177,19 +179,16 @@
 
             $('#btn_save_item').click(function() {
                 let item = $('#item').val()
-                let qty = $('#qty').val()
                 if (item == '' || item == null) {
                     alert('Item empty!')
                     $('#item').focus()
                     return
                 }
-                console.log(item, qty);
+                console.log(item);
                 table.row.add({
                     item: item,
-                    qty: qty
                 }).draw()
                 $('#item').val('')
-                $('#qty').val('')
                 $('#modal_item').modal('hide')
             })
 
@@ -205,10 +204,16 @@
             $('#form').submit(function(e) {
                 e.preventDefault()
                 let product = $('#product_id').val()
+                let target = $('#target').val()
                 let desc = $('#desc').val()
                 let data = table.rows().data().toArray();
                 if (product == '' || product == null) {
                     alert('select Product!')
+                    return
+                }
+
+                if (target == '' || target == null) {
+                    alert('Target Empty!')
                     return
                 }
                 if (data.length < 1) {
@@ -219,9 +224,10 @@
                 console.log(data);
                 $.ajax({
                     type: 'POST',
-                    url: `{{ route('api.packing_list.index') }}`,
+                    url: `{{ route('api.target.index') }}`,
                     data: {
                         product: product,
+                        target: target,
                         items: data
                     },
                     beforeSend: function() {},
@@ -245,10 +251,13 @@
                     return
                 }
                 $.get('{{ route('api.product.index') }}' + '/' + product).done(function(res) {
-                    table
-                        .rows
-                        .add(res.data.pls)
-                        .draw();
+                    if (res.data.target != null) {
+                        $('#target').val(res.data.target.target)
+                        table
+                            .rows
+                            .add(res.data.target.items)
+                            .draw();
+                    }
                     console.log(res);
 
                 }).fail(function(xhr) {
@@ -261,15 +270,9 @@
                 let rows = imp.split('\n');
                 if (rows.length > 0 && rows[0] !== '') {
                     rows.forEach((row, index) => {
-                        let cols = row.split('\t'); // Excel tab-delimited
-
-                        let item = cols[0]?.trim() || '';
-                        let qty = cols[1]?.trim() || '';
-
-                        if (item) {
+                        if (row) {
                             table.row.add({
-                                item: item,
-                                qty: qty
+                                item: row,
                             });
                         }
                     });
@@ -280,7 +283,11 @@
             });
 
             $('#btn_import_clear').click(function() {
-                let imp = $('#import').val('')
+                $('#import').val('')
+            });
+
+            $('#btn_target_clear').click(function() {
+                $('#target').val('')
             });
 
 
