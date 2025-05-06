@@ -148,8 +148,9 @@
                         </div>
                         <h3>
                             KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
-                                onclick="generate_form_kelengkapan('', true)">+ add</button>
-                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info">+ Get PL</button>
+                                onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> add</button>
+                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info"><i
+                                    class="fas fa-list"></i> Get PL</button>
                             <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning"> Reset</button>
                         </h3>
                         <div class="col-12" id="kelengkapan">

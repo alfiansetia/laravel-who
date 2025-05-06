@@ -6,7 +6,7 @@
 
         <div class="responsive">
             <form id="selected">
-                <table class="table table-sm table-hover" id="table" style="width: 100%;">
+                <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                     <thead class="thead-dark">
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
@@ -18,6 +18,37 @@
                     </tbody>
                 </table>
             </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Packing List</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="table_pl" class="table table-sm table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="text-center" style="width: 30px;">No</th>
+                                <th>ITEM</th>
+                                <th>QTY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -157,6 +188,27 @@
                     return true
                 }
             }
+
+            $('#table tbody').on('click', 'tr td', function() {
+                id = table.row(this).data().product_id
+
+                $.get("{{ route('api.product.index') }}" + '/' + id).done(function(res) {
+                    $('#modal_pl').modal('show')
+                    $('#table_pl tbody').empty();
+                    res.data.pls.forEach((item, index) => {
+                        $('#table_pl tbody').append(`
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.item}</td>
+                                <td>${item.qty || ''}</td>
+                            </tr>
+                        `);
+                    });
+                }).fail(function(xhr) {
+                    alert('Data Tidak ada!')
+                })
+
+            });
 
         });
     </script>
