@@ -134,10 +134,16 @@
                                 </div>
                             </div>
                         </div>
-                        <h3>FISIK</h3>
+                        <h3>
+                            FISIK
+                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                        </h3>
                         <div class="col-12" id="fisik">
                         </div>
-                        <h3>REAGEN</h3>
+                        <h3>
+                            REAGEN
+                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                        </h3>
                         <div class="col-12" id="reagen">
                         </div>
                         <h3>
@@ -180,22 +186,33 @@
         var REAGEN = 0;
         var KEL = 0;
 
-        generate_form_fisik('Kondisi Fisik')
-        generate_form_fisik('Pembungkus alat dalam kardus atau peti')
-        generate_form_fisik('Pengaman alat dalam kardus atau peti')
-        generate_form_fisik('Kondisi kardus atau peti')
-        generate_form_fisik('Penempelan penandaan AKL dialat')
-        generate_form_fisik('Penempelan nomor izin edar pada dus')
-
-        generate_form_reagen('Pemeriksaan keakuratan')
-        generate_form_reagen('Pemeriksaan suhu')
-        generate_form_reagen('Panel saklar ON/OFF')
-        generate_form_reagen('Sistem kerja alat')
-
+        reset_form_fisik()
+        reset_form_reagen()
         reset_kelengkapan()
+
+        function reset_form_fisik() {
+            FISIK = 0
+            $('#fisik').html('')
+            generate_form_fisik('Kondisi Fisik')
+            generate_form_fisik('Pembungkus alat dalam kardus atau peti')
+            generate_form_fisik('Pengaman alat dalam kardus atau peti')
+            generate_form_fisik('Kondisi kardus atau peti')
+            generate_form_fisik('Penempelan penandaan AKL dialat')
+            generate_form_fisik('Penempelan nomor izin edar pada dus')
+        }
+
+        function reset_form_reagen() {
+            REAGEN = 0
+            $('#reagen').html('')
+            generate_form_reagen('Pemeriksaan keakuratan')
+            generate_form_reagen('Pemeriksaan suhu')
+            generate_form_reagen('Panel saklar ON/OFF')
+            generate_form_reagen('Sistem kerja alat')
+        }
 
         function reset_kelengkapan() {
             KEL = 0
+            $('#kelengkapan').html('')
             generate_form_kelengkapan('Buku Manual Bahasa Indonesia')
             generate_form_kelengkapan('Kabel Power')
             generate_form_kelengkapan('SOP')
@@ -455,8 +472,15 @@
             })
 
             $('#btn_reset_pl').click(function() {
-                $('#kelengkapan').html('')
                 reset_kelengkapan()
+            })
+
+            $('#btn_reset_fisik').click(function() {
+                reset_form_fisik()
+            })
+
+            $('#btn_reset_reagen').click(function() {
+                reset_form_reagen()
             })
 
 
