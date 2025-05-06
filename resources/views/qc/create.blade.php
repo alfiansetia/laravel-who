@@ -219,6 +219,15 @@
             generate_form_kelengkapan('SOP')
         }
 
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
 
         function generate_form_fisik(text) {
             number = FISIK
@@ -461,7 +470,9 @@
                     beforeSend: function() {},
                     success: function(res) {
                         res.data.pls.forEach(item => {
-                            generate_form_kelengkapan(`${item.item} (${item.qty})`,
+                            console.log(item.item);
+                            generate_form_kelengkapan(
+                                `${escapeHtml(item.item)} (${escapeHtml(item.qty)})`,
                                 true)
                         });
                     },
