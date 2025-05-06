@@ -223,9 +223,9 @@
         function generate_form_fisik(text) {
             number = FISIK
             FISIK = FISIK + 1
-            let html = `<div class="form-group row">
+            let html = `<div class="form-group row mb-2">
                                 <div class="col-sm-4">
-                                    <input type="text" name="fisik[${number}]" class="form-control" value="${text}"
+                                    <input type="text" name="fisik[${number}]" class="form-control form-control-sm" value="${text}"
                                         required>
                                 </div>
                                 <div class="col-sm-4 text-center">
@@ -246,7 +246,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input type="text" name="fisik_desc[${number}]" class="form-control" placeholder="Keterangan">
+                                    <input type="text" name="fisik_desc[${number}]" class="form-control form-control-sm" placeholder="Keterangan">
                                 </div>
                             </div>`
             $('#fisik').append(html)
@@ -255,9 +255,9 @@
         function generate_form_reagen(text) {
             number = REAGEN
             REAGEN = REAGEN + 1
-            let html = `<div class="form-group row">
+            let html = `<div class="form-group row mb-2">
                                 <div class="col-sm-4">
-                                    <input type="text" name="reagen[${number}]" class="form-control" value="${text}"
+                                    <input type="text" name="reagen[${number}]" class="form-control form-control-sm" value="${text}"
                                         required>
                                 </div>
                                 <div class="col-sm-4 text-center">
@@ -278,7 +278,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input type="text" name="reagen_desc[${number}]" class="form-control" placeholder="Keterangan">
+                                    <input type="text" name="reagen_desc[${number}]" class="form-control form-control-sm" placeholder="Keterangan">
                                 </div>
                             </div>`
             $('#reagen').append(html)
@@ -288,13 +288,13 @@
             number = KEL
             KEL = KEL + 1
 
-            let html = `<div class="form-group row" id="kel${number}">
+            let html = `<div class="form-group row mb-1" id="kel${number}">
                                 <div class="col-sm-4">
-                                    <div class="input-group mb-3">
+                                    <div class="input-group mb-1">
                                         <div class="input-group-prepend">
                                             <button type="button" class="btn btn-sm btn-danger" onclick="del_kel(kel${number})">-</button>
                                         </div>
-                                            <input type="text" name="kelengkapan[${number}]" class="form-control" value="${text}" required>
+                                            <input type="text" name="kelengkapan[${number}]" class="form-control form-control-sm" value="${text}" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 text-center">
@@ -315,7 +315,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input type="text" name="kelengkapan_desc[${number}]" class="form-control" placeholder="Keterangan">
+                                    <input type="text" name="kelengkapan_desc[${number}]" class="form-control form-control-sm" placeholder="Keterangan">
                                 </div>
                             </div>`
             $('#kelengkapan').append(html)
