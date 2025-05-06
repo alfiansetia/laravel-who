@@ -9,7 +9,7 @@
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                     <thead class="thead-dark">
                         <tr>
-                            <th class="text-center" style="width: 30px;">No</th>
+                            <th class="text-center" style="width: 30px;">#</th>
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>AKL</th>
@@ -35,30 +35,61 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <h5>Target List</h5>
-                    <table id="table_target" class="table table-sm table-hover">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th class="text-center" style="width: 30px;">No</th>
-                                <th>ITEM</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="accordion" id="accordionExample">
+                        <div class="card">
+                            <div class="card-header" id="headingOne">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                                        data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        Target List
+                                    </button>
+                                </h2>
+                            </div>
 
-                    <h5>Packing List</h5>
-                    <table id="table_pl" class="table table-sm table-hover">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th class="text-center" style="width: 30px;">No</th>
-                                <th>ITEM</th>
-                                <th>QTY</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                                data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <table id="table_target" class="table table-sm table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th class="text-center" style="width: 30px;">No</th>
+                                                <th>ITEM</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                                <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left collapsed" type="button"
+                                        data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false"
+                                        aria-controls="collapseTwo">
+                                        Packing List
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
+                                data-parent="#accordionExample">
+                                <div class="card-body">
+                                    <table id="table_pl" class="table table-sm table-hover">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th class="text-center" style="width: 30px;">No</th>
+                                                <th>ITEM</th>
+                                                <th>QTY</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
                 <div class="modal-footer">
@@ -101,7 +132,8 @@
                         searchable: false,
                         sortable: false,
                         render: function(data, type, row, meta) {
-                            return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
+                            // return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
+                            return `<button type="button" class="btn btn-sm btn-info btn-info-product"><i class="fas fa-info-circle"></i></button>`
                         }
                     }, {
                         data: "code",
@@ -207,10 +239,10 @@
                         }],
                     }
                 ],
-                headerCallback: function(e, a, t, n, s) {
-                    e.getElementsByTagName("th")[0].innerHTML =
-                        '<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">'
-                },
+                // headerCallback: function(e, a, t, n, s) {
+                //     e.getElementsByTagName("th")[0].innerHTML =
+                //         '<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">'
+                // },
             });
 
             var id;
@@ -231,8 +263,10 @@
                 }
             }
 
-            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
-                id = table.row(this).id()
+            $('#table').on('click', '.btn-info-product', function() {
+                let row = $(this).parents('tr')[0];
+                data = table.row(row).data()
+                id = data.id
                 $.get(URL_INDEX_API + '/' + id).done(function(res) {
                     $('#modal_pl').modal('show')
                     $('#table_pl tbody').empty();
