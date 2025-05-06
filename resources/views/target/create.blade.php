@@ -251,6 +251,7 @@
                     return
                 }
                 $.get('{{ route('api.product.index') }}' + '/' + product).done(function(res) {
+                    $('#target').val('')
                     if (res.data.target != null) {
                         $('#target').val(res.data.target.target)
                         table
