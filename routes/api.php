@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
+use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\PackingListController;
 use App\Http\Controllers\Api\POController;
@@ -31,6 +32,7 @@ Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.
 
 Route::apiResource('packing-list', PackingListController::class)->names('api.packing_list');
 Route::apiResource('target', TargetController::class)->names('api.target');
+Route::apiResource('kargan', KarganController::class)->names('api.kargan');
 
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');

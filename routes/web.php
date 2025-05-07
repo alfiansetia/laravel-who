@@ -6,6 +6,7 @@ use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\FormqcController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\PackingListController;
 use App\Http\Controllers\POController;
@@ -26,6 +27,7 @@ Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');
 
 Route::resource('packing-list', PackingListController::class)->names('pl');
 Route::resource('target', TargetController::class)->names('target');
+Route::resource('kargan', KarganController::class);
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 

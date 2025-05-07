@@ -37,6 +37,7 @@
                     <a class="dropdown-item" href="{{ route('ri.index') }}">RI</a>
                     <a class="dropdown-item" href="{{ route('pl.index') }}">PL</a>
                     <a class="dropdown-item" href="{{ route('target.index') }}">Target</a>
+                    <a class="dropdown-item" href="{{ route('kargan.index') }}">Kargan</a>
                     {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a>
