@@ -136,13 +136,15 @@
                         </div>
                         <h3>
                             FISIK
-                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning"><i
+                                    class="fas fa-redo"></i> Reset</button>
                         </h3>
                         <div class="col-12" id="fisik">
                         </div>
                         <h3>
                             REAGEN
-                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning"><i
+                                    class="fas fa-redo"></i> Reset</button>
                         </h3>
                         <div class="col-12" id="reagen">
                         </div>
@@ -161,7 +163,7 @@
             </div>
 
             <div class="card-footer">
-                <a href="{{ route('alamat.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
+                <a href="{{ route('products.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
                     Kembali</a>
                 <button type="button" id="btn_refresh_input" class="btn btn-warning"><i class="fas fa-redo"></i>
                     Refresh</button>
@@ -341,7 +343,6 @@
                                 </div>
                             </div>`
             $('#kelengkapan').append(html)
-            console.log(KEL);
 
         }
 
@@ -468,8 +469,6 @@
             // })
 
             $('#btn_get_pl').click(function() {
-                console.log('ok');
-
                 let prod = $('#select_product').val();
                 if (prod == '' || prod == null) {
                     alert('Product Not Found!')
@@ -483,7 +482,6 @@
                     beforeSend: function() {},
                     success: function(res) {
                         res.data.pls.forEach(item => {
-                            console.log(item.item);
                             generate_form_kelengkapan(
                                 `${escapeHtml(item.item)} (${escapeHtml(item.qty)})`,
                                 true)
