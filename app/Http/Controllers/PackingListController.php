@@ -18,4 +18,11 @@ class PackingListController extends Controller
         $products = Product::all();
         return view('pl.create', compact('products'));
     }
+
+
+    public function show($id)
+    {
+        $product = Product::query()->with('pls')->findOrFail($id);
+        return view('pl.show', compact('product'));
+    }
 }
