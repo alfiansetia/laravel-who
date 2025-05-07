@@ -22,10 +22,10 @@
         <form method="POST" action="{{ route('qc.store') }}" id="form">
             <div class="card card-primary mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">{{ $title }} <button class="btn btn-primary" type="button"
+                    <h3 class="card-title">{{ $title }} <button class="btn btn-sm btn-primary" type="button"
                             data-toggle="collapse" data-target="#collapse_form" aria-expanded="false"
                             aria-controls="collapse_form">
-                            Show
+                            <i class="fas fa-eye"></i> Show
                         </button></h3>
                     <div class="row">
                         <div class="form-group col-md-6">
@@ -151,7 +151,8 @@
                                 onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> add</button>
                             <button id="btn_get_pl" type="button" class="btn btn-sm btn-info"><i
                                     class="fas fa-list"></i> Get PL</button>
-                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning"> Reset</button>
+                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning"><i
+                                    class="fas fa-redo"></i> Reset</button>
                         </h3>
                         <div class="col-12" id="kelengkapan">
                         </div>
@@ -160,10 +161,14 @@
             </div>
 
             <div class="card-footer">
-                <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('qc.create') }}" class="btn btn-warning">Refresh</a>
-                <button type="button" id="btn_get_table" class="btn btn-info">Buat Tabel</button>
-                <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
+                <a href="{{ route('alamat.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
+                    Kembali</a>
+                <button type="button" id="btn_refresh_input" class="btn btn-warning"><i class="fas fa-redo"></i>
+                    Refresh</button>
+                <button type="button" id="btn_get_table" class="btn btn-info"><i class="fas fa-table"></i> Buat
+                    Tabel</button>
+                <button type="submit" id="btn_simpan" class="btn btn-primary"><i class="fas fa-download"></i> Simpan
+                    Download</button>
             </div>
         </form>
 
@@ -187,9 +192,14 @@
         var REAGEN = 0;
         var KEL = 0;
 
-        reset_form_fisik()
-        reset_form_reagen()
-        reset_kelengkapan()
+        reset_all()
+
+        function reset_all() {
+            reset_form_fisik()
+            reset_form_reagen()
+            reset_kelengkapan()
+        }
+
 
         function reset_form_fisik() {
             FISIK = 0
@@ -496,6 +506,9 @@
 
             $('#btn_reset_reagen').click(function() {
                 reset_form_reagen()
+            })
+            $('#btn_refresh_input').click(function() {
+                reset_all()
             })
 
 
