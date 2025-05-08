@@ -15,12 +15,15 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\TargetController;
+use App\Http\Controllers\ToolsController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
     return redirect()->route('products.index');
 })->name('index');
+
+Route::get('tools-sn', [ToolsController::class, 'sn'])->name('tools.sn');
 
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');

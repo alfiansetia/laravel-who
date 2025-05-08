@@ -519,8 +519,8 @@
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
                     data: "item",
-                    render: function() {
-                        return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
+                    render: function(data, type, row, meta) {
+                        return `<span class="text-danger del-item"><i class="fas fa-trash"></i></span>`
                     }
                 }, {
                     data: "item",
