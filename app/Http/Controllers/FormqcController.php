@@ -33,10 +33,10 @@ class FormqcController extends Controller
             $i = 1;
             foreach ($data_kel as $index => $row) {
                 $i = $index + 1;
-                $template->setValue("kel_v#$i", $row);
-                $template->setValue("kel_y#$i", $data_kel_radio[$index] == 'yes' ? 'v' : '');
-                $template->setValue("kel_n#$i", $data_kel_radio[$index] == 'no' ? 'v' : '');
-                $template->setValue("kel_d#$i", $data_kel_desc[$index]);
+                $template->setValue("kel_v#$i", htmlspecialchars($row));
+                $template->setValue("kel_y#$i", htmlspecialchars($data_kel_radio[$index]) == 'yes' ? 'v' : '');
+                $template->setValue("kel_n#$i", htmlspecialchars($data_kel_radio[$index]) == 'no' ? 'v' : '');
+                $template->setValue("kel_d#$i", htmlspecialchars($data_kel_desc[$index]));
             }
             for ($j = $total + 1; $j <= $kel_row; $j++) {
                 $template->setValue("kel_v#$j", '');
