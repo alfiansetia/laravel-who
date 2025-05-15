@@ -89,7 +89,14 @@
                             <div class="form-group row">
                                 <label for="tipe" class="col-sm-2 col-form-label">Tipe</label>
                                 <div class="col-sm-10">
-                                    <input name="type" type="text" class="form-control" id="tipe" required>
+                                    <div class="input-group">
+                                        <input name="type" type="text" class="form-control" id="tipe" required>
+                                        <div class="input-group-append">
+                                            <button type="button" onclick="set_terlampir('tipe')" class="btn btn-info">
+                                                <i class="fas fa-list"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -97,15 +104,37 @@
                             <div class="form-group row">
                                 <label for="sn_lot" class="col-sm-2 col-form-label">SN/Lot</label>
                                 <div class="col-sm-10">
-                                    <input name="sn_lot" type="text" class="form-control" id="sn_lot"
-                                        value="Tanpa Lot/Sn">
+                                    <div class="input-group">
+                                        <input name="sn_lot" type="text" class="form-control" id="sn_lot"
+                                            value="Tanpa Lot/Sn">
+                                        <div class="input-group-append">
+                                            <div class="btn-group" role="group" aria-label="Basic example">
+                                                <button type="button" onclick="set_terlampir('sn_lot')"
+                                                    class="btn btn-info">
+                                                    <i class="fas fa-list"></i>
+                                                </button>
+                                                <button type="button" onclick="set_no_sn('sn_lot')"
+                                                    class="btn btn-secondary">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label for="qty" class="col-sm-2 col-form-label">QTY</label>
                                 <div class="col-sm-10">
-                                    <input name="qty" type="text" class="form-control" id="qty"
-                                        value="1 Unit" required>
+                                    <div class="input-group">
+                                        <input name="qty" type="text" class="form-control" id="qty"
+                                            value="1 Unit" required>
+                                        <div class="input-group-append">
+                                            <button type="button" onclick="set_terlampir('qty')" class="btn btn-info">
+                                                <i class="fas fa-list"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -202,6 +231,13 @@
             reset_kelengkapan()
         }
 
+        function set_terlampir(id_el) {
+            $(`#${id_el}`).val('Terlampir')
+        }
+
+        function set_no_sn(id_el) {
+            $(`#${id_el}`).val('Tanpa Lot/SN')
+        }
 
         function reset_form_fisik() {
             FISIK = 0
