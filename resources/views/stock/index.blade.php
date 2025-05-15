@@ -308,7 +308,9 @@
 
             $('#location').select2({
                 allowClear: false
-            })
+            }).on('change', function(e) {
+                table.ajax.reload()
+            });
 
             function reload_table() {
                 table.ajax.reload()
