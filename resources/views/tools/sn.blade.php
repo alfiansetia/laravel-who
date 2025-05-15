@@ -1,5 +1,10 @@
 @extends('template')
 
+@push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
+@endpush
+
 @section('content')
     <div class="container-fluid">
         <h1>{{ $title }}</h1>
@@ -45,7 +50,6 @@
                         <div class="form-group col-12">
                             <label for="skip">Skip</label>
                             <select name="skip" id="skip" class="form-control" multiple>
-                                <option value="">No</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -74,8 +78,15 @@
         </script>
     @endif
 
+
+    @push('js')
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @endpush
+
     <script>
         $(document).ready(function() {
+
+
             var table_tool = $('#table_tool').DataTable({
                 // pageLength: false,
                 lengthMenu: [
@@ -168,7 +179,7 @@
                         // misal skip ke array skip
                         if (row != '' || row != null) {
                             let cols = row.split('\t');
-                            console.log(cols);
+                            // console.log(cols);
 
                             cols.forEach((col, i) => {
                                 if (col) {
@@ -226,6 +237,13 @@
                     .remove()
                     .draw();
             });
+
+
+            $('#skip').select2({
+                placeholder: "Select a skip",
+                allowClear: true
+            })
+
 
 
         });
