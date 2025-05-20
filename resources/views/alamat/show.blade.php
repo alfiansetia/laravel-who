@@ -147,6 +147,7 @@
 
         @media print {
             .print-page {
+                padding-top: 10pt;
                 page-break-after: always;
             }
 
