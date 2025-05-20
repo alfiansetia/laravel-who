@@ -48,10 +48,23 @@
                             <input type="text" name="ekspedisi" id="ekspedisi" class="form-control"
                                 placeholder="Ekspedisi" value="{{ $data->ekspedisi }}">
                         </div>
-                        <div class="form-group col-md-6">
+                        {{-- <div class="form-group col-md-6">
                             <label for="koli">Jumlah Koli</label>
                             <input type="number" name="koli" id="koli" class="form-control" min="1"
                                 placeholder="Jumlah Koli" value="{{ $data->koli }}" required>
+                        </div> --}}
+                        <div class="form-group col-md-6">
+                            <label for="koli">Jumlah Koli</label>
+                            <div class="input-group mb-3">
+                                <input type="number" name="koli" id="koli" class="form-control" min="1"
+                                    placeholder="Jumlah Koli" value="{{ $data->koli }}" required>
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <input class="mr-1" type="checkbox" name="is_last_koli" value="yes"
+                                            id="is_last_koli" @checked($data->is_last_koli == 'yes')> Koli Terakhir
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-row">
@@ -433,6 +446,7 @@
                     is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
                     is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
                     is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
+                    is_last_koli: $('#is_last_koli').prop('checked') ? 'yes' : 'no',
                 }
                 $.ajax({
                     type: 'PUT',
