@@ -32,7 +32,7 @@
 
 </head>
 
-<body>
+<body style="margin: 0pt">
     <style>
         td.style22 {
             vertical-align: middle;
@@ -148,6 +148,8 @@
         @media print {
             .print-page {
                 padding-top: 10pt;
+                padding-left: 10pt;
+                padding-right: 10pt;
                 page-break-after: always;
             }
 
