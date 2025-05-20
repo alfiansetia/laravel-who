@@ -32,7 +32,7 @@
 
 </head>
 
-<body style="margin: 10pt;">
+<body>
     <style>
         td.style22 {
             vertical-align: middle;
