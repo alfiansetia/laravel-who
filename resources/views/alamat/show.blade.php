@@ -1,7 +1,20 @@
 @php
-    $ctn = is_numeric($data->koli) ? intval($data->koli) : 0;
+    $ctn = is_numeric($data->koli) ? intval($data->koli) : 1;
     $start = 1;
-    if ($data->is_last_koli == 'yes') {
+    // if ($data->is_last_koli == 'yes') {
+    //     $start = $ctn;
+    //     $end = $ctn;
+    // } else {
+    //     $start = 1;
+    //     $end = $ctn - 1;
+    // }
+    // if ($ctn < 2) {
+    //     $end = 1;
+    // }
+    if ($ctn <= 1) {
+        $start = 1;
+        $end = 1;
+    } elseif ($data->is_last_koli == 'yes') {
         $start = $ctn;
         $end = $ctn;
     } else {
