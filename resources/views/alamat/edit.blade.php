@@ -147,7 +147,7 @@
                         </div>
                     </div>
                 </div>
-                <table class="table" id="table">
+                <table class="table" id="table" style="width: 100%">
                     <thead>
                         <tr>
                             <th>#</th>
