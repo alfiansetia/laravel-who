@@ -279,14 +279,14 @@ class AlamatController extends Controller
                     if ($pro) {
                         array_push($pd_jd, [
                             'code'      => $matches[1],
-                            'qty'       => $item['quantity_done'],
+                            'qty'       => $item['quantity_done'] . ' Ea',
                             'default'   => $item['product_id'][1],
                             'lot'       => $values,
                         ]);
                         DetailAlamat::create([
                             'product_id'    => $pro->id,
                             'alamat_id'     => $alamat->id,
-                            'qty'           => $item['quantity_done'],
+                            'qty'           => $item['quantity_done'] . ' Ea',
                             'lot'           => $values,
                         ]);
                     }

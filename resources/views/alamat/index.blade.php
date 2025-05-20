@@ -13,6 +13,7 @@
                             <th>No DO</th>
                             <th>Tujuan</th>
                             <th>Ekspedisi</th>
+                            <th>Koli</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -61,6 +62,17 @@
                     },
                     {
                         data: "ekspedisi",
+                    }, {
+                        data: "id",
+                        render: function(data, type, row, meta) {
+                            if (type == 'display') {
+                                let text =
+                                    `${data} Koli`
+                                return text
+                            } else {
+                                return data
+                            }
+                        }
                     }, {
                         data: "id",
                         render: function(data, type, row, meta) {
