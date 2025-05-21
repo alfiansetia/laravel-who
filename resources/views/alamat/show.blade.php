@@ -174,8 +174,8 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; color: #FF0000;">
                         <span>{!! $data->koli < 1 ? '&nbsp;&nbsp;' : $data->koli !!} KOLI</span>
                         @if ($ctn > 1)
-                            <span style="color: black; font-size: 16pt;padding-right: 5pt">Ctn No:
-                                {{ $ct }}</span>
+                            <span style="color: black; font-size: 16pt;padding-right: 5pt">(Ctn No:
+                                {{ $ct }})</span>
                         @endif
                     </div>
                 </td>
