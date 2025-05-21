@@ -245,6 +245,7 @@ class BastController extends Controller
                         array_push($pd_jd, [
                             'code'      => $matches[1],
                             'qty'       => $item['quantity_done'],
+                            'satuan'    => 'EA',
                             'default'   => $item['product_id'][1],
                             'lot'       => $values,
                         ]);
@@ -252,6 +253,7 @@ class BastController extends Controller
                             'product_id'    => $pro->id,
                             'bast_id'       => $bast->id,
                             'qty'           => $item['quantity_done'],
+                            'satuan'        => 'EA',
                             'lot'           => $values,
                         ]);
                     }

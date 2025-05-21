@@ -25,7 +25,7 @@
                             <option value="Pcs">Pcs</option>
                             <option value="Pck">Pck</option>
                             <option value="Unit">Unit</option>
-                            <option value="EA">EA</option>
+                            <option value="EA" selected>EA</option>
                             <option value="Box">Box</option>
                             <option value="Btl">Btl</option>
                             <option value="Vial">Vial</option>
