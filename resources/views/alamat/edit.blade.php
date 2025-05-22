@@ -318,14 +318,13 @@
                 lengthChange: false,
                 paging: false,
                 rowId: 'id',
+                order: [
+                    [0, 'asc'],
+                ],
                 columns: [{
-                    data: 'id',
+                    data: 'order',
                     render: function(data, type, row, meta) {
-                        if (type == 'display') {
-                            return meta.row + meta.settings._iDisplayStart + 1;
-                        } else {
-                            return data
-                        }
+                        return data + 1
                     }
                 }, {
                     data: "product_id",
@@ -346,7 +345,23 @@
                     data: "id",
                     className: "text-center",
                     render: function(data, type, row, meta) {
-                        return `<button type="button" class="btn btn-sm btn-warning mr-1 edit">Edit</button><button type="button" class="btn btn-sm btn-primary hapus">Hapus</button>`
+                        let isFirst = meta.row === 0;
+                        let isLast = meta.row === meta.settings.json.data.detail.length - 1;
+
+                        return `
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-sm btn-secondary mr-1 up" ${isFirst ? 'disabled' : ''}>
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary mr-1 down" ${isLast ? 'disabled' : ''}>
+                                <i class="fas fa-arrow-down"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-sm btn-warning mr-1 edit">Edit</button>
+                            <button type="button" class="btn btn-sm btn-primary hapus">Hapus</button>
+                        </div>
+                        `
                     }
                 }]
             })
@@ -425,6 +440,37 @@
                 $('#desc_prod_edit').val(data.desc)
                 $('#form_edit').attr('action', "{{ url('api/detail_alamat/') }}/" + id)
                 $('#edit_modal').modal('show')
+            });
+
+            function order_item(id, type) {
+                // console.log(id, type);
+                let url = "{{ url('api/detail_alamat') }}/" + id + '/order'
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {
+                        type: type
+                    }
+                }).done(function(result) {
+                    table.ajax.reload()
+                }).fail(function(xhr) {
+                    alert('error!')
+                })
+            }
+
+            $('#table tbody').on('click', '.up', function() {
+                var row = table.row($(this).closest('tr'));
+                id = row.id();
+                let data = row.data()
+                order_item(data.id, 'up')
+
+            });
+
+            $('#table tbody').on('click', '.down', function() {
+                var row = table.row($(this).closest('tr'));
+                id = row.id();
+                let data = row.data()
+                order_item(data.id, 'down')
             });
 
             $('#form').submit(function(e) {

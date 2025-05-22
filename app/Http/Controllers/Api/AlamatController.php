@@ -20,7 +20,12 @@ class AlamatController extends Controller
 
     public function show(Alamat $alamat)
     {
-        return response()->json(['message' => '', 'data' => $alamat->load('detail.product')]);
+        $detail = $alamat->detail()->get();
+        foreach ($detail as $key => $item) {
+            $item->update(['order' => $key]);
+        }
+        $data = $alamat->load('detail.product');
+        return response()->json(['message' => '', 'data' => $data]);
     }
 
     public function store(Request $request)
@@ -244,10 +249,14 @@ class AlamatController extends Controller
                 "id" => 647906249
             ])->url_param('/web/dataset/call_kw/stock.move/read')->get();
 
-            // return response()->json([
-            //     '3' => $json3,
-            //     '4' => $json4,
-            // ]);
+            $last_key = 0;
+            $details = DetailAlamat::query()->where('alamat_id', $alamat->id)->orderBy('order')->get();
+            foreach ($details as $key => $item) {
+                $item->update([
+                    'order' => $key,
+                ]);
+                $last_key++;
+            }
             $x = [];
             foreach ($pd as $item) {
                 $lot = collect($json4['result'])->filter(function ($value) use ($item) {
@@ -288,7 +297,9 @@ class AlamatController extends Controller
                             'alamat_id'     => $alamat->id,
                             'qty'           => $item['quantity_done'] . ' Ea',
                             'lot'           => $values,
+                            'order'         => $last_key
                         ]);
+                        $last_key++;
                     }
                 }
             }
