@@ -324,7 +324,7 @@
                 columns: [{
                     data: 'order',
                     render: function(data, type, row, meta) {
-                        return data + 1
+                        return parseInt(data) + 1
                     }
                 }, {
                     data: "product_id",
