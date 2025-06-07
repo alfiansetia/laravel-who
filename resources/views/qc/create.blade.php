@@ -63,8 +63,18 @@
                             <div class="form-group row">
                                 <label for="no" class="col-sm-2 col-form-label">NO</label>
                                 <div class="col-sm-10">
-                                    <input name="no" type="number" class="form-control" id="no" value="1"
-                                        min="1" required>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="no_min()"><i
+                                                    class="fas fa-minus"></i></button>
+                                        </div>
+                                        <input name="no" type="number" class="form-control" id="no"
+                                            value="1" min="1" required>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-sm btn-success" onclick="no_plus()"><i
+                                                    class="fas fa-plus"></i></button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -90,7 +100,8 @@
                                 <label for="tipe" class="col-sm-2 col-form-label">Tipe</label>
                                 <div class="col-sm-10">
                                     <div class="input-group">
-                                        <input name="type" type="text" class="form-control" id="tipe" required>
+                                        <input name="type" type="text" class="form-control" id="tipe"
+                                            required>
                                         <div class="input-group-append">
                                             <button type="button" onclick="set_terlampir('tipe')" class="btn btn-info">
                                                 <i class="fas fa-list"></i>
@@ -167,6 +178,8 @@
                             FISIK
                             <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning"><i
                                     class="fas fa-redo"></i> Reset</button>
+                            <button id="btn_all_fisik" type="button" class="btn btn-sm btn-success"><i
+                                    class="fas fa-check-double"></i> All</button>
                         </h3>
                         <div class="col-12" id="fisik">
                         </div>
@@ -225,6 +238,21 @@
 
         reset_all()
 
+        function no_plus() {
+            let no = parseInt($('#no').val()) || 1; // Mulai dari 1 jika kosong atau tidak valid
+            $('#no').val(no + 1);
+        }
+
+        function no_min() {
+            let no = parseInt($('#no').val()) || 1;
+            if (no > 1) {
+                $('#no').val(no - 1);
+            } else {
+                $('#no').val(1); // Tetap di 1 kalau kurang dari itu
+            }
+        }
+
+
         function reset_all() {
             reset_form_fisik()
             reset_form_reagen()
@@ -239,15 +267,15 @@
             $(`#${id_el}`).val('Tanpa Lot/SN')
         }
 
-        function reset_form_fisik() {
+        function reset_form_fisik(all = false) {
             FISIK = 0
             $('#fisik').html('')
-            generate_form_fisik('Kondisi Fisik')
-            generate_form_fisik('Pembungkus alat dalam kardus atau peti')
-            generate_form_fisik('Pengaman alat dalam kardus atau peti')
-            generate_form_fisik('Kondisi kardus atau peti')
-            generate_form_fisik('Penempelan penandaan AKL dialat')
-            generate_form_fisik('Penempelan nomor izin edar pada dus')
+            generate_form_fisik('Kondisi Fisik', all)
+            generate_form_fisik('Pembungkus alat dalam kardus atau peti', all)
+            generate_form_fisik('Pengaman alat dalam kardus atau peti', all)
+            generate_form_fisik('Kondisi kardus atau peti', all)
+            generate_form_fisik('Penempelan penandaan AKL dialat', all)
+            generate_form_fisik('Penempelan nomor izin edar pada dus', all)
         }
 
         function reset_form_reagen() {
@@ -280,7 +308,7 @@
         }
 
 
-        function generate_form_fisik(text) {
+        function generate_form_fisik(text, checked = false) {
             number = FISIK
             FISIK = FISIK + 1
             let html = `<div class="form-group row mb-2">
@@ -291,7 +319,7 @@
                                 <div class="col-sm-4 text-center">
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="fisik_radio[${number}]" id="f${number}1"
-                                            class="custom-control-input" value="yes">
+                                            class="custom-control-input" value="yes" ${checked ? 'checked' : ''}>
                                         <label class="custom-control-label" for="f${number}1">Baik</label>
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
@@ -301,7 +329,7 @@
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="fisik_radio[${number}]" id="f${number}3"
-                                            class="custom-control-input" value="other" checked>
+                                            class="custom-control-input" value="other" ${checked ? '' : 'checked'}>
                                         <label class="custom-control-label" for="f${number}3">Kosong</label>
                                     </div>
                                 </div>
@@ -390,6 +418,7 @@
             let pref = str.includes('.') ? str.split('.')[0] : str;
             let pl = pref.toLowerCase()
             const lookup = {
+                '3a': '3A',
                 'bdf': 'BEDFONT',
                 'djo': 'CHATTANOOGA',
                 'glb': 'GENERAL LIFE B',
@@ -399,10 +428,13 @@
                 'jpd': 'JUMPER',
                 'mrid': 'MINDRAY',
                 'lfn': 'LIFOTRONIC',
+                'pdl': 'PT Mitra Artha Pandulang',
+                'phi': 'PHILIPS',
                 'pts': 'POLIMER TECHNOLOGY',
                 'nox': 'NOXBOX',
                 'nx': 'NOXBOX',
                 'var': 'VARITEKS',
+
             };
             return lookup[pref.toLowerCase()] || pref;
         }
@@ -534,6 +566,10 @@
 
             $('#btn_reset_fisik').click(function() {
                 reset_form_fisik()
+            })
+
+            $('#btn_all_fisik').click(function() {
+                reset_form_fisik(true)
             })
 
             $('#btn_reset_reagen').click(function() {
