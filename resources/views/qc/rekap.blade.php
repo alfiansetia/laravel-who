@@ -1,6 +1,6 @@
 <div class="card card-primary mt-3 mb-3">
     <div class="card-header">
-        <h3 class="card-title">Rekap</h3>
+        <h3 class="card-title">Rekap <span id="detail_rekap"></span></h3>
     </div>
 
     <div class="card-body">

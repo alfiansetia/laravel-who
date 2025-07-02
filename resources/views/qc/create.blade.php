@@ -389,7 +389,7 @@
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}1"
                                             class="custom-control-input" value="yes" ${checked ? 'checked' : ''}>
-                                        <label class="custom-control-label" for="k${number}1">Baik</label>
+                                        <label class="custom-control-label" for="k${number}1">Ada</label>
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}2"
@@ -473,6 +473,7 @@
 
 
             function generate_table() {
+                $('#detail_rekap').text($('#pic').val())
                 $('#t_no').html($('#no').val())
                 $('#t_name').html($('#nama_alat').val())
                 $('#t_merk').html($('#merk').val())
