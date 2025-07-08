@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 
 class TelegramServices
@@ -11,14 +10,25 @@ class TelegramServices
 
     public function __construct() {}
 
-    public static function get_token()
+    public static function getToken()
     {
         return config('services.telegram.token');
     }
 
+    public static function getGroupId()
+    {
+        return config('services.telegram.group');
+    }
+
+    public static function sendToGroup($message)
+    {
+        $group_id = static::getGroupId();
+        return static::send($group_id, $message);
+    }
+
     public static function send($chat_id, $message)
     {
-        $token  = static::get_token();
+        $token  = static::getToken();
         $url = static::$base_url . "bot$token/sendMessage";
         $post = Http::post($url, [
             'chat_id'   => $chat_id,

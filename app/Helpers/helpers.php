@@ -75,4 +75,5 @@ function get_name($string)
             return $string[1];
         }
     }
+    return null;
 }

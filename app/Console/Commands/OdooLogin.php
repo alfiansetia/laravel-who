@@ -62,8 +62,7 @@ class OdooLogin extends Command
                     'odoo_session' => $sessionId
                 ]);
             }
-            $chat_id = config('services.telegram.group');
-            TelegramServices::send($chat_id, 'Success Login, session : ' . $sessionId);
+            TelegramServices::sendToGroup('Success Login, session : ' . $sessionId);
             $this->info('Session ID berhasil disimpan: ' . $sessionId);
             return 0;
         } catch (\Exception $e) {

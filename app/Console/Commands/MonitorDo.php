@@ -32,7 +32,6 @@ class MonitorDo extends Command
     public function handle()
     {
         $session = $this->read_session();
-        $chat_id = config('services.telegram.group');
         // $this->info(json_encode($session));
         try {
             $do = DoServices::getAll('CENT/OUT/', 5);
@@ -48,21 +47,21 @@ class MonitorDo extends Command
                         $title = '⚠️ Ada ' . $selisih . 'DO Baru!';
                         $message = $title;
                         FirebaseServices::send($title, $message);
-                        TelegramServices::send($chat_id, $message);
+                        TelegramServices::sendToGroup($message);
                     } else {
-                        TelegramServices::send($chat_id, 'Program Started!');
+                        TelegramServices::sendToGroup('Program Started!');
                         $this->info('Program Started');
                     }
                 } else {
                     $this->info('Jumlah Berubah. Kirim Notif!');
                     for ($i = 0; $i < $selisih; $i++) {
                         $value = $do['records'][$i];
-                        $message = ' SO : ' . $value['origin'] ?? '' . ', ';
+                        $message = ' SO : ' . ($value['origin'] ?? '') . ', ';
                         $message .= ' TO : ' . get_name($value['partner_id']) . ', ';
-                        $message .= ' NOTE : ' . $value['note_to_wh'] ?? '' . ', ';
+                        $message .= ' NOTE : ' . ($value['note_to_wh'] ?? '') . ', ';
                         // $this->info('⚠️ Ada DO!, ' . $value['origin'] . $message);
                         FirebaseServices::send('⚠️ Ada DO Baru!, ' . $value['name'], $message);
-                        TelegramServices::send($chat_id, '⚠️ Ada DO Baru!, ' . $value['name'] . $message);
+                        TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . $value['name'] . $message);
                     }
                 }
             } else {
@@ -73,7 +72,7 @@ class MonitorDo extends Command
             $this->save_session($session['length'], $session['error'] + 1);
             if ($session['error'] < 3) {
                 $this->error($th->getMessage());
-                TelegramServices::send($chat_id, 'Error : ' . $th->getMessage());
+                TelegramServices::sendToGroup('Error : ' . $th->getMessage());
             }
         }
     }
