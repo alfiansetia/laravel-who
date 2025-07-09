@@ -17,7 +17,7 @@ Schedule::command('app:monitor-do')->everyMinute()->onSuccess(function () {
 });
 
 
-Schedule::command('app:odoo-login')->dailyAt('06:00')->onSuccess(function () {
+Schedule::command('app:odoo-login')->hourly()->onSuccess(function () {
     // Log::info('Cronjob Monitor DO berhasil dijalankan');
 })->onFailure(function () {
     // Log::error('Cronjob Monitor DO Gagal dijalankan');
