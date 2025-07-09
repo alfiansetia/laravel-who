@@ -94,6 +94,7 @@ class OdooLogin extends Command
             // }
             return 0;
         } catch (\Exception $e) {
+            TelegramServices::sendToGroup('Error Login : ' . $e->getMessage());
             $this->error('Terjadi kesalahan: ' . $e->getMessage());
             return 1;
         }
