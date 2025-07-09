@@ -137,31 +137,29 @@
                 }
                 let sid = data[0].id
                 $.get("{{ url('api/do') }}/" + sid).done(function(res) {
-                    if (res.data.length > 0) {
-                        let tujuan = ''
-                        let no_do = ''
-                        if (res.data[0].partner_id != false) {
-                            tujuan = res.data[0].partner_id[1]
-                        }
-                        if (res.data[0].name != false) {
-                            no_do = res.data[0].name
-                        }
-                        let alamat = res.data[0].partner_address
-                        if (res.data[0].partner_address2 != false) {
-                            alamat += ' ' + res.data[0].partner_address2
-                        }
-                        if (res.data[0].partner_address3 != false) {
-                            alamat += ' ' + res.data[0].partner_address3
-                        }
-                        if (res.data[0].partner_address4 != false) {
-                            alamat += ' ' + res.data[0].partner_address4
-                        }
-
-                        $('#name').val(tujuan)
-                        $('#address').val(alamat)
-                        $('#city').val(res.data[0].partner_address3 || '')
-                        $('#do').val(no_do)
+                    let tujuan = ''
+                    let no_do = ''
+                    if (res.data.partner_id != false) {
+                        tujuan = res.data.partner_id[1]
                     }
+                    if (res.data.name != false) {
+                        no_do = res.data.name
+                    }
+                    let alamat = res.data.partner_address
+                    if (res.data.partner_address2 != false) {
+                        alamat += ' ' + res.data.partner_address2
+                    }
+                    if (res.data.partner_address3 != false) {
+                        alamat += ' ' + res.data.partner_address3
+                    }
+                    if (res.data.partner_address4 != false) {
+                        alamat += ' ' + res.data.partner_address4
+                    }
+
+                    $('#name').val(tujuan)
+                    $('#address').val(alamat)
+                    $('#city').val(res.data.partner_address3 || '')
+                    $('#do').val(no_do)
                 }).fail(function(xhr) {
                     alert('Odoo Error!')
                 });

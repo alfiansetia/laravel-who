@@ -2,10 +2,10 @@
 
 namespace App\Services\Import;
 
-use App\Services\OdooServices;
+use App\Services\Odoo;
 use Exception;
 
-class RIServices extends OdooServices
+class RIServices extends Odoo
 {
     public function __construct() {}
 
@@ -96,10 +96,10 @@ class RIServices extends OdooServices
                 ]
             ],
         ];
-        $response  = parent::as_json()
-            ->url_param($url_param)
+        $response  = parent::asJson()
+            ->withUrlParam($url_param)
             ->method('POST')
-            ->data($data)
+            ->withData($data)
             ->get();
         if (!isset($response['result'])) {
             throw new Exception('Odoo Error');
@@ -232,10 +232,10 @@ class RIServices extends OdooServices
                 ]
             ],
         ];
-        $response  = parent::as_json()
-            ->url_param($url_param)
+        $response  = parent::asJson()
+            ->withUrlParam($url_param)
             ->method('POST')
-            ->data($data)
+            ->withData($data)
             ->get();
         try {
             $order_line = static::move_line_without($response['result'][0]['move_ids_without_package']);
@@ -247,78 +247,142 @@ class RIServices extends OdooServices
         return $response['result'];
     }
 
-    public static function move_line_without(array $line)
+    public static function getOrderLines(array $line)
     {
-        $line_int =  array_map('intval', array_filter($line, 'is_numeric'));
+        $id_prod =  array_map('intval', array_filter($line, 'is_numeric'));
         $data_line = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "id" => 563164766,
-            "params" => [
-                "args" => [
-                    $line_int,
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
+                    $id_prod,
                     [
                         "product_id",
                         "name",
-                        "date_expected",
-                        "state",
-                        "picking_type_id",
                         "location_id",
-                        "location_dest_id",
-                        "scrapped",
-                        "picking_code",
-                        "product_type",
-                        "show_details_visible",
-                        "show_reserved_availability",
-                        "show_operations",
-                        "additional",
-                        "has_move_lines",
-                        "is_locked",
                         "x_studio_lot",
                         "x_studio_field_X7gbX",
-                        "hs_code",
                         "akl_id",
                         "exp_date",
-                        "is_initial_demand_editable",
-                        "is_quantity_done_editable",
                         "product_uom_qty",
-                        "reserved_availability",
                         "quantity_done",
-                        "product_uom"
                     ]
                 ],
-                "model" => "stock.move",
+                'model' => 'stock.move',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        'lang' => 'en_US',
+                        'tz' => 'GMT',
+                        'uid' => 192,
+                        'active_model' => 'stock.picking.type',
+                        'active_id' => 2,
+                        'active_ids' => [2],
+                        'search_default_picking_type_id' => [2],
+                        'default_picking_type_id' => 2,
+                        'contact_display' => 'partner_address',
+                        'search_default_available' => 1,
+                        'search_disable_custom_filters' => true,
+                        'picking_type_code' => 'outgoing',
+                        'default_picking_id' => 2309,
+                        'form_view_ref' => 'stock.view_move_picking_form',
+                        'address_in_id' => 25823,
+                        'default_location_id' => 12,
+                        'default_location_dest_id' => 9
+                    ]
+                ]
+            ],
+            'id' => 555446768
+        ];
+        $order_line = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/stock.move/read')
+            ->withData($data_line)
+            ->get();
+        return $order_line;
+    }
+
+    public static function getOrderLinesDetail(array $line)
+    {
+        $id_prod =  array_map('intval', array_filter($line, 'is_numeric'));
+        $data_line = [
+            "jsonrpc" => "2.0",
+            "method" => "call",
+            "params" => [
+                "args" => [
+                    $id_prod,
+                    [
+                        "picking_id",
+                        "product_id",
+                        "package_level_id",
+                        "location_id",
+                        "location_dest_id",
+                        "lot_id",
+                        "expired_date_do",
+                        "lot_name",
+                        "expired_date",
+                        "lot_id2",
+                        "package_id",
+                        "result_package_id",
+                        "owner_id",
+                        "is_initial_demand_editable",
+                        "product_uom_qty",
+                        "qty_availa",
+                        "state",
+                        "is_locked",
+                        "qty_done",
+                        "product_uom_id"
+                    ]
+                ],
+                "model" => "stock.move.line",
                 "method" => "read",
                 "kwargs" => [
                     "context" => [
                         "lang" => "en_US",
                         "tz" => "Asia/Jakarta",
                         "uid" => 192,
-                        "active_model" => "stock.picking.type",
-                        "active_id" => 1,
+                        "params" => [
+                            "action" => 384,
+                            "active_id" => 2,
+                            "model" => "stock.picking",
+                            "view_type" => "list",
+                            "menu_id" => 241
+                        ],
+                        "contact_display" => "partner_address",
+                        "search_disable_custom_filters" => true,
+                        "active_model" => "stock.move",
+                        "active_id" => 2,
                         "active_ids" => [
-                            1
+                            2
                         ],
                         "search_default_picking_type_id" => [
-                            1
+                            2
                         ],
-                        "default_picking_type_id" => 1,
-                        "contact_display" => "partner_address",
+                        "default_picking_type_id" => 2,
                         "search_default_available" => 1,
-                        "search_disable_custom_filters" => true,
-                        "picking_type_code" => "incoming",
-                        "default_picking_id" => 20563,
-                        "form_view_ref" => "stock.view_move_picking_form",
-                        "address_in_id" => 23069,
-                        "default_location_id" => 8,
-                        "default_location_dest_id" => 12
+                        "show_lots_m2o" => true,
+                        "show_lots_text" => false,
+                        "show_source_location" => "stock.location()",
+                        "show_destination_location" => "stock.location()",
+                        "show_package" => true,
+                        "show_reserved_quantity" => false,
+                        "tree_view_ref" => "stock.view_stock_move_line_operation_tree",
+                        "default_product_uom_id" => 61,
+                        "default_picking_id" => 20018,
+                        "default_move_id" => 226881,
+                        "default_product_id" => 22006,
+                        "default_location_id" => 12,
+                        "default_location_dest_id" => 9
                     ]
                 ]
             ],
+            "id" => 647906249
         ];
-        $order_line = parent::as_json()->method('POST')
-            ->url_param('/web/dataset/call_kw/stock.move/read')
-            ->data($data_line)->get();
+        $order_line = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/stock.move/read')
+            ->withData($data_line)
+            ->get();
         return $order_line;
     }
 }

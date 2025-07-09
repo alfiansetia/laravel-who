@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PoResource;
 use App\Services\Import\RIServices;
 use Illuminate\Http\Request;
 
@@ -40,7 +39,7 @@ class RIController extends Controller
     public function order_line(Request $request)
     {
         try {
-            $res = RIServices::move_line_without($request->lines);
+            $res = RIServices::getOrderLines($request->lines);
             return response()->json(['data' => collect($res['result'])->map(function ($item) {
                 $p = pecah_code($item['product_id']);
                 $item['p_id'] = $p[0];

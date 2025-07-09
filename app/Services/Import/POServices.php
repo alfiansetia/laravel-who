@@ -2,10 +2,10 @@
 
 namespace App\Services\Import;
 
-use App\Services\OdooServices;
+use App\Services\Odoo;
 use Exception;
 
-class POServices extends OdooServices
+class POServices extends Odoo
 {
     public function __construct() {}
 
@@ -71,10 +71,10 @@ class POServices extends OdooServices
                 ]
             ],
         ];
-        $response  = parent::as_json()
-            ->url_param($url_param)
+        $response  = parent::asJson()
+            ->withUrlParam($url_param)
             ->method('POST')
-            ->data($data)
+            ->withData($data)
             ->get();
         if (!isset($response['result'])) {
             throw new Exception('Odoo Error');
@@ -163,13 +163,13 @@ class POServices extends OdooServices
             ],
             "id" => 181837902
         ];
-        $response  = parent::as_json()
-            ->url_param($url_param)
+        $response  = parent::asJson()
+            ->withUrlParam($url_param)
             ->method('POST')
-            ->data($data)
+            ->withData($data)
             ->get();
         try {
-            $order_line = static::get_order_line($response['result'][0]['order_line']);
+            $order_line = static::getOrderLines($response['result'][0]['order_line']);
             $response['result'][0]['order_line_detail'] = $order_line['result'] ?? [];
         } catch (\Throwable $th) {
             $response['result'][0]['order_line_detail'] = [];
@@ -179,10 +179,10 @@ class POServices extends OdooServices
         return $response['result'];
     }
 
-    public static function get_order_line(array $line)
+    public static function getOrderLines(array $line)
     {
         $line_int =  array_map('intval', array_filter($line, 'is_numeric'));
-        $data_line = [
+        $data_lines = [
             "jsonrpc" => "2.0",
             "method" => "call",
             "params" => [
@@ -235,9 +235,11 @@ class POServices extends OdooServices
             ],
             "id" => 75135116
         ];
-        $order_line = parent::as_json()->method('POST')
-            ->url_param('/web/dataset/call_kw/purchase.order.line/read')
-            ->data($data_line)->get();
-        return $order_line;
+        $order_lines = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/purchase.order.line/read')
+            ->withData($data_lines)
+            ->get();
+        return $order_lines;
     }
 }

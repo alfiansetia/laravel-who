@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\OdooService;
+use App\Services\Odoo;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\File;
 class FileDownloaderController extends Controller
 {
 
-    public function download(string $id_so = null)
+    public function download(string $id_so)
     {
         if (!$id_so) {
             abort(404);
@@ -44,10 +44,16 @@ class FileDownloaderController extends Controller
         ];
         try {
             $url_param =  '/web/dataset/call_button';
-            $service = new OdooService();
-            $json = $service->method('POST')->url_param($url_param)->data($data)->get();
+            $json = Odoo::asJson()
+                ->method('POST')
+                ->withUrlParam($url_param)
+                ->withData($data)
+                ->get();
             $data_url = $json['result']['url'];
-            $fileResponse = $service->as_file()->url_param($data_url)->method('GET')->get();
+            $fileResponse = Odoo::asFile()
+                ->withUrlParam($data_url)
+                ->method('GET')
+                ->get();
             $full = $fileResponse->header('Content-Disposition');
             if (!$full) {
                 throw new Exception('File Not Found');
@@ -60,7 +66,7 @@ class FileDownloaderController extends Controller
             }
             file_put_contents($filePath, $fileResponse->body());
             return response()->download($filePath)->deleteFileAfterSend();
-        } catch (\Throwable $th) {  
+        } catch (\Throwable $th) {
             abort(404, $th->getMessage());
         }
     }

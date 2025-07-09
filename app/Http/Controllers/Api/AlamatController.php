@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alamat;
 use App\Models\DetailAlamat;
 use App\Models\Product;
-use App\Services\DoService;
+use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -119,135 +119,12 @@ class AlamatController extends Controller
         try {
             $id = 0;
             $do = $alamat->do;
-            $service  = new DoService();
-            $json = $service->search($do);
-            if (count($json['result']['records'] ?? []) > 0) {
-                $id = intval($json['result']['records'][0]['id']);
+            $json = DoServices::getAll($do);
+            if (count($json['records'] ?? []) > 0) {
+                $id = intval($json['records'][0]['id']);
             }
-            $json2 = $service->detail($id);
-            $id_prod = $json2['result'][0]['move_ids_without_package'] ?? [];
-            $json3 = $service->method('POST')
-                ->data([
-                    'jsonrpc' => '2.0',
-                    'method' => 'call',
-                    'params' => [
-                        'args' => [
-                            $id_prod,
-                            [
-                                "product_id",
-                                "name",
-                                "location_id",
-                                "x_studio_lot",
-                                "x_studio_field_X7gbX",
-                                "akl_id",
-                                "exp_date",
-                                "product_uom_qty",
-                                "quantity_done",
-                            ]
-                        ],
-                        'model' => 'stock.move',
-                        'method' => 'read',
-                        'kwargs' => [
-                            'context' => [
-                                'lang' => 'en_US',
-                                'tz' => 'GMT',
-                                'uid' => 192,
-                                'active_model' => 'stock.picking.type',
-                                'active_id' => 2,
-                                'active_ids' => [2],
-                                'search_default_picking_type_id' => [2],
-                                'default_picking_type_id' => 2,
-                                'contact_display' => 'partner_address',
-                                'search_default_available' => 1,
-                                'search_disable_custom_filters' => true,
-                                'picking_type_code' => 'outgoing',
-                                'default_picking_id' => 2309,
-                                'form_view_ref' => 'stock.view_move_picking_form',
-                                'address_in_id' => 25823,
-                                'default_location_id' => 12,
-                                'default_location_dest_id' => 9
-                            ]
-                        ]
-                    ],
-                    'id' => 555446768
-                ])
-                ->url_param('/web/dataset/call_kw/stock.move/read')
-                ->get();
-            $pd = $json3['result'] ?? [];
+            $detail = DoServices::detail($id);
             $pd_jd = [];
-            $json4 = $service->method('POST')->data([
-                "jsonrpc" => "2.0",
-                "method" => "call",
-                "params" => [
-                    "args" => [
-                        $json2['result'][0]['move_line_ids_without_package'] ?? [],
-                        [
-                            "picking_id",
-                            "product_id",
-                            "package_level_id",
-                            "location_id",
-                            "location_dest_id",
-                            "lot_id",
-                            "expired_date_do",
-                            "lot_name",
-                            "expired_date",
-                            "lot_id2",
-                            "package_id",
-                            "result_package_id",
-                            "owner_id",
-                            "is_initial_demand_editable",
-                            "product_uom_qty",
-                            "qty_availa",
-                            "state",
-                            "is_locked",
-                            "qty_done",
-                            "product_uom_id"
-                        ]
-                    ],
-                    "model" => "stock.move.line",
-                    "method" => "read",
-                    "kwargs" => [
-                        "context" => [
-                            "lang" => "en_US",
-                            "tz" => "Asia/Jakarta",
-                            "uid" => 192,
-                            "params" => [
-                                "action" => 384,
-                                "active_id" => 2,
-                                "model" => "stock.picking",
-                                "view_type" => "list",
-                                "menu_id" => 241
-                            ],
-                            "contact_display" => "partner_address",
-                            "search_disable_custom_filters" => true,
-                            "active_model" => "stock.move",
-                            "active_id" => 2,
-                            "active_ids" => [
-                                2
-                            ],
-                            "search_default_picking_type_id" => [
-                                2
-                            ],
-                            "default_picking_type_id" => 2,
-                            "search_default_available" => 1,
-                            "show_lots_m2o" => true,
-                            "show_lots_text" => false,
-                            "show_source_location" => "stock.location()",
-                            "show_destination_location" => "stock.location()",
-                            "show_package" => true,
-                            "show_reserved_quantity" => false,
-                            "tree_view_ref" => "stock.view_stock_move_line_operation_tree",
-                            "default_product_uom_id" => 61,
-                            "default_picking_id" => 20018,
-                            "default_move_id" => 226881,
-                            "default_product_id" => 22006,
-                            "default_location_id" => 12,
-                            "default_location_dest_id" => 9
-                        ]
-                    ]
-                ],
-                "id" => 647906249
-            ])->url_param('/web/dataset/call_kw/stock.move/read')->get();
 
             $last_key = 0;
             $details = DetailAlamat::query()->where('alamat_id', $alamat->id)->orderBy('order')->get();
@@ -257,9 +134,8 @@ class AlamatController extends Controller
                 ]);
                 $last_key++;
             }
-            $x = [];
-            foreach ($pd as $item) {
-                $lot = collect($json4['result'])->filter(function ($value) use ($item) {
+            foreach (($detail['move_ids_detail'] ?? []) as $item) {
+                $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
                     if (isset($item['product_id'][0], $value['product_id'][0])) {
                         return $item['product_id'][0] === $value['product_id'][0];
                     }
@@ -271,7 +147,7 @@ class AlamatController extends Controller
                         $ed = $item['expired_date_do'] ?? '';
                         if ($lot && $ed) {
                             $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
-                                ->setTimezone('Asia/Jakarta')
+                                ->setTimezone(config('app.timezone'))
                                 ->format('Y.m.d');
                             return $lot . " /Ed. " . $ed;
                         } elseif ($lot) {
@@ -303,9 +179,7 @@ class AlamatController extends Controller
                     }
                 }
             }
-            // return response()->json($x);
-
-            return response()->json(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'json3' => $json3]);
+            return response()->json(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }

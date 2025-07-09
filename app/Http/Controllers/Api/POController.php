@@ -36,7 +36,7 @@ class POController extends Controller
     public function order_line(Request $request)
     {
         try {
-            $res = POServices::get_order_line($request->lines);
+            $res = POServices::getOrderLines($request->lines);
             return response()->json(['data' => PoResource::collection($res['result'])]);
         } catch (\Throwable $th) {
             return response()->json($th->getMessage(), 500);

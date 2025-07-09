@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LotResource;
 use App\Http\Resources\StockResource;
-use App\Services\OdooService;
+use App\Services\Odoo;
 use Illuminate\Http\Request;
 
 class StockController extends Controller
@@ -64,8 +64,11 @@ class StockController extends Controller
         }
         try {
             $url_param = '/web/dataset/call_kw/stock.quant/read_group';
-            $odoo_service = new OdooService();
-            $data = $odoo_service->data($param)->url_param($url_param)->as_json()->method('POST')->get();
+            $data = Odoo::asJson()
+                ->withData($param)
+                ->withUrlParam($url_param)
+                ->method('POST')
+                ->get();
             return response()->json(['data' => StockResource::collection($data['result'] ?? [])]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
@@ -131,8 +134,11 @@ class StockController extends Controller
         }
         try {
             $url_param = '/web/dataset/search_read';
-            $odoo_service = new OdooService();
-            $data = $odoo_service->data($param)->url_param($url_param)->as_json()->method('POST')->get();
+            $data = Odoo::asJson()
+                ->withData($param)
+                ->withUrlParam($url_param)
+                ->method('POST')
+                ->get();
             // return response()->json($data);
             return response()->json(['data' => LotResource::collection($data['result']['records'] ?? [])]);
         } catch (\Throwable $th) {

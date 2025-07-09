@@ -26,7 +26,7 @@ class LotResource extends JsonResource
         $expired = $this['itds_expired'];
         try {
             $expired = Carbon::createFromFormat('Y-m-d H:i:s', $this['itds_expired'], 'UTC')
-                ->setTimezone('Asia/Jakarta')
+                ->setTimezone(config('app.timezone'))
                 ->format('Y.m.d');
         } catch (\Throwable $th) {
             //throw $th;

@@ -31,7 +31,7 @@ class MonitorDo extends Command
      */
     public function handle()
     {
-        $session = $this->read_session();
+        $session = $this->readSession();
         // $this->info(json_encode($session));
         try {
             $do = DoServices::getAll('CENT/OUT/', 5);
@@ -67,9 +67,9 @@ class MonitorDo extends Command
             } else {
                 $this->info('⚠️ No DO! ');
             }
-            $this->save_session($odoo_length, 0);
+            $this->saveSession($odoo_length, 0);
         } catch (\Throwable $th) {
-            $this->save_session($session['length'], $session['error'] + 1);
+            $this->saveSession($session['length'], $session['error'] + 1);
             if ($session['error'] < 3) {
                 $this->error($th->getMessage());
                 TelegramServices::sendToGroup('Error : ' . $th->getMessage());
@@ -77,9 +77,9 @@ class MonitorDo extends Command
         }
     }
 
-    public function read_session()
+    public function readSession()
     {
-        $session_file = storage_path('app/session.json');
+        $session_file = storage_path('app/monitor.json');
         if (file_exists($session_file)) {
             $json = File::get($session_file);
             return json_decode($json, true);
@@ -93,11 +93,10 @@ class MonitorDo extends Command
         }
     }
 
-
-    public function save_session($length = 0, $error = 0)
+    public function saveSession($length = 0, $error = 0)
     {
         $json = json_encode(['length' => $length, 'error' => $error], JSON_PRETTY_PRINT);
-        $session_file = storage_path('app/session.json');
+        $session_file = storage_path('app/monitor.json');
         File::put($session_file, $json);
     }
 }

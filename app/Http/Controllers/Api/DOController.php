@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\DoMonitorService;
 use App\Services\DoService;
+use App\Services\DoServices;
 use Illuminate\Http\Request;
 
 class DOController extends Controller
@@ -14,9 +15,8 @@ class DOController extends Controller
     {
         $search = $request->param ?? 'CENT/OUT/';
         try {
-            $service = new DoService();
-            $response = $service->search($search);
-            return response()->json(['data' => $response['result'] ?? []]);
+            $response = DoServices::getAll($search);
+            return response()->json(['data' => $response]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
@@ -26,9 +26,8 @@ class DOController extends Controller
     {
         $id = intval($id);
         try {
-            $service = new DoService();
-            $response = $service->detail($id);
-            return response()->json(['data' => $response['result'] ?? []]);
+            $response = DoServices::detail($id);
+            return response()->json(['data' => $response]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
@@ -37,8 +36,7 @@ class DOController extends Controller
     public function monitor()
     {
         try {
-            $service = new DoMonitorService();
-            $response = $service->search();
+            $response = DoMonitorService::getAll();
             return response()->json(['data' => $response ?? []]);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);

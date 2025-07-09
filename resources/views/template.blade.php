@@ -74,6 +74,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-2">
+                        <input type="text" disabled class="form-control" id="odoo_session_name"
+                            placeholder="ODOO SESSION USER">
+                    </div>
+                    <div class="form-group mb-2">
+                        <input type="text" disabled class="form-control" id="odoo_session_username"
+                            placeholder="ODOO SESSION USERNAME">
+                    </div>
+                    <div class="form-group mb-2">
                         <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION"></textarea>
                     </div>
                 </div>
@@ -273,7 +281,9 @@
         $('#setting_nav').click(function() {
             $.get(BASE_URL + '/api/setting/env')
                 .done(function(res) {
-                    $('#odoo_env').val(res.data.session)
+                    $('#odoo_env').val(res.data.session_id)
+                    $('#odoo_session_username').val(res.data.username)
+                    $('#odoo_session_name').val(`${res.data.name} (${res.data.uid})`)
                     $('#modal_env').modal('show')
                 }).fail(function(xhr) {
                     $('#modal_env').modal('hide')

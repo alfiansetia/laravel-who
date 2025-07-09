@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Services\OdooService;
+use App\Services\Odoo;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -70,8 +70,11 @@ class ProductController extends Controller
         ];
         try {
             $url_param = '/web/dataset/search_read';
-            $service = new OdooService();
-            $json = $service->url_param($url_param)->data($data)->method('POST')->as_json()->get();
+            $json = Odoo::asJson()
+                ->withUrlParam($url_param)
+                ->withData($data)
+                ->method('POST')
+                ->get();
             $records = $json['result']['records'] ?? [];
             $chunks = array_chunk($records, 100);
             foreach ($chunks as $chunk) {

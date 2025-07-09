@@ -205,54 +205,50 @@
                     }
                     let sid = data[0].id
                     $.get("{{ url('api/do') }}/" + sid).done(function(res) {
-                        if (res.data.length > 0) {
-                            let tujuan = ''
-                            let ekspedisi = ''
-                            let up = ''
-                            let name = ''
-                            let epur = ''
-                            let note_to_wh = ''
-                            if (res.data[0].partner_id != false) {
-                                tujuan = res.data[0].partner_id[1]
-                            }
-                            if (res.data[0].ekspedisi_id != false) {
-                                ekspedisi = res.data[0].ekspedisi_id[1]
-                            }
-                            if (res.data[0].delivery_manual != false) {
-                                up = res.data[0].delivery_manual
-                            }
-                            if (res.data[0].name != false) {
-                                name = res.data[0].name
-                            }
-                            if (res.data[0].no_aks != false) {
-                                epur = res.data[0].no_aks
-                            }
-                            let alamat = res.data[0].partner_address
-                            if (res.data[0].partner_address2 != false) {
-                                alamat += '\n' + res.data[0].partner_address2
-                            }
-                            if (res.data[0].partner_address3 != false) {
-                                alamat += '\n' + res.data[0].partner_address3
-                            }
-                            if (res.data[0].partner_address4 != false) {
-                                alamat += '\n' + res.data[0].partner_address4
-                            }
-                            if (res.data[0].note_to_wh != false) {
-                                note_to_wh = res.data[0].note_to_wh
-                                note_to_wh = note_to_wh.replace(/\n/g, '<br>');
-                            }
-
-                            $('#do').val(name)
-                            $('#up').val(up)
-                            $('#alamat').val(alamat)
-                            $('#tujuan').val(tujuan)
-                            $('#ekspedisi').val(ekspedisi)
-                            $('#epur').val(epur)
-                            $('#n_t_wh').html(note_to_wh)
-                            // console.log(note_to_wh);
-
-
+                        let tujuan = ''
+                        let ekspedisi = ''
+                        let up = ''
+                        let name = ''
+                        let epur = ''
+                        let note_to_wh = ''
+                        if (res.data.partner_id != false) {
+                            tujuan = res.data.partner_id[1]
                         }
+                        if (res.data.ekspedisi_id != false) {
+                            ekspedisi = res.data.ekspedisi_id[1]
+                        }
+                        if (res.data.delivery_manual != false) {
+                            up = res.data.delivery_manual
+                        }
+                        if (res.data.name != false) {
+                            name = res.data.name
+                        }
+                        if (res.data.no_aks != false) {
+                            epur = res.data.no_aks
+                        }
+                        let alamat = res.data.partner_address
+                        if (res.data.partner_address2 != false) {
+                            alamat += '\n' + res.data.partner_address2
+                        }
+                        if (res.data.partner_address3 != false) {
+                            alamat += '\n' + res.data.partner_address3
+                        }
+                        if (res.data.partner_address4 != false) {
+                            alamat += '\n' + res.data.partner_address4
+                        }
+                        if (res.data.note_to_wh != false) {
+                            note_to_wh = res.data.note_to_wh
+                            note_to_wh = note_to_wh.replace(/\n/g, '<br>');
+                        }
+
+                        $('#do').val(name)
+                        $('#up').val(up)
+                        $('#alamat').val(alamat)
+                        $('#tujuan').val(tujuan)
+                        $('#ekspedisi').val(ekspedisi)
+                        $('#epur').val(epur)
+                        $('#n_t_wh').html(note_to_wh)
+                        // console.log(note_to_wh);
                     }).fail(function(xhr) {
                         alert('Odoo Error!')
                     });

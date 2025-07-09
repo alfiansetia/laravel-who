@@ -60,7 +60,7 @@ class BastController extends Controller
         $file = public_path('master/tanda_terima.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
             $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => htmlspecialchars($text)]);
         }
@@ -79,7 +79,7 @@ class BastController extends Controller
         $file = public_path('master/training.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
             $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
         }
@@ -98,7 +98,7 @@ class BastController extends Controller
         $file = public_path('master/bast.docx');
         $items = [];
         foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('Lot : ' . $item->lot) : '';
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
             $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
             array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
         }

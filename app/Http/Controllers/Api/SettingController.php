@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\OdooSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
@@ -12,10 +13,9 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $setting = Setting::first();
-        $session = $setting->odoo_session ?? null;
+        $session = OdooSession::getCurrentSession();
         return response()->json([
-            'data' => ['session' => $session]
+            'data' => $session
         ]);
     }
 
@@ -28,16 +28,9 @@ class SettingController extends Controller
         if ($valid->fails()) {
             return response()->json(['message' => $valid->getMessageBag()], 422);
         }
-        $setting = Setting::first();
-        if (!$setting) {
-            Setting::create([
-                'odoo_session' => $request->env_value
-            ]);
-        } else {
-            $setting->update([
-                'odoo_session' => $request->env_value
-            ]);
-        }
+        $session = OdooSession::getCurrentSession();
+        $session['session_id'] = $request->env_value;
+        OdooSession::saveSession($session);
         return response()->json(['message' => 'Success!']);
     }
 

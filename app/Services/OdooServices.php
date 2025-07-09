@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OdooServices
 {
@@ -100,5 +102,115 @@ class OdooServices
             return $response;
         }
         return $response->json();
+    }
+
+
+    public static function getBaseUrl()
+    {
+        return config('services.odoo.base_url');
+    }
+
+    public static function getSessionFile()
+    {
+        return storage_path('app/session.json');
+    }
+
+    public static function getCurrentSession()
+    {
+        $session_file = static::getSessionFile();
+        if (file_exists($session_file)) {
+            $json = File::get($session_file);
+            $data = json_decode($json, true);
+            if (empty($data['session_id']) || empty($data['uid'])) {
+                return static::setDefaultSession();
+            }
+            return $data;
+        } else {
+            return static::setDefaultSession();
+        }
+    }
+
+    public static function saveSession($data)
+    {
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $session_file = static::getSessionFile();
+        File::put($session_file, $json);
+    }
+
+    public static function setDefaultSession()
+    {
+        $data = [
+            'session_id'            => null,
+            'uid'                   => 0,
+            'db'                    => null,
+            'name'                  => null,
+            'username'              => null,
+            'partner_display_name'  => null,
+            'partner_id'            => 0,
+        ];
+        $session_file = static::getSessionFile();
+        File::put($session_file, json_encode($data, JSON_PRETTY_PRINT));
+        return $data;
+    }
+
+    public static function isValidSession()
+    {
+        $old_session = static::getCurrentSession();
+        $base_url = static::getBaseUrl();
+        $session = $old_session['session_id'];
+        $uid = $old_session['uid'];
+        if (empty($session) || $uid == 0) {
+            return false;
+        }
+        $res = Http::withHeaders([
+            'accept'            => 'application/json, text/javascript, */*; q=0.01',
+            'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'content-type'      => 'application/json',
+            'x-requested-with'  => 'XMLHttpRequest',
+            'Accept-Encoding'   => 'gzip, deflate',
+            'Cookie'            => 'session_id=' .  $session
+        ])->post(
+            $base_url . '/web/dataset/call_kw/res.users/read',
+            [
+                "jsonrpc" => "2.0",
+                "method" => "call",
+                "params" => [
+                    "args" => [
+                        [
+                            $uid
+                        ],
+                        [
+                            "image",
+                            "__last_update",
+                            "name",
+                            "lang",
+                            "tz",
+                            "tz_offset",
+                            "company_id",
+                            "notification_type",
+                            "odoobot_state",
+                            "email",
+                            "signature",
+                            "display_name"
+                        ]
+                    ],
+                    "model" => "res.users",
+                    "method" => "read",
+                    "kwargs" => [
+                        "context" => [
+                            "lang" => "en_US",
+                            "tz" => "Asia/Jakarta",
+                            "uid" => 192,
+                            "bin_size" => true
+                        ]
+                    ]
+                ],
+            ]
+        );
+        Log::info($res->json());
+        if (strtolower($old_session['username'] ?? '') == strtolower(config('services.odoo.email'))) {
+            return true;
+        }
+        return false;
     }
 }
