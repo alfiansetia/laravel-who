@@ -23,7 +23,7 @@ class FirebaseServices
     public static function send($title, $body)
     {
         $tokens = FcmToken::all();
-        if (empty($tokens)) {
+        if ($tokens->isEmpty()) {
             return true;
         }
         $access_token = static::getAccessToken();

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Services\DoServices;
 use App\Services\FirebaseServices;
 use App\Services\TelegramServices;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -32,7 +33,7 @@ class MonitorDo extends Command
     public function handle()
     {
         $session = $this->readSession();
-        // $this->info(json_encode($session));
+        $last_error =  $session['last_error'] ?? now();
         try {
             $do = DoServices::getAll('CENT/OUT/', 5);
             $odoo_length = $do['length'];
@@ -48,6 +49,7 @@ class MonitorDo extends Command
                         $message = $title;
                         FirebaseServices::send($title, $message);
                         TelegramServices::sendToGroup($message);
+                        $this->info($message);
                     } else {
                         TelegramServices::sendToGroup('Program Started!');
                         $this->info('Program Started');
@@ -67,12 +69,12 @@ class MonitorDo extends Command
             } else {
                 $this->info('⚠️ No DO! ');
             }
-            $this->saveSession($odoo_length, 0);
-        } catch (\Throwable $th) {
-            $this->saveSession($session['length'], $session['error'] + 1);
-            if ($session['error'] < 3) {
-                $this->error($th->getMessage());
-                TelegramServices::sendToGroup('Error : ' . $th->getMessage());
+            $this->saveSession($odoo_length, $last_error);
+        } catch (Exception $th) {
+            $this->saveSession($session['length'], now());
+            if (Carbon::parse($last_error)->diffInMinutes(now()) >= 30) {
+                // $this->error($th->getMessage());
+                TelegramServices::sendToGroup('Error : ' . $th->getMessage() . ' Last Error : ' . $last_error);
             }
         }
     }
@@ -81,22 +83,34 @@ class MonitorDo extends Command
     {
         $session_file = storage_path('app/monitor.json');
         if (file_exists($session_file)) {
-            $json = File::get($session_file);
-            return json_decode($json, true);
+            $json =  json_decode(File::get($session_file), true);
+            if (empty($json['last_error']) || empty($json['length'])) {
+                return $this->saveDefaultSession();
+            }
+            return $json;
         } else {
-            $data = [
-                'length'    => 0,
-                'error'     => 0
-            ];
-            File::put($session_file, json_encode($data, JSON_PRETTY_PRINT));
-            return $data;
+            return $this->saveDefaultSession();
         }
     }
 
-    public function saveSession($length = 0, $error = 0)
+    public function saveSession($length = 0, $last_error)
     {
-        $json = json_encode(['length' => $length, 'error' => $error], JSON_PRETTY_PRINT);
+        $json = json_encode([
+            'length'        => $length,
+            'last_error'    => $last_error,
+        ], JSON_PRETTY_PRINT);
         $session_file = storage_path('app/monitor.json');
         File::put($session_file, $json);
+    }
+
+    public function saveDefaultSession()
+    {
+        $data = [
+            'length'        => 0,
+            'last_error'    => Carbon::now()->subHour(),
+        ];
+        $session_file = storage_path('app/monitor.json');
+        File::put($session_file, json_encode($data, JSON_PRETTY_PRINT));
+        return $data;
     }
 }
