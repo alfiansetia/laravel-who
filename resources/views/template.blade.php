@@ -20,6 +20,7 @@
     @stack('css')
     <title>{{ $title }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
+    @include('pwa.head')
 </head>
 
 
@@ -100,6 +101,8 @@
         alert("{{ session('message') }}")
     </script>
 @endif
+
+@include('pwa.script')
 
 
 <script>
