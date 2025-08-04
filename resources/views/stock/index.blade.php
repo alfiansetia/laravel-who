@@ -61,6 +61,9 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <br>
+                    <textarea name="" id="detail_lot" class="form-control mb-2"></textarea>
+                    <textarea name="" id="detail_sn" class="form-control"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -296,7 +299,21 @@
                             }],
                         }
                     ],
+                    initComplete: function(settings, json) {
+                        let data = json.data || []
+                        let text_lot = 'Lot '
+                        let text_sn = `${data.length} Pcs, SN : `
+                        data.forEach(item => {
+                            text_lot += `${item.lot} = ${item.quantity} Pcs, `
+                            text_sn += `${item.lot}, `
+                        });
+
+                        $('#detail_lot').val(text_lot)
+                        $('#detail_sn').val(text_sn)
+
+                    }
                 });
+
 
                 $('#modal_lot').modal('show')
 
