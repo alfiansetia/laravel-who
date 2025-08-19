@@ -38,6 +38,7 @@ class AlamatController extends Controller
             'is_pk'         => 'nullable|in:yes,no',
             'is_banting'    => 'nullable|in:yes,no',
             'is_last_koli'  => 'nullable|in:yes,no',
+            'is_asuransi'   => 'nullable|in:yes,no',
         ]);
 
         $param = [
@@ -56,6 +57,7 @@ class AlamatController extends Controller
             'is_pk'         => $request->is_pk ?? 'no',
             'is_banting'    => $request->is_banting ?? 'no',
             'is_last_koli'  => $request->is_last_koli ?? 'no',
+            'is_asuransi'   => $request->is_asuransi ?? 'no',
         ];
         $alamat = Alamat::create($param);
         return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);
@@ -71,6 +73,7 @@ class AlamatController extends Controller
             'is_pk'         => 'nullable|in:yes,no',
             'is_banting'    => 'nullable|in:yes,no',
             'is_last_koli'  => 'nullable|in:yes,no',
+            'is_asuransi'   => 'nullable|in:yes,no',
             // 'detail'    => 'required|array|min:1',
         ]);
 
@@ -90,6 +93,7 @@ class AlamatController extends Controller
             'is_pk'         => $request->is_pk ?? 'no',
             'is_banting'    => $request->is_banting ?? 'no',
             'is_last_koli'  => $request->is_last_koli ?? 'no',
+            'is_asuransi'   => $request->is_asuransi ?? 'no',
         ];
         $alamat->update($param);
         return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);

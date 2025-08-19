@@ -114,25 +114,32 @@
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_do" value="yes"
                                     id="is_do">
                                 <label class="custom-control-label" for="is_do">SURAT JALAN</label>
                             </div>
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_pk" value="yes"
                                     id="is_pk">
                                 <label class="custom-control-label" for="is_pk">PACKING KAYU</label>
                             </div>
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" name="is_banting" value="yes"
                                     id="is_banting">
                                 <label class="custom-control-label" for="is_banting">JANGAN DIBANTING</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" name="is_asuransi" value="yes"
+                                    id="is_asuransi" checked>
+                                <label class="custom-control-label" for="is_asuransi">ASURANSI</label>
                             </div>
                         </div>
                     </div>
@@ -274,6 +281,7 @@
                         is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
                         is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
                         is_last_koli: $('#is_last_koli').prop('checked') ? 'yes' : 'no',
+                        is_asuransi: $('#is_asuransi').prop('checked') ? 'yes' : 'no',
                     }
                     $.ajax({
                         type: 'POST',

@@ -287,6 +287,13 @@
                         PACKING KAYU</td>
                 </tr>
             @endif
+            @if ($data->is_asuransi == 'yes')
+                <tr>
+                    <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4"
+                        style="text-align: center;">
+                        ASURANSI</td>
+                </tr>
+            @endif
             @if ($data->is_banting == 'yes')
                 <tr>
                     <td class="style70" colspan="4" style="height: 10pt"></td>
