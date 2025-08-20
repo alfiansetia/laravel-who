@@ -183,9 +183,29 @@
             <tr>
                 <td></td>
             </tr>
-            <tr>
-                <td class="style18" colspan="4">{!! nl2br(e($data->alamat)) !!}</td>
-            </tr>
+            @foreach (explode("\n", $data->alamat) ?? [] as $key => $line)
+                @if ($key == 0)
+                    <tr>
+                        <td class="style18" colspan="{{ $data->is_asuransi == 'yes' ? '3' : '4' }}">
+                            {!! $line !!}
+                        </td>
+                        @if ($data->is_asuransi == 'yes')
+                            <td class="style21 kiri-dua kanan-dua bawah-dua atas-dua" colspan="1"
+                                style="color: #FF0000;">
+                                <b>ASURANSI</b>
+                            </td>
+                        @endif
+                    </tr>
+                @else
+                    <tr>
+                        <td class="style18" colspan="4">{!! $line !!}</td>
+                    </tr>
+                @endif
+            @endforeach
+            {{-- <tr>
+                <td class="style18" colspan="3">{!! nl2br(e($data->alamat)) !!}</td>
+                <td class="style18" colspan="1" style="vertical-align: top">ASURANSI</td>
+            </tr> --}}
             @if (!empty($data->up))
                 <tr>
                     <td class="style18" style="width: 17%">UP</td>
@@ -287,13 +307,13 @@
                         PACKING KAYU</td>
                 </tr>
             @endif
-            @if ($data->is_asuransi == 'yes')
+            {{-- @if ($data->is_asuransi == 'yes')
                 <tr>
                     <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4"
                         style="text-align: center;">
                         ASURANSI</td>
                 </tr>
-            @endif
+            @endif --}}
             @if ($data->is_banting == 'yes')
                 <tr>
                     <td class="style70" colspan="4" style="height: 10pt"></td>
