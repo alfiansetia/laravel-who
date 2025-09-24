@@ -221,7 +221,7 @@
             <tr>
                 <td class="style18" style="width: 17%">No DO</td>
                 <td class="style18" colspan="3">: {{ $data->do }} @if (!empty($data->epur))
-                        ( {{ $data->epur }})
+                        ({{ $data->epur }})
                     @endif
                 </td>
             </tr>
@@ -293,7 +293,7 @@
             <tr>
                 <td style="height: 2px"></td>
             </tr>
-            @if ($data->is_do == 'yes')
+            @if ($data->is_do == 'yes' || ($data->koli > 1 && $ct == 1))
                 <tr>
                     <td class="style70 kanan-dua kiri-dua bawah-dua atas-dua" colspan="4" style="text-align: center">
                         SURAT
