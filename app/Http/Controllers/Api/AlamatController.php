@@ -152,8 +152,8 @@ class AlamatController extends Controller
                         if ($lot && $ed) {
                             $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
                                 ->setTimezone(config('app.timezone'))
-                                ->format('Y/m/d');
-                            return $lot . " /Ed. " . $ed;
+                                ->format('d/m/Y');
+                            return $lot . " Ed. " . $ed;
                         } elseif ($lot) {
                             return $lot;
                         }
