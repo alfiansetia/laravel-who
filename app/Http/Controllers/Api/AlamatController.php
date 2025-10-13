@@ -150,9 +150,9 @@ class AlamatController extends Controller
                         $lot = $item['lot_id'][1] ?? '';
                         $ed = $item['expired_date_do'] ?? '';
                         if ($lot && $ed) {
-                            // $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
-                            //     ->setTimezone(config('app.timezone'))
-                            //     ->format('Y.m.d');
+                            $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
+                                ->setTimezone(config('app.timezone'))
+                                ->format('Y/m/d');
                             return $lot . " /Ed. " . $ed;
                         } elseif ($lot) {
                             return $lot;
