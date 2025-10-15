@@ -1,4 +1,4 @@
-@extends('template', ['title' => 'Create Target'])
+@extends('template', ['title' => 'Manage SOP QC'])
 @push('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
@@ -23,7 +23,7 @@
             @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Create Target </h3>
+                    <h3 class="card-title">Manage SOP QC </h3>
                 </div>
 
                 <div class="card-body">

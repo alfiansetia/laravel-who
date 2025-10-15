@@ -41,7 +41,7 @@
                                 <h2 class="mb-0">
                                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
                                         data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                        Target List
+                                        SOP QC
                                     </button>
                                 </h2>
                             </div>
@@ -49,6 +49,7 @@
                             <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
                                 data-parent="#accordionExample">
                                 <div class="card-body">
+                                    <h6 class="mb-2">Target : <span id="target_value"></span></h6>
                                     <table id="table_target" class="table table-sm table-hover">
                                         <thead class="thead-dark">
                                             <tr>
@@ -271,6 +272,7 @@
                     $('#modal_pl').modal('show')
                     $('#table_pl tbody').empty();
                     $('#table_target tbody').empty();
+                    $('#target_value').html('')
                     res.data.pls.forEach((item, index) => {
                         $('#table_pl tbody').append(`
                             <tr>
@@ -281,6 +283,7 @@
                         `);
                     });
                     if (res.data.target != null) {
+                        $('#target_value').html(res.data.target.target)
                         res.data.target.items.forEach((item, index) => {
                             $('#table_target tbody').append(`
                             <tr>

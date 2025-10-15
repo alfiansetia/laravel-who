@@ -38,7 +38,7 @@
                     <a class="dropdown-item" href="{{ route('kargan.index') }}">Kargan</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{{ route('pl.index') }}">PL</a>
-                    <a class="dropdown-item" href="{{ route('target.index') }}">Target</a>
+                    <a class="dropdown-item" href="{{ route('target.index') }}">SOP QC</a>
                     <a class="dropdown-item" href="{{ route('tools.sn') }}">SN</a>
                     {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>

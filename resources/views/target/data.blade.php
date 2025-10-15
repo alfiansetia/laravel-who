@@ -1,8 +1,8 @@
-@extends('template', ['title' => 'Target'])
+@extends('template', ['title' => 'SOP QC'])
 
 @section('content')
     <div class="container-fluid">
-        <h1>Target</h1>
+        <h1>SOP QC</h1>
 
         <div class="responsive">
             <form id="selected">
@@ -26,12 +26,13 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Target List</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">SOP QC <span id="title_detail_product"></span></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
+                    <h6 class="mb-2">Target : <span id="target_value"></span></h6>
                     <table id="table_target" class="table table-sm table-hover">
                         <thead class="thead-dark">
                             <tr>
@@ -103,11 +104,11 @@
                     },
                 ],
                 buttons: [{
-                        text: '<i class="fas fa-plus mr-1"></i>Add Target',
+                        text: '<i class="fas fa-tasks mr-1"></i>Manage SOP QC',
                         className: 'btn btn-sm btn-info',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Add Target'
+                            'title': 'Manage SOP QC'
                         },
                         action: function(e, dt, node, config) {
                             window.location.href = URL_INDEX + '/create'
@@ -194,7 +195,10 @@
                 $.get("{{ route('api.product.index') }}" + '/' + id).done(function(res) {
                     $('#modal_pl').modal('show')
                     $('#table_target tbody').empty();
+                    $('#target_value').html('');
+                    $('#title_detail_product').html(`[${res.data.code}] ${res.data.name}`);
                     if (res.data.target != null) {
+                        $('#target_value').html(res.data.target.target);
                         res.data.target.items.forEach((item, index) => {
                             $('#table_target tbody').append(`
                             <tr>
