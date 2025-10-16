@@ -21,6 +21,40 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modal_add" data-backdrop="static" data-keyboard="false"
+        aria-labelledby="staticBackdropLabelAdd" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabelAdd">Add Data</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_add" action="">
+                        @csrf
+                        <div class="form-group col-12">
+                            <label for="name">VENDOR NAME</label>
+                            <input name="name" id="name" class="form-control" required>
+                        </div>
+                        <div class="form-group col-12">
+                            <label for="desc">VENDOR DESC</label>
+                            <div class="input-group">
+                                <textarea name="desc" id="desc" class="form-control" maxlength="200"></textarea>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btn_add" type="button" class="btn btn-primary">Tambah</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if (session()->has('message'))
         <script>
             alert("{{ session('message') }}")
@@ -67,14 +101,14 @@
                     },
                 ],
                 buttons: [{
-                        text: '<i class="fas fa-sync mr-1"></i>Sync from Odoo',
-                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fas fa-plus mr-1"></i>Tambah',
+                        className: 'btn btn-sm btn-info',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Syncronize from Odoo'
+                            'title': 'Tambah Data'
                         },
                         action: function(e, dt, node, config) {
-                            // 
+                            $('#modal_add').modal('show')
                         }
                     }, {
                         extend: "colvis",
@@ -151,6 +185,40 @@
                     return true
                 }
             }
+
+            $('#btn_add').click(function() {
+                $('#form_add').submit()
+            })
+
+            $('#form_add').on('submit', function(e) {
+                e.preventDefault();
+                let name = $('#name').val();
+                let desc = $('#desc').val();
+                if (!name) {
+                    alert('Name Wajib diisi!');
+                    return;
+                }
+                $.ajax({
+                    url: URL_INDEX_API,
+                    type: "POST",
+                    data: {
+                        name: name,
+                        desc: desc,
+                    },
+                    success: function(response) {
+                        $('#modal_add').modal('hide');
+                        $('#name').val('');
+                        $('#desc').val('');
+                        alert(response.message);
+                        table.ajax.reload();
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseJSON);
+                        alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
+                            'Unknown error'));
+                    }
+                });
+            });
 
         });
     </script>

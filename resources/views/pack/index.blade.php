@@ -75,7 +75,7 @@
                 <div class="modal-body">
                     <form id="form_change" action="">
                         @csrf
-                        <div class="form-group col-6">
+                        <div class="form-group col-12">
                             <label for="vendor_id">VENDOR</label>
                             <div class="input-group">
                                 <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%"
