@@ -59,7 +59,7 @@
                         <div class="form-group col-6">
                             <label for="name">PACKING LIST NAME</label>
                             <div class="input-group">
-                                <textarea name="name" id="name" class="form-control" maxlength="200" required></textarea>
+                                <textarea name="name" id="name" class="form-control" maxlength="200" required>Default</textarea>
                             </div>
                         </div>
                         <div class="form-group col-6">
@@ -279,7 +279,7 @@
                     success: function(res) {
                         // table.ajax.reload()
                         alert(res.message)
-                        window.location.href = `${URL_INDEX}/${res.data.id}/edit`
+                        // window.location.href = `${URL_INDEX}/${res.data.id}/edit`
                     },
                     error: function(xhr, status, error) {
                         alert(xhr.responseJSON.message || 'Error!')

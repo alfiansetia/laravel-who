@@ -91,6 +91,7 @@ Route::get('firebase-config', function () {
 });
 
 // NEW ROUTE
+Route::post('packs-change', [PackController::class, 'change'])->name('api.packs.change');
 Route::apiResource('packs', PackController::class)
     ->names('api.packs');
 Route::apiResource('pack-items', PackItemController::class)

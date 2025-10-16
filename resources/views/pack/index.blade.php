@@ -1,4 +1,8 @@
 @extends('template', ['title' => 'Packing List'])
+@push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
+@endpush
 
 @section('content')
     <div class="container-fluid">
@@ -25,8 +29,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -58,17 +62,65 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modal_change" data-backdrop="static" data-keyboard="false"
+        aria-labelledby="staticBackdropLabelChange" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabelChange">Change Data</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_change" action="">
+                        @csrf
+                        <div class="form-group col-6">
+                            <label for="vendor_id">VENDOR</label>
+                            <div class="input-group">
+                                <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%"
+                                    required>
+                                    <option value="">Select Vendor</option>
+                                    @foreach ($vendors as $item)
+                                        <option data-id="{{ $item->id }}" value="{{ $item->id }}">
+                                            {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btn_change" type="button" class="btn btn-primary">Change</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if (session()->has('message'))
         <script>
             alert("{{ session('message') }}")
         </script>
     @endif
+
+    @push('js')
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @endpush
+
     <script>
         const URL_INDEX_API = "{{ route('api.packs.index') }}"
         const URL_INDEX = "{{ route('packs.index') }}"
         var id = 0;
+        var selectedIds = [];
 
         $(document).ready(function() {
+            $('#vendor_id').select2({
+                theme: 'bootstrap4',
+            })
+
             var table = $('#table').DataTable({
                 rowId: 'id',
                 ajax: URL_INDEX_API,
@@ -181,7 +233,27 @@
                                 columns: ':visible'
                             }
                         }],
-                    }
+                    }, {
+                        text: '<i class="fas fa-sync mr-1"></i>Refresh',
+                        className: 'btn btn-sm btn-warning',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Refresh Data'
+                        },
+                        action: function(e, dt, node, config) {
+                            table.ajax.reload()
+                        }
+                    }, {
+                        text: '<i class="fas fa-exchange-alt mr-1"></i>Change Data',
+                        className: 'btn btn-sm btn-danger',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Change Data'
+                        },
+                        action: function(e, dt, node, config) {
+                            change_data()
+                        }
+                    },
                 ],
                 headerCallback: function(e, a, t, n, s) {
                     e.getElementsByTagName("th")[0].innerHTML =
@@ -189,13 +261,53 @@
                 },
             });
 
-            var id;
-
             multiCheck(table);
 
             function deleteData() {
 
             }
+
+            $('#btn_change').click(function() {
+                $('#form_change').submit()
+            })
+
+            function change_data() {
+                if (selected()) {
+                    selectedIds = $('input[name="id[]"]:checked')
+                        .map(function() {
+                            return $(this).val();
+                        }).get();
+                    $('#modal_change').modal('show');
+                }
+            }
+
+            // Handler submit form
+            $('#form_change').on('submit', function(e) {
+                e.preventDefault();
+                let vendor_id = $('#vendor_id').val();
+                if (!vendor_id) {
+                    alert('Pilih vendor terlebih dahulu!');
+                    return;
+                }
+                $.ajax({
+                    url: "{{ route('api.packs.change') }}", // atau "/packs-change"
+                    type: "POST",
+                    data: {
+                        vendor_id: vendor_id,
+                        ids: selectedIds,
+                    },
+                    success: function(response) {
+                        $('#modal_change').modal('hide');
+                        alert(response.message);
+                        table.ajax.reload();
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseJSON);
+                        alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
+                            'Unknown error'));
+                    }
+                });
+            });
 
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
@@ -207,7 +319,7 @@
                 }
             }
 
-            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
+            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
                 id = table.row(this).data().id
                 $('#detail_vendor').html('')
                 $('#detail_product').html('')

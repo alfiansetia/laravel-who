@@ -11,7 +11,8 @@ class PackController extends Controller
 {
     public function index()
     {
-        return view('pack.index');
+        $vendors = Vendor::all();
+        return view('pack.index', compact(['vendors']));
     }
 
     public function create()

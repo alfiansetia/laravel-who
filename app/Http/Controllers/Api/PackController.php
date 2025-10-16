@@ -97,4 +97,19 @@ class PackController extends Controller
         $pack->delete();
         return $this->sendResponse($pack, 'Deleted!');
     }
+
+    public function change(Request $request)
+    {
+        $this->validate($request, [
+            'vendor_id' => 'required|exists:vendors,id',
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer|exists:packs,id',
+        ]);
+        $updated = Pack::whereIn('id', $request->ids)
+            ->update(['vendor_id' => $request->vendor_id]);
+
+        return $this->sendResponse([
+            'updated_count' => $updated
+        ], 'Vendor changed successfully.');
+    }
 }
