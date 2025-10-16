@@ -298,6 +298,7 @@
                     },
                     success: function(response) {
                         $('#modal_change').modal('hide');
+                        $('#vendor_id').val('').change();
                         alert(response.message);
                         table.ajax.reload();
                     },
