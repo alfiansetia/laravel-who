@@ -18,7 +18,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $data = Product::query()->with(['pls', 'target.items'])->find($id);
+        $data = Product::query()->with(['packs.items', 'sop.items'])->find($id);
         if (!$data) {
             return response()->json([
                 'message'   => 'Not Found!',

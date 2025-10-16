@@ -25,4 +25,14 @@ class Product extends Model
     {
         return $this->hasOne(Target::class);
     }
+
+    public function packs()
+    {
+        return $this->hasMany(Pack::class);
+    }
+
+    public function sop()
+    {
+        return $this->hasOne(Sop::class);
+    }
 }

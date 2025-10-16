@@ -75,18 +75,7 @@
                             </div>
                             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
                                 data-parent="#accordionExample">
-                                <div class="card-body">
-                                    <table id="table_pl" class="table table-sm table-hover">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th class="text-center" style="width: 30px;">No</th>
-                                                <th>ITEM</th>
-                                                <th>QTY</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        </tbody>
-                                    </table>
+                                <div class="card-body" id="table_pl_container">
                                 </div>
                             </div>
                         </div>
@@ -269,22 +258,62 @@
                 data = table.row(row).data()
                 id = data.id
                 $.get(URL_INDEX_API + '/' + id).done(function(res) {
-                    $('#modal_pl').modal('show')
                     $('#table_pl tbody').empty();
                     $('#table_target tbody').empty();
                     $('#target_value').html('')
-                    res.data.pls.forEach((item, index) => {
-                        $('#table_pl tbody').append(`
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${item.item}</td>
-                                <td>${item.qty || ''}</td>
-                            </tr>
-                        `);
+                    $('#table_pl_container').empty(); // clear container
+
+                    res.data.packs.forEach((pack, packIndex) => {
+                        let rows = '';
+
+                        // Loop item utama dalam pack
+                        pack.items.forEach((item, itemIndex) => {
+                            // baris utama
+                            rows += `
+                                <tr>
+                                    <td class="text-center">${itemIndex + 1}</td>
+                                    <td>${item.item}</td>
+                                    <td>${item.qty || ''}</td>
+                                </tr>`;
+
+                            // kalau ada sub-items
+                            if (item.items && item.items.length > 0) {
+                                item.items.forEach((sub, subIndex) => {
+                                    rows += `
+                                        <tr>
+                                            <td class="text-center"></td>
+                                            <td class="ps-4">↳ ${sub.item}</td>
+                                            <td>${sub.qty || ''}</td>
+                                        </tr>`;
+                                });
+                            }
+                        });
+
+                        // render tabel per pack
+                        $('#table_pl_container').append(`
+                            <div class="card mb-3 shadow-sm">
+                                <div class="card-header">
+                                    <strong>Pack ${packIndex + 1}:</strong> ${pack.name || '(Tanpa Nama)'}
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th class="text-center" style="width: 40px;">No</th>
+                                                <th>ITEM</th>
+                                                <th>QTY</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${rows}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>`);
                     });
-                    if (res.data.target != null) {
-                        $('#target_value').html(res.data.target.target)
-                        res.data.target.items.forEach((item, index) => {
+                    if (res.data.sop != null) {
+                        $('#target_value').html(res.data.sop.target)
+                        res.data.sop.items.forEach((item, index) => {
                             $('#table_target tbody').append(`
                             <tr>
                                 <td>${index + 1}</td>
@@ -293,6 +322,7 @@
                         `);
                         });
                     }
+                    $('#modal_pl').modal('show')
 
                 }).fail(function(xhr) {
                     alert('Data Tidak ada!')

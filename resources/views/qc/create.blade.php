@@ -219,6 +219,19 @@
         @include('qc.rekap')
         @include('qc.sn')
 
+        <div class="modal fade" id="modalPilihPack" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Pilih Packing List</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body" id="list_pack_modal"></div>
+                </div>
+            </div>
+        </div>
+
+
 
     </div>
     @if (session()->has('message'))
@@ -530,36 +543,55 @@
                 $('#l_desc').html($('#jenis_qc').val())
             }
 
-            // $('#form').submit(function(e) {
-            //     e.preventDefault();
-            //     console.log($('#form').serializeArray());
-            // })
-
             $('#btn_get_pl').click(function() {
                 let prod = $('#select_product').val();
-                if (prod == '' || prod == null) {
-                    alert('Product Not Found!')
+                if (!prod) {
+                    alert('Product Not Found!');
                     return;
                 }
 
                 $.ajax({
                     type: 'GET',
                     url: `{{ route('api.product.index') }}/${prod}`,
-                    data: {},
-                    beforeSend: function() {},
                     success: function(res) {
-                        res.data.pls.forEach(item => {
-                            generate_form_kelengkapan(
-                                `${escapeHtml(item.item)} (${escapeHtml(item.qty)})`,
-                                true)
+                        let packs = res.data.packs || [];
+                        if (packs.length === 0) {
+                            // alert('No packs found!');
+                            return;
+                        }
+
+                        // generate tombol di modal
+                        let html = '';
+                        packs.forEach((p, i) => {
+                            html += `
+                            <button class="btn btn-outline-primary btn-block mb-2"
+                                data-pack-index="${i}">
+                                ${p.name || '(Tanpa Nama)'}
+                            </button>`;
+                        });
+
+                        $('#list_pack_modal').html(html);
+                        $('#modalPilihPack').modal('show');
+
+                        // klik pilih pack
+                        $('#list_pack_modal button').off('click').on('click', function() {
+                            let index = $(this).data('pack-index');
+                            let chosenPack = packs[index];
+                            $('#form_kelengkapan').empty();
+                            chosenPack.items.forEach(item => {
+                                generate_form_kelengkapan(
+                                    `${escapeHtml(item.item)} (${escapeHtml(item.qty)})`,
+                                    true);
+                            });
+                            $('#modalPilihPack').modal('hide');
                         });
                     },
-                    error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
-
+                    error: function(xhr) {
+                        alert(xhr.responseJSON?.message || 'Error!');
                     }
                 });
-            })
+            });
+
 
             $('#btn_reset_pl').click(function() {
                 reset_kelengkapan()

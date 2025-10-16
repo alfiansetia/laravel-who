@@ -10,14 +10,18 @@ use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KontakController;
+use App\Http\Controllers\Api\PackController;
 use App\Http\Controllers\Api\PackingListController;
+use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\TargetController;
+use App\Http\Controllers\Api\VendorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -85,3 +89,15 @@ Route::get('firebase-config', function () {
         'measurementId'     => config('services.firebase.measurement_id'),
     ]);
 });
+
+// NEW ROUTE
+Route::apiResource('packs', PackController::class)
+    ->names('api.packs');
+Route::apiResource('pack-items', PackItemController::class)
+    ->names('api.pack_items');
+
+Route::apiResource('vendors', VendorController::class)
+    ->names('api.vendors');
+
+Route::apiResource('sops', SopController::class)
+    ->names('api.sops');
