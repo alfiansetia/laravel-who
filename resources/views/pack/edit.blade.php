@@ -103,6 +103,7 @@
             <div class="card-footer">
                 <a href="{{ route('packs.index') }}" class="btn btn-secondary">Kembali</a>
                 <a href="{{ route('packs.edit', $data->id) }}" class="btn btn-warning">Refresh</a>
+                <a href="{{ route('api.packs.download', $data->id) }}" class="btn btn-info" target="_blank">Download</a>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </div>
         </form>

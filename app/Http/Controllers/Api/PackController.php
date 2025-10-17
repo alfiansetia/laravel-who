@@ -7,6 +7,9 @@ use App\Models\Pack;
 use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PackController extends Controller
 {
@@ -111,5 +114,63 @@ class PackController extends Controller
         return $this->sendResponse([
             'updated_count' => $updated
         ], 'Vendor changed successfully.');
+    }
+
+    public function download($id)
+    {
+        $pack = Pack::with(['vendor', 'product', 'items'])->find($id);
+        if (!$pack) {
+            return $this->sendNotFound();
+        }
+
+        $templatePath = public_path("master/master_pack.xlsx");
+        $spreadsheet = IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $vendor  = "Pabrikan : " . $pack->vendor->name;
+        $product  = "Produk : " . $pack->product->code . " " . $pack->product->name;
+        if (!empty($pack->desc)) {
+            $product .= " ({$pack->desc})";
+        }
+
+        // === HEADER INFO ===
+        $sheet->setCellValue('B4', $vendor);
+        $sheet->setCellValue('B5', $product);
+
+        // === ITEMS ===
+        $startRow = 8;
+        $row = $startRow;
+
+        // Ambil style dari baris contoh (baris 8)
+        $baseStyle = $sheet->getStyle("B{$startRow}:E{$startRow}");
+        $baseRowHeight = $sheet->getRowDimension($startRow)->getRowHeight();
+
+        foreach ($pack->items as $index => $item) {
+            if ($row > $startRow) {
+                // copy style ke baris baru
+                $sheet->duplicateStyle($baseStyle, "B{$row}:E{$row}");
+                $sheet->getRowDimension($row)->setRowHeight($baseRowHeight);
+            }
+            $sheet->setCellValue("B{$row}", $index + 1);
+            $sheet->setCellValue("C{$row}", $item->item);
+            $sheet->setCellValue("D{$row}", $item->qty);
+            $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $row++;
+        }
+
+        // === TAMBAHKAN TEXT "FORM/WH/009/20.2" DI KOLOM E ===
+        $cdakb = config('cdakb.pack');
+        $sheet->setCellValue("E{$row}", $cdakb);
+        $sheet->getStyle("E{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+        // === SIMPAN FILE ===
+        $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $pack->product->code);
+        $output = storage_path("app/{$file_name}.xlsx");
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($output);
+
+        return response()->download($output)->deleteFileAfterSend();
     }
 }
