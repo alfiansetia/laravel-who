@@ -10,13 +10,13 @@ class VendorController extends Controller
 {
     public function index(Request $request)
     {
-        $data = Vendor::filter($request->only(['name', 'desc']))->get();
+        $data = Vendor::query()->withCount(['packs'])->filter($request->only(['name', 'desc']))->get();
         return $this->sendResponse($data);
     }
 
     public function show($id)
     {
-        $data = Vendor::find($id);
+        $data = Vendor::with(['packs'])->find($id);
         if (!$data) {
             return $this->sendNotFound();
         }

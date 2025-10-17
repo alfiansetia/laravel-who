@@ -17,4 +17,9 @@ class Vendor extends Model
             $query->where('desc', $filters['desc']);
         }
     }
+
+    public function packs()
+    {
+        return $this->hasMany(Pack::class);
+    }
 }

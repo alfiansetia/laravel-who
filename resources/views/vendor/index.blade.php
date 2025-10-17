@@ -12,6 +12,7 @@
                             <th class="text-center" style="width: 30px;">No</th>
                             <th>NAME</th>
                             <th>DESC</th>
+                            <th>PACK COUNT</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,6 +99,10 @@
                     },
                     {
                         data: "desc",
+                    }, {
+                        data: "packs_count",
+                        className: 'text-center',
+                        searchable: false,
                     },
                 ],
                 buttons: [{
