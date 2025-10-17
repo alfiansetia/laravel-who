@@ -167,8 +167,10 @@
                         sortable: false,
                         render: function(data, type, row, meta) {
                             return `
-                            <button type="button" class="btn btn-sm btn-primary btn-edit">Edit</button>
-                            <button type="button" class="btn btn-sm btn-danger btn-delete">Del</button>
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-sm btn-primary btn-edit">Edit</button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete">Del</button>
+                            </div>
                             `
                         }
                     },
@@ -201,7 +203,7 @@
                     },
                     {
                         extend: "collection",
-                        text: '<i class="fas fa-download"></i>Export',
+                        text: '<i class="fas fa-download mr-1"></i>Export',
                         attr: {
                             'data-toggle': 'tooltip',
                             'title': 'Export Data'
@@ -234,25 +236,35 @@
                             }
                         }],
                     }, {
-                        text: '<i class="fas fa-sync mr-1"></i>Refresh',
-                        className: 'btn btn-sm btn-warning',
+                        text: '<i class="fa fa-tools"></i> Action',
+                        className: 'btn btn-sm btn-warning bs-tooltip',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Refresh Data'
+                            'title': 'Action'
                         },
-                        action: function(e, dt, node, config) {
-                            table.ajax.reload()
-                        }
-                    }, {
-                        text: '<i class="fas fa-exchange-alt mr-1"></i>Change Data',
-                        className: 'btn btn-sm btn-danger',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Change Data'
-                        },
-                        action: function(e, dt, node, config) {
-                            change_data()
-                        }
+                        extend: 'collection',
+                        autoClose: true,
+                        buttons: [{
+                            text: '<i class="fas fa-sync mr-1"></i>Refresh Data',
+                            className: 'btn btn-sm btn-warning',
+                            attr: {
+                                'data-toggle': 'tooltip',
+                                'title': 'Refresh Data'
+                            },
+                            action: function(e, dt, node, config) {
+                                table.ajax.reload()
+                            }
+                        }, {
+                            text: '<i class="fas fa-exchange-alt mr-1"></i>Change Data',
+                            className: 'btn btn-sm btn-danger',
+                            attr: {
+                                'data-toggle': 'tooltip',
+                                'title': 'Change Data'
+                            },
+                            action: function(e, dt, node, config) {
+                                change_data()
+                            }
+                        }]
                     },
                 ],
                 headerCallback: function(e, a, t, n, s) {
