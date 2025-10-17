@@ -66,6 +66,42 @@
         const URL_INDEX = "{{ route('vendors.index') }}"
         var id = 0;
 
+        const BTN_EXPORT = {
+            extend: "collection",
+            text: '<i class="fas fa-download mr-1"></i>Export',
+            attr: {
+                'data-toggle': 'tooltip',
+                'title': 'Export Data'
+            },
+            className: 'btn btn-sm btn-primary',
+            buttons: [{
+                extend: 'copy',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            }, {
+                extend: 'csv',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            }, {
+                extend: 'pdf',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            }, {
+                extend: 'excel',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            }, {
+                extend: 'print',
+                exportOptions: {
+                    columns: ':visible'
+                }
+            }],
+        }
+
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 rowId: 'id',
@@ -131,41 +167,23 @@
                         },
                         className: 'btn btn-sm btn-info'
                     },
-                    {
-                        extend: "collection",
-                        text: '<i class="fas fa-download"></i>Export',
+                    BTN_EXPORT, {
+                        text: '<i class="fa fa-tools"></i> Action',
+                        className: 'btn btn-sm btn-warning bs-tooltip',
                         attr: {
                             'data-toggle': 'tooltip',
-                            'title': 'Export Data'
+                            'title': 'Action'
                         },
-                        className: 'btn btn-sm btn-primary',
+                        extend: 'collection',
+                        autoClose: true,
                         buttons: [{
-                            extend: 'copy',
-                            exportOptions: {
-                                columns: ':visible'
+                            text: 'Delete Selected Data',
+                            className: 'btn btn-danger',
+                            action: function(e, dt, node, config) {
+                                // delete_batch(url_index);
                             }
-                        }, {
-                            extend: 'csv',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'pdf',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'excel',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'print',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }],
-                    }
+                        }, ]
+                    },
                 ],
                 headerCallback: function(e, a, t, n, s) {
                     e.getElementsByTagName("th")[0].innerHTML =
