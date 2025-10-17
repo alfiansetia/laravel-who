@@ -62,4 +62,17 @@ class VendorController extends Controller
         $vendor->delete();
         return $this->sendResponse($vendor, 'Deleted!');
     }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer|exists:vendors,id',
+        ]);
+        $deleted = Vendor::whereIn('id', $request->ids)->delete();
+
+        return $this->sendResponse([
+            'deleted_count' => $deleted
+        ], 'Vendor deleted successfully.');
+    }
 }

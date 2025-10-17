@@ -100,6 +100,8 @@ Route::apiResource('packs', PackController::class)
 Route::apiResource('pack-items', PackItemController::class)
     ->names('api.pack_items');
 
+Route::delete('vendors', [VendorController::class, 'destroy_batch'])
+    ->name('api.vendors.destroy_batch');
 Route::apiResource('vendors', VendorController::class)
     ->names('api.vendors');
 

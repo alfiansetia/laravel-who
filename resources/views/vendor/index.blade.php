@@ -180,7 +180,7 @@
                             text: 'Delete Selected Data',
                             className: 'btn btn-danger',
                             action: function(e, dt, node, config) {
-                                // delete_batch(url_index);
+                                deleteBatch()
                             }
                         }, ]
                     },
@@ -197,6 +197,34 @@
 
             function deleteData() {
 
+            }
+
+            function deleteBatch() {
+                if (selected()) {
+                    if (!confirm('Delete Selected?')) {
+                        return
+                    }
+                    selectedIds = $('input[name="id[]"]:checked')
+                        .map(function() {
+                            return $(this).val();
+                        }).get();
+                    $.ajax({
+                        url: URL_INDEX_API,
+                        type: "DELETE",
+                        data: {
+                            ids: selectedIds,
+                        },
+                        success: function(response) {
+                            table.ajax.reload();
+                            alert(response.message);
+                        },
+                        error: function(xhr) {
+                            console.error(xhr.responseJSON);
+                            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
+                                'Unknown error'));
+                        }
+                    });
+                }
             }
 
             function selected() {
@@ -237,7 +265,7 @@
                     },
                     error: function(xhr) {
                         console.error(xhr.responseJSON);
-                        alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
+                        alert('Error: ' + (xhr.responseJSON?.message ||
                             'Unknown error'));
                     }
                 });
