@@ -277,7 +277,6 @@
                     return
                 }
                 $.ajax({
-                    type: 'POST',
                     url: $('#form').attr('action'),
                     type: 'PUT',
                     data: {

@@ -13,6 +13,7 @@
                             <th>NAME</th>
                             <th>STREET</th>
                             <th>PHONE</th>
+                            <th class="text-center">#</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,10 +26,13 @@
 
 @push('js')
     <script>
+        const URL_INDEX = "{{ route('kontak.index') }}"
+        const URL_INDEX_API = "{{ route('api.kontak.index') }}"
+        var id = 0;
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 rowId: 'id',
-                ajax: "{{ route('api.kontak.index') }}",
+                ajax: URL_INDEX_API,
                 dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
@@ -61,6 +65,14 @@
                     },
                     {
                         data: "phone",
+                    }, {
+                        data: 'id',
+                        className: "text-center",
+                        searchable: false,
+                        sortable: false,
+                        render: function(data, type, row, meta) {
+                            return `<button type="button" class="btn btn-sm btn-primary btn-vendor"><i class="fas fa-share"></i>Vendor</button>`
+                        }
                     },
                 ],
                 buttons: [{
@@ -137,7 +149,31 @@
                 },
             });
 
-            var id;
+            $('#table tbody').on('click', 'tr .btn-vendor', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                let name = table.row(row).data().name
+                if (!confirm('Add to vendor?')) {
+                    return
+                }
+                console.log(name);
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('api.vendors.store') }}",
+                    data: {
+                        name: name,
+                    },
+                    beforeSend: function() {},
+                    success: function(res) {
+                        alert(res.message)
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+            });
+
 
             multiCheck(table);
 
