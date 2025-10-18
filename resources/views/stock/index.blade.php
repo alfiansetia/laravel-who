@@ -17,7 +17,9 @@
                     <option value="demo">DEMO</option>
                 </select>
             </div>
-            <button type="button" class="btn btn-primary ml-1 mb-2" id="refresh">REFRESH</button>
+            <button type="button" class="btn btn-primary ml-1 mb-2" id="refresh">
+                <i class="fas fa-sync mr-1"></i>REFRESH
+            </button>
         </form>
 
         <div class="responsive">
@@ -84,7 +86,7 @@
     @endpush
     <script>
         $(document).ready(function() {
-            var url_index = "{{ route('api.stock.index') }}"
+            const url_index = "{{ route('api.stock.index') }}"
             var id = 0
             var table = $('#table').DataTable({
                 rowId: 'id',
@@ -124,6 +126,7 @@
                     },
                     {
                         data: "quantity",
+                        className: 'text-center',
                     },
                     // {
                     //     data: "id",
@@ -154,7 +157,7 @@
                     },
                     {
                         extend: "collection",
-                        text: '<i class="fas fa-download"></i>Export',
+                        text: '<i class="fas fa-download mr-1"></i>Export',
                         attr: {
                             'data-toggle': 'tooltip',
                             'title': 'Export Data'
@@ -265,7 +268,7 @@
                         },
                         {
                             extend: "collection",
-                            text: '<i class="fas fa-download"></i>Export',
+                            text: '<i class="fas fa-download mr-1"></i>Export',
                             attr: {
                                 'data-toggle': 'tooltip',
                                 'title': 'Export Data'

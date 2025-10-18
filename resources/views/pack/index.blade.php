@@ -34,7 +34,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Packing List <span id="detail_name"></span></h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">Packing List : <span id="detail_name"></span></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -168,8 +168,9 @@
                         render: function(data, type, row, meta) {
                             return `
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <button type="button" class="btn btn-sm btn-primary btn-edit">Edit</button>
-                                <button type="button" class="btn btn-sm btn-danger btn-delete">Del</button>
+                                <button type="button" class="btn btn-sm btn-info btn-download"><i class="fas fa-download"></i></button>
+                                <button type="button" class="btn btn-sm btn-primary btn-edit"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>
                             </div>
                             `
                         }
@@ -365,6 +366,12 @@
                 row = $(this).parents('tr')[0];
                 id = table.row(row).data().id
                 window.location.href = `${URL_INDEX}/${id}/edit`
+            });
+
+            $('#table tbody').on('click', 'tr .btn-download', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                window.open(`${URL_INDEX_API}/${id}/download`)
             });
 
         });

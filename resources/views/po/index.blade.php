@@ -12,7 +12,9 @@
                 <div class="input-group">
                     <input type="text" class="form-control" id="search" placeholder="CARI No PO" value="PO">
                     <div class="input-group-append">
-                        <button type="button" class="btn btn-primary" id="btn_get_po">SEARCH</button>
+                        <button type="button" class="btn btn-primary" id="btn_get_po">
+                            <i class="fas fa-search mr-1"></i>SEARCH
+                        </button>
                     </div>
                 </div>
             </div>
@@ -143,7 +145,7 @@
                     },
                     {
                         extend: "collection",
-                        text: '<i class="fas fa-download"></i>Export',
+                        text: '<i class="fas fa-download mr-1"></i>Export',
                         attr: {
                             'data-toggle': 'tooltip',
                             'title': 'Export Data'
@@ -239,7 +241,7 @@
                         },
                         {
                             extend: "collection",
-                            text: '<i class="fas fa-download"></i>Export',
+                            text: '<i class="fas fa-download mr-1"></i>Export',
                             attr: {
                                 'data-toggle': 'tooltip',
                                 'title': 'Export Data'

@@ -131,7 +131,7 @@
                     },
                     {
                         extend: "collection",
-                        text: '<i class="fas fa-download"></i>Export',
+                        text: '<i class="fas fa-download mr-1"></i>Export',
                         attr: {
                             'data-toggle': 'tooltip',
                             'title': 'Export Data'
