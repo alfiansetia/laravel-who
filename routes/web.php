@@ -37,7 +37,6 @@ Route::resource('kargan', KarganController::class);
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::resource('alamat', AlamatController::class);
 
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
 Route::resource('bast', BastController::class);
@@ -77,3 +76,7 @@ Route::resource('vendors', VendorController::class)
 Route::resource('sops', SopController::class)
     ->names('sops')
     ->only(['index', 'show', 'create']);
+
+Route::resource('alamats', AlamatController::class)
+    ->names('alamats')
+    ->only(['index', 'create', 'edit', 'show']);

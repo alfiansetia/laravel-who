@@ -60,6 +60,10 @@
     </div>
 
     @yield('content')
+    <br>
+    <br>
+    <br>
+    <br>
 
     <div class="modal fade" id="modal_env" tabindex="-1" aria-labelledby="modal_envLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">

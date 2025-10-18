@@ -15,7 +15,8 @@ class AlamatController extends Controller
 
     public function index()
     {
-        return response()->json(['message' => '', 'data' => Alamat::latest()->get()]);
+        $data = Alamat::latest()->get();
+        return $this->sendResponse($data);
     }
 
     public function show(Alamat $alamat)
@@ -25,7 +26,7 @@ class AlamatController extends Controller
             $item->update(['order' => $key]);
         }
         $data = $alamat->load('detail.product');
-        return response()->json(['message' => '', 'data' => $data]);
+        return $this->sendResponse($data);
     }
 
     public function store(Request $request)
@@ -60,7 +61,7 @@ class AlamatController extends Controller
             'is_asuransi'   => $request->is_asuransi ?? 'no',
         ];
         $alamat = Alamat::create($param);
-        return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);
+        return $this->sendResponse($alamat->load('detail'), 'Created!');
     }
 
     public function update(Request $request, Alamat $alamat)
@@ -96,13 +97,13 @@ class AlamatController extends Controller
             'is_asuransi'   => $request->is_asuransi ?? 'no',
         ];
         $alamat->update($param);
-        return response()->json(['message' => 'success!', 'data' => $alamat->load('detail')]);
+        return $this->sendResponse($alamat->load('detail'), 'Updated!');
     }
 
     public function destroy(Alamat $alamat)
     {
         $alamat->delete();
-        return response()->json(['message' => 'success!', 'data' => $alamat]);
+        return $this->sendResponse($alamat, 'Deleted!');
     }
 
     public function duplicate(Alamat $alamat)
@@ -114,8 +115,7 @@ class AlamatController extends Controller
             $newItem->alamat_id = $data->id;
             $newItem->save();
         }
-
-        return response()->json(['message' => 'success!', 'data' => $data]);
+        return $this->sendResponse($data, 'Success Duplicate!');
     }
 
     public function sync(Alamat $alamat)
@@ -187,5 +187,18 @@ class AlamatController extends Controller
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer|exists:alamats,id',
+        ]);
+        $deleted = Alamat::whereIn('id', $request->ids)->delete();
+
+        return $this->sendResponse([
+            'deleted_count' => $deleted
+        ], 'Alamat deleted successfully.');
     }
 }

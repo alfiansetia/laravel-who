@@ -20,7 +20,7 @@
                 <a class="nav-link" href="{{ route('qc.create') }}">QC</a>
             </li>
             <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('alamat.index') }}">Alamat</a>
+                <a class="nav-link" href="{{ route('alamats.index') }}">Alamat</a>
             </li>
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>

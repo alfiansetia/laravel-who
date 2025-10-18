@@ -204,7 +204,7 @@
                 </div>
             </div>
 
-            <div class="card-footer">
+            <div class="card-footer text-center">
                 <a href="{{ route('products.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
                     Kembali</a>
                 <button type="button" id="btn_refresh_input" class="btn btn-warning"><i class="fas fa-redo"></i>

@@ -17,10 +17,10 @@
                     <input type="text" class="form-control" id="desc_prod" placeholder="DESCRIPTION">
                 </div>
                 <div class="form-group mb-2">
-                    <input type="text" class="form-control" id="qty_prod" value="100 Pcs" placeholder="QTY">
+                    <input type="text" class="form-control" id="qty_prod" value="100 Ea" placeholder="QTY">
                 </div>
                 <div class="form-group mb-2">
-                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED" rows="7">E002/2023.02</textarea>
+                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED" rows="7"></textarea>
                 </div>
             </div>
             <div class="modal-footer">

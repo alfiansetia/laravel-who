@@ -42,10 +42,6 @@ Route::apiResource('kargan', KarganController::class)->names('api.kargan');
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
-Route::post('alamat/{alamat}/duplicate', [AlamatController::class, 'duplicate'])->name('api.alamat.duplicate');
-Route::get('alamat/{alamat}/sync', [AlamatController::class, 'sync'])->name('api.alamat.sync');
-Route::apiResource('alamat', AlamatController::class)->names('api.alamat');
-
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
@@ -107,3 +103,8 @@ Route::apiResource('vendors', VendorController::class)
 
 Route::apiResource('sops', SopController::class)
     ->names('api.sops');
+
+Route::post('alamats/{alamat}/duplicate', [AlamatController::class, 'duplicate'])->name('api.alamats.duplicate');
+Route::get('alamats/{alamat}/sync', [AlamatController::class, 'sync'])->name('api.alamats.sync');
+Route::delete('alamats', [AlamatController::class, 'destroy_batch'])->name('api.alamats.delete_batch');
+Route::apiResource('alamats', AlamatController::class)->names('api.alamats');

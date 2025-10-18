@@ -11,16 +11,18 @@
             <div class="card-header">
                 <h3 class="card-title">{{ $title }} </h3>
                 <div class="row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-6 mb-0">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
                                 value="CENT/OUT/">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" id="btn_get_do">GET</button>
+                                <button type="button" class="btn btn-primary" id="btn_get_do">
+                                    <i class="fas fa-search mr-1"></i>GET
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-6 mb-0">
                         <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
                             <option value="">Pilih</option>
                         </select>
@@ -28,7 +30,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('alamat.store') }}" id="form">
+            <form method="POST" action="{{ route('api.alamats.store') }}" id="form">
                 @csrf
                 @method('PUT')
                 <div class="card-body">
@@ -144,13 +146,18 @@
                         </div>
                     </div>
                 </div>
-        </div>
-
-        <div class="card-footer">
-            <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
+                <div class="card-footer text-center">
+                    <a href="{{ route('alamats.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    </button>
+                </div>
             </form>
         </div>
+
+
         @if (session()->has('message'))
             <script>
                 alert("{{ session('message') }}")
@@ -165,6 +172,9 @@
         @endpush
 
         <script>
+            const URL_INDEX_API = "{{ route('api.alamats.index') }}"
+            const URL_INDEX = "{{ route('alamats.index') }}"
+
             function setEpur(val) {
                 $('#epur').val(val)
             }
@@ -285,12 +295,12 @@
                     }
                     $.ajax({
                         type: 'POST',
-                        url: "{{ route('api.alamat.store') }}",
+                        url: URL_INDEX_API,
                         data: data,
                         beforeSend: function() {},
                         success: function(res) {
                             let id = res.data.id
-                            window.open("{{ url('alamat') }}/" + id + '/edit', '_blank')
+                            window.open(URL_INDEX + "/" + id + '/edit', '_blank')
                         },
                         error: function(xhr, status, error) {
                             alert(xhr.responseJSON.message);

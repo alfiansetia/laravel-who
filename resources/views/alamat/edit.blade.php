@@ -11,16 +11,18 @@
             <div class="card-header">
                 <h3 class="card-title">{{ $title }} </h3>
                 <div class="row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-6 mb-0">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
                                 value="{{ $data->do ?? 'CENT/OUT/' }}">
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" id="btn_get_do">GET</button>
+                                <button type="button" class="btn btn-primary" id="btn_get_do">
+                                    <i class="fas fa-search mr-1"></i>GET
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-6 mb-0">
                         <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
                             <option value="">Pilih</option>
                         </select>
@@ -28,7 +30,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('alamat.update', $data->id) }}" id="form">
+            <form method="POST" action="{{ route('api.alamats.update', $data->id) }}" id="form">
                 @csrf
                 @method('PUT')
                 <div class="card-body">
@@ -154,28 +156,48 @@
                         </div>
                     </div>
                 </div>
-                <table class="table" id="table" style="width: 100%">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Product</th>
-                            <th>Desc</th>
-                            <th>Qty</th>
-                            <th>Lot</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                </table>
+                <div class="card-footer text-center">
+                    <a href="{{ route('alamats.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <button type="button" id="add" class="btn btn-info">
+                        <i class="fas fa-plus mr-1"></i>Tambah Product
+                    </button>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fas fa-print mr-1"></i>Simpan & Print
+                    </button>
+                    <button type="button" id="btn_sync" class="btn btn-danger">
+                        <i class="fas fa-sync mr-1"></i>Sync Product
+                    </button>
+                    <button type="button" id="btn_duplicate" class="btn btn-warning">
+                        <i class="fas fa-clone mr-1"></i>Duplicate
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <div class="card-footer">
-            <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="button" id="add" class="btn btn-info">Tambah Product</button>
-            <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
-            <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
-            <button type="button" id="btn_duplicate" class="btn btn-warning">Duplicate</button>
+        <div class="card card-primary mt-3">
+            <div class="card-body p-0">
+                <div class="table-responsive"> <!-- Tambahkan ini -->
+
+                    <table class="table mt-0" id="table" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Desc</th>
+                                <th>Qty</th>
+                                <th>Lot</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
         </div>
-        </form>
+
+
+
     </div>
     @include('alamat.modal')
     @if (session()->has('message'))
@@ -192,6 +214,9 @@
     @endpush
 
     <script>
+        const URL_INDEX_API = "{{ route('api.alamats.index') }}"
+        const URL_INDEX = "{{ route('alamats.index') }}"
+
         function setEpur(val) {
             $('#epur').val(val)
         }
@@ -312,7 +337,7 @@
 
             var table = $('#table').DataTable({
                 ajax: {
-                    url: "{{ route('api.alamat.show', $data->id) }}",
+                    url: "{{ route('api.alamats.show', $data->id) }}",
                     dataSrc: function(result) {
                         return result.data.detail
                     }
@@ -354,16 +379,14 @@
 
                         return `
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" class="btn btn-sm btn-secondary mr-1 up" ${isFirst ? 'disabled' : ''}>
+                            <button type="button" class="btn btn-sm btn-secondary up" ${isFirst ? 'disabled' : ''}>
                                 <i class="fas fa-arrow-up"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-secondary mr-1 down" ${isLast ? 'disabled' : ''}>
+                            <button type="button" class="btn btn-sm btn-secondary down" ${isLast ? 'disabled' : ''}>
                                 <i class="fas fa-arrow-down"></i>
                             </button>
-                        </div>
-                        <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" class="btn btn-sm btn-warning mr-1 edit">Edit</button>
-                            <button type="button" class="btn btn-sm btn-primary hapus">Hapus</button>
+                            <button type="button" class="btn btn-sm btn-warning edit"><i class="fas fa-edit"></i></button>
+                            <button type="button" class="btn btn-sm btn-danger hapus"><i class="fas fa-trash"></i></button>
                         </div>
                         `
                     }
@@ -501,11 +524,11 @@
                 }
                 $.ajax({
                     type: 'PUT',
-                    url: "{{ route('api.alamat.update', $data->id) }}",
+                    url: URL_INDEX_API + "/{{ $data->id }}",
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        window.open("{{ route('alamat.show', $data->id) }}", '_blank')
+                        window.open(URL_INDEX + "/{{ $data->id }}", '_blank')
                     },
                     error: function(xhr, status, error) {
                         alert(xhr.responseJSON.message);
@@ -514,7 +537,7 @@
             })
 
             $('#btn_sync').click(function() {
-                let url = "{{ route('api.alamat.sync', $data->id) }}"
+                let url = URL_INDEX_API + "/{{ $data->id }}/sync"
                 $.ajax({
                     type: 'GET',
                     url: url,
@@ -528,10 +551,11 @@
             $('#btn_duplicate').click(function() {
                 $.ajax({
                     type: 'POST',
-                    url: "{{ route('api.alamat.duplicate', $data->id) }}",
+                    url: URL_INDEX_API + "/{{ $data->id }}/duplicate",
                     data: {}
                 }).done(function(result) {
-                    window.open("{{ route('alamat.index') }}/" + result.data.id + '/edit')
+
+                    window.open(URL_INDEX + "/" + result.data.id + '/edit')
                 }).fail(function(xhr) {
                     alert('error!')
                 })
