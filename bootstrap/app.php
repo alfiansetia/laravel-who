@@ -13,9 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         //
-        $middleware->validateCsrfTokens(
-            except: ['form-qc']
-        );
+        // $middleware->validateCsrfTokens(
+        //     except: ['form-qc']
+        // );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

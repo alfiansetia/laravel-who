@@ -19,7 +19,7 @@
 @section('content')
     <div class="container-fluid">
 
-        <form method="POST" action="{{ route('qc.store') }}" id="form">
+        <form method="POST" action="{{ route('api.qc.store') }}" id="form">
             <div class="card card-primary mt-3">
                 <div class="card-header">
                     <h3 class="card-title">{{ $title }} <button class="btn btn-sm btn-primary" type="button"
@@ -237,6 +237,7 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX = "{{ route('qc.index') }}"
         var FISIK = 0;
         var REAGEN = 0;
         var KEL = 0;
@@ -603,137 +604,6 @@
             $('#btn_refresh_input').click(function() {
                 reset_all()
             })
-
-
-            var table_tool = $('#table_tool').DataTable({
-                pageLength: false,
-                lengthChange: false,
-                paging: false,
-                searching: false,
-                info: false,
-                dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
-                    "<'table-responsive'tr>" +
-                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
-                columns: [{
-                    data: "item",
-                    render: function(data, type, row, meta) {
-                        return `<span class="text-danger del-item"><i class="fas fa-trash"></i></span>`
-                    }
-                }, {
-                    data: "item",
-                }, ],
-                buttons: [{
-                    text: '<i class="fas fa-trash mr-1"></i>Empty ITEM',
-                    className: 'btn btn-sm btn-danger',
-                    attr: {
-                        'data-toggle': 'tooltip',
-                        'title': 'Empty ITEM'
-                    },
-                    action: function(e, dt, node, config) {
-                        table_tool
-                            .rows()
-                            .remove()
-                            .draw();
-                    }
-                }, {
-                    extend: "collection",
-                    text: '<i class="fas fa-download"></i> Export',
-                    attr: {
-                        'data-toggle': 'tooltip',
-                        'title': 'Export Data'
-                    },
-                    className: 'btn btn-sm btn-primary',
-                    buttons: [{
-                        extend: 'copy',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    }, {
-                        extend: 'csv',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    }, {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    }, {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    }, {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':visible'
-                        }
-                    }],
-                }],
-            });
-
-
-            $('#btn_import').click(function() {
-                let imp = $('#import').val().trim();
-                let rows = imp.split('\n');
-                if (rows.length > 0) {
-                    rows.forEach((row, index) => {
-                        if (row != '' || row != null) {
-                            let cols = row.split('\t');
-                            cols.forEach(col => {
-                                if (col) {
-                                    table_tool.row.add({
-                                        item: col.trim(),
-                                    });
-                                }
-                            });
-                        }
-                    });
-                    table_tool.draw();
-                }
-            });
-
-            $('#btn_import_clear').click(function() {
-                let imp = $('#import').val('')
-            });
-
-
-            $('#table_tool tbody').on('click', 'td:not(:first-child)', function() {
-                let cell = table_tool.cell(this);
-                let oldValue = cell.data();
-
-                // Cegah double input
-                if ($(this).find('input').length > 0) return;
-
-                // Ganti isi jadi input
-                $(this).html(`<input type="text" class="form-control edit-input" value="${oldValue}" />`);
-                let input = $(this).find('input');
-                input.focus();
-
-                // Handle keluar dari input (blur)
-                input.on('blur', function() {
-                    let newValue = $(this).val().trim();
-
-                    // Update value di tabel
-                    cell.data(newValue).draw();
-                });
-
-                // Optional: tekan Enter untuk simpan
-                input.on('keypress', function(e) {
-                    if (e.which === 13) {
-                        $(this).blur(); // trigger blur
-                    }
-                });
-            });
-
-            $('#table_tool').on('click', '.del-item', function() {
-                let row = $(this).parents('tr')[0];
-                table_tool
-                    .row($(this).parents('tr'))
-                    .remove()
-                    .draw();
-            });
-
 
         });
     </script>

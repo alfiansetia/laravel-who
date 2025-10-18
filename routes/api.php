@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\QcController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\SopController;
@@ -105,7 +106,14 @@ Route::apiResource('vendors', VendorController::class)
 Route::apiResource('sops', SopController::class)
     ->names('api.sops');
 
-Route::post('alamats/{alamat}/duplicate', [AlamatController::class, 'duplicate'])->name('api.alamats.duplicate');
-Route::get('alamats/{alamat}/sync', [AlamatController::class, 'sync'])->name('api.alamats.sync');
-Route::delete('alamats', [AlamatController::class, 'destroy_batch'])->name('api.alamats.delete_batch');
-Route::apiResource('alamats', AlamatController::class)->names('api.alamats');
+Route::post('alamats/{alamat}/duplicate', [AlamatController::class, 'duplicate'])
+    ->name('api.alamats.duplicate');
+Route::get('alamats/{alamat}/sync', [AlamatController::class, 'sync'])
+    ->name('api.alamats.sync');
+Route::delete('alamats', [AlamatController::class, 'destroy_batch'])
+    ->name('api.alamats.delete_batch');
+Route::apiResource('alamats', AlamatController::class)
+    ->names('api.alamats');
+
+Route::post('form-qc/', [QcController::class, 'store'])
+    ->name('api.qc.store');

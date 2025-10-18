@@ -17,7 +17,7 @@
                 <a class="nav-link" href="{{ route('stock.index') }}">Stock</a>
             </li>
             <li class="nav-item <?= $title == 'Form QC' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('qc.create') }}">QC</a>
+                <a class="nav-link" href="{{ route('qc.index') }}">QC</a>
             </li>
             <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('alamats.index') }}">Alamat</a>
@@ -40,7 +40,7 @@
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{{ route('packs.index') }}">PL</a>
                     <a class="dropdown-item" href="{{ route('sops.index') }}">SOP QC</a>
-                    <a class="dropdown-item" href="{{ route('tools.sn') }}">SN</a>
+                    <a class="dropdown-item" href="{{ route('sn.index') }}">SN</a>
                     {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a>

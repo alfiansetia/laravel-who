@@ -1,24 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\Product;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
+use PhpOffice\PhpWord\TemplateProcessor;
 
-class FormqcController extends Controller
+class QcController extends Controller
 {
-    public function create()
+    public function store(Request  $request)
     {
-        $products = Product::all();
-        return view('qc.create', compact('products'))->with('title', 'Form QC');
-    }
-
-    public function store(Request $request)
-    {
-        // dd($request->all());
+        $this->validate($request, [
+            'no'    => 'required|max:200',
+        ]);
+        // return $this->sendResponse($request->all());
         try {
             $data_kel = array_values($request->kelengkapan ?? []);
             $data_kel_radio = array_values($request->kelengkapan_radio ?? []);
@@ -92,12 +89,12 @@ class FormqcController extends Controller
             ]);
 
             $no = $request->no;
-            $name = "$no. " . Str::slug($tgl . '_' . $request->type . '_' . $request->name, '_');
-            $path = public_path('master/' . $name . '.docx');
+            $name = "$no." . Str::slug($tgl . '_' . $request->type . '_' . $request->name, '_') . '.docx';
+            $path = storage_path('app/public/' . $name);
             $template->saveAs($path);
             return response()->download($path)->deleteFileAfterSend();
         } catch (\Throwable $th) {
-            return redirect()->route('qc.create')->with('error', 'Error : ' . $th->getMessage());
+            return $this->sendError($th->getMessage());
         }
     }
 }

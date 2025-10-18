@@ -130,8 +130,8 @@
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-shopping-cart menu-icon mr-3"></i>
                         <div>
-                            <h6 class="mb-0 font-weight-semibold">PURCHASE ORDER</h6>
-                            <small class="text-muted">List PURCHASE ORDER</small>
+                            <h6 class="mb-0 font-weight-semibold">PO</h6>
+                            <small class="text-muted">List PO</small>
                         </div>
                     </div>
                 </div>
@@ -140,10 +140,34 @@
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('ri.index') }}'">
                     <div class="card-body d-flex align-items-center">
-                        <i class="fas fa-shopping-cart menu-icon mr-3"></i>
+                        <i class="fas fa-cart-arrow-down menu-icon mr-3"></i>
                         <div>
-                            <h6 class="mb-0 font-weight-semibold">RECEIVE ITEM</h6>
-                            <small class="text-muted">List RECEIVE ITEM</small>
+                            <h6 class="mb-0 font-weight-semibold">RI</h6>
+                            <small class="text-muted">List RI</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('kargan.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-stamp menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">KARGAN</h6>
+                            <small class="text-muted">List Kargan</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('atk.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-pencil-ruler menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">ATK</h6>
+                            <small class="text-muted">List ATK</small>
                         </div>
                     </div>
                 </div>
@@ -152,6 +176,29 @@
 
         <h3 class="mb-4 font-weight-bold"><i class="fas fa-tools mr-1"></i> Tools</h3>
         <div class="row">
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('qc.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-clipboard-check menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">FORM QC</h6>
+                            <small class="text-muted">Generate Form QC</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('sn.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-list menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">SN</h6>
+                            <small class="text-muted">Generate SN</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
