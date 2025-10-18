@@ -22,7 +22,9 @@
             </form>
         </div>
     </div>
+@endsection
 
+@push('js')
     <script>
         $(document).ready(function() {
             var table = $('#table').DataTable({
@@ -113,7 +115,7 @@
             $('#table tbody').on('click', '.btn-delete', function() {
                 id = table.row($(this).parents('tr')[0]).id()
                 $.ajax({
-                    url: `{{ route('api.alamat.index') }}/${id}`,
+                    url: `{{ route('api.alamats.index') }}/${id}`,
                     type: 'DELETE',
                     success: function(result) {
                         alert(result.message)
@@ -128,4 +130,4 @@
 
         });
     </script>
-@endsection
+@endpush

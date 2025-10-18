@@ -35,8 +35,9 @@
             </div>
         </div>
     </form>
+@endsection
 
-
+@push('js')
     <!-- date-range-picker -->
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -158,4 +159,4 @@
 
         }
     </script>
-@endsection
+@endpush

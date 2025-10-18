@@ -52,12 +52,9 @@
             </div>
         </div>
     </div>
+@endsection
 
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@push('js')
     <script>
         const URL_INDEX_API = "{{ route('api.sops.index') }}"
         const URL_INDEX = "{{ route('sops.index') }}"
@@ -213,4 +210,4 @@
 
         });
     </script>
-@endsection
+@endpush

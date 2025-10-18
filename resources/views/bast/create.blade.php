@@ -6,7 +6,6 @@
 
 @section('content')
     <div class="container-fluid">
-
         <div class="card card-primary mt-3">
             <div class="card-header">
                 <h3 class="card-title">{{ $title }} </h3>
@@ -62,101 +61,97 @@
             <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </form>
         </div>
-        @if (session()->has('message'))
-            <script>
-                alert("{{ session('message') }}")
-            </script>
-        @endif
+    </div>
+@endsection
 
-        @push('js')
-            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        @endpush
 
-        <script>
-            $(document).ready(function() {
-                $('#btn_get_do').click(function() {
-                    let param = $('#input_do').val()
-                    $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
-                        $('#select_do').empty()
-                        $('#select_do').append('<option value="">Pilih</option>');
-                        for (let i = 0; i < res.data.records.length; i++) {
-                            let name = res.data.records[i].name
-                            if (res.data.records[i].group_id != false) {
-                                name += ' (' + res.data.records[i].group_id[1] + ')'
-                            }
-                            if (res.data.records[i].partner_id != false) {
-                                name += ' ' + res.data.records[i].partner_id[1]
-                            }
-                            let option = new Option(name, res.data.records[i].id,
-                                true, true);
-                            $('#select_do').append(option);
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#btn_get_do').click(function() {
+                let param = $('#input_do').val()
+                $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
+                    $('#select_do').empty()
+                    $('#select_do').append('<option value="">Pilih</option>');
+                    for (let i = 0; i < res.data.records.length; i++) {
+                        let name = res.data.records[i].name
+                        if (res.data.records[i].group_id != false) {
+                            name += ' (' + res.data.records[i].group_id[1] + ')'
                         }
-                        $('#select_do').val('')
-                    }).fail(function(xhr) {
-                        alert('Odoo Error!')
-                    });
-                })
-                $('#select_do').select2({
-                    theme: 'bootstrap4',
-                }).on('change', function() {
-                    let data = $(this).select2('data');
-                    if (data[0].id == '') {
-                        return;
+                        if (res.data.records[i].partner_id != false) {
+                            name += ' ' + res.data.records[i].partner_id[1]
+                        }
+                        let option = new Option(name, res.data.records[i].id,
+                            true, true);
+                        $('#select_do').append(option);
                     }
-                    let sid = data[0].id
-                    $.get("{{ url('api/do') }}/" + sid).done(function(res) {
-                        let tujuan = ''
-                        let no_do = ''
-                        if (res.data.partner_id != false) {
-                            tujuan = res.data.partner_id[1]
-                        }
-                        if (res.data.name != false) {
-                            no_do = res.data.name
-                        }
-                        let alamat = res.data.partner_address
-                        if (res.data.partner_address2 != false) {
-                            alamat += ' ' + res.data.partner_address2
-                        }
-                        if (res.data.partner_address3 != false) {
-                            alamat += ' ' + res.data.partner_address3
-                        }
-                        if (res.data.partner_address4 != false) {
-                            alamat += ' ' + res.data.partner_address4
-                        }
+                    $('#select_do').val('')
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
+                });
+            })
+            $('#select_do').select2({
+                theme: 'bootstrap4',
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                if (data[0].id == '') {
+                    return;
+                }
+                let sid = data[0].id
+                $.get("{{ url('api/do') }}/" + sid).done(function(res) {
+                    let tujuan = ''
+                    let no_do = ''
+                    if (res.data.partner_id != false) {
+                        tujuan = res.data.partner_id[1]
+                    }
+                    if (res.data.name != false) {
+                        no_do = res.data.name
+                    }
+                    let alamat = res.data.partner_address
+                    if (res.data.partner_address2 != false) {
+                        alamat += ' ' + res.data.partner_address2
+                    }
+                    if (res.data.partner_address3 != false) {
+                        alamat += ' ' + res.data.partner_address3
+                    }
+                    if (res.data.partner_address4 != false) {
+                        alamat += ' ' + res.data.partner_address4
+                    }
 
-                        $('#name').val(tujuan)
-                        $('#address').val(alamat)
-                        $('#city').val(res.data.partner_address3 || '')
-                        $('#do').val(no_do)
-                    }).fail(function(xhr) {
-                        alert('Odoo Error!')
-                    });
-
+                    $('#name').val(tujuan)
+                    $('#address').val(alamat)
+                    $('#city').val(res.data.partner_address3 || '')
+                    $('#do').val(no_do)
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
                 });
 
-                $('#form').submit(function(e) {
-                    e.preventDefault();
-                    let data = {
-                        do: $('#do').val(),
-                        name: $('#name').val(),
-                        address: $('#address').val(),
-                        city: $('#city').val(),
-                    }
-                    $.ajax({
-                        type: 'POST',
-                        url: "{{ route('api.bast.store') }}",
-                        data: data,
-                        beforeSend: function() {},
-                        success: function(res) {
-                            let id = res.data.id
-                            window.open("{{ url('bast') }}/" + id + '/edit', '_blank')
-                        },
-                        error: function(xhr, status, error) {
-                            alert(xhr.responseJSON.message);
-                        }
-                    });
-                })
-
             });
-        </script>
-    @endsection
+
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                let data = {
+                    do: $('#do').val(),
+                    name: $('#name').val(),
+                    address: $('#address').val(),
+                    city: $('#city').val(),
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('api.bast.store') }}",
+                    data: data,
+                    beforeSend: function() {},
+                    success: function(res) {
+                        let id = res.data.id
+                        window.open("{{ url('bast') }}/" + id + '/edit', '_blank')
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message);
+                    }
+                });
+            })
+
+        });
+    </script>
+@endpush

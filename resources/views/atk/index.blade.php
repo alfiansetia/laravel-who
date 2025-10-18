@@ -30,14 +30,9 @@
     {{-- <button id="export">Eksport</button> --}}
 
     @include('atk.modal')
+@endsection
 
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
-
-
+@push('js')
     <!-- date-range-picker -->
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -635,4 +630,4 @@
             XLSX.writeFile(wb, "Kartu_Stock_2025.xlsx");
         });
     </script>
-@endsection
+@endpush

@@ -23,7 +23,9 @@
             </form>
         </div>
     </div>
+@endsection
 
+@push('js')
     <script>
         $(document).ready(function() {
 
@@ -215,9 +217,6 @@
                     return true
                 }
             }
-
-
-
         });
     </script>
-@endsection
+@endpush

@@ -86,7 +86,7 @@
             </div>
 
             <div class="card-footer">
-                <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ route('alamats.index') }}" class="btn btn-secondary">Kembali</a>
                 <button type="button" id="add" class="btn btn-info">Tambah Product</button>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Print</button>
                 <button type="button" id="btn_sync" class="btn btn-danger">Sync Product</button>
@@ -95,16 +95,10 @@
         </form>
     </div>
     @include('alamat.modal')
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@endsection
 
-    @push('js')
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    @endpush
-
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         var id = '';
         var data = [];
@@ -112,7 +106,7 @@
 
             var table = $('#table').DataTable({
                 ajax: {
-                    url: "{{ route('api.alamat.show', $data->id) }}",
+                    url: "{{ route('api.alamats.show', $data->id) }}",
                     dataSrc: function(result) {
                         return result.data.detail
                     }
@@ -233,4 +227,4 @@
 
         });
     </script>
-@endsection
+@endpush

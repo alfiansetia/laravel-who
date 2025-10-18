@@ -90,19 +90,14 @@
         </div>
         </form>
     </div>
+
     @include('bast.modal')
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@endsection
 
-    @push('js')
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    @endpush
-
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        var id = '';
+        var id = 0;
         var data = [];
         $(document).ready(function() {
 
@@ -338,4 +333,4 @@
 
         });
     </script>
-@endsection
+@endpush

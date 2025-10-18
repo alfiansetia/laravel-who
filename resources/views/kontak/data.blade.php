@@ -21,12 +21,9 @@
             </form>
         </div>
     </div>
+@endsection
 
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@push('js')
     <script>
         $(document).ready(function() {
             var table = $('#table').DataTable({
@@ -160,4 +157,4 @@
 
         });
     </script>
-@endsection
+@endpush

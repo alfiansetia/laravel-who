@@ -24,6 +24,9 @@
             </form>
         </div>
     </div>
+@endsection
+
+@push('js')
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
 
     <script>
@@ -151,4 +154,4 @@
 
         });
     </script>
-@endsection
+@endpush

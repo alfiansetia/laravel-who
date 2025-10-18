@@ -22,7 +22,9 @@
             </form>
         </div>
     </div>
+@endsection
 
+@push('js')
     <script>
         $(document).ready(function() {
             var table = $('#table').DataTable({
@@ -126,4 +128,4 @@
 
         });
     </script>
-@endsection
+@endpush

@@ -73,24 +73,18 @@
             </div>
 
             <div class="card-footer">
-                <a href="{{ route('alamat.index') }}" class="btn btn-secondary">Kembali</a>
+                <a href="{{ route('alamats.index') }}" class="btn btn-secondary">Kembali</a>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
             </div>
         </form>
     </div>
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@endsection
 
-    @push('js')
-    @endpush
-
+@push('js')
     <script>
         $(document).ready(function() {
 
 
         });
     </script>
-@endsection
+@endpush

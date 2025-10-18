@@ -60,72 +60,68 @@
             <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan Download</button>
             </form>
         </div>
-        @if (session()->has('message'))
-            <script>
-                alert("{{ session('message') }}")
-            </script>
-        @endif
+    </div>
+@endsection
 
-        @push('js')
-            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        @endpush
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-        <script>
-            const bulanRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+    <script>
+        const bulanRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
-            function get_number() {
-                let dateVal = $('#date').val()
-                if (!dateVal) {
-                    dateVal = "{{ date('Y-m-d') }}"
+        function get_number() {
+            let dateVal = $('#date').val()
+            if (!dateVal) {
+                dateVal = "{{ date('Y-m-d') }}"
 
-                }
-                let [year, month] = dateVal.split('-'); // [2025, 05]
-                let romawi = bulanRomawi[parseInt(month) - 1]; // V
-                let currentNumber = $('#number').val();
-                let parts = currentNumber.split('/');
-                if (parts.length >= 4) {
-                    parts[1] = romawi;
-                    parts[2] = year;
-                    $('#number').val(parts.join('/'));
-                }
             }
+            let [year, month] = dateVal.split('-'); // [2025, 05]
+            let romawi = bulanRomawi[parseInt(month) - 1]; // V
+            let currentNumber = $('#number').val();
+            let parts = currentNumber.split('/');
+            if (parts.length >= 4) {
+                parts[1] = romawi;
+                parts[2] = year;
+                $('#number').val(parts.join('/'));
+            }
+        }
 
-            $(document).ready(function() {
-                get_number()
-                $('.select2').select2({
-                    theme: 'bootstrap4',
-                })
+        $(document).ready(function() {
+            get_number()
+            $('.select2').select2({
+                theme: 'bootstrap4',
+            })
 
-                $('#form').submit(function(e) {
-                    e.preventDefault();
-                    let data = {
-                        _method: 'PUT',
-                        number: $('#number').val(),
-                        date: $('#date').val(),
-                        product_id: $('#product').val(),
-                        sn: $('#sn').val(),
-                        pic: $('#pic').val(),
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                let data = {
+                    _method: 'PUT',
+                    number: $('#number').val(),
+                    date: $('#date').val(),
+                    product_id: $('#product').val(),
+                    sn: $('#sn').val(),
+                    pic: $('#pic').val(),
+                }
+                console.log(data);
+                $.ajax({
+                    type: 'PUT',
+                    url: "{{ route('api.kargan.update', $data->id) }}",
+                    data: data,
+                    beforeSend: function() {},
+                    success: function(res) {
+                        let id = res.data.id
+                        window.open("{{ route('kargan.show', $data->id) }}", '_blank')
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message);
                     }
-                    console.log(data);
-                    $.ajax({
-                        type: 'PUT',
-                        url: "{{ route('api.kargan.update', $data->id) }}",
-                        data: data,
-                        beforeSend: function() {},
-                        success: function(res) {
-                            let id = res.data.id
-                            window.open("{{ route('kargan.show', $data->id) }}", '_blank')
-                        },
-                        error: function(xhr, status, error) {
-                            alert(xhr.responseJSON.message);
-                        }
-                    });
-                })
+                });
+            })
 
-                $('#date').change(function() {
-                    get_number()
-                })
+            $('#date').change(function() {
+                get_number()
+            })
 
-            });
-        </script>
-    @endsection
+        });
+    </script>
+@endpush

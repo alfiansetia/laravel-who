@@ -156,158 +156,153 @@
                 </div>
             </form>
         </div>
+    </div>
+@endsection
 
 
-        @if (session()->has('message'))
-            <script>
-                alert("{{ session('message') }}")
-            </script>
-        @endif
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.9/jquery.inputmask.min.js"
+        integrity="sha512-F5Ul1uuyFlGnIT1dk2c4kB4DBdi5wnBJjVhL7gQlGh46Xn0VhvD8kgxLtjdZ5YN83gybk/aASUAlpdoWUjRR3g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-        @push('js')
-            <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.9/jquery.inputmask.min.js"
-                integrity="sha512-F5Ul1uuyFlGnIT1dk2c4kB4DBdi5wnBJjVhL7gQlGh46Xn0VhvD8kgxLtjdZ5YN83gybk/aASUAlpdoWUjRR3g=="
-                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        @endpush
+    <script>
+        const URL_INDEX_API = "{{ route('api.alamats.index') }}"
+        const URL_INDEX = "{{ route('alamats.index') }}"
 
-        <script>
-            const URL_INDEX_API = "{{ route('api.alamats.index') }}"
-            const URL_INDEX = "{{ route('alamats.index') }}"
+        function setEpur(val) {
+            $('#epur').val(val)
+        }
 
-            function setEpur(val) {
-                $('#epur').val(val)
-            }
+        $('.mask_angka').inputmask({
+            alias: 'numeric',
+            groupSeparator: '.',
+            autoGroup: true,
+            digits: 0,
+            rightAlign: false,
+            removeMaskOnSubmit: true,
+            autoUnmask: true,
+            min: 0,
+        });
 
-            $('.mask_angka').inputmask({
-                alias: 'numeric',
-                groupSeparator: '.',
-                autoGroup: true,
-                digits: 0,
-                rightAlign: false,
-                removeMaskOnSubmit: true,
-                autoUnmask: true,
-                min: 0,
-            });
-
-            $(document).ready(function() {
-                $('#btn_get_do').click(function() {
-                    let param = $('#input_do').val()
-                    $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
-                        $('#select_do').empty()
-                        $('#select_do').append('<option value="">Pilih</option>');
-                        for (let i = 0; i < res.data.records.length; i++) {
-                            let name = res.data.records[i].name
-                            if (res.data.records[i].group_id != false) {
-                                name += ' (' + res.data.records[i].group_id[1] + ')'
-                            }
-                            if (res.data.records[i].partner_id != false) {
-                                name += ' ' + res.data.records[i].partner_id[1]
-                            }
-                            let option = new Option(name, res.data.records[i].id,
-                                true, true);
-                            $('#select_do').append(option);
+        $(document).ready(function() {
+            $('#btn_get_do').click(function() {
+                let param = $('#input_do').val()
+                $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
+                    $('#select_do').empty()
+                    $('#select_do').append('<option value="">Pilih</option>');
+                    for (let i = 0; i < res.data.records.length; i++) {
+                        let name = res.data.records[i].name
+                        if (res.data.records[i].group_id != false) {
+                            name += ' (' + res.data.records[i].group_id[1] + ')'
                         }
-                        $('#select_do').val('')
-                    }).fail(function(xhr) {
-                        alert('Odoo Error!')
-                    });
-                })
-                $('#select_do').select2({
-                    theme: 'bootstrap4',
-                }).on('change', function() {
-                    let data = $(this).select2('data');
-                    if (data[0].id == '') {
-                        return;
+                        if (res.data.records[i].partner_id != false) {
+                            name += ' ' + res.data.records[i].partner_id[1]
+                        }
+                        let option = new Option(name, res.data.records[i].id,
+                            true, true);
+                        $('#select_do').append(option);
                     }
-                    let sid = data[0].id
-                    $.get("{{ url('api/do') }}/" + sid).done(function(res) {
-                        let tujuan = ''
-                        let ekspedisi = ''
-                        let up = ''
-                        let name = ''
-                        let epur = ''
-                        let note_to_wh = ''
-                        if (res.data.partner_id != false) {
-                            tujuan = res.data.partner_id[1]
-                        }
-                        if (res.data.ekspedisi_id != false) {
-                            ekspedisi = res.data.ekspedisi_id[1]
-                        }
-                        if (res.data.delivery_manual != false) {
-                            up = res.data.delivery_manual
-                        }
-                        if (res.data.name != false) {
-                            name = res.data.name
-                        }
-                        if (res.data.no_aks != false) {
-                            epur = res.data.no_aks
-                        }
-                        let alamat = res.data.partner_address
-                        if (res.data.partner_address2 != false) {
-                            alamat += '\n' + res.data.partner_address2
-                        }
-                        if (res.data.partner_address3 != false) {
-                            alamat += '\n' + res.data.partner_address3
-                        }
-                        if (res.data.partner_address4 != false) {
-                            alamat += '\n' + res.data.partner_address4
-                        }
-                        if (res.data.note_to_wh != false) {
-                            note_to_wh = res.data.note_to_wh
-                            note_to_wh = note_to_wh.replace(/\n/g, '<br>');
-                        }
+                    $('#select_do').val('')
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
+                });
+            })
+            $('#select_do').select2({
+                theme: 'bootstrap4',
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                if (data[0].id == '') {
+                    return;
+                }
+                let sid = data[0].id
+                $.get("{{ url('api/do') }}/" + sid).done(function(res) {
+                    let tujuan = ''
+                    let ekspedisi = ''
+                    let up = ''
+                    let name = ''
+                    let epur = ''
+                    let note_to_wh = ''
+                    if (res.data.partner_id != false) {
+                        tujuan = res.data.partner_id[1]
+                    }
+                    if (res.data.ekspedisi_id != false) {
+                        ekspedisi = res.data.ekspedisi_id[1]
+                    }
+                    if (res.data.delivery_manual != false) {
+                        up = res.data.delivery_manual
+                    }
+                    if (res.data.name != false) {
+                        name = res.data.name
+                    }
+                    if (res.data.no_aks != false) {
+                        epur = res.data.no_aks
+                    }
+                    let alamat = res.data.partner_address
+                    if (res.data.partner_address2 != false) {
+                        alamat += '\n' + res.data.partner_address2
+                    }
+                    if (res.data.partner_address3 != false) {
+                        alamat += '\n' + res.data.partner_address3
+                    }
+                    if (res.data.partner_address4 != false) {
+                        alamat += '\n' + res.data.partner_address4
+                    }
+                    if (res.data.note_to_wh != false) {
+                        note_to_wh = res.data.note_to_wh
+                        note_to_wh = note_to_wh.replace(/\n/g, '<br>');
+                    }
 
-                        $('#do').val(name)
-                        $('#up').val(up)
-                        $('#alamat').val(alamat)
-                        $('#tujuan').val(tujuan)
-                        $('#ekspedisi').val(ekspedisi)
-                        $('#epur').val(epur)
-                        $('#n_t_wh').html(note_to_wh)
-                        // console.log(note_to_wh);
-                    }).fail(function(xhr) {
-                        alert('Odoo Error!')
-                    });
-
+                    $('#do').val(name)
+                    $('#up').val(up)
+                    $('#alamat').val(alamat)
+                    $('#tujuan').val(tujuan)
+                    $('#ekspedisi').val(ekspedisi)
+                    $('#epur').val(epur)
+                    $('#n_t_wh').html(note_to_wh)
+                    // console.log(note_to_wh);
+                }).fail(function(xhr) {
+                    alert('Odoo Error!')
                 });
 
-                $('#form').submit(function(e) {
-                    e.preventDefault();
-                    let data = {
-                        // detail: dt,
-                        tujuan: $('#tujuan').val(),
-                        alamat: $('#alamat').val(),
-                        ekspedisi: $('#ekspedisi').val(),
-                        koli: $('#koli').val(),
-                        up: $('#up').val(),
-                        tlp: $('#tlp').val(),
-                        do: $('#do').val(),
-                        epur: $('#epur').val(),
-                        untuk: $('#untuk').val(),
-                        nilai: $('#nilai').val(),
-                        note: $('#note').val(),
-                        is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
-                        is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
-                        is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
-                        is_last_koli: $('#is_last_koli').prop('checked') ? 'yes' : 'no',
-                        is_asuransi: $('#is_asuransi').prop('checked') ? 'yes' : 'no',
-                    }
-                    $.ajax({
-                        type: 'POST',
-                        url: URL_INDEX_API,
-                        data: data,
-                        beforeSend: function() {},
-                        success: function(res) {
-                            let id = res.data.id
-                            window.open(URL_INDEX + "/" + id + '/edit', '_blank')
-                        },
-                        error: function(xhr, status, error) {
-                            alert(xhr.responseJSON.message);
-                        }
-                    });
-                })
-
             });
-        </script>
-    @endsection
+
+            $('#form').submit(function(e) {
+                e.preventDefault();
+                let data = {
+                    // detail: dt,
+                    tujuan: $('#tujuan').val(),
+                    alamat: $('#alamat').val(),
+                    ekspedisi: $('#ekspedisi').val(),
+                    koli: $('#koli').val(),
+                    up: $('#up').val(),
+                    tlp: $('#tlp').val(),
+                    do: $('#do').val(),
+                    epur: $('#epur').val(),
+                    untuk: $('#untuk').val(),
+                    nilai: $('#nilai').val(),
+                    note: $('#note').val(),
+                    is_do: $('#is_do').prop('checked') ? 'yes' : 'no',
+                    is_pk: $('#is_pk').prop('checked') ? 'yes' : 'no',
+                    is_banting: $('#is_banting').prop('checked') ? 'yes' : 'no',
+                    is_last_koli: $('#is_last_koli').prop('checked') ? 'yes' : 'no',
+                    is_asuransi: $('#is_asuransi').prop('checked') ? 'yes' : 'no',
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: URL_INDEX_API,
+                    data: data,
+                    beforeSend: function() {},
+                    success: function(res) {
+                        let id = res.data.id
+                        window.open(URL_INDEX + "/" + id + '/edit', '_blank')
+                    },
+                    error: function(xhr, status, error) {
+                        alert(xhr.responseJSON.message);
+                    }
+                });
+            })
+
+        });
+    </script>
+@endpush

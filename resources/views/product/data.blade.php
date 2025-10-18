@@ -88,12 +88,9 @@
             </div>
         </div>
     </div>
+@endsection
 
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
+@push('js')
     <script>
         $(document).ready(function() {
             const URL_INDEX_API = "{{ route('api.product.index') }}";
@@ -332,4 +329,4 @@
 
         });
     </script>
-@endsection
+@endpush
