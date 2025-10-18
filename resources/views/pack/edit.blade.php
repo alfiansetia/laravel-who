@@ -82,31 +82,43 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group col-12">
-                            <table id="table" class="table table-sm table-hover" style="width: 100%;cursor: pointer;">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th style="width: 30px">#</th>
-                                        <th>ITEM</th>
-                                        <th>QTY</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-
                     </div>
                 </div>
-            </div>
 
-            <div class="card-footer">
-                <a href="{{ route('packs.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('packs.edit', $data->id) }}" class="btn btn-warning">Refresh</a>
-                <a href="{{ route('api.packs.download', $data->id) }}" class="btn btn-info" target="_blank">Download</a>
-                <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
+                <div class="card-footer text-center">
+                    <a href="{{ route('packs.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <a href="{{ route('packs.edit', $data->id) }}" class="btn btn-warning">
+                        <i class="fas fa-sync mr-1"></i>Refresh
+                    </a>
+                    <a href="{{ route('api.packs.download', $data->id) }}" class="btn btn-info" target="_blank">
+                        <i class="fas fa-download mr-1"></i>Download
+                    </a>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    </button>
+                </div>
             </div>
         </form>
+
+        <div class="card card-primary mt-3">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table id="table" class="table table-sm table-hover" style="width: 100%;cursor: pointer;">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width: 30px">#</th>
+                                <th>ITEM</th>
+                                <th>QTY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="modal_item" data-backdrop="static" data-keyboard="false"
             aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -330,7 +342,8 @@
                 if ($(this).find('input').length > 0) return;
 
                 // Ganti isi jadi input
-                $(this).html(`<input type="text" class="form-control edit-input" value="${oldValue}" />`);
+                $(this).html(
+                    `<input type="text" class="form-control edit-input" value="${oldValue||''}" />`);
                 let input = $(this).find('input');
                 input.focus();
 

@@ -178,7 +178,7 @@
 
         <div class="card card-primary mt-3">
             <div class="card-body p-0">
-                <div class="table-responsive"> <!-- Tambahkan ini -->
+                <div class="table-responsive">
 
                     <table class="table mt-0" id="table" style="width: 100%">
                         <thead>
