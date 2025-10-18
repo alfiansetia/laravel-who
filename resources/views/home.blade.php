@@ -199,6 +199,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('settings.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-cogs menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">SETTING</h6>
+                            <small class="text-muted">App Setting</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection

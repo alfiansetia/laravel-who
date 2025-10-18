@@ -176,50 +176,6 @@
                 });
             }).ajaxStop($.unblockUI);
             bsCustomFileInput.init()
-
-            $('#btn_modal_env').click(function() {
-                let env_value = $('#odoo_env').val()
-                if (env_value == '') {
-                    alert('Cannot empty!')
-                    return
-                }
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ route('api.setting.env') }}",
-                    data: {
-                        env_value: env_value
-                    }
-                }).done(function(result) {
-                    $('#modal_env').modal('hide')
-                    alert(result.message)
-                }).fail(function(xhr) {
-                    let message = xhr.responseJSON.message || 'Error!'
-                    alert(message)
-                })
-            })
-
-            $('#setting_nav').click(function() {
-                $.get(BASE_URL + '/api/setting/env')
-                    .done(function(res) {
-                        $('#odoo_env').val(res.data.session_id)
-                        $('#odoo_session_username').val(res.data.username)
-                        $('#odoo_session_name').val(`${res.data.name} (${res.data.uid})`)
-                        $('#modal_env').modal('show')
-                    }).fail(function(xhr) {
-                        $('#modal_env').modal('hide')
-                        alert('Error!')
-                    })
-            })
-
-            $('#fix_session').click(function() {
-                $.post(BASE_URL + '/api/setting/reload')
-                    .done(function(res) {
-                        $('#modal_env').modal('hide')
-                        alert('Success!')
-                    }).fail(function(xhr) {
-                        alert('Error!')
-                    })
-            })
         })
 
         function multiCheck(tb_var) {

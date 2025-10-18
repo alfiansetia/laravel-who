@@ -43,8 +43,8 @@
                     <a class="dropdown-item" href="{{ route('sn.index') }}">SN</a>
                     {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a>
-                    <a class="dropdown-item" href="{{ url('admin') }}">Admin</a>
+                    {{-- <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a> --}}
+                    {{-- <a class="dropdown-item" href="{{ url('admin') }}">Admin</a> --}}
                 </div>
             </li>
         </ul>

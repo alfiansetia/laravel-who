@@ -36,7 +36,6 @@ Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
 Route::apiResource('packing-list', PackingListController::class)->names('api.packing_list');
-Route::apiResource('target', TargetController::class)->names('api.target');
 Route::apiResource('kargan', KarganController::class)->names('api.kargan');
 
 
@@ -45,10 +44,6 @@ Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
-
-Route::get('setting/env', [SettingController::class, 'index'])->name('api.setting.index');
-Route::post('setting/env', [SettingController::class, 'set_env'])->name('api.setting.env');
-Route::post('setting/reload', [SettingController::class, 'reload'])->name('api.setting.reload');
 
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
@@ -117,3 +112,10 @@ Route::apiResource('alamats', AlamatController::class)
 
 Route::post('form-qc/', [QcController::class, 'store'])
     ->name('api.qc.store');
+
+Route::get('settings/', [SettingController::class, 'index'])
+    ->name('api.settings.index');
+Route::post('settings/', [SettingController::class, 'store'])
+    ->name('api.settings.store');
+Route::put('settings/', [SettingController::class, 'reload'])
+    ->name('api.settings.reload');

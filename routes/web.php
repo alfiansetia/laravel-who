@@ -13,6 +13,7 @@ use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\RIController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SnController;
 use App\Http\Controllers\SopController;
 use App\Http\Controllers\StockController;
@@ -48,10 +49,6 @@ Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
 Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.eksport');
 
 
-Route::get('tes', function () {
-    return view('tes');
-});
-
 // NEW ROUTE
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
@@ -75,5 +72,9 @@ Route::resource('alamats', AlamatController::class)
 Route::resource('form-qc', QcController::class)
     ->names('qc')
     ->only(['index', 'show']);
+
 Route::get('sn/', [SnController::class, 'index'])
     ->name('sn.index');
+
+Route::get('settings/', [SettingController::class, 'index'])
+    ->name('settings.index');
