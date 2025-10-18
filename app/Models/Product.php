@@ -16,16 +16,6 @@ class Product extends Model
         'odoo_id'   => 'integer',
     ];
 
-    public function pls()
-    {
-        return $this->hasMany(PackingList::class);
-    }
-
-    public function target()
-    {
-        return $this->hasOne(Target::class);
-    }
-
     public function packs()
     {
         return $this->hasMany(Pack::class);
