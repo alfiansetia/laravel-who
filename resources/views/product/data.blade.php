@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1>Data Product</h1>
+        {{-- <h1>Data Product</h1> --}}
 
         <div class="responsive">
             <form id="selected">

@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1>{{ $title }}</h1>
+        {{-- <h1>{{ $title }}</h1> --}}
         <div class="row mb-2">
             <div class="form-group col-md-6">
                 <div class="input-group">

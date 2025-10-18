@@ -9,7 +9,7 @@
 
         <div class="card card-primary mt-3">
             <div class="card-header">
-                <h3 class="card-title">{{ $title }} </h3>
+                {{-- <h3 class="card-title">{{ $title }} </h3> --}}
                 <div class="row">
                     <div class="form-group col-md-6">
                         <div class="input-group">
@@ -82,8 +82,8 @@
                 <div class="dropdown-menu">
                     <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=tanda_terima"
                         target="_blank">Tanda Terima</a>
-                    <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=training"
-                        target="_blank">Daftar Training</a>
+                    <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=training" target="_blank">Daftar
+                        Training</a>
                     <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=bast" target="_blank">BAST</a>
                 </div>
             </div>

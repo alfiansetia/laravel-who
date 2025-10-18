@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1>Packing List</h1>
+        {{-- <h1>Packing List</h1> --}}
 
         <div class="responsive">
             <form id="selected">

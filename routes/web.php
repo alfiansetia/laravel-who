@@ -53,7 +53,7 @@ Route::get('tes', function () {
 });
 
 // NEW ROUTE
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('index');
 
 
 Route::resource('packs', PackController::class)

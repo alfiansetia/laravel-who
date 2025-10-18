@@ -4,7 +4,7 @@
     <!-- daterange picker -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <div class="container-fluid">
-        <h1>Data ATK</h1>
+        {{-- <h1>Data ATK</h1> --}}
 
         <div class="responsive">
             <form id="selected">

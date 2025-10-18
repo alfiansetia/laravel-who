@@ -8,7 +8,7 @@
     <div class="container-fluid">
         <div class="card card-primary mt-3">
             <div class="card-header">
-                <h3 class="card-title">{{ $title }} </h3>
+                {{-- <h3 class="card-title">{{ $title }} </h3> --}}
                 <div class="row">
                     <div class="form-group col-md-6">
                         <div class="input-group">

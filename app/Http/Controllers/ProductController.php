@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -14,6 +15,9 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        return view('product.data');
+        $bcms = collect([
+            new Breadcrumb('List Product', route('products.index'), false),
+        ]);
+        return view('product.data', compact('bcms'));
     }
 }

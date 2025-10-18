@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1>{{ $title }}</h1>
+        {{-- <h1>{{ $title }}</h1> --}}
         <form class="form-inline">
             <div class="form-group col-md-4 mb-2 pl-0">
                 <select name="location" class="form-control" id="location" multiple style="width: 100%">

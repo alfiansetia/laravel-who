@@ -30,8 +30,14 @@
     <div id="notif" class="mt-2 pl-3 pr-3">
 
     </div>
+    <div class="content-wrapper">
+        @include('components.breadcumb')
+        <!-- Main content -->
+        <section class="content">
+            @yield('content')
+        </section>
 
-    @yield('content')
+    </div>
     <br>
     <br>
     <br>

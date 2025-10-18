@@ -10,7 +10,7 @@
         <form method="POST" action="{{ route('problem.update', $data->id) }}" id="form">
             <div class="card card-primary mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">{{ $title }} </h3>
+                    {{-- <h3 class="card-title">{{ $title }} </h3> --}}
                 </div>
                 @csrf
                 @method('PUT')

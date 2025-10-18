@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kargan;
 use App\Models\Product;
+use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -13,7 +14,10 @@ class KarganController extends Controller
 {
     public function index()
     {
-        return view('kargan.index')->with(['title' => 'List Kargan']);
+        $bcms = collect([
+            new Breadcrumb('List Kargan', route('kargan.index'), false),
+        ]);
+        return view('kargan.index', compact('bcms'))->with(['title' => 'List Kargan']);
     }
 
     /**
@@ -23,15 +27,23 @@ class KarganController extends Controller
      */
     public function create()
     {
+        $bcms = collect([
+            new Breadcrumb('List Kargan', route('kargan.index'), true),
+            new Breadcrumb('Create Kargan', route('kargan.create'), false),
+        ]);
         $products = Product::all();
-        return view('kargan.create', compact('products'))->with(['title' => 'Create Kargan']);
+        return view('kargan.create', compact('products', 'bcms'))->with(['title' => 'Create Kargan']);
     }
 
     public function edit(Kargan $kargan)
     {
         $products = Product::all();
         $data = $kargan->load('product');
-        return view('kargan.edit', compact(['data', 'products']))->with(['title' => 'Edit Kargan']);
+        $bcms = collect([
+            new Breadcrumb('List Kargan', route('kargan.index'), true),
+            new Breadcrumb($data->number . ' - ' . $data->do, route('kargan.edit', $data->id), false),
+        ]);
+        return view('kargan.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Kargan']);
     }
 
     public function show(Request $request, Kargan $kargan)

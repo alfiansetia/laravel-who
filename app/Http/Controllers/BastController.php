@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bast;
 use App\Models\Product;
+use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
@@ -17,7 +18,10 @@ class BastController extends Controller
      */
     public function index()
     {
-        return view('bast.index')->with(['title' => 'List BAST']);
+        $bcms = collect([
+            new Breadcrumb('List BAST', route('bast.index'), false),
+        ]);
+        return view('bast.index', compact('bcms'))->with(['title' => 'List BAST']);
     }
 
     /**
@@ -27,8 +31,12 @@ class BastController extends Controller
      */
     public function create()
     {
+        $bcms = collect([
+            new Breadcrumb('List BAST', route('bast.index'), true),
+            new Breadcrumb('Create BAST', route('bast.index'), false),
+        ]);
         $products = Product::all();
-        return view('bast.create')->with(['title' => 'Create BAST']);
+        return view('bast.create', compact('bcms'))->with(['title' => 'Create BAST']);
     }
 
     /**
@@ -39,9 +47,13 @@ class BastController extends Controller
      */
     public function edit(Bast $bast)
     {
+        $bcms = collect([
+            new Breadcrumb('List BAST', route('bast.index'), true),
+            new Breadcrumb($bast->do, route('bast.index'), false),
+        ]);
         $products = Product::all();
         $data = $bast->load('details');
-        return view('bast.edit', compact(['data', 'products']))->with(['title' => 'Edit BAST']);
+        return view('bast.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit BAST']);
     }
 
     public function show(Request $request, Bast $bast)

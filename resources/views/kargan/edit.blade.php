@@ -6,10 +6,10 @@
 
 @section('content')
     <div class="container-fluid">
-
+        <h5>{{ $title }}</h5>
         <div class="card card-primary mt-3">
             <div class="card-header">
-                <h3 class="card-title">{{ $title }} </h3>
+                {{-- <h3 class="card-title">{{ $title }} </h3> --}}
             </div>
 
             <form method="POST" action="" id="form">

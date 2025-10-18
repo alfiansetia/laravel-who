@@ -2,8 +2,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1>SOP QC</h1>
-
+        {{-- <h1>SOP QC</h1> --}}
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
