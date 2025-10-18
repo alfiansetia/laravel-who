@@ -22,10 +22,6 @@ use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', function () {
-    return redirect()->route('products.index');
-})->name('index');
-
 Route::get('tools-sn', [ToolsController::class, 'sn'])->name('tools.sn');
 
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
@@ -65,6 +61,9 @@ Route::get('tes', function () {
 });
 
 // NEW ROUTE
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+
 Route::resource('packs', PackController::class)
     ->names('packs')
     ->only(['index', 'show', 'create', 'edit']);
