@@ -25,7 +25,7 @@
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
                 <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
             </li>
-            <li class="nav-item dropdown">
+            {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                     aria-expanded="false">
                     Other
@@ -41,12 +41,9 @@
                     <a class="dropdown-item" href="{{ route('packs.index') }}">PL</a>
                     <a class="dropdown-item" href="{{ route('sops.index') }}">SOP QC</a>
                     <a class="dropdown-item" href="{{ route('sn.index') }}">SN</a>
-                    {{-- <a class="dropdown-item" href="{{ route('atk.index') }}">ATK</a> --}}
                     <div class="dropdown-divider"></div>
-                    {{-- <a class="dropdown-item" href="javascript:void(0);" id="setting_nav">Setting</a> --}}
-                    {{-- <a class="dropdown-item" href="{{ url('admin') }}">Admin</a> --}}
                 </div>
-            </li>
+            </li> --}}
         </ul>
     </div>
 </nav>
