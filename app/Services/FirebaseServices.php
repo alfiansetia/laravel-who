@@ -30,9 +30,11 @@ class FirebaseServices
         foreach ($tokens as  $token) {
             $param['message'] = [
                 'token'     => $token->token,
-                'notification'  => [
+                'data'      => [
                     "title" => $title,
                     "body"  => $body,
+                    "icon"  => asset('images/asa.png'),
+
                 ],
             ];
             $proj = config('services.firebase.project_id');

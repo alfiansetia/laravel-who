@@ -47,18 +47,18 @@
     }
     // Registrasi Service Worker
     try {
-        // if ('serviceWorker' in navigator) {
-        //     navigator.serviceWorker.register('/firebase-messaging-sw.js')
-        //         .then(registration => {
-        //             console.log("✅ Service Worker terdaftar:");
-        //             // console.log("✅ Service Worker terdaftar:", registration);
-        //             // success('✅ Notifikasi sudah siap. 😁👍')
-        //         })
-        //         .catch(err => {
-        //             console.log("❌ Service Worker gagal:", err);
-        //             danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
-        //         });
-        // }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+                .then(registration => {
+                    console.log("✅ Service Worker terdaftar");
+                    // console.log("✅ Service Worker terdaftar:", registration);
+                    // success('✅ Notifikasi sudah siap. 😁👍')
+                })
+                .catch(err => {
+                    console.log("❌ Service Worker gagal:", err);
+                    danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
+                });
+        }
         if (firebase.messaging.isSupported()) {
 
             firebase.initializeApp(firebaseConfig);
@@ -92,12 +92,17 @@
                 }
             });
 
-            // Hilangkan new Notification(), cukup log saja
             messaging.onMessage(payload => {
                 console.log("🔔 Notifikasi diterima (foreground):", payload);
-                new Notification(payload.notification.title, {
-                    body: payload.notification.body,
-                    icon: "{{ asset('images/asa.png') }}",
+                const {
+                    title,
+                    body,
+                    icon
+                } = payload.data;
+
+                new Notification(title, {
+                    body,
+                    icon,
                     vibrate: [200, 100, 200],
                 });
             });

@@ -1,5 +1,9 @@
-importScripts("https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js");
+importScripts(
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"
+);
+importScripts(
+    "https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js"
+);
 
 // Konfigurasi Firebase
 firebase.initializeApp({
@@ -9,29 +13,25 @@ firebase.initializeApp({
     storageBucket: "",
     messagingSenderId: "",
     appId: "",
-    measurementId: ""
+    measurementId: "",
 });
 
-const messaging = firebase.messaging();
+const message = firebase.messaging();
 
 // Tangani notifikasi background
-messaging.onBackgroundMessage(payload => {
-    console.log("🔔 Notifikasi background:", payload);
+message.onBackgroundMessage((payload) => {
+    console.log("🔔 Background message:", payload);
+    const { title, body, icon } = payload.data;
 
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: "images/asa.png",
+    self.registration.showNotification(title, {
+        body: body,
+        icon: icon,
         vibrate: [200, 100, 200],
-    };
-
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    });
 });
 
 // Tangani klik notifikasi agar membuka halaman web tertentu
-self.addEventListener("notificationclick", event => {
+self.addEventListener("notificationclick", (event) => {
     event.notification.close();
-    event.waitUntil(
-        clients.openWindow("/")
-    );
+    event.waitUntil(clients.openWindow("/"));
 });
