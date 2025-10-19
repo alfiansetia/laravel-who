@@ -6,29 +6,30 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="card card-primary mt-3">
-            <div class="card-header">
-                {{-- <h3 class="card-title">{{ $title }} </h3> --}}
-                <div class="row">
-                    <div class="form-group col-md-6">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="CENT/OUT/">
-                            <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" id="btn_get_do">GET</button>
+        <form method="POST" action="{{ route('bast.store') }}" id="form">
+            @csrf
+            <div class="card card-primary mt-3">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
+                                    value="CENT/OUT/">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-primary" id="btn_get_do">
+                                        <i class="fas fa-search mr-1"></i>GET
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
-                            <option value="">Pilih</option>
-                        </select>
+                        <div class="form-group col-md-6">
+                            <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
+                                <option value="">Pilih</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <form method="POST" action="{{ route('bast.store') }}" id="form">
-                @csrf
                 @method('PUT')
                 <div class="card-body">
                     <div class="form-row">
@@ -54,13 +55,16 @@
                         </div>
                     </div>
                 </div>
-        </div>
-
-        <div class="card-footer">
-            <a href="{{ route('bast.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
-            </form>
-        </div>
+                <div class="card-footer text-center">
+                    <a href="{{ route('bast.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 @endsection
 

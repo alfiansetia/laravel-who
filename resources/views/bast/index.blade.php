@@ -2,8 +2,6 @@
 
 @section('content')
     <div class="container-fluid">
-        {{-- <h1>{{ $title }}</h1> --}}
-
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
@@ -48,6 +46,8 @@
                 ],
                 columns: [{
                         data: 'id',
+                        searchable: false,
+                        sortable: false,
                         render: function(data, type, row, meta) {
                             if (type == 'display') {
                                 return meta.row + meta.settings._iDisplayStart + 1;
@@ -64,10 +64,13 @@
                         data: "city",
                     }, {
                         data: "id",
+                        className: 'text-center',
+                        searchable: false,
+                        sortable: false,
                         render: function(data, type, row, meta) {
                             if (type == 'display') {
                                 let text =
-                                    `<button type="button" class="btn btn-sm btn-danger btn-delete">Delete</button>`
+                                    `<button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>`
                                 return text
                             } else {
                                 return data

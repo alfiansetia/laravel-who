@@ -205,14 +205,18 @@
             </div>
 
             <div class="card-footer text-center">
-                <a href="{{ route('products.index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
-                    Kembali</a>
-                <button type="button" id="btn_refresh_input" class="btn btn-warning"><i class="fas fa-redo"></i>
-                    Refresh</button>
-                <button type="button" id="btn_get_table" class="btn btn-info"><i class="fas fa-table"></i> Buat
-                    Tabel</button>
-                <button type="submit" id="btn_simpan" class="btn btn-primary"><i class="fas fa-download"></i> Simpan
-                    Download</button>
+                <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>Kembali
+                </a>
+                <button type="button" id="btn_refresh_input" class="btn btn-warning">
+                    <i class="fas fa-redo"></i>Refresh
+                </button>
+                <button type="button" id="btn_get_table" class="btn btn-info">
+                    <i class="fas fa-table"></i> Buat Tabel
+                </button>
+                <button type="submit" id="btn_simpan" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Simpan Download
+                </button>
             </div>
         </form>
 
