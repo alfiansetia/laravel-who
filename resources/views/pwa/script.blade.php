@@ -2,7 +2,7 @@
 <button id="pwa-install-btn"
     style="display:none; position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 8px; z-index: 1000;"
     hidden>
-    Install App
+    <i class="fas fa-rocket mr-1"></i>Install App
 </button>
 
 <script>
