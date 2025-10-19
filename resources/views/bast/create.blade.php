@@ -92,7 +92,7 @@
                     }
                     $('#select_do').val('')
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
             })
             $('#select_do').select2({
@@ -128,7 +128,7 @@
                     $('#city').val(res.data.partner_address3 || '')
                     $('#do').val(no_do)
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
 
             });
@@ -151,7 +151,7 @@
                         window.open("{{ url('bast') }}/" + id + '/edit', '_blank')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })

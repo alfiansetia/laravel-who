@@ -551,7 +551,7 @@
             $('#btn_get_pl').click(function() {
                 let prod = $('#select_product').val();
                 if (!prod) {
-                    alert('Product Not Found!');
+                    show_message('Product Not Found!');
                     return;
                 }
 
@@ -561,7 +561,7 @@
                     success: function(res) {
                         let packs = res.data.packs || [];
                         if (packs.length === 0) {
-                            // alert('No packs found!');
+                            show_message('No packs found!');
                             return;
                         }
 
@@ -592,7 +592,7 @@
                         });
                     },
                     error: function(xhr) {
-                        alert(xhr.responseJSON?.message || 'Error!');
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             });

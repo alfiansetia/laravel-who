@@ -211,7 +211,7 @@
                 let item = $('#item').val()
                 let qty = $('#qty').val()
                 if (item == '' || item == null) {
-                    alert('Item empty!')
+                    show_message('Item empty!')
                     $('#item').focus()
                     return
                 }
@@ -242,15 +242,15 @@
                 let desc = $('#desc').val()
                 let data = table.rows().data().toArray();
                 if (product == '' || product == null) {
-                    alert('select Product!')
+                    show_message('select Product!')
                     return
                 }
                 if (vendor == '' || vendor == null) {
-                    alert('select Product!')
+                    show_message('select Product!')
                     return
                 }
                 if (data.length < 1) {
-                    alert('Item Empty!')
+                    show_message('Item Empty!')
                     return
                 }
                 $.ajax({
@@ -265,12 +265,10 @@
                     },
                     beforeSend: function() {},
                     success: function(res) {
-                        // table.ajax.reload()
-                        alert(res.message)
-                        // window.location.href = `${URL_INDEX}/${res.data.id}/edit`
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })

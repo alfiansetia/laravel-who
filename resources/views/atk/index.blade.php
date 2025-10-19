@@ -431,7 +431,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true
@@ -454,7 +454,7 @@
                     error: function(xhr, status, error) {
                         er = xhr.responseJSON.errors
                         if (xhr.status != 422) {
-                            alert(xhr.responseJSON.message || 'Error!')
+                            show_message(xhr.responseJSON.message || 'Error!')
                         } else {
                             erlen = Object.keys(er).length
                             for (i = 0; i < erlen; i++) {
@@ -484,7 +484,7 @@
                     error: function(xhr, status, error) {
                         er = xhr.responseJSON.errors
                         if (xhr.status != 422) {
-                            alert(xhr.responseJSON.message || 'Error!')
+                            show_message(xhr.responseJSON.message || 'Error!')
                         } else {
                             erlen = Object.keys(er).length
                             for (i = 0; i < erlen; i++) {
@@ -522,7 +522,7 @@
                     error: function(xhr, status, error) {
                         er = xhr.responseJSON.errors
                         if (xhr.status != 422) {
-                            alert(xhr.responseJSON.message || 'Error!')
+                            show_message(xhr.responseJSON.message || 'Error!')
                         } else {
                             erlen = Object.keys(er).length
                             for (i = 0; i < erlen; i++) {

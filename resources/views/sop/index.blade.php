@@ -144,7 +144,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true
@@ -171,7 +171,7 @@
                         `);
                     });
                 }).fail(function(xhr) {
-                    alert('Data Tidak ada!')
+                    show_message('Data Tidak ada!')
                 })
 
             });

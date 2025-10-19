@@ -293,7 +293,7 @@
                 e.preventDefault();
                 let vendor_id = $('#vendor_id').val();
                 if (!vendor_id) {
-                    alert('Pilih vendor terlebih dahulu!');
+                    show_message('Pilih vendor terlebih dahulu!');
                     return;
                 }
                 $.ajax({
@@ -303,16 +303,14 @@
                         vendor_id: vendor_id,
                         ids: selectedIds,
                     },
-                    success: function(response) {
+                    success: function(res) {
                         $('#modal_change').modal('hide');
                         $('#vendor_id').val('').change();
                         table.ajax.reload();
-                        alert(response.message);
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr) {
-                        console.error(xhr.responseJSON);
-                        alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
-                            'Unknown error'));
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             });
@@ -320,7 +318,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true
@@ -351,7 +349,7 @@
 
                     $('#modal_pl').modal('show')
                 }).fail(function(xhr) {
-                    alert('Data Tidak ada!')
+                    show_message('Data Tidak ada!')
                 })
 
             });

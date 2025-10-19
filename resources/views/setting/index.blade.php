@@ -60,7 +60,7 @@
                         $('#odoo_session_name').val(`${res.data.name} (${res.data.uid})`)
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             }
@@ -80,10 +80,10 @@
                     },
                     beforeSend: function() {},
                     success: function(res) {
-                        alert(res.message)
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })
@@ -96,10 +96,10 @@
                     beforeSend: function() {},
                     success: function(res) {
                         getData();
-                        alert(res.message);
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })

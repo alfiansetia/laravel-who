@@ -179,14 +179,12 @@
                         data: {
                             ids: selectedIds,
                         },
-                        success: function(response) {
+                        success: function(res) {
                             table.ajax.reload();
-                            alert(response.message);
+                            show_message(res.message, 'success')
                         },
                         error: function(xhr) {
-                            console.error(xhr.responseJSON);
-                            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
-                                'Unknown error'));
+                            show_message(xhr.responseJSON.message || 'Error!')
                         }
                     });
                 }
@@ -195,7 +193,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true
@@ -211,7 +209,7 @@
                 let name = $('#name').val();
                 let desc = $('#desc').val();
                 if (!name) {
-                    alert('Name Wajib diisi!');
+                    show_message('Name Wajib diisi!');
                     return;
                 }
                 $.ajax({
@@ -221,17 +219,15 @@
                         name: name,
                         desc: desc,
                     },
-                    success: function(response) {
+                    success: function(res) {
                         $('#modal_add').modal('hide');
                         $('#name').val('');
                         $('#desc').val('');
-                        alert(response.message);
+                        show_message(res.message, 'success')
                         table.ajax.reload();
                     },
                     error: function(xhr) {
-                        console.error(xhr.responseJSON);
-                        alert('Error: ' + (xhr.responseJSON?.message ||
-                            'Unknown error'));
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             });

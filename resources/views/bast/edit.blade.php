@@ -137,7 +137,7 @@
                     }
                     $('#select_do').val('')
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
             })
             $('#select_do').select2({
@@ -173,7 +173,7 @@
                     $('#city').val(res.data.partner_address3 || '')
                     $('#do').val(no_do)
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
 
             });
@@ -245,7 +245,7 @@
                 var selectedData = $('#select_product').select2('data');
                 var selectedText = selectedData[0].text;
                 if (selectedData[0].id == '') {
-                    alert('Input product')
+                    show_message('Input product')
                     return
                 }
                 $.ajax({
@@ -262,7 +262,7 @@
                     $('#product_modal').modal('hide')
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -284,7 +284,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -300,7 +300,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
 
             });
@@ -334,7 +334,7 @@
                         // window.open("{{ route('bast.show', $data->id) }}", '_blank')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })
@@ -347,7 +347,7 @@
                 }).done(function(result) {
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert(xhr.responseJSON.message || 'Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 

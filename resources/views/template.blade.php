@@ -17,6 +17,9 @@
     <link rel="stylesheet" type="text/css"
         href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap4.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.5.0/css/select.bootstrap4.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css"
+        integrity="sha512-O03ntXoVqaGUTAeAmvQ2YSzkCvclZEcPQu1eqloPaHfJ5RuNGiS4l+3duaidD801P50J28EHyonCV06CUlTSag=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     @stack('css')
     <title>{{ $title }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
@@ -103,19 +106,13 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/block-ui@2.70.1/jquery.blockUI.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"
+        integrity="sha512-Zq9o+E00xhhR/7vJ49mxFNJ0KQw1E1TMWkPTxrWcnpfEFDEXgUiwJHIKit93EW/XxE31HSI5GEOW06G6BF1AtA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     @stack('js')
 
     @include('pwa.script')
-
-
-    @if (session()->has('message'))
-        <script>
-            alert("{{ session('message') }}")
-        </script>
-    @endif
-
-
 
     <script>
         if (!("Notification" in window)) {
@@ -130,6 +127,35 @@
     </script>
 
     <script>
+        function show_message(message = 'Kesalahan tidak diketahui!', type = 'error') {
+            if (type == 'success') {
+                iziToast.success({
+                    title: 'Success',
+                    message: message,
+                    position: 'topRight',
+                });
+            } else if (type == 'warning') {
+                iziToast.warning({
+                    title: 'Caution',
+                    message: message,
+                    position: 'topRight',
+                });
+            } else if (type == 'info') {
+                iziToast.info({
+                    title: 'Hello',
+                    message: message,
+                    position: 'topRight',
+                });
+            } else {
+                iziToast.error({
+                    title: 'Error',
+                    message: message,
+                    position: 'topRight',
+                });
+            }
+
+        }
+
         function danger(message) {
             let alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}
@@ -192,6 +218,12 @@
                 })
         }
     </script>
+
+    @if (session()->has('message'))
+        <script>
+            show_message("{{ session('message') }}")
+        </script>
+    @endif
 
     <script>
         const BASE_URL = "{{ url('/') }}"

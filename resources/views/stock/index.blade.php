@@ -61,10 +61,8 @@
                         }
                         dt['location[]'] = loc
                     },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        alert((jqXHR.responseJSON.message || 'Odoo Error! ') + ', code : ' + jqXHR
-                            .status)
-                        console.log(jqXHR);
+                    error: function(xhr, textStatus, errorThrown) {
+                        show_message(xhr.responseJSON.message || 'Error!')
                     },
                 },
                 dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
@@ -187,11 +185,8 @@
                             dt['location[]'] = loc
                             dt['limit'] = qty
                         },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            alert((jqXHR.responseJSON.message || 'Odoo Error! ') + ', code : ' +
-                                jqXHR
-                                .status)
-                            console.log(jqXHR);
+                        error: function(xhr, textStatus, errorThrown) {
+                            show_message(xhr.responseJSON.message || 'Error!')
                         },
                     },
                     dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +

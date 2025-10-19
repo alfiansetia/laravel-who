@@ -112,7 +112,7 @@
                         window.open("{{ route('kargan.show', $data->id) }}", '_blank')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })

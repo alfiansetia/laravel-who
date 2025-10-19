@@ -158,7 +158,7 @@
                 var selectedData = $('#select_product').select2('data');
                 var selectedText = selectedData[0].text;
                 if (selectedData[0].id == '') {
-                    alert('Imput product')
+                    show_message('Imput product')
                     return
                 }
                 $.ajax({
@@ -175,7 +175,7 @@
                     $('#product_modal').modal('hide')
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -193,7 +193,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -209,7 +209,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
 
             });

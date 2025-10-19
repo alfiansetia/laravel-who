@@ -85,10 +85,10 @@
                         action: function(e, dt, node, config) {
                             $.post("{{ route('api.kontak.sync') }}")
                                 .done(function(res) {
+                                    show_message(res.message, 'success')
                                     table.ajax.reload()
-                                    alert(res.message)
                                 }).fail(function(xhr) {
-                                    alert(xhr.responseJSON.message || 'Odoo Error!')
+                                    show_message(xhr.responseJSON.message || 'Error!')
                                 });
                         }
                     }, {
@@ -166,10 +166,10 @@
                     },
                     beforeSend: function() {},
                     success: function(res) {
-                        alert(res.message)
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             });
@@ -184,7 +184,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true

@@ -130,11 +130,11 @@
                     url: `{{ route('api.kargan.index') }}/${id}`,
                     type: 'DELETE',
                     success: function(result) {
-                        alert(result.message)
+                        show_message(result.message, 'success')
                         table.ajax.reload()
                     },
                     error: function(xhr) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 })
             });

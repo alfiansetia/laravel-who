@@ -167,11 +167,11 @@
                     url: URL_INDEX_API + "/" + id,
                     type: 'DELETE',
                     success: function(result) {
-                        alert(result.message)
+                        show_message(result.message, 'success')
                         table.ajax.reload()
                     },
                     error: function(xhr) {
-                        alert(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 })
             });
@@ -195,12 +195,10 @@
                         },
                         success: function(response) {
                             table.ajax.reload();
-                            alert(response.message);
+                            show_message(result.message, 'success')
                         },
                         error: function(xhr) {
-                            console.error(xhr.responseJSON);
-                            alert('Terjadi kesalahan: ' + (xhr.responseJSON?.message ||
-                                'Unknown error'));
+                            show_message(xhr.responseJSON.message || 'Error!')
                         }
                     });
                 }
@@ -209,7 +207,7 @@
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
                 if (id <= 0) {
-                    alert("No Selected Data!")
+                    show_message("No Selected Data!")
                     return false
                 } else {
                     return true

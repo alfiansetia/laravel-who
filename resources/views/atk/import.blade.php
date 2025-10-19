@@ -150,10 +150,10 @@
                     // $('#form_trx .text-danger').hide();
                 },
                 success: function(res) {
-                    alert('Success')
+                    show_message('Success!', 'success')
                 },
                 error: function(xhr, status, error) {
-                    alert(xhr.responseJSON.message || 'Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 }
             });
 

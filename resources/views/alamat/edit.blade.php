@@ -255,7 +255,7 @@
                     }
                     $('#select_do').val('')
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
             })
             $('#select_do').select2({
@@ -312,7 +312,7 @@
                     $('#epur').val(epur)
                     $('#n_t_wh').text(note_to_wh)
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
 
             });
@@ -394,7 +394,7 @@
                 var selectedData = $('#select_product').select2('data');
                 var selectedText = selectedData[0].text;
                 if (selectedData[0].id == '') {
-                    alert('Imput product')
+                    show_message('Select Product!')
                     return
                 }
                 $.ajax({
@@ -411,7 +411,7 @@
                     $('#product_modal').modal('hide')
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -429,7 +429,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -445,7 +445,7 @@
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
 
             });
@@ -473,7 +473,7 @@
                 }).done(function(result) {
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             }
 
@@ -482,7 +482,6 @@
                 id = row.id();
                 let data = row.data()
                 order_item(data.id, 'up')
-
             });
 
             $('#table tbody').on('click', '.down', function() {
@@ -523,7 +522,7 @@
                         window.open(URL_INDEX + "/{{ $data->id }}", '_blank')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })
@@ -536,7 +535,7 @@
                 }).done(function(result) {
                     table.ajax.reload()
                 }).fail(function(xhr) {
-                    alert(xhr.responseJSON.message || 'Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
@@ -549,7 +548,7 @@
 
                     window.open(URL_INDEX + "/" + result.data.id + '/edit')
                 }).fail(function(xhr) {
-                    alert('error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 

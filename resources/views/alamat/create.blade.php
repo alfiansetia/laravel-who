@@ -205,7 +205,7 @@
                     }
                     $('#select_do').val('')
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
             })
             $('#select_do').select2({
@@ -262,7 +262,7 @@
                     $('#n_t_wh').html(note_to_wh)
                     // console.log(note_to_wh);
                 }).fail(function(xhr) {
-                    alert('Odoo Error!')
+                    show_message(xhr.responseJSON.message || 'Error!')
                 });
 
             });
@@ -296,9 +296,10 @@
                     success: function(res) {
                         let id = res.data.id
                         window.open(URL_INDEX + "/" + id + '/edit', '_blank')
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })

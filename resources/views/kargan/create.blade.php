@@ -105,7 +105,7 @@
                         window.open("{{ url('kargan') }}/" + id + '/edit', '_blank')
                     },
                     error: function(xhr, status, error) {
-                        alert(xhr.responseJSON.message);
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
             })
