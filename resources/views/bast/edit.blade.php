@@ -90,7 +90,7 @@
         </form>
 
         <div class="card card-primary mt-3">
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table" id="table" style="width: 100%">
                         <thead>
@@ -202,6 +202,7 @@
                 rowId: 'id',
                 columns: [{
                     data: 'id',
+                    className: 'text-left',
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
                             return meta.row + meta.settings._iDisplayStart + 1;
@@ -211,6 +212,7 @@
                     }
                 }, {
                     data: "product_id",
+                    className: 'text-left',
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
                             return row.product.code + ' ' + row.product.name
@@ -220,10 +222,13 @@
                     }
                 }, {
                     data: "qty",
+                    className: 'text-center',
                 }, {
                     data: "satuan",
+                    className: 'text-center',
                 }, {
                     data: "lot",
+                    className: 'text-center',
                 }, {
                     data: "id",
                     className: "text-center",

@@ -118,7 +118,7 @@
             var table = $('#table').DataTable({
                 rowId: 'id',
                 ajax: URL_INDEX_API,
-                dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 oLanguage: {
@@ -144,16 +144,21 @@
                         }
                     }, {
                         data: "product.code",
+                        className: 'text-left',
                     },
                     {
                         data: "product.name",
+                        className: 'text-left',
                     }, {
                         data: "name",
+                        className: 'text-left',
                     }, {
                         data: "desc",
+                        className: 'text-left',
                     }, {
                         data: "vendor.name",
                         defaultContent: '',
+                        className: 'text-left',
                     }, {
                         data: "id",
                         className: 'text-center',

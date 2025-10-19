@@ -184,7 +184,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Product</th>
+                                <th class="text-left">Product</th>
                                 <th>Desc</th>
                                 <th>Qty</th>
                                 <th>Lot</th>
@@ -344,11 +344,13 @@
                 ],
                 columns: [{
                     data: 'order',
+                    className: "text-left",
                     render: function(data, type, row, meta) {
                         return parseInt(data) + 1
                     }
                 }, {
                     data: "product_id",
+                    className: "text-left",
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
                             return row.product.code + ' ' + (row.product.name || '')
@@ -358,10 +360,13 @@
                     }
                 }, {
                     data: "desc",
+                    className: "text-left",
                 }, {
                     data: "qty",
+                    className: "text-center",
                 }, {
                     data: "lot",
+                    className: "text-left",
                 }, {
                     data: "id",
                     className: "text-center",

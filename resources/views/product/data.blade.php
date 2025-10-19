@@ -13,7 +13,7 @@
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>AKL</th>
-                            <th>AKL EXP</th>
+                            <th class="text-nowrap">AKL EXP</th>
                             <th>DESC</th>
                         </tr>
                     </thead>
@@ -24,8 +24,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -97,7 +97,7 @@
             var table = $('#table').DataTable({
                 rowId: 'id',
                 ajax: "{{ route('api.product.index') }}",
-                dom: "<'dt--top-section'<'row'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0 mt-3'f>>>" +
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 oLanguage: {
@@ -110,9 +110,9 @@
                 ],
                 pageLength: 10,
                 lengthChange: false,
-                // order: [
-                //     [1, "asc"]
-                // ],
+                order: [
+                    [1, "asc"]
+                ],
                 columns: [{
                         data: 'id',
                         className: "text-center",
@@ -124,15 +124,19 @@
                         }
                     }, {
                         data: "code",
+                        className: "text-left",
                     },
                     {
                         data: "name",
+                        className: "text-left",
                     },
                     {
                         data: "akl",
+                        className: "text-left",
                     },
                     {
                         data: "akl_exp",
+                        className: "text-left",
                         render: function(data, type, row, meta) {
                             let text;
                             let now = moment(new Date()); //todays date

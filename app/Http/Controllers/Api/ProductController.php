@@ -80,7 +80,7 @@ class ProductController extends Controller
                         'code'      => $item['default_code'],
                         'name'      => $item['name'] ?? null,
                         'akl'       => $item['akl_id'] != false ? $item['akl_id'][1] : null,
-                        'akl_exp'   => $item['x_studio_valid_to_akl'] != false ? date('Y-m-d H:i:s', strtotime($item['x_studio_valid_to_akl'])) : null,
+                        'akl_exp'   => $item['x_studio_valid_to_akl'] != false ? date('Y-m-d', strtotime($item['x_studio_valid_to_akl'])) : null,
                         'desc'      => $item['description'] != false ? $item['description'] : null,
                     ]);
                 }
