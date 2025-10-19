@@ -88,11 +88,15 @@
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
                     data: "item",
+                    className: 'text-center',
+                    width: '10%',
                     render: function(data, type, row, meta) {
                         return `<span class="text-danger del-item"><i class="fas fa-trash"></i></span>`
                     }
                 }, {
                     data: "item",
+                    className: 'text-left',
+
                 }, ],
                 buttons: [{
                     text: '<i class="fas fa-trash mr-1"></i>Empty ITEM',
@@ -195,7 +199,8 @@
                 if ($(this).find('input').length > 0) return;
 
                 // Ganti isi jadi input
-                $(this).html(`<input type="text" class="form-control edit-input" value="${oldValue}" />`);
+                $(this).html(
+                    `<input type="text" class="form-control edit-input" value="${oldValue||''}" />`);
                 let input = $(this).find('input');
                 input.focus();
 

@@ -234,9 +234,11 @@
                     className: "text-center",
                     render: function(data, type, row, meta) {
                         return `
-                            <button type="button" class="btn btn-sm btn-warning mr-1 edit"><i class="fas fa-edit mr-1"></i></button>
-                            <button type="button" class="btn btn-sm btn-primary hapus"><i class="fas fa-trash mr-1"></i></button>
-                        `
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-sm btn-primary edit"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="btn btn-sm btn-danger hapus"><i class="fas fa-trash"></i></button>
+                            </div>
+                            `
                     }
                 }]
             })
