@@ -98,9 +98,9 @@
                 ],
                 pageLength: 10,
                 lengthChange: false,
-                // order: [
-                //     [1, "asc"]
-                // ],
+                order: [
+                    [1, "asc"]
+                ],
                 columns: [{
                         data: 'id',
                         className: "text-center",
@@ -117,8 +117,10 @@
                     },
                     {
                         data: "satuan",
+                        className: "text-center",
                     }, {
                         data: "stok",
+                        className: "text-center",
                     },
                     {
                         data: "desc",
@@ -129,11 +131,14 @@
                         searchable: false,
                         sortable: false,
                         render: function(data, type, row, meta) {
-                            let text = `<button type="button" class="btn btn-sm btn-success in">+ IN</button> 
-                            <button type="button" class="btn btn-sm btn-warning out">- OUT</button>
-                            <button type="button" class="btn btn-sm btn-info detail">i View</button>
-                            <button type="button" class="btn btn-sm btn-danger delete">x Del</button>
-                            `
+                            let text = `
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-sm btn-success in"><i class="fas fa-plus mr-1"></i></button> 
+                                    <button type="button" class="btn btn-sm btn-warning out"><i class="fas fa-minus mr-1"></i></button>
+                                    <button type="button" class="btn btn-sm btn-info detail"><i class="fas fa-info-circle mr-1"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger delete"><i class="fas fa-trash mr-1"></i></button>
+                                </div>
+                                `
                             if (type == 'display') {
                                 return text
                             }
@@ -307,23 +312,27 @@
                             data: "pic",
                         }, {
                             data: "qty",
+                            className: "text-center",
                             render: function(data, type, row, meta) {
                                 return row.type == 'in' ? data : ''
                             }
                         }, {
                             data: "qty",
+                            className: "text-center",
                             render: function(data, type, row, meta) {
                                 return row.type == 'out' ? data : ''
                             }
                         }, {
                             data: "saldo",
+                            className: "text-center",
                         }, {
                             data: "desc",
                         }, {
                             data: "id",
+                            className: "text-center",
                             render: function(data, type, row, meta) {
                                 if (type == 'display') {
-                                    return `<button class="btn btn-sm btn-danger" type="button" onclick="delete_trx(${data})">Del</button>`
+                                    return `<button class="btn btn-sm btn-danger" type="button" onclick="delete_trx(${data})"><i class="fas fa-trash mr-1"></i></button>`
                                 }
                                 return data
                             }

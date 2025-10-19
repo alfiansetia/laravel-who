@@ -41,7 +41,7 @@ class KarganController extends Controller
         $data = $kargan->load('product');
         $bcms = collect([
             new Breadcrumb('List Kargan', route('kargan.index'), true),
-            new Breadcrumb($data->number . ' - ' . $data->do, route('kargan.edit', $data->id), false),
+            new Breadcrumb($data->number, route('kargan.edit', $data->id), false),
         ]);
         return view('kargan.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Kargan']);
     }

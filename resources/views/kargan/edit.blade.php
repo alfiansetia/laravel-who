@@ -6,14 +6,11 @@
 
 @section('content')
     <div class="container-fluid">
-        <h5>{{ $title }}</h5>
-        <div class="card card-primary mt-3">
-            <div class="card-header">
-                {{-- <h3 class="card-title">{{ $title }} </h3> --}}
-            </div>
+        {{-- <h5>{{ $title }}</h5> --}}
 
-            <form method="POST" action="" id="form">
-                @csrf
+        <form method="POST" action="" id="form">
+            @csrf
+            <div class="card card-primary mt-3">
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -49,17 +46,19 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-row">
-
-                    </div>
                 </div>
-        </div>
+                <div class="card-footer text-center">
+                    <a href="{{ route('kargan.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan Download
+                    </button>
+                </div>
+            </div>
 
-        <div class="card-footer">
-            <a href="{{ route('kargan.index') }}" class="btn btn-secondary">Kembali</a>
-            <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan Download</button>
-            </form>
-        </div>
+
+        </form>
     </div>
 @endsection
 
