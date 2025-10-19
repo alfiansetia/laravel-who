@@ -24,8 +24,12 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="btn_modal_save" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Close
+                </button>
+                <button type="button" id="btn_modal_save" class="btn btn-primary">
+                    <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                </button>
             </div>
         </div>
     </div>
@@ -55,8 +59,12 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="btn_modal_save_edit" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Close
+                </button>
+                <button type="button" id="btn_modal_save_edit" class="btn btn-primary">
+                    <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                </button>
             </div>
         </div>
     </div>

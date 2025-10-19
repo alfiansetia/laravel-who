@@ -22,10 +22,6 @@
         <form method="POST" action="{{ route('api.sops.store') }}" id="form">
             @csrf
             <div class="card card-primary mt-3">
-                <div class="card-header">
-                    <h3 class="card-title">Manage SOP QC </h3>
-                </div>
-
                 <div class="card-body">
                     <div class="row">
                         <div class="form-group col-6">
@@ -65,56 +61,40 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group col-12">
-                            <table id="table" class="table table-sm table-hover" style="width: 100%;cursor: pointer;">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th style="width: 30px">#</th>
-                                        <th>ITEM</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-
                     </div>
                 </div>
-            </div>
-
-            <div class="card-footer">
-                <a href="{{ route('sops.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('sops.create') }}" class="btn btn-warning">Refresh</a>
-                <button type="submit" id="btn_simpan" class="btn btn-primary">Simpan</button>
+                <div class="card-footer text-center">
+                    <a href="{{ route('sops.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <a href="{{ route('sops.create') }}" class="btn btn-warning">
+                        <i class="fas fa-sync mr-1"></i>Refresh
+                    </a>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary">
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    </button>
+                </div>
             </div>
         </form>
 
-        <div class="modal fade" id="modal_item" data-backdrop="static" data-keyboard="false"
-            aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Add Item</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="item">ITEM</label>
-                            <input name="item" type="text" class="form-control" id="item">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button id="btn_save_item" type="button" class="btn btn-primary">SAVE</button>
-                    </div>
+        <div class="card card-primary mt-3">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="table" class="table table-sm table-hover" style="width: 100%;cursor: pointer;">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width: 30px">#</th>
+                                <th>ITEM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
-
     </div>
+    @include('sop.modal_create')
 @endsection
 
 @push('js')
@@ -291,7 +271,8 @@
                 if ($(this).find('input').length > 0) return;
 
                 // Ganti isi jadi input
-                $(this).html(`<input type="text" class="form-control edit-input" value="${oldValue}" />`);
+                $(this).html(
+                    `<input type="text" class="form-control edit-input" value="${oldValue||''}" />`);
                 let input = $(this).find('input');
                 input.focus();
 

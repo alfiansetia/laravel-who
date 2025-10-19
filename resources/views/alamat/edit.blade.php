@@ -195,9 +195,6 @@
                 </div>
             </div>
         </div>
-
-
-
     </div>
     @include('alamat.modal')
 @endsection

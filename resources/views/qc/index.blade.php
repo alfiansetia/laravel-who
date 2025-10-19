@@ -21,14 +21,14 @@
 
         <form method="POST" action="{{ route('api.qc.store') }}" id="form">
             <div class="card card-primary mt-3">
-                <div class="card-header">
+                <div class="card-header pb-0">
                     <h3 class="card-title">{{ $title }} <button class="btn btn-sm btn-primary" type="button"
                             data-toggle="collapse" data-target="#collapse_form" aria-expanded="false"
                             aria-controls="collapse_form">
                             <i class="fas fa-eye"></i> Show
                         </button></h3>
                     <div class="row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-6 mb-0">
                             <div class="input-group">
                                 <select name="" id="select_product" class="custom-select select2" style="width: 75%">
                                     <option value="">Terlampir</option>
@@ -39,11 +39,13 @@
                                     @endforeach
                                 </select>
                                 <div class="input-group-append">
-                                    <button type="button" class="btn btn-primary" id="btn_get_product">PILIH</button>
+                                    <button type="button" class="btn btn-primary" id="btn_get_product">
+                                        <i class="fas fa-mouse-pointer mr-1"></i>PILIH
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-6 mb-0">
                             <div class="form-group row">
                                 <label for="pic" class="col-sm-2 col-form-label">PIC</label>
                                 <div class="col-sm-10">
@@ -176,27 +178,33 @@
                         </div>
                         <h3>
                             FISIK
-                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning"><i
-                                    class="fas fa-redo"></i> Reset</button>
-                            <button id="btn_all_fisik" type="button" class="btn btn-sm btn-success"><i
-                                    class="fas fa-check-double"></i> All</button>
+                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning">
+                                <i class="fas fa-redo mr-1"></i>Reset
+                            </button>
+                            <button id="btn_all_fisik" type="button" class="btn btn-sm btn-success">
+                                <i class="fas fa-check-double mr-1"></i>All
+                            </button>
                         </h3>
                         <div class="col-12" id="fisik">
                         </div>
                         <h3>
                             REAGEN
-                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning"><i
-                                    class="fas fa-redo"></i> Reset</button>
+                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning">
+                                <i class="fas fa-redo mr-1"></i>Reset
+                            </button>
                         </h3>
                         <div class="col-12" id="reagen">
                         </div>
                         <h3>
                             KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
-                                onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> add</button>
-                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info"><i
-                                    class="fas fa-list"></i> Get PL</button>
-                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning"><i
-                                    class="fas fa-redo"></i> Reset</button>
+                                onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus mr-1"></i>add
+                            </button>
+                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info">
+                                <i class="fas fa-list mr-1"></i>Get PL
+                            </button>
+                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning">
+                                <i class="fas fa-redo mr-1"></i>Reset
+                            </button>
                         </h3>
                         <div class="col-12" id="kelengkapan">
                         </div>
@@ -206,16 +214,16 @@
 
             <div class="card-footer text-center">
                 <a href="{{ route('products.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>Kembali
+                    <i class="fas fa-arrow-left mr-1"></i>Kembali
                 </a>
                 <button type="button" id="btn_refresh_input" class="btn btn-warning">
-                    <i class="fas fa-redo"></i>Refresh
+                    <i class="fas fa-redo mr-1"></i>Refresh
                 </button>
                 <button type="button" id="btn_get_table" class="btn btn-info">
-                    <i class="fas fa-table"></i> Buat Tabel
+                    <i class="fas fa-table mr-1"></i>Buat Tabel
                 </button>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">
-                    <i class="fas fa-download"></i> Simpan Download
+                    <i class="fas fa-download mr-1"></i>Simpan Download
                 </button>
             </div>
         </form>

@@ -40,39 +40,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_lot" data-backdrop="static" tabindex="-1" aria-labelledby="modal_lotLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modal_lotLabel">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-hover" id="table_lot" style="width: 100%;cursor: pointer;">
-                        <thead>
-                            <tr>
-                                <th>LOCATION</th>
-                                <th>Lot/SN</th>
-                                <th>ED</th>
-                                <th style="width: 30px">QTY</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                    <br>
-                    <textarea name="" id="detail_lot" class="form-control mb-2"></textarea>
-                    <textarea name="" id="detail_sn" class="form-control"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('stock.modal')
 @endsection
 
 @push('js')
@@ -249,6 +217,7 @@
                             data: "expired",
                         }, {
                             data: "quantity",
+                            className: 'text-center'
                         },
                     ],
                     buttons: [{
@@ -296,17 +265,26 @@
                         }
                     ],
                     initComplete: function(settings, json) {
-                        let data = json.data || []
-                        let text_lot = 'Lot '
-                        let text_sn = `${data.length} Pcs, SN : `
+                        let data = json.data || [];
+
+                        let lotParts = [];
+                        let snParts = [];
+                        let total = 0;
+
                         data.forEach(item => {
-                            text_lot += `${item.lot} = ${item.quantity} Pcs, `
-                            text_sn += `${item.lot}, `
+                            lotParts.push(
+                                `${item.lot|| 'Tanpa Lot/Sn'}${item.expired != false ? `/${item.expired}`: ''} = ${item.quantity} Pcs`
+                            );
+                            snParts.push(item.lot || 'Tanpa Lot/Sn');
+                            total += item.quantity
                         });
 
-                        $('#detail_lot').val(text_lot)
-                        $('#detail_sn').val(text_sn)
+                        // gabung array jadi string, dipisah koma + spasi
+                        let text_lot = lotParts.join(', ');
+                        let text_sn = `${total} Pcs, SN : ` + snParts.join(', ');
 
+                        $('#detail_lot').val(text_lot);
+                        $('#detail_sn').val(text_sn);
                     }
                 });
 

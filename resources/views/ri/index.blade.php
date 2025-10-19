@@ -65,7 +65,9 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -223,8 +225,10 @@
                             data: "akl",
                         }, {
                             data: "product_uom_qty",
+                            className: 'text-center',
                         }, {
                             data: "quantity_done",
+                            className: 'text-center',
                         },
                     ],
                     buttons: [{

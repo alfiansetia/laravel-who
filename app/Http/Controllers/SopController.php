@@ -21,7 +21,7 @@ class SopController extends Controller
     {
         $bcms = collect([
             new Breadcrumb('List SOP QC', route('sops.index'), true),
-            new Breadcrumb('Create SOP QC', route('sops.create'), false),
+            new Breadcrumb('Manage SOP QC', route('sops.create'), false),
         ]);
         $products = Product::all();
         return view('sop.create', compact('products', 'bcms'));
