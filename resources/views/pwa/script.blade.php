@@ -24,11 +24,11 @@
         // site using the default scope.
         navigator.serviceWorker.register("/sw.js").then(
             (registration) => {
-                console.log("✅ Service worker registration succeeded");
+                console.log("✅ Service worker pwa registration succeeded");
                 // console.log("Service worker registration succeeded:", registration);
             },
             (error) => {
-                console.error(`❌ Service worker registration failed: ${error}`);
+                console.error(`❌ Service worker pwa registration failed: ${error}`);
             },
         );
     } else {
