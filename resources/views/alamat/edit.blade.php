@@ -310,7 +310,7 @@
                     $('#tujuan').val(tujuan)
                     $('#ekspedisi').val(ekspedisi)
                     $('#epur').val(epur)
-                    $('#n_t_wh').text(note_to_wh)
+                    $('#n_t_wh').html(note_to_wh)
                 }).fail(function(xhr) {
                     show_message(xhr.responseJSON.message || 'Error!')
                 });
