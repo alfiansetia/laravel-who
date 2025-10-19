@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\PackController;
-use App\Http\Controllers\Api\PackingListController;
 use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
@@ -21,7 +20,6 @@ use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\StockController;
-use App\Http\Controllers\Api\TargetController;
 use App\Http\Controllers\Api\VendorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +33,6 @@ Route::post('product_sync', [ProductController::class, 'sync'])->name('api.produ
 Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
-Route::apiResource('packing-list', PackingListController::class)->names('api.packing_list');
 Route::apiResource('kargan', KarganController::class)->names('api.kargan');
 
 

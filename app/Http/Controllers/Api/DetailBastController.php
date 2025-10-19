@@ -20,16 +20,16 @@ class DetailBastController extends Controller
             'satuan'    => 'required|in:Pcs,Pck,Unit,EA,Box,Btl,Vial',
         ]);
         if ($validate->fails()) {
-            return response()->json(['message' => $validate->getMessageBag()], 422);
+            return $this->sendError($validate->errors()->first(), 422);
         }
-        DetailBast::create([
+        $data = DetailBast::create([
             'bast_id'       => $request->bast,
             'product_id'    => $request->product,
             'qty'           => $request->qty,
             'lot'           => $request->lot,
             'satuan'        => $request->satuan,
         ]);
-        return response()->json(['message' => 'Success!']);
+        return $this->sendResponse($data, 'Created!');
     }
 
 
@@ -45,14 +45,11 @@ class DetailBastController extends Controller
             'lot'       => $request->lot,
             'satuan'    => $request->satuan,
         ]);
-        return response()->json(['message' => 'Success!']);
+        return $this->sendResponse($detail_bast, 'Updated!');
     }
     public function destroy(DetailBast $detail_bast)
     {
         $detail_bast->delete();
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $detail_bast->load('bast')
-        ]);
+        return $this->sendResponse($detail_bast, 'Deleted!');
     }
 }

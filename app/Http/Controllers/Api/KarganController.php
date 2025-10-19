@@ -12,10 +12,7 @@ class KarganController extends Controller
     public function index()
     {
         $data = Kargan::with('product')->latest()->get();
-        return response()->json([
-            'data' => $data,
-            'message' => '',
-        ]);
+        return $this->sendResponse($data, 'Success!');
     }
 
     public function store(Request $request)
@@ -36,10 +33,7 @@ class KarganController extends Controller
             'pic'           => $request->pic,
             'masa'          => $masa,
         ]);
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $kargan
-        ]);
+        return $this->sendResponse($kargan, 'Created!');
     }
 
     public function update(Request $request, Kargan $kargan)
@@ -60,26 +54,17 @@ class KarganController extends Controller
             'pic'           => $request->pic,
             'masa'          => $masa,
         ]);
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $kargan
-        ]);
+        return $this->sendResponse($kargan, 'Updated!');
     }
 
     public function show(Request $request, Kargan $kargan)
     {
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $kargan->load('product')
-        ]);
+        return $this->sendResponse($kargan->load('product'), 'Success!');
     }
 
     public function destroy(Kargan $kargan)
     {
         $kargan->delete();
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $kargan
-        ]);
+        return $this->sendResponse($kargan, 'Deleted!');
     }
 }

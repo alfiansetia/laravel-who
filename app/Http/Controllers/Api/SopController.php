@@ -41,6 +41,6 @@ class SopController extends Controller
                 collect($request->items)->map(fn($i) => ['item' => $i['item']])->toArray()
             );
         }
-        return response()->json(['message' => 'Success'], 200);
+        return $this->sendResponse('Success');
     }
 }

@@ -11,10 +11,7 @@ class FcmTokenController extends Controller
     public function index()
     {
         $data = FcmToken::all();
-        return response()->json([
-            'message' => 'success Get Token',
-            'data' => $data
-        ]);
+        return $this->sendResponse($data, 'Success Get Token');
     }
 
     public function store(Request $request)
@@ -32,26 +29,17 @@ class FcmTokenController extends Controller
                 'topic' => $request->topic,
             ]
         );
-        return response()->json([
-            'message' => 'success Upsert Token',
-            'data' => $token
-        ]);
+        return $this->sendResponse($token, 'Success Upsert Token');
     }
 
     public function show(FcmToken $token)
     {
-        return response()->json([
-            'message' => 'success Get Token',
-            'data' => $token
-        ]);
+        return $this->sendResponse($token, 'Success Get Token');
     }
 
     public function destroy(FcmToken $token)
     {
         $token->delete();
-        return response()->json([
-            'message' => 'success Delete Token',
-            'data' => $token
-        ]);
+        return $this->sendResponse($token, 'Success Delete Token');
     }
 }

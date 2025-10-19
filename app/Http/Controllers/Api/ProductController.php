@@ -13,22 +13,16 @@ class ProductController extends Controller
     public function index()
     {
         $data = Product::orderBy('code', 'ASC')->get();
-        return response()->json(['data' => $data], 200);
+        return $this->sendResponse($data, 'Success!');
     }
 
     public function show($id)
     {
         $data = Product::query()->with(['packs.items', 'sop.items'])->find($id);
         if (!$data) {
-            return response()->json([
-                'message'   => 'Not Found!',
-                'data'      => null
-            ], 404);
+            return $this->sendNotFound();
         }
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $data
-        ], 200);
+        return $this->sendResponse($data, 'Success!');
     }
 
     public function sync()

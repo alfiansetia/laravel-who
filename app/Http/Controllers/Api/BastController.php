@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Bast;
 use App\Models\DetailBast;
 use App\Models\Product;
-use App\Services\DoService;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,10 +16,7 @@ class BastController extends Controller
     public function index()
     {
         $data = Bast::with('details')->latest()->get();
-        return response()->json([
-            'data' => $data,
-            'message' => '',
-        ]);
+        return $this->sendResponse($data);
     }
 
     public function store(Request $request)
@@ -37,10 +33,7 @@ class BastController extends Controller
             'city'      => $request->city,
             'do'        => $request->do
         ]);
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $bast
-        ]);
+        return $this->sendResponse($bast, 'Created!');
     }
 
     public function update(Request $request, Bast $bast)
@@ -57,27 +50,18 @@ class BastController extends Controller
             'city'      => $request->city,
             'do'        => $request->do,
         ]);
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $bast
-        ]);
+        return $this->sendResponse($bast, 'Updated!');
     }
 
     public function show(Request $request, Bast $bast)
     {
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $bast->load('details.product')
-        ]);
+        return $this->sendResponse($bast->load('details.product'), 'Success!');
     }
 
     public function destroy(Bast $bast)
     {
         $bast->delete();
-        return response()->json([
-            'message'   => 'Success!',
-            'data'      => $bast
-        ]);
+        return $this->sendResponse($bast, 'Deleted!');
     }
 
     public function sync(Bast $bast)

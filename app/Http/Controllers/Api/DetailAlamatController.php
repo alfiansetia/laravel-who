@@ -23,7 +23,7 @@ class DetailAlamatController extends Controller
         }
         // $this->validate($request, );
         $last_order =  (DetailAlamat::where('alamat_id', $request->alamat)->max('order') ?? 0) + 1;
-        DetailAlamat::create([
+        $detail_alamat = DetailAlamat::create([
             'alamat_id'     => $request->alamat,
             'product_id'    => $request->product,
             'qty'           => $request->qty,
@@ -31,7 +31,7 @@ class DetailAlamatController extends Controller
             'desc'          => $request->desc,
             'order'         => $last_order,
         ]);
-        return response()->json(['message' => 'Success!']);
+        return $this->sendResponse($detail_alamat, 'Created!');
     }
 
 
@@ -47,13 +47,13 @@ class DetailAlamatController extends Controller
             'lot'   => $request->lot,
             'desc'  => $request->desc,
         ]);
-        return response()->json(['message' => 'Success!']);
+        return $this->sendResponse($detail_alamat, 'Updated!');
     }
 
     public function destroy(DetailAlamat $detail_alamat)
     {
         $detail_alamat->delete();
-        return response()->json(['message' => 'Success!']);
+        return $this->sendResponse($detail_alamat, 'Deleted!');
     }
 
     public function order(Request $request, DetailAlamat $detail_alamat)
@@ -63,10 +63,7 @@ class DetailAlamatController extends Controller
         ]);
         $totaldata = DetailAlamat::where('alamat_id', $detail_alamat->alamat_id)->count();
         if ($totaldata < 2) {
-            return response()->json([
-                'message'   => 'No change!',
-                'data'      => ''
-            ]);
+            return $this->sendResponse('No Change!');
         }
 
         $currentOrder = $detail_alamat->order;
@@ -92,16 +89,8 @@ class DetailAlamatController extends Controller
             $temp = $detail_alamat->order;
             $detail_alamat->update(['order' => $swapTarget->order]);
             $swapTarget->update(['order' => $temp]);
-
-            return response()->json([
-                'message' => 'Berhasil ditukar urutannya.',
-                'data' => $detail_alamat->fresh()
-            ]);
+            return $this->sendResponse($detail_alamat->fresh(), 'Berhasil ditukar urutannya.');
         }
-
-        return response()->json([
-            'message'   => 'No change!',
-            'data'      => ''
-        ]);
+        return $this->sendResponse('No Change!');
     }
 }

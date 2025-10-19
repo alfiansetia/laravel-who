@@ -12,7 +12,7 @@ class KontakController extends Controller
     public function index()
     {
         $data = Kontak::orderBy('name', 'ASC')->get();
-        return response()->json(['data' => $data], 200);
+        return $this->sendResponse($data, 'Success!');
     }
 
     public function sync()
