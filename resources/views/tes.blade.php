@@ -48,7 +48,7 @@
                 messaging.getToken().then(token => {
                     console.log("✅ Token FCM:", token);
 
-                    fetch("{{ route('token.store') }}", {
+                    fetch("{{ route('api.tokens.store') }}", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json"

@@ -70,14 +70,15 @@
                     messaging.getToken().then(token => {
                         console.log("✅ Token FCM:", token);
                         success('✅ Notifikasi sudah siap. 😁👍')
-                        fetch("{{ route('token.store') }}", {
+                        fetch("{{ route('api.tokens.store') }}", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json"
                                 },
                                 body: JSON.stringify({
                                     token: token,
-                                    topic: "general"
+                                    topic: "general",
+                                    platform: navigator.platform || 'unknown',
                                 })
                             }).then(response => response.json())
                             .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))

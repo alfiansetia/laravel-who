@@ -65,7 +65,6 @@ Route::apiResource('atk', AtkController::class)->names('api.atk');
 Route::post('atk-import', [AtkController::class, 'import'])->name('api.atk.import');
 Route::apiResource('atk-trx', AtkTransactionController::class)->names('api.atktrx');
 
-Route::apiResource('token', FcmTokenController::class)->only(['index', 'show', 'store', 'delete']);
 
 Route::get('firebase-config', function () {
     return response()->json([
@@ -118,3 +117,7 @@ Route::put('settings/', [SettingController::class, 'reload'])
     ->name('api.settings.reload');
 Route::delete('settings/', [SettingController::class, 'test_notif'])
     ->name('api.settings.test_notif');
+
+Route::apiResource('tokens', FcmTokenController::class)
+    ->names('api.tokens')
+    ->only(['index', 'show', 'store', 'delete']);

@@ -17,16 +17,22 @@ class FcmTokenController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'token' => 'required',
-            'topic' => 'nullable',
+            'token'     => 'required',
+            'topic'     => 'nullable',
+            'platform'  => 'nullable',
         ]);
+        $userAgent = $request->userAgent();
+        $ip = $request->ip();
         $token = FcmToken::query()->updateOrCreate(
             [
                 'token' => $request->token,
             ],
             [
-                'token' => $request->token,
-                'topic' => $request->topic,
+                'token'         => $request->token,
+                'topic'         => $request->topic,
+                'user_agent'    => $userAgent,
+                'ip'            => $ip,
+                'platform'      => $request->platform,
             ]
         );
         return $this->sendResponse($token, 'Success Upsert Token');
