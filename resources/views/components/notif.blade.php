@@ -69,6 +69,7 @@
                 if (permission === "granted") {
                     messaging.getToken().then(token => {
                         console.log("✅ Token FCM:", token);
+                        localStorage.setItem('fcm_token', token);
                         success('✅ Notifikasi sudah siap. 😁👍')
                         fetch("{{ route('api.tokens.store') }}", {
                                 method: "POST",

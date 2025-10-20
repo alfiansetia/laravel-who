@@ -71,6 +71,7 @@
 @push('js')
     <script>
         const URL_INDEX_API = "{{ route('api.settings.index') }}"
+        const currentToken = localStorage.getItem('fcm_token');
         $(document).ready(function() {
             getData()
 
@@ -183,14 +184,16 @@
                     data: "token",
                     className: 'text-left',
                     render: function(data, type, row) {
-                        if (type == 'display') {
+                        if (type === 'display') {
                             if (!data) return '';
-                            return data.length > 20 ?
-                                data.substr(0, 20) + '...' :
+                            let shortToken = data.length > 20 ? data.substr(0, 20) + '...' :
                                 data;
-                        } else {
-                            return data
+                            if (currentToken && data.trim() === currentToken.trim()) {
+                                return `<span class="badge bg-success mr-1">Device ini</span>${shortToken}`;
+                            }
+                            return shortToken;
                         }
+                        return data;
                     }
                 }, {
                     data: "id",
