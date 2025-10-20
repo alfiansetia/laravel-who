@@ -115,28 +115,34 @@
         <div class="modal fade" id="modal_item" data-backdrop="static" data-keyboard="false"
             aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Add Item</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="item">ITEM</label>
-                            <input name="item" type="text" class="form-control" id="item">
+                <form id="form_item">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Add Item</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="item">QTY</label>
-                            <input name="qty" type="text" class="form-control" id="qty">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="item">ITEM</label>
+                                <input name="item" type="text" class="form-control" id="item" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="item">QTY</label>
+                                <input name="qty" type="text" class="form-control" id="qty">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times mr-1"></i>Close
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                            </button>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button id="btn_save_item" type="button" class="btn btn-primary">SAVE</button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -171,14 +177,20 @@
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
                         data: "item",
+                        className: "text-center",
+                        width: '40px',
+                        searchable: false,
+                        sortable: false,
                         render: function() {
                             return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
                         }
                     }, {
                         data: "item",
+                        className: 'text-left',
                     },
                     {
                         data: "qty",
+                        className: 'text-center',
                     },
                 ],
                 buttons: [{
@@ -207,7 +219,12 @@
                 }, ],
             });
 
-            $('#btn_save_item').click(function() {
+            $('#modal_item').on('shown.bs.modal', function() {
+                $('#item').focus()
+            });
+
+            $('#form_item').submit(function(e) {
+                e.preventDefault()
                 let item = $('#item').val()
                 let qty = $('#qty').val()
                 if (item == '' || item == null) {
@@ -231,7 +248,6 @@
                     .row($(this).parents('tr'))
                     .remove()
                     .draw();
-
             });
 
             $('#form').submit(function(e) {

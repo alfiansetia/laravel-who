@@ -125,7 +125,7 @@ class PackController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        $vendor  = "Pabrikan : " . $pack->vendor->name;
+        $vendor  = "Pabrikan : " . ($pack->vendor->name ?? '');
         $product  = "Produk : " . $pack->product->code . " " . $pack->product->name;
         if (!empty($pack->desc)) {
             $product .= " ({$pack->desc})";

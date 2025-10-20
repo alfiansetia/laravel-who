@@ -155,7 +155,12 @@
                 }],
             });
 
-            $('#btn_save_item').click(function() {
+            $('#modal_item').on('shown.bs.modal', function() {
+                $('#item').focus()
+            });
+
+            $('#form_item').submit(function(e) {
+                e.preventDefault()
                 let item = $('#item').val()
                 if (item == '' || item == null) {
                     show_message('Item empty!')
