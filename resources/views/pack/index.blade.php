@@ -29,8 +29,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="modal_pl" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
