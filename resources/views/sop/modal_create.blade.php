@@ -11,7 +11,7 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="item">ITEM</label>
-                        <input name="item" type="text" class="form-control" id="item" required>
+                        <textarea class="form-control" name="item" id="item" rows="10" required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
