@@ -233,7 +233,7 @@
                 $.get('{{ route('api.product.index') }}' + '/' + product).done(function(res) {
                     $('#target').val('')
                     if (res.data.sop != null) {
-                        $('#target').val(res.data.sop.target || '1 Jam Menit')
+                        $('#target').val(res.data.sop.target || '1 Unit Menit')
                         table
                             .rows
                             .add(res.data.sop.items)
