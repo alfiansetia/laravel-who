@@ -34,6 +34,9 @@
                     <button type="button" id="btn_fix" class="btn btn-danger">
                         <i class="fas fa-hammer mr-1"></i>Fix Session
                     </button>
+                    <button type="button" id="btn_notif" class="btn btn-info">
+                        <i class="fas fa-bell mr-1"></i>Tes Notif
+                    </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
                         <i class="fab fa-telegram-plane mr-1"></i>Simpan
                     </button>
@@ -96,6 +99,20 @@
                     beforeSend: function() {},
                     success: function(res) {
                         getData();
+                        show_message(res.message, 'success')
+                    },
+                    error: function(xhr, status, error) {
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+            })
+
+            $('#btn_notif').click(function() {
+                $.ajax({
+                    url: URL_INDEX_API,
+                    type: 'DELETE',
+                    beforeSend: function() {},
+                    success: function(res) {
                         show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {

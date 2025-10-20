@@ -97,9 +97,11 @@
                         }
                     }, {
                         data: "name",
+                        className: 'text-left',
                     },
                     {
                         data: "desc",
+                        className: 'text-left',
                     }, {
                         data: "packs_count",
                         className: 'text-center',

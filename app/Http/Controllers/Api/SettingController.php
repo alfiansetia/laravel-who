@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\FirebaseServices;
 use App\Services\OdooSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -35,5 +36,11 @@ class SettingController extends Controller
     {
         Artisan::call('app:odoo-login');
         return $this->sendResponse('Success!');
+    }
+
+    public function test_notif()
+    {
+        $serv = FirebaseServices::send('⚠️ Test!', 'Eh yaampun ini cuma test notif 😁✌️!');
+        return $this->sendResponse('Success kirim notif ke semua perangkat!');
     }
 }

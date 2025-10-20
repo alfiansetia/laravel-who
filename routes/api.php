@@ -116,3 +116,5 @@ Route::post('settings/', [SettingController::class, 'store'])
     ->name('api.settings.store');
 Route::put('settings/', [SettingController::class, 'reload'])
     ->name('api.settings.reload');
+Route::delete('settings/', [SettingController::class, 'test_notif'])
+    ->name('api.settings.test_notif');

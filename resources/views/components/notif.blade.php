@@ -28,7 +28,7 @@
     function reqPermission() {
         Notification.requestPermission().then(permission => {
             if (permission === "granted") {
-                showNotif();
+                success('✅ Izin Notifikasi sudah ok. 😁👍')
             } else {
                 console.log("Izin notifikasi ditolak.");
                 danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
