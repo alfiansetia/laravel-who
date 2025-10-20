@@ -362,7 +362,7 @@
             $('#table tbody').on('click', 'tr .btn-edit', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(row).data().id
-                window.location.href = `${URL_INDEX}/${id}/edit`
+                window.open(`${URL_INDEX}/${id}/edit`)
             });
 
             $('#table tbody').on('click', 'tr .btn-download', function() {
