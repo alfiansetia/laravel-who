@@ -163,44 +163,50 @@
 
             $('#table tbody').on('click', '.btn-delete', function() {
                 id = table.row($(this).parents('tr')[0]).id()
-                $.ajax({
-                    url: URL_INDEX_API + "/" + id,
-                    type: 'DELETE',
-                    success: function(result) {
-                        show_message(result.message, 'success')
-                        table.ajax.reload()
-                    },
-                    error: function(xhr) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                confirmation('Delete Data?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: URL_INDEX_API + "/" + id,
+                            type: 'DELETE',
+                            success: function(result) {
+                                show_message(result.message, 'success')
+                                table.ajax.reload()
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        })
                     }
                 })
+
             });
 
             multiCheck(table);
 
             function deleteBatch() {
                 if (selected()) {
-                    if (!confirm('Delete Selected?')) {
-                        return
-                    }
-                    selectedIds = $('input[name="id[]"]:checked')
-                        .map(function() {
-                            return $(this).val();
-                        }).get();
-                    $.ajax({
-                        url: URL_INDEX_API,
-                        type: "DELETE",
-                        data: {
-                            ids: selectedIds,
-                        },
-                        success: function(response) {
-                            table.ajax.reload();
-                            show_message(result.message, 'success')
-                        },
-                        error: function(xhr) {
-                            show_message(xhr.responseJSON.message || 'Error!')
+                    confirmation('Delete Selected?', function(confirm) {
+                        if (confirm) {
+                            selectedIds = $('input[name="id[]"]:checked')
+                                .map(function() {
+                                    return $(this).val();
+                                }).get();
+                            $.ajax({
+                                url: URL_INDEX_API,
+                                type: "DELETE",
+                                data: {
+                                    ids: selectedIds,
+                                },
+                                success: function(res) {
+                                    table.ajax.reload();
+                                    show_message(res.message, 'success')
+                                },
+                                error: function(xhr) {
+                                    show_message(xhr.responseJSON.message || 'Error!')
+                                }
+                            });
                         }
-                    });
+                    })
                 }
             }
 

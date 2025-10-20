@@ -77,6 +77,11 @@
                             </div>
                         </div>
 
+                        <div class="form-group col-lg-6">
+                            <label>Current Packs</label>
+                            <div id="current_pack"></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -158,6 +163,54 @@
         $(document).ready(function() {
             $('#product_id').select2({
                 theme: 'bootstrap4',
+            }).on('change', function() {
+                $('#current_pack').html('');
+                let product_id = $('#product_id').val();
+                if (product_id == '' || product_id == null) {
+                    return;
+                }
+                $.ajax({
+                    url: "{{ route('api.product.index') }}/" + product_id,
+                    type: 'GET',
+                    beforeSend: function() {},
+                    success: function(res) {
+                        let packs = res.data.packs || [];
+                        if (packs.length === 0) {
+                            show_message('No packs found!');
+                            return;
+                        }
+
+                        // generate tombol di modal
+                        let html = '';
+                        packs.forEach((p, i) => {
+                            html += `
+                            <button type="button" class="btn btn-outline-primary mb-2"
+                                data-pack-index="${i}">
+                                ${p.name || '(Tanpa Nama)'}
+                            </button>`;
+                        });
+
+                        $('#current_pack').html(html);
+
+                        // klik pilih pack
+                        $('#current_pack button').off('click').on('click', function() {
+                            let index = $(this).data('pack-index');
+                            let chosenPack = packs[index];
+                            chosenPack.items.forEach(item => {
+                                table.row.add({
+                                    item: item.item,
+                                    qty: item.qty
+                                }).draw()
+                            });
+                            // $('#modalPilihPack').modal('hide');
+                        });
+                        // show_message(res.message, 'success')
+                    },
+                    error: function(xhr, status, error) {
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+
             })
 
             $('#vendor_id').select2({
@@ -314,6 +367,14 @@
                     },
                     beforeSend: function() {},
                     success: function(res) {
+                        $('#product_id').val('').change()
+                        $('#vendor_id').val('').change()
+                        $('#name').val('')
+                        $('#desc').val('')
+                        table
+                            .rows()
+                            .remove()
+                            .draw();
                         show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {

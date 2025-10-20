@@ -107,6 +107,36 @@
 
         }
 
+        function confirmation(message = '', callback) {
+            iziToast.question({
+                timeout: 0,
+                close: false,
+                overlay: true,
+                displayMode: 'once',
+                id: 'question',
+                zindex: 999,
+                title: 'Konfirmasi',
+                message: message,
+                position: 'center',
+                buttons: [
+                    ['<button><i class="fas fa-thumbs-up mr-1"></i><b>Yes</b></button>', function(instance,
+                        toast) {
+                        instance.hide({
+                            transitionOut: 'fadeOut'
+                        }, toast, 'button');
+                        if (callback) callback(true);
+                    }, true],
+                    ['<button><i class="fas fa-thumbs-down mr-1"></i>Cancel</button>', function(instance,
+                    toast) {
+                        instance.hide({
+                            transitionOut: 'fadeOut'
+                        }, toast, 'button');
+                        if (callback) callback(false);
+                    }]
+                ]
+            });
+        }
+
         function danger(message) {
             let alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}

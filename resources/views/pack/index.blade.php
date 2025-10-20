@@ -370,6 +370,26 @@
                 window.open(`${URL_INDEX_API}/${id}/download`)
             });
 
+            $('#table tbody').on('click', 'tr .btn-delete', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                confirmation('Delete Data?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: URL_INDEX_API + '/' + id,
+                            type: "DELETE",
+                            success: function(res) {
+                                table.ajax.reload();
+                                show_message(res.message, 'success')
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
+                    }
+                })
+            });
+
         });
     </script>
 @endpush

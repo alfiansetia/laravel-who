@@ -153,25 +153,26 @@
                 row = $(this).parents('tr')[0];
                 id = table.row(row).data().id
                 let name = table.row(row).data().name
-                if (!confirm('Add to vendor?')) {
-                    return
-                }
-                console.log(name);
-
-                $.ajax({
-                    type: 'POST',
-                    url: "{{ route('api.vendors.store') }}",
-                    data: {
-                        name: name,
-                    },
-                    beforeSend: function() {},
-                    success: function(res) {
-                        show_message(res.message, 'success')
-                    },
-                    error: function(xhr, status, error) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                confirmation(`Add ${name} to vendor?`, function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            type: 'POST',
+                            url: "{{ route('api.vendors.store') }}",
+                            data: {
+                                name: name,
+                            },
+                            beforeSend: function() {},
+                            success: function(res) {
+                                show_message(res.message, 'success')
+                            },
+                            error: function(xhr, status, error) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
                     }
-                });
+                })
+
+
             });
 
 
