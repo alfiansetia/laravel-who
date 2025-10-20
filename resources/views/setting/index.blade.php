@@ -42,7 +42,7 @@
 
         <div class="card card-primary mt-3">
             <div class="card-header mb-0">
-                <h3>List Device</h3>
+                <h3 class="mb-0">List Device</h3>
             </div>
             <div class="card-body">
                 <div class="responsive">
@@ -62,6 +62,50 @@
                             </tbody>
                         </table>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_detail" data-backdrop="static" tabindex="-1" aria-labelledby="modal_detailLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_detailLabel">Detail Token</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body row">
+                    <div class="form-group col-6">
+                        <label for="platform">Platform</label>
+                        <input name="platform" id="platform" class="form-control">
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="ip">IP Address</label>
+                        <input name="ip" id="ip" class="form-control">
+                    </div>
+                    <div class="form-group col-12">
+                        <label for="user_agent">User Agent</label>
+                        <div class="input-group">
+                            <textarea name="user_agent" id="user_agent" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group col-12">
+                        <label for="token">
+                            Token <span id="token_status" class="badge badge-success" style="display: none">Device
+                                Ini</span>
+                        </label>
+                        <div class="input-group">
+                            <textarea name="token" id="token" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -203,8 +247,7 @@
                     render: function(data, type, row, meta) {
                         return `
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <button type="button" class="btn btn-sm btn-primary btn-edit"><i class="fas fa-edit"></i></button>
-                                <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-primary btn-info"><i class="fas fa-info-circle"></i></button>
                             </div>
                             `
                     }
@@ -308,6 +351,21 @@
             });
 
             multiCheck(table);
+
+            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
+                data = table.row(this).data()
+                $('#platform').val(data.platform)
+                $('#ip').val(data.ip)
+                $('#user_agent').val(data.user_agent)
+                $('#token').val(data.token)
+                if (currentToken == data.token) {
+                    $('#token_status').show()
+                } else {
+                    $('#token_status').hide()
+                }
+                $('#modal_detail').modal('show')
+            });
+
 
         });
     </script>
