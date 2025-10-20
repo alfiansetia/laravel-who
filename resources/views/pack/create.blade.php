@@ -112,7 +112,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modal_item" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal fade" id="modal_item" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <form id="form_item">
                     <div class="modal-content">
