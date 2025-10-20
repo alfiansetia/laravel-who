@@ -141,7 +141,17 @@
                                 columns: ':visible'
                             }
                         }],
-                    }
+                    }, {
+                        text: '<i class="fas fa-sync mr-1"></i>',
+                        className: 'btn btn-sm btn-warning',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Refresh Data'
+                        },
+                        action: function(e, dt, node, config) {
+                            table.ajax.reload()
+                        }
+                    },
                 ],
                 headerCallback: function(e, a, t, n, s) {
                     e.getElementsByTagName("th")[0].innerHTML =
