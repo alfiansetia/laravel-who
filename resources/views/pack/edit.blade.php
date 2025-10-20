@@ -183,14 +183,26 @@
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
                         data: "item",
-                        render: function() {
-                            return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
+                        className: "text-center",
+                        width: '10%',
+                        searchable: false,
+                        sortable: false,
+                        render: function(data, type, row, meta) {
+                            return `
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-sm btn-danger del-item"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="btn btn-sm btn-secondary btn-up"><i class="fas fa-arrow-up"></i></button>
+                                    <button type="button" class="btn btn-sm btn-secondary btn-down"><i class="fas fa-arrow-down"></i></button>
+                                </div>
+                            `
                         }
                     }, {
                         data: "item",
+                        className: 'text-left',
                     },
                     {
                         data: "qty",
+                        className: 'text-center',
                     },
                 ],
                 buttons: [{
@@ -229,6 +241,34 @@
                             .reload()
                     }
                 }],
+            });
+
+            $('#table').on('click', '.btn-up', function() {
+                const row = $(this).closest('tr');
+                const prev = row.prev();
+
+                if (prev.length) {
+                    row.insertBefore(prev);
+                }
+                const newData = [];
+                $('#table tbody tr').each(function() {
+                    newData.push(table.row(this).data());
+                });
+                table.clear().rows.add(newData).draw(false);
+            });
+
+            $('#table').on('click', '.btn-down', function() {
+                const row = $(this).closest('tr');
+                const next = row.next();
+
+                if (next.length) {
+                    row.insertAfter(next);
+                }
+                const newData = [];
+                $('#table tbody tr').each(function() {
+                    newData.push(table.row(this).data());
+                });
+                table.clear().rows.add(newData).draw(false);
             });
 
             $('#modal_item').on('shown.bs.modal', function() {
