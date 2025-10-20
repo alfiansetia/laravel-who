@@ -11,19 +11,29 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mx-auto">
             <li class="nav-item <?= $title == 'Data Product' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('products.index') }}">Product</a>
+                <a class="nav-link" href="{{ route('products.index') }}">
+                    <i class="fas fa-cube mr-1"></i>Product
+                </a>
             </li>
             <li class="nav-item <?= $title == 'Data Stock' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('stock.index') }}">Stock</a>
+                <a class="nav-link" href="{{ route('stock.index') }}">
+                    <i class="fas fa-cubes mr-1"></i>Stock
+                </a>
             </li>
             <li class="nav-item <?= $title == 'Form QC' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('qc.index') }}">QC</a>
+                <a class="nav-link" href="{{ route('qc.index') }}">
+                    <i class="fas fa-clipboard-check mr-1"></i>QC
+                </a>
             </li>
             <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('alamats.index') }}">Alamat</a>
+                <a class="nav-link" href="{{ route('alamats.index') }}">
+                    <i class="fas fa-shipping-fast mr-1"></i>Alamat
+                </a>
             </li>
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('bast.index') }}">BAST</a>
+                <a class="nav-link" href="{{ route('bast.index') }}">
+                    <i class="fas fa-file-contract mr-1"></i>BAST
+                </a>
             </li>
             {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"

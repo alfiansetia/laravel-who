@@ -253,16 +253,6 @@
                     }
                 }, ],
                 buttons: [{
-                        text: '<i class="fas fa-plus mr-1"></i>Add PL',
-                        className: 'btn btn-sm btn-info',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Add PL'
-                        },
-                        action: function(e, dt, node, config) {
-                            window.location.href = URL_INDEX + '/create'
-                        }
-                    }, {
                         extend: "colvis",
                         attr: {
                             'data-toggle': 'tooltip',
