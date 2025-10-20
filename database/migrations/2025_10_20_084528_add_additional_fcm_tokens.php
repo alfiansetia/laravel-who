@@ -23,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('fcm_tokens', function (Blueprint $table) {
+            $table->dropColumn('user_agent');
+            $table->dropColumn('ip');
+            $table->dropColumn('platform');
+        });
     }
 };

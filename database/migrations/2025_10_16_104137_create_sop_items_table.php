@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sop_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sop_id')->constrained('sops')->onDelete('cascade');
-            $table->string('item')->nullable();
+            $table->text('item')->nullable();
             $table->timestamps();
         });
     }

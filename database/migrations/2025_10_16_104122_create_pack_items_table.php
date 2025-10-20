@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pack_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pack_id')->constrained('packs')->onDelete('cascade');
-            $table->string('item')->nullable();
+            $table->text('item')->nullable();
             $table->string('qty')->nullable();
             $table->timestamps();
         });

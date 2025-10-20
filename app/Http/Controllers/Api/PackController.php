@@ -34,7 +34,7 @@ class PackController extends Controller
             'product_id'    => 'required|exists:products,id',
             'vendor_id'     => 'required|exists:vendors,id',
             'items'         => 'nullable|array',
-            'items.*.item'  => 'required_with:items|string|max:200',
+            'items.*.item'  => 'required_with:items|string|max:65535',
             'items.*.qty'   => 'nullable|string|max:200',
         ]);
         $pack = Pack::create([
@@ -67,7 +67,7 @@ class PackController extends Controller
             'product_id'    => 'required|exists:products,id',
             'vendor_id'     => 'required|exists:vendors,id',
             'items'         => 'nullable|array',
-            'items.*.item'  => 'required_with:items|string|max:200',
+            'items.*.item'  => 'required_with:items|string|max:65535',
             'items.*.qty'   => 'nullable|string|max:200',
         ]);
         $pack->update([

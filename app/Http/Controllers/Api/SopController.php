@@ -32,7 +32,7 @@ class SopController extends Controller
             'product_id'    => 'required|exists:products,id',
             'target'        => 'required|string|max:200',
             'items'         => 'array|min:1',
-            'items.*.item'  => 'required_with:items|string|max:200',
+            'items.*.item'  => 'required_with:items|string|max:65535',
         ]);
         Sop::query()->filter($request->only(['product_id']))->delete();
         $target = Sop::create([
