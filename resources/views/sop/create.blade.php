@@ -119,11 +119,15 @@
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
                 columns: [{
                     data: "item",
+                    width: '30px',
+                    searchable: false,
+                    sortable: false,
                     render: function() {
                         return '<span class="text-danger del-item"><i class="fas fa-trash"></i></span>'
                     }
                 }, {
                     data: "item",
+                    className: "text-left",
                 }, ],
                 buttons: [{
                     text: '<i class="fas fa-plus mr-1"></i>Add ITEM',

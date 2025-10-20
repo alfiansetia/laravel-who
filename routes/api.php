@@ -94,6 +94,8 @@ Route::delete('vendors', [VendorController::class, 'destroy_batch'])
 Route::apiResource('vendors', VendorController::class)
     ->names('api.vendors');
 
+Route::get('sops/{sop}/download', [SopController::class, 'download'])
+    ->name('api.sops.download');
 Route::apiResource('sops', SopController::class)
     ->names('api.sops');
 

@@ -11,6 +11,7 @@
                             <th>Kode Product</th>
                             <th>Name Product</th>
                             <th>Target</th>
+                            <th>#</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,7 +66,19 @@
                     },
                     {
                         data: "target",
+                        className: 'text-left',
+                    }, {
+                        data: "id",
                         className: 'text-center',
+                        searchable: false,
+                        sortable: false,
+                        render: function(data, type, row, meta) {
+                            return `
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-sm btn-info btn-download"><i class="fas fa-download"></i></button>
+                            </div>
+                            `
+                        }
                     },
                 ],
                 buttons: [{
@@ -154,7 +167,7 @@
                 }
             }
 
-            $('#table tbody').on('click', 'tr td', function() {
+            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
                 id = table.row(this).data().id
 
                 $.get(URL_INDEX_API + '/' + id).done(function(res) {
@@ -177,6 +190,12 @@
                     show_message('Data Tidak ada!')
                 })
 
+            });
+
+            $('#table tbody').on('click', 'tr .btn-download', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                window.open(`${URL_INDEX_API}/${id}/download`)
             });
 
         });
