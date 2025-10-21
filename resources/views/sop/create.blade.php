@@ -264,7 +264,7 @@
                 if (product == '' || product == null) {
                     return
                 }
-                $.get('{{ route('api.product.index') }}' + '/' + product).done(function(res) {
+                $.get('{{ route('api.products.index') }}' + '/' + product).done(function(res) {
                     $('#target').val('1 Unit Menit')
                     if (res.data.sop != null) {
                         $('#target').val(res.data.sop.target)

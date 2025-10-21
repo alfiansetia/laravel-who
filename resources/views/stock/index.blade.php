@@ -155,14 +155,8 @@
             });
 
             $('#table tbody').on('click', 'tr td', function() {
-                //     id = table.row(this).id()
-                //     window.location.href = "{{ url('alamat') }}/" + id + '/edit'
-                // });
-
-                // $('#table tbody').on('click', 'tr .btn-lot', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(this).id()
-                // id = table.row(row).data().id
                 let code = table.row(row).data().code
                 let name = table.row(row).data().name
                 var qty = table.row(row).data().quantity

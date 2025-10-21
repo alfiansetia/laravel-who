@@ -557,7 +557,7 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: `{{ route('api.product.index') }}/${prod}`,
+                    url: `{{ route('api.products.index') }}/${prod}`,
                     success: function(res) {
                         let packs = res.data.packs || [];
                         if (packs.length === 0) {

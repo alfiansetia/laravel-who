@@ -24,79 +24,17 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Product Detail</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="accordion" id="accordionExample">
-                        <div class="card">
-                            <div class="card-header" id="headingOne">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                                        data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                        SOP QC
-                                    </button>
-                                </h2>
-                            </div>
-
-                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
-                                data-parent="#accordionExample">
-                                <div class="card-body">
-                                    <h6 class="mb-2">Target : <span id="target_value"></span></h6>
-                                    <table id="table_target" class="table table-sm table-hover">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th class="text-center" style="width: 30px;">No</th>
-                                                <th>ITEM</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header" id="headingTwo">
-                                <h2 class="mb-0">
-                                    <button class="btn btn-link btn-block text-left collapsed" type="button"
-                                        data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false"
-                                        aria-controls="collapseTwo">
-                                        Packing List
-                                    </button>
-                                </h2>
-                            </div>
-                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-                                data-parent="#accordionExample">
-                                <div class="card-body" id="table_pl_container">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('product.modal')
 @endsection
 
 @push('js')
     <script>
+        const URL_INDEX_API = "{{ route('api.products.index') }}";
+        var id = 0
         $(document).ready(function() {
-            const URL_INDEX_API = "{{ route('api.product.index') }}";
             var table = $('#table').DataTable({
                 rowId: 'id',
-                ajax: "{{ route('api.product.index') }}",
+                ajax: URL_INDEX_API,
                 dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
@@ -120,7 +58,12 @@
                         sortable: false,
                         render: function(data, type, row, meta) {
                             // return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
-                            return `<button type="button" class="btn btn-sm btn-info btn-info-product"><i class="fas fa-info-circle"></i></button>`
+                            return `
+                            <div class="btn-group" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-sm btn-info btn-info-product"><i class="fas fa-info-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-primary btn-move"><i class="fas fa-arrows-alt-v"></i></button>
+                            </div>
+                            `
                         }
                     }, {
                         data: "code",
@@ -170,7 +113,7 @@
                             'title': 'Syncronize from Odoo'
                         },
                         action: function(e, dt, node, config) {
-                            $.post("{{ route('api.product.sync') }}")
+                            $.post("{{ route('api.products.sync') }}")
                                 .done(function(res) {
                                     table.ajax.reload()
                                     show_message(res.message, 'success')
@@ -236,7 +179,114 @@
                 // },
             });
 
-            var id;
+
+            var table_move = $('#table_move').DataTable({
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
+                    "<'table-responsive'tr>" +
+                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
+                oLanguage: {
+                    "sSearchPlaceholder": "Search...",
+                    "sLengthMenu": "Results :  _MENU_",
+                },
+                lengthMenu: [
+                    [10, 50, 100, 500, 1000],
+                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
+                ],
+                pageLength: 10,
+                lengthChange: false,
+                columns: [{
+                        data: "reference",
+                        className: "text-left",
+                    }, {
+                        data: "id",
+                        className: 'text-left',
+                        render: function(data, type, row, meta) {
+                            if (row.location_dest_id != false) {
+                                return row.location_dest_id[1]
+                            } else {
+                                return ''
+                            }
+                        }
+                    }, {
+                        data: "date",
+                        className: "text-left",
+                    }, {
+                        data: "id",
+                        className: 'text-left',
+                        render: function(data, type, row, meta) {
+                            if (row.lot_id != false) {
+                                return row.lot_id[1]
+                            } else {
+                                return ''
+                            }
+                        }
+                    },
+                    {
+                        data: "qty_done",
+                        className: 'text-center',
+                    },
+                    {
+                        data: "x_studio_no_so",
+                        className: 'text-left',
+                    }, {
+                        data: "x_studio_customer",
+                        className: 'text-left',
+                    },
+
+                ],
+                buttons: [{
+                        extend: "colvis",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Column Visible'
+                        },
+                        className: 'btn btn-sm btn-primary'
+                    },
+                    {
+                        extend: "pageLength",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Page Length'
+                        },
+                        className: 'btn btn-sm btn-info'
+                    },
+                    {
+                        extend: "collection",
+                        text: '<i class="fas fa-download mr-1"></i>Export',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Export Data'
+                        },
+                        className: 'btn btn-sm btn-primary',
+                        buttons: [{
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }],
+                    }
+                ],
+            });
 
             multiCheck(table);
 
@@ -330,6 +380,37 @@
                 })
 
             });
+
+            $('#table').on('click', '.btn-move', function() {
+                let row = $(this).parents('tr')[0];
+                data = table.row(row).data()
+                id = data.id
+
+                console.log(data);
+                $.ajax({
+                    url: `${URL_INDEX_API}/${id}/move`,
+                    type: "GET",
+                    success: function(res) {
+                        table_move
+                            .rows()
+                            .remove()
+                            .draw();
+                        table_move
+                            .rows
+                            .add(res.data)
+                            .draw()
+                        $('#modal_move').modal('show')
+                        // show_message(res.message, 'success')
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+
+
+
+            });
+
 
         });
     </script>

@@ -28,8 +28,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('products', ProductController::class)->names('api.product');
-Route::post('product_sync', [ProductController::class, 'sync'])->name('api.product.sync');
 Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
@@ -123,3 +121,13 @@ Route::delete('settings/', [SettingController::class, 'test_notif'])
 Route::apiResource('tokens', FcmTokenController::class)
     ->names('api.tokens')
     ->only(['index', 'show', 'store', 'delete']);
+
+
+Route::get('products/{product}/move', [ProductController::class, 'move'])
+    ->name('api.products.move');
+Route::apiResource('products', ProductController::class)
+    ->names('api.products')
+    ->only(['index', 'show']);
+
+Route::post('product_sync', [ProductController::class, 'sync'])
+    ->name('api.products.sync');

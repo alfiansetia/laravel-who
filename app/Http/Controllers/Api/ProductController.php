@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\Odoo;
+use App\Services\ProductMoveService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -23,6 +24,20 @@ class ProductController extends Controller
             return $this->sendNotFound();
         }
         return $this->sendResponse($data, 'Success!');
+    }
+
+    public function move($id)
+    {
+        $product = Product::query()->with(['packs.items', 'sop.items'])->find($id);
+        if (!$product) {
+            return $this->sendNotFound();
+        }
+        if (!$product->odoo_id) {
+            return $this->sendNotFound();
+        }
+        $data = ProductMoveService::getAll($product->odoo_id);
+
+        return $this->sendResponse($data['records'] ?? [], 'Success!');
     }
 
     public function sync()

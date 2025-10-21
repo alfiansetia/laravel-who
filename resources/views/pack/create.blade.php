@@ -170,7 +170,7 @@
                     return;
                 }
                 $.ajax({
-                    url: "{{ route('api.product.index') }}/" + product_id,
+                    url: "{{ route('api.products.index') }}/" + product_id,
                     type: 'GET',
                     beforeSend: function() {},
                     success: function(res) {
