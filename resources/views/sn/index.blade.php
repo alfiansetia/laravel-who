@@ -55,9 +55,14 @@
                                 @endfor
                             </select>
                         </div>
-                        <br>MDS skip 2 & 4
-                        <br>FR202 Skip 3
-
+                        <div class="form-group col-12">
+                            <button class="btn btn-sm btn-outline btn-outline-primary btn-block"
+                                onclick="set_skip([2,4])">MDS 2,4</button>
+                            <button class="btn btn-sm btn-outline btn-outline-primary btn-block"
+                                onclick="set_skip([2,3])">FR202 2,3</button>
+                            <button class="btn btn-sm btn-outline btn-outline-primary btn-block"
+                                onclick="set_skip([2,4,6,8,10])">500E 2,4,6,8,10</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,9 +74,10 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        function set_skip(values) {
+            $('#skip').val(values).change()
+        }
         $(document).ready(function() {
-
-
             var table_tool = $('#table_tool').DataTable({
                 // pageLength: false,
                 lengthMenu: [
@@ -155,11 +161,9 @@
                 }, ],
             });
 
-
             $('#btn_import').click(function() {
                 let skip = $('#skip').val() || []; // hasilnya array
                 skip = skip.filter(v => v !== "").map(Number);
-                console.log(skip);
 
                 let imp = $('#import').val().trim();
                 let rows = imp.split('\n');
@@ -233,6 +237,7 @@
                 placeholder: "Select a skip",
                 allowClear: true
             })
+
 
 
 
