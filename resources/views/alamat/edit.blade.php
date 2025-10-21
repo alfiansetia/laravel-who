@@ -179,7 +179,6 @@
         <div class="card card-primary mt-3">
             <div class="card-body p-0">
                 <div class="table-responsive">
-
                     <table class="table mt-0" id="table" style="width: 100%">
                         <thead>
                             <tr>
@@ -208,6 +207,7 @@
     <script>
         const URL_INDEX_API = "{{ route('api.alamats.index') }}"
         const URL_INDEX = "{{ route('alamats.index') }}"
+        const CURRENT_ID = "{{ $data->id }}"
 
         function setEpur(val) {
             $('#epur').val(val)
@@ -227,14 +227,14 @@
         var id = '';
         var data = [];
         $(document).ready(function() {
-            $.get("{{ route('api.products.index') }}").done(function(res) {
-                for (let i = 0; i < res.data.length; i++) {
-                    let option = new Option(`${res.data[i].code} ${res.data[i].name || ''}`, res.data[i].id,
-                        true, true);
-                    $('#select_product').append(option);
-                    $('#select_product2').append(option);
-                }
-            });
+            // $.get("{{ route('api.products.index') }}").done(function(res) {
+            //     for (let i = 0; i < res.data.length; i++) {
+            //         let option = new Option(`${res.data[i].code} ${res.data[i].name || ''}`, res.data[i].id,
+            //             true, true);
+            //         $('#select_product').append(option);
+            //         // $('#select_product2').append(option);
+            //     }
+            // });
 
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()
@@ -329,7 +329,7 @@
 
             var table = $('#table').DataTable({
                 ajax: {
-                    url: "{{ route('api.alamats.show', $data->id) }}",
+                    url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     dataSrc: function(result) {
                         return result.data.detail
                     }
@@ -406,7 +406,7 @@
                     type: 'POST',
                     url: "{{ route('api.detail_alamat.store') }}",
                     data: {
-                        alamat: "{{ $data->id }}",
+                        alamat: CURRENT_ID,
                         product: selectedData[0].id,
                         qty: $('#qty_prod').val(),
                         lot: $('#lot_prod').val(),
@@ -520,11 +520,11 @@
                 }
                 $.ajax({
                     type: 'PUT',
-                    url: URL_INDEX_API + "/{{ $data->id }}",
+                    url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        window.open(URL_INDEX + "/{{ $data->id }}", '_blank')
+                        window.open(`${URL_INDEX}/${CURRENT_ID}`, '_blank')
                     },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')
@@ -533,10 +533,9 @@
             })
 
             $('#btn_sync').click(function() {
-                let url = URL_INDEX_API + "/{{ $data->id }}/sync"
                 $.ajax({
                     type: 'GET',
-                    url: url,
+                    url: `${URL_INDEX_API}/${CURRENT_ID}/sync`,
                 }).done(function(result) {
                     table.ajax.reload()
                 }).fail(function(xhr) {
@@ -547,11 +546,10 @@
             $('#btn_duplicate').click(function() {
                 $.ajax({
                     type: 'POST',
-                    url: URL_INDEX_API + "/{{ $data->id }}/duplicate",
+                    url: `${URL_INDEX_API}/${CURRENT_ID}/duplicate`,
                     data: {}
                 }).done(function(result) {
-
-                    window.open(URL_INDEX + "/" + result.data.id + '/edit')
+                    window.open(`${URL_INDEX}/${result.data.id}/edit`)
                 }).fail(function(xhr) {
                     show_message(xhr.responseJSON.message || 'Error!')
                 })

@@ -11,6 +11,10 @@
             <div class="modal-body">
                 <div class="form-group mb-2">
                     <select name="select_product" id="select_product" class="form-control select2" style="width: 100%">
+                        <option value="">--Select Product--</option>
+                        @foreach ($products as $item)
+                            <option value="{{ $item->id }}">[{{ $item->code }}] {{ $item->name }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group mb-2">
