@@ -5,23 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DetailBast;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class DetailBastController extends Controller
 {
 
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), [
+        $this->validate($request, [
             'bast'      => 'required|exists:basts,id',
             'product'   => 'required|exists:products,id',
             'qty'       => 'required',
             'lot'       => 'nullable',
             'satuan'    => 'required|in:Pcs,Pck,Unit,EA,Box,Btl,Vial',
         ]);
-        if ($validate->fails()) {
-            return $this->sendError($validate->errors()->first(), 422);
-        }
         $data = DetailBast::create([
             'bast_id'       => $request->bast,
             'product_id'    => $request->product,

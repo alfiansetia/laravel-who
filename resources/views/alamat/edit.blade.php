@@ -395,7 +395,8 @@
             })
 
 
-            $('#btn_modal_save').click(function() {
+            $('#form_add').submit(function(e) {
+                e.preventDefault();
                 var selectedData = $('#select_product').select2('data');
                 var selectedText = selectedData[0].text;
                 if (selectedData[0].id == '') {
@@ -416,11 +417,14 @@
                     $('#product_modal').modal('hide')
                     table.ajax.reload()
                 }).fail(function(xhr) {
+                    console.log(xhr);
+
                     show_message(xhr.responseJSON.message || 'Error!')
                 })
             })
 
-            $('#btn_modal_save_edit').click(function() {
+            $('#form_edit').submit(function(e) {
+                e.preventDefault();
                 let url = $('#form_edit').attr('action')
                 $.ajax({
                     type: 'PUT',
@@ -464,6 +468,14 @@
                 $('#desc_prod_edit').val(data.desc)
                 $('#form_edit').attr('action', "{{ url('api/detail_alamat/') }}/" + id)
                 $('#edit_modal').modal('show')
+            });
+
+            $('#edit_modal').on('shown.bs.modal', function() {
+                $('#qty_prod_edit').focus()
+            });
+
+            $('#product_modal').on('shown.bs.modal', function() {
+                $('#qty_prod').focus()
             });
 
             function order_item(id, type) {

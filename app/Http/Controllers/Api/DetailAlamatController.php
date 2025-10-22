@@ -5,23 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DetailAlamat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class DetailAlamatController extends Controller
 {
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), [
+        $this->validate($request, [
             'alamat'    => 'required|exists:alamats,id',
             'product'   => 'required|exists:products,id',
             'qty'       => 'required',
             'lot'       => 'nullable',
             'desc'      => 'nullable',
         ]);
-        if ($validate->fails()) {
-            return response()->json(['message' => $validate->getMessageBag()], 422);
-        }
-        // $this->validate($request, );
         $last_order =  (DetailAlamat::where('alamat_id', $request->alamat)->max('order') ?? 0) + 1;
         $detail_alamat = DetailAlamat::create([
             'alamat_id'     => $request->alamat,

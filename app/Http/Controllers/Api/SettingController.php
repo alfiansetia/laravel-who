@@ -7,7 +7,6 @@ use App\Services\FirebaseServices;
 use App\Services\OdooSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Validator;
 
 class SettingController extends Controller
 {
@@ -19,13 +18,9 @@ class SettingController extends Controller
 
     public function store(Request $request)
     {
-        $valid = Validator::make(
-            $request->all(),
-            ['env_value' => 'required']
-        );
-        if ($valid->fails()) {
-            return $this->sendError($valid->errors()->first(), 422);
-        }
+        $this->validate($request, [
+            'env_value' => 'required'
+        ]);
         $session = OdooSession::getCurrentSession();
         $session['session_id'] = $request->env_value;
         OdooSession::saveSession($session);
