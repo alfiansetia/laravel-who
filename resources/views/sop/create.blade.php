@@ -252,6 +252,8 @@
                     },
                     beforeSend: function() {},
                     success: function(res) {
+                        $('#btn_download').prop('disabled', false)
+                        $('#btn_download').val(res.data.id)
                         show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {

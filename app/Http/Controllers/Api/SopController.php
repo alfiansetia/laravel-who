@@ -35,16 +35,16 @@ class SopController extends Controller
             'items.*.item'  => 'required_with:items|string|max:65535',
         ]);
         Sop::query()->filter($request->only(['product_id']))->delete();
-        $target = Sop::create([
+        $sop = Sop::create([
             'product_id'    => $request->product_id,
             'target'        => $request->target,
         ]);
         if ($request->has('items')) {
-            $target->items()->createMany(
+            $sop->items()->createMany(
                 collect($request->items)->map(fn($i) => ['item' => $i['item']])->toArray()
             );
         }
-        return $this->sendResponse('Success');
+        return $this->sendResponse($sop, 'Success');
     }
 
     public function download($id)
