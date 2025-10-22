@@ -70,6 +70,9 @@
                     <a href="{{ route('sops.create') }}" class="btn btn-warning">
                         <i class="fas fa-sync mr-1"></i>Refresh
                     </a>
+                    <button id="btn_download" type="button" class="btn btn-info" disabled>
+                        <i class="fas fa-download mr-1"></i>Download
+                    </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
                         <i class="fab fa-telegram-plane mr-1"></i>Simpan
                     </button>
@@ -100,6 +103,8 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX_PRODUCT_API = "{{ route('api.products.index') }}";
+        const URL_INDEX_API = "{{ route('api.sops.index') }}"
         $(document).ready(function() {
             $('#product_id').select2({
                 theme: 'bootstrap4',
@@ -260,24 +265,39 @@
                     .rows()
                     .remove()
                     .draw();
-                let product = $('#product_id').val()
-                if (product == '' || product == null) {
+                $('#btn_download').prop('disabled', true)
+                $('#btn_download').val('')
+                let product_id = $('#product_id').val()
+                if (product_id == '' || product_id == null) {
                     return
                 }
-                $.get('{{ route('api.products.index') }}' + '/' + product).done(function(res) {
-                    $('#target').val('1 Unit Menit')
-                    if (res.data.sop != null) {
-                        $('#target').val(res.data.sop.target)
-                        table
-                            .rows
-                            .add(res.data.sop.items)
-                            .draw();
+                $.ajax({
+                    url: `${URL_INDEX_PRODUCT_API}/${product_id}`,
+                    type: "GET",
+                    success: function(res) {
+                        $('#target').val('1 Unit Menit')
+                        if (res.data.sop != null) {
+                            $('#btn_download').prop('disabled', false)
+                            $('#btn_download').val(res.data.sop.id)
+                            $('#target').val(res.data.sop.target)
+                            table
+                                .rows
+                                .add(res.data.sop.items)
+                                .draw();
+                        }
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
-
-                }).fail(function(xhr) {
-                    console.log(xhr);
-                })
+                });
             }
+            $('#btn_download').click(function() {
+                let data = $('#btn_download').val()
+                if (data) {
+                    window.open(`${URL_INDEX_API}/${data}/download`)
+                }
+
+            })
 
             $('#btn_import').click(function() {
                 let imp = $('#import').val().trim();
@@ -333,7 +353,6 @@
                     }
                 });
             });
-
         });
     </script>
 @endpush
