@@ -372,7 +372,7 @@
                     success: function(res) {
                         $('#product_id').val('').change()
                         $('#vendor_id').val('').change()
-                        $('#name').val('')
+                        $('#name').val('Default')
                         $('#desc').val('')
                         table
                             .rows()
