@@ -35,6 +35,16 @@
                     <i class="fas fa-file-contract mr-1"></i>BAST
                 </a>
             </li>
+            <li class="nav-item <?= $title == 'Packing List' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('packs.index') }}">
+                    <i class="fas fa-list-ol mr-1"></i>PL
+                </a>
+            </li>
+            <li class="nav-item <?= $title == 'SOP QC' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('sops.index') }}">
+                    <i class="fas fa-layer-group mr-1"></i>SOP
+                </a>
+            </li>
             {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                     aria-expanded="false">

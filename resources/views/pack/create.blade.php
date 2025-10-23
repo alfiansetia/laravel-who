@@ -92,6 +92,9 @@
                     <a href="{{ route('packs.create') }}" class="btn btn-warning">
                         <i class="fas fa-sync mr-1"></i>Refresh
                     </a>
+                    <button id="btn_download" type="button" class="btn btn-info" disabled>
+                        <i class="fas fa-download mr-1"></i>Download
+                    </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
                         <i class="fab fa-telegram-plane mr-1"></i>Simpan
                     </button>
@@ -375,6 +378,9 @@
                             .rows()
                             .remove()
                             .draw();
+
+                        $('#btn_download').prop('disabled', false)
+                        $('#btn_download').val(res.data.id)
                         show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
@@ -410,6 +416,13 @@
                 let imp = $('#import').val('')
             });
 
+            $('#btn_download').click(function() {
+                let data = $('#btn_download').val()
+                if (data) {
+                    window.open(`${URL_INDEX_API}/${data}/download`)
+                }
+
+            })
 
             $('#table tbody').on('click', 'td:not(:first-child)', function() {
                 let cell = table.cell(this);
