@@ -164,8 +164,8 @@ class PackController extends Controller
         if ($pack->items()->count() <= 3) {
             $cdakb_row = "E{$row}";
         }
-        $sheet->setCellValue("E{$cdakb_row}", $cdakb);
-        $sheet->getStyle("E{$cdakb_row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue($cdakb_row, $cdakb);
+        $sheet->getStyle($cdakb_row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // === SIMPAN FILE ===
         $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $pack->product->code);
