@@ -161,7 +161,7 @@ class PackController extends Controller
         // === TAMBAHKAN TEXT "FORM/WH/009/20.2" DI KOLOM E ===
         $cdakb = config('cdakb.pack');
         $cdakb_row = "E11";
-        if ($pack->items()->count() <= 3) {
+        if ($pack->items->count() <= 3) {
             $cdakb_row = "E{$row}";
         }
         $sheet->setCellValue($cdakb_row, $cdakb);
