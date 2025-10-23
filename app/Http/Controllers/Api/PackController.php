@@ -160,9 +160,9 @@ class PackController extends Controller
 
         // === TAMBAHKAN TEXT "FORM/WH/009/20.2" DI KOLOM E ===
         $cdakb = config('cdakb.pack');
-        $cdakb_row = "E11";
+        $cdakb_row = "E{$row}";
         if ($pack->items->count() <= 3) {
-            $cdakb_row = "E{$row}";
+            $cdakb_row = "E11";
         }
         $sheet->setCellValue($cdakb_row, $cdakb);
         $sheet->getStyle($cdakb_row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
