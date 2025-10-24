@@ -19,6 +19,7 @@
                             <th>PL Name</th>
                             <th>PL Desc</th>
                             <th>Vendor</th>
+                            <th>Vendor Desc</th>
                             <th>#</th>
                         </tr>
                     </thead>
@@ -156,6 +157,10 @@
                         className: 'text-left',
                     }, {
                         data: "vendor.name",
+                        defaultContent: '',
+                        className: 'text-left',
+                    }, {
+                        data: "vendor_desc",
                         defaultContent: '',
                         className: 'text-left',
                     }, {

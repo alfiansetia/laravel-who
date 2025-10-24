@@ -52,10 +52,20 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="form-group col-6">
                             <label for="name">PACKING LIST NAME</label>
                             <div class="input-group">
                                 <textarea name="name" id="name" class="form-control" maxlength="200" required>Default</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-6">
+                            <label for="vendor_desc">VENDOR DESC</label>
+                            <div class="input-group">
+                                <textarea name="vendor_desc" id="vendor_desc" class="form-control" maxlength="200"></textarea>
                             </div>
                         </div>
                         <div class="form-group col-6">
@@ -64,6 +74,8 @@
                                 <textarea name="desc" id="desc" class="form-control" maxlength="200"></textarea>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="form-group col-lg-6">
                             <label for="import">IMPORT FROM TEXT</label>
                             <div class="input-group">
@@ -343,6 +355,7 @@
                 e.preventDefault()
                 let product = $('#product_id').val()
                 let vendor = $('#vendor_id').val()
+                let vendor_desc = $('#vendor_desc').val()
                 let name = $('#name').val()
                 let desc = $('#desc').val()
                 let data = table.rows().data().toArray();
@@ -364,6 +377,7 @@
                     data: {
                         product_id: product,
                         vendor_id: vendor,
+                        vendor_desc: vendor_desc,
                         name: name,
                         desc: desc,
                         items: data

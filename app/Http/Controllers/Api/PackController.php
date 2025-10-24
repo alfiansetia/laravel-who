@@ -31,6 +31,7 @@ class PackController extends Controller
         $this->validate($request, [
             'name'          => 'required|string|max:200',
             'desc'          => 'nullable|string|max:200',
+            'vendor_desc'   => 'nullable|string|max:200',
             'product_id'    => 'required|exists:products,id',
             'vendor_id'     => 'required|exists:vendors,id',
             'items'         => 'nullable|array',
@@ -40,6 +41,7 @@ class PackController extends Controller
         $pack = Pack::create([
             'name'          => $request->name,
             'desc'          => $request->desc,
+            'vendor_desc'   => $request->vendor_desc,
             'product_id'    => $request->product_id,
             'vendor_id'     => $request->vendor_id,
         ]);
@@ -64,6 +66,7 @@ class PackController extends Controller
         $this->validate($request, [
             'name'          => 'required|string|max:200',
             'desc'          => 'nullable|string|max:200',
+            'vendor_desc'   => 'nullable|string|max:200',
             'product_id'    => 'required|exists:products,id',
             'vendor_id'     => 'required|exists:vendors,id',
             'items'         => 'nullable|array',
@@ -73,6 +76,7 @@ class PackController extends Controller
         $pack->update([
             'name'          => $request->name,
             'desc'          => $request->desc,
+            'vendor_desc'   => $request->vendor_desc,
             'product_id'    => $request->product_id,
             'vendor_id'     => $request->vendor_id,
         ]);
@@ -125,11 +129,14 @@ class PackController extends Controller
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        $vendor  = "Pabrikan : " . ($pack->vendor->name ?? '');
-        $product  = "Produk : " . $pack->product->code . " " . $pack->product->name;
-        if (!empty($pack->desc)) {
-            $product .= " ({$pack->desc})";
-        }
+        $name   = $pack->vendor->name ?? '';
+        $desc   = $pack->vendor_desc ? " ({$pack->vendor_desc})" : '';
+        $vendor = "Pabrikan : {$name}{$desc}";
+
+        $code   = $pack->product->code ?? '';
+        $pname  = $pack->product->name ?? '';
+        $pdesc  = $pack->desc ? " ({$pack->desc})" : '';
+        $product = "Produk : {$code} {$pname}{$pdesc}";
 
         // === HEADER INFO ===
         $sheet->setCellValue('B4', $vendor);
