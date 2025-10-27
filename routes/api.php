@@ -31,9 +31,6 @@ Route::get('/user', function (Request $request) {
 Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
 Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
 
-Route::apiResource('kargan', KarganController::class)->names('api.kargan');
-
-
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
@@ -129,5 +126,10 @@ Route::apiResource('products', ProductController::class)
     ->names('api.products')
     ->only(['index', 'show']);
 
-Route::post('product_sync', [ProductController::class, 'sync'])
+Route::post('product-sync', [ProductController::class, 'sync'])
     ->name('api.products.sync');
+
+Route::delete('kargans', [KarganController::class, 'destroy_batch'])
+    ->name('api.kargans.destroy_batch');
+Route::apiResource('kargans', KarganController::class)
+    ->names('api.kargans');

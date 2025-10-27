@@ -13,7 +13,6 @@
                             <th>No</th>
                             <th>SN</th>
                             <th>Product</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -27,10 +26,13 @@
 
 @push('js')
     <script>
+        const URL_INDEX = "{{ route('kargans.index') }}"
+        const URL_INDEX_API = "{{ route('api.kargans.index') }}"
+
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 rowId: 'id',
-                ajax: "{{ route('api.kargan.index') }}",
+                ajax: URL_INDEX_API,
                 dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
@@ -49,14 +51,11 @@
                 ],
                 columns: [{
                         data: 'id',
+                        className: "text-center",
                         searchable: false,
                         sortable: false,
                         render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                return meta.row + meta.settings._iDisplayStart + 1;
-                            } else {
-                                return data
-                            }
+                            return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
                         }
                     }, {
                         data: "number",
@@ -66,29 +65,13 @@
                         className: 'text-left',
                     },
                     {
-                        data: "id",
+                        data: "product_id",
                         className: 'text-left',
                         render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                let text = row.product.name || '-'
-                                return text
-                            } else {
-                                return data
+                            if (data != null) {
+                                return `[${row.product.code}] ${row.product.name}`
                             }
-                        }
-                    }, {
-                        data: "id",
-                        className: 'text-center',
-                        searchable: false,
-                        sortable: false,
-                        render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                let text =
-                                    `<button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>`
-                                return text
-                            } else {
-                                return data
-                            }
+                            return data
                         }
                     },
                 ],
@@ -100,7 +83,7 @@
                             'title': 'Tambah Data'
                         },
                         action: function(e, dt, node, config) {
-                            window.location.href = "{{ route('kargan.create') }}"
+                            window.location.href = "{{ route('kargans.create') }}"
                         }
                     },
                     {
@@ -118,19 +101,82 @@
                             'title': 'Page Length'
                         },
                         className: 'btn btn-sm btn-info'
+                    }, {
+                        text: '<i class="fa fa-tools"></i> Action',
+                        className: 'btn btn-sm btn-warning bs-tooltip',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Action'
+                        },
+                        extend: 'collection',
+                        autoClose: true,
+                        buttons: [{
+                            text: 'Delete Selected Data',
+                            className: 'btn btn-danger',
+                            action: function(e, dt, node, config) {
+                                deleteBatch()
+                            }
+                        }, ]
                     }
                 ],
+                headerCallback: function(e, a, t, n, s) {
+                    e.getElementsByTagName("th")[0].innerHTML =
+                        '<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">'
+                },
             });
 
-            $('#table tbody').on('click', 'tr td:not(:last-child)', function() {
+            multiCheck(table);
+
+            function deleteData() {
+
+            }
+
+            function deleteBatch() {
+                if (selected()) {
+                    confirmation('Delete Selected?', function(confirm) {
+                        if (confirm) {
+                            selectedIds = $('input[name="id[]"]:checked')
+                                .map(function() {
+                                    return $(this).val();
+                                }).get();
+                            $.ajax({
+                                url: URL_INDEX_API,
+                                type: "DELETE",
+                                data: {
+                                    ids: selectedIds,
+                                },
+                                success: function(res) {
+                                    table.ajax.reload();
+                                    show_message(res.message, 'success')
+                                },
+                                error: function(xhr) {
+                                    show_message(xhr.responseJSON.message || 'Error!')
+                                }
+                            });
+                        }
+                    })
+                }
+            }
+
+            function selected() {
+                let id = $('input[name="id[]"]:checked').length;
+                if (id <= 0) {
+                    show_message("No Selected Data!")
+                    return false
+                } else {
+                    return true
+                }
+            }
+
+            $('#table tbody').on('click', 'tr td:not(:first-child)', function() {
                 id = table.row(this).id()
-                window.location.href = "{{ url('kargan') }}/" + id + '/edit'
+                window.location.href = `${URL_INDEX}/${id}/edit`
             });
 
             $('#table tbody').on('click', '.btn-delete', function() {
                 id = table.row($(this).parents('tr')[0]).id()
                 $.ajax({
-                    url: `{{ route('api.kargan.index') }}/${id}`,
+                    url: `${URL_INDEX_API}/${id}`,
                     type: 'DELETE',
                     success: function(result) {
                         show_message(result.message, 'success')

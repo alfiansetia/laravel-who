@@ -67,4 +67,17 @@ class KarganController extends Controller
         $kargan->delete();
         return $this->sendResponse($kargan, 'Deleted!');
     }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer|exists:kargans,id',
+        ]);
+        $deleted = Kargan::whereIn('id', $request->ids)->delete();
+
+        return $this->sendResponse([
+            'deleted_count' => $deleted
+        ], 'Kargan deleted successfully.');
+    }
 }

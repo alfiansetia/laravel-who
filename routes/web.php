@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');
 
-Route::resource('kargan', KarganController::class);
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
@@ -78,3 +77,7 @@ Route::get('sn/', [SnController::class, 'index'])
 
 Route::get('settings/', [SettingController::class, 'index'])
     ->name('settings.index');
+
+Route::resource('kargans', KarganController::class)
+    ->only(['index', 'show', 'edit', 'create'])
+    ->names('kargans');

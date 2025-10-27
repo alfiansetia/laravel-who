@@ -56,7 +56,7 @@
                     <a class="dropdown-item" href="{{ route('vendors.index') }}">Vendors</a>
                     <a class="dropdown-item" href="{{ route('po.index') }}">PO</a>
                     <a class="dropdown-item" href="{{ route('ri.index') }}">RI</a>
-                    <a class="dropdown-item" href="{{ route('kargan.index') }}">Kargan</a>
+                    <a class="dropdown-item" href="{{ route('kargans.index') }}">Kargan</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{{ route('packs.index') }}">PL</a>
                     <a class="dropdown-item" href="{{ route('sops.index') }}">SOP QC</a>

@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ route('kargan.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('kargans.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
@@ -67,6 +67,9 @@
 
     <script>
         const bulanRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        const URL_INDEX = "{{ route('kargans.index') }}"
+        const URL_INDEX_API = "{{ route('api.kargans.index') }}"
+        const CURRENT_ID = "{{ $data->id }}"
 
         function get_number() {
             let dateVal = $('#date').val()
@@ -87,6 +90,7 @@
 
         $(document).ready(function() {
             get_number()
+
             $('.select2').select2({
                 theme: 'bootstrap4',
             })
@@ -104,12 +108,12 @@
                 console.log(data);
                 $.ajax({
                     type: 'PUT',
-                    url: "{{ route('api.kargan.update', $data->id) }}",
+                    url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
                         let id = res.data.id
-                        window.open("{{ route('kargan.show', $data->id) }}", '_blank')
+                        window.open(`${URL_INDEX}/${CURRENT_ID}`, '_blank')
                     },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')

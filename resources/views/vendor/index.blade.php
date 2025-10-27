@@ -158,8 +158,6 @@
                 },
             });
 
-            var id;
-
             multiCheck(table);
 
             function deleteData() {
