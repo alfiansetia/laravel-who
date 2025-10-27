@@ -60,11 +60,14 @@
                         }
                     }, {
                         data: "number",
+                        className: 'text-left',
                     }, {
                         data: "sn",
+                        className: 'text-left',
                     },
                     {
                         data: "id",
+                        className: 'text-left',
                         render: function(data, type, row, meta) {
                             if (type == 'display') {
                                 let text = row.product.name || '-'
