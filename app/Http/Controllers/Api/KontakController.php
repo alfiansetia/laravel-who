@@ -15,7 +15,7 @@ class KontakController extends Controller
         return $this->sendResponse($data, 'Success!');
     }
 
-    public function sync()
+    public function store()
     {
         $data = [
             "jsonrpc" => "2.0",

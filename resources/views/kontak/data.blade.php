@@ -27,8 +27,9 @@
 @push('js')
     <script>
         const URL_INDEX = "{{ route('kontaks.index') }}"
-        const URL_INDEX_API = "{{ route('api.kontak.index') }}"
+        const URL_INDEX_API = "{{ route('api.kontaks.index') }}"
         var id = 0;
+
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 rowId: 'id',
@@ -83,7 +84,7 @@
                             'title': 'Syncronize from Odoo'
                         },
                         action: function(e, dt, node, config) {
-                            $.post("{{ route('api.kontak.sync') }}")
+                            $.post(URL_INDEX_API)
                                 .done(function(res) {
                                     show_message(res.message, 'success')
                                     table.ajax.reload()

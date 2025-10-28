@@ -28,9 +28,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('kontak', [KontakController::class, 'index'])->name('api.kontak.index');
-Route::post('kontak_sync', [KontakController::class, 'sync'])->name('api.kontak.sync');
-
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
@@ -129,7 +126,6 @@ Route::apiResource('products', ProductController::class)
 Route::post('product-sync', [ProductController::class, 'sync'])
     ->name('api.products.sync');
 
-
 Route::post('kargans/{kargan}/duplicate', [KarganController::class, 'duplicate'])
     ->name('api.kargans.duplicate');
 Route::get('kargans/{kargan}/download', [KarganController::class, 'download'])
@@ -138,3 +134,7 @@ Route::delete('kargans', [KarganController::class, 'destroy_batch'])
     ->name('api.kargans.destroy_batch');
 Route::apiResource('kargans', KarganController::class)
     ->names('api.kargans');
+
+Route::apiResource('kontaks', KontakController::class)
+    ->names('api.kontaks')
+    ->only(['index', 'store']);
