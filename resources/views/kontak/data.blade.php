@@ -26,7 +26,7 @@
 
 @push('js')
     <script>
-        const URL_INDEX = "{{ route('kontak.index') }}"
+        const URL_INDEX = "{{ route('kontaks.index') }}"
         const URL_INDEX_API = "{{ route('api.kontak.index') }}"
         var id = 0;
         $(document).ready(function() {

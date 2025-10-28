@@ -21,9 +21,6 @@ use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('products', [ProductController::class, 'index'])->name('products.index');
-Route::get('kontak', [KontakController::class, 'index'])->name('kontak.index');
-
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
@@ -81,3 +78,9 @@ Route::get('settings/', [SettingController::class, 'index'])
 Route::resource('kargans', KarganController::class)
     ->only(['index', 'edit', 'create'])
     ->names('kargans');
+
+Route::get('products', [ProductController::class, 'index'])
+    ->name('products.index');
+
+Route::get('kontaks', [KontakController::class, 'index'])
+    ->name('kontaks.index');

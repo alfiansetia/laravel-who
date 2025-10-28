@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         View::composer('*', function ($view) {
-            $view->with('setting', Setting::first());
+            // $view->with('setting', Setting::first());
         });
     }
 
