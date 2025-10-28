@@ -51,6 +51,9 @@
                     <a href="{{ route('kargans.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
+                    <button type="button" id="btn_duplicate" class="btn btn-warning">
+                        <i class="fas fa-clone mr-1"></i>Duplicate
+                    </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
                         <i class="fab fa-telegram-plane mr-1"></i>Simpan Download
                     </button>
@@ -105,15 +108,13 @@
                     sn: $('#sn').val(),
                     pic: $('#pic').val(),
                 }
-                console.log(data);
                 $.ajax({
                     type: 'PUT',
                     url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        let id = res.data.id
-                        window.open(`${URL_INDEX}/${CURRENT_ID}`, '_blank')
+                        window.open(`${URL_INDEX_API}/${CURRENT_ID}/download`, '_blank')
                     },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')
@@ -123,6 +124,21 @@
 
             $('#date').change(function() {
                 get_number()
+            })
+
+            $('#btn_duplicate').click(function() {
+                $.ajax({
+                    type: 'POST',
+                    url: `${URL_INDEX_API}/${CURRENT_ID}/duplicate`,
+                    data: {},
+                    beforeSend: function() {},
+                    success: function(res) {
+                        window.open(`${URL_INDEX}/${res.data.id}/edit`, '_blank')
+                    },
+                    error: function(xhr, status, error) {
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
             })
 
         });

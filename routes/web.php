@@ -79,5 +79,5 @@ Route::get('settings/', [SettingController::class, 'index'])
     ->name('settings.index');
 
 Route::resource('kargans', KarganController::class)
-    ->only(['index', 'show', 'edit', 'create'])
+    ->only(['index', 'edit', 'create'])
     ->names('kargans');

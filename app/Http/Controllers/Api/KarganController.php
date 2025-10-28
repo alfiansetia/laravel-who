@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Kargan;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Illuminate\Support\Str;
 
 class KarganController extends Controller
 {
@@ -79,5 +82,32 @@ class KarganController extends Controller
         return $this->sendResponse([
             'deleted_count' => $deleted
         ], 'Kargan deleted successfully.');
+    }
+
+    public function duplicate(Kargan $kargan)
+    {
+        $data = $kargan->replicate();
+        $data->save();
+        return $this->sendResponse($data, 'Success Duplicate!');
+    }
+
+
+    public function download(Kargan $kargan)
+    {
+        $file = public_path('master/kargan.docx');
+        Carbon::setLocale('id');
+        $date = Carbon::parse($kargan->date)->translatedFormat('d F Y');
+        $template = new TemplateProcessor($file);
+        $template->setValue('prod_name', htmlspecialchars($kargan->product->name));
+        $template->setValue('prod_code', htmlspecialchars($kargan->product->code));
+        $template->setValue('date', htmlspecialchars($date));
+        $template->setValue('number', htmlspecialchars($kargan->number));
+        $template->setValue('sn', htmlspecialchars($kargan->sn));
+        $template->setValue('masa', htmlspecialchars($kargan->masa));
+        $template->setValue('pic', htmlspecialchars($kargan->pic));
+        $name = Str::slug('krg_' . $kargan->number, '_');
+        $path = storage_path('app/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
     }
 }

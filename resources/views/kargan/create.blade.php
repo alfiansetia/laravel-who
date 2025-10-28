@@ -97,7 +97,6 @@
                     sn: $('#sn').val(),
                     pic: $('#pic').val(),
                 }
-                console.log(data);
                 $.ajax({
                     type: 'POST',
                     url: URL_INDEX_API,

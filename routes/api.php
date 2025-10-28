@@ -129,6 +129,11 @@ Route::apiResource('products', ProductController::class)
 Route::post('product-sync', [ProductController::class, 'sync'])
     ->name('api.products.sync');
 
+
+Route::post('kargans/{kargan}/duplicate', [KarganController::class, 'duplicate'])
+    ->name('api.kargans.duplicate');
+Route::get('kargans/{kargan}/download', [KarganController::class, 'download'])
+    ->name('api.kargans.download');
 Route::delete('kargans', [KarganController::class, 'destroy_batch'])
     ->name('api.kargans.destroy_batch');
 Route::apiResource('kargans', KarganController::class)

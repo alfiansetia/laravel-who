@@ -45,23 +45,4 @@ class KarganController extends Controller
         ]);
         return view('kargan.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Kargan']);
     }
-
-    public function show(Request $request, Kargan $kargan)
-    {
-        $file = public_path('master/kargan.docx');
-        Carbon::setLocale('id');
-        $date = Carbon::parse($kargan->date)->translatedFormat('d F Y');
-        $template = new TemplateProcessor($file);
-        $template->setValue('prod_name', htmlspecialchars($kargan->product->name));
-        $template->setValue('prod_code', htmlspecialchars($kargan->product->code));
-        $template->setValue('date', htmlspecialchars($date));
-        $template->setValue('number', htmlspecialchars($kargan->number));
-        $template->setValue('sn', htmlspecialchars($kargan->sn));
-        $template->setValue('masa', htmlspecialchars($kargan->masa));
-        $template->setValue('pic', htmlspecialchars($kargan->pic));
-        $name = Str::slug('krg_' . $kargan->number, '_');
-        $path = public_path('master/' . $name . '.docx');
-        $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
-    }
 }
