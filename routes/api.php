@@ -139,7 +139,7 @@ Route::delete('basts', [BastController::class, 'destroy_batch'])
     ->name('api.basts.destroy_batch');
 Route::get('basts/{bast}/sync', [BastController::class, 'sync'])
     ->name('api.basts.sync');
-Route::get('basts/{bast}/download', [BastController::class, 'sync'])
+Route::get('basts/{bast}/download', [BastController::class, 'download'])
     ->name('api.basts.download');
 Route::apiResource('basts', BastController::class)
     ->names('api.basts');
