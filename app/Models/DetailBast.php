@@ -11,6 +11,13 @@ class DetailBast extends Model
 
     protected $guarded = ['id'];
 
+    public function scopeFilter($query, array $filters)
+    {
+        if (isset($filters['bast_id'])) {
+            $query->where('bast_id', $filters['bast_id']);
+        }
+    }
+
     public function bast()
     {
         return $this->belongsTo(Bast::class, 'bast_id');

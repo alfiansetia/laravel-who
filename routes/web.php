@@ -26,7 +26,6 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
-Route::resource('bast', BastController::class);
 
 Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
 
@@ -84,3 +83,7 @@ Route::get('products', [ProductController::class, 'index'])
 
 Route::get('kontaks', [KontakController::class, 'index'])
     ->name('kontaks.index');
+
+Route::resource('bast', BastController::class)
+    ->names('basts')
+    ->only(['index', 'create', 'edit']);

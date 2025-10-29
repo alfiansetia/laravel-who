@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <form method="POST" action="{{ route('bast.store') }}" id="form">
+        <form method="POST" action="{{ route('api.basts.store') }}" id="form">
             @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ route('bast.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('basts.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
@@ -72,6 +72,10 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX = "{{ route('basts.index') }}";
+        const URL_INDEX_API = "{{ route('api.basts.index') }}";
+        var id = 0;
+
         $(document).ready(function() {
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()
@@ -143,12 +147,11 @@
                 }
                 $.ajax({
                     type: 'POST',
-                    url: "{{ route('api.bast.store') }}",
+                    url: URL_INDEX_API,
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        let id = res.data.id
-                        window.open("{{ url('bast') }}/" + id + '/edit', '_blank')
+                        window.open(`${URL_INDEX}/${res.data.id}/edit`, '_blank')
                     },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')

@@ -9,6 +9,9 @@ use App\Models\Product;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Illuminate\Support\Str;
+
 
 class BastController extends Controller
 {
@@ -62,6 +65,19 @@ class BastController extends Controller
     {
         $bast->delete();
         return $this->sendResponse($bast, 'Deleted!');
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'       => 'required|array',
+            'ids.*'     => 'integer|exists:basts,id',
+        ]);
+        $deleted = Bast::whereIn('id', $request->ids)->delete();
+
+        return $this->sendResponse([
+            'deleted_count' => $deleted
+        ], 'Bast deleted successfully.');
     }
 
     public function sync(Bast $bast)
@@ -124,5 +140,74 @@ class BastController extends Controller
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
+    }
+
+    public function download(Request $request, Bast $bast)
+    {
+        if ($request->type == 'training') {
+            return $this->training($bast);
+        } elseif ($request->type == 'bast') {
+            return $this->bast($bast);
+        } else {
+            return $this->tanda_terima($bast);
+        }
+    }
+
+    private function tanda_terima(Bast $bast)
+    {
+        $file = public_path('master/tanda_terima.docx');
+        $items = [];
+        foreach ($bast->details as $key => $item) {
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
+            $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            array_push($items, ['items' => htmlspecialchars($text)]);
+        }
+        $template = new TemplateProcessor($file);
+        $template->setValue('name', htmlspecialchars($bast->name));
+        $template->setValue('city', htmlspecialchars($bast->city));
+        $template->cloneBlock('item_block', 0, true, false, $items);
+        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
+        $path = storage_path('app/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
+    }
+
+    private function training(Bast $bast)
+    {
+        $file = public_path('master/training.docx');
+        $items = [];
+        foreach ($bast->details as $key => $item) {
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
+            $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
+        }
+        $template = new TemplateProcessor($file);
+        $template->setValue('name', htmlspecialchars($bast->name));
+        $template->setValue('city', htmlspecialchars($bast->city));
+        $template->cloneBlock('item_block', 0, true, false, $items);
+        $name = Str::slug('training_' . $bast->do . '_' . $bast->name, '_');
+        $path = storage_path('app/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
+    }
+
+    private function bast(Bast $bast)
+    {
+        $file = public_path('master/bast.docx');
+        $items = [];
+        foreach ($bast->details as $key => $item) {
+            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
+            $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
+            array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
+        }
+        $template = new TemplateProcessor($file);
+        $template->setValue('name', htmlspecialchars($bast->name));
+        $template->setValue('city', htmlspecialchars($bast->city));
+        $template->setValue('address', htmlspecialchars($bast->address));
+        $template->cloneBlock('item_block', 0, true, false, $items);
+        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name, '_');
+        $path = storage_path('app/' . $name . '.docx');
+        $template->saveAs($path);
+        return response()->download($path)->deleteFileAfterSend();
     }
 }

@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 class DetailBastController extends Controller
 {
 
+    public function index(Request $request)
+    {
+        $data = DetailBast::query()->with('product')->filter($request->only(['bast_id']))->get();
+        return $this->sendResponse($data);
+    }
+
     public function store(Request $request)
     {
         $this->validate($request, [
@@ -28,6 +34,11 @@ class DetailBastController extends Controller
         return $this->sendResponse($data, 'Created!');
     }
 
+    public function show(DetailBast $detail_bast)
+    {
+        $data = $detail_bast->load('product');
+        return $this->sendResponse($data);
+    }
 
     public function update(Request $request, DetailBast $detail_bast)
     {
@@ -43,6 +54,7 @@ class DetailBastController extends Controller
         ]);
         return $this->sendResponse($detail_bast, 'Updated!');
     }
+
     public function destroy(DetailBast $detail_bast)
     {
         $detail_bast->delete();

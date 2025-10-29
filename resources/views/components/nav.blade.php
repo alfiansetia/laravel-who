@@ -31,7 +31,7 @@
                 </a>
             </li>
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('bast.index') }}">
+                <a class="nav-link" href="{{ route('basts.index') }}">
                     <i class="fas fa-file-contract mr-1"></i>BAST
                 </a>
             </li>

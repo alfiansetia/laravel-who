@@ -37,10 +37,6 @@ Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.d
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
 
-Route::get('bast/{bast}/sync', [BastController::class, 'sync'])->name('api.bast.sync');
-Route::apiResource('bast', BastController::class)->names('api.bast');
-Route::apiResource('detail_bast', DetailBastController::class)->names('api.detail_bast');
-
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 
 Route::apiResource('problem', ProblemController::class)->names('api.problem');
@@ -138,3 +134,15 @@ Route::apiResource('kargans', KarganController::class)
 Route::apiResource('kontaks', KontakController::class)
     ->names('api.kontaks')
     ->only(['index', 'store']);
+
+Route::delete('basts', [BastController::class, 'destroy_batch'])
+    ->name('api.basts.destroy_batch');
+Route::get('basts/{bast}/sync', [BastController::class, 'sync'])
+    ->name('api.basts.sync');
+Route::get('basts/{bast}/download', [BastController::class, 'sync'])
+    ->name('api.basts.download');
+Route::apiResource('basts', BastController::class)
+    ->names('api.basts');
+
+Route::apiResource('detail-basts', DetailBastController::class)
+    ->names('api.detail_basts');

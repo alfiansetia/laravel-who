@@ -6,8 +6,6 @@ use App\Models\Bast;
 use App\Models\Product;
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
-use PhpOffice\PhpWord\TemplateProcessor;
-use Illuminate\Support\Str;
 
 class BastController extends Controller
 {
@@ -19,7 +17,7 @@ class BastController extends Controller
     public function index()
     {
         $bcms = collect([
-            new Breadcrumb('List BAST', route('bast.index'), false),
+            new Breadcrumb('List BAST', route('basts.index'), false),
         ]);
         return view('bast.index', compact('bcms'))->with(['title' => 'List BAST']);
     }
@@ -32,8 +30,8 @@ class BastController extends Controller
     public function create()
     {
         $bcms = collect([
-            new Breadcrumb('List BAST', route('bast.index'), true),
-            new Breadcrumb('Create BAST', route('bast.index'), false),
+            new Breadcrumb('List BAST', route('basts.index'), true),
+            new Breadcrumb('Create BAST', route('basts.create'), false),
         ]);
         $products = Product::all();
         return view('bast.create', compact('bcms'))->with(['title' => 'Create BAST']);
@@ -48,80 +46,11 @@ class BastController extends Controller
     public function edit(Bast $bast)
     {
         $bcms = collect([
-            new Breadcrumb('List BAST', route('bast.index'), true),
-            new Breadcrumb($bast->do, route('bast.index'), false),
+            new Breadcrumb('List BAST', route('basts.index'), true),
+            new Breadcrumb($bast->do, route('basts.edit', $bast->do), false),
         ]);
         $products = Product::all();
         $data = $bast->load('details');
         return view('bast.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit BAST']);
-    }
-
-    public function show(Request $request, Bast $bast)
-    {
-        if ($request->type == 'training') {
-            return $this->training($bast);
-        } elseif ($request->type == 'bast') {
-            return $this->bast($bast);
-        } else {
-            return $this->tanda_terima($bast);
-        }
-    }
-
-    private function tanda_terima(Bast $bast)
-    {
-        $file = public_path('master/tanda_terima.docx');
-        $items = [];
-        foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
-            $text = $key + 1 . '. ' . $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' ' . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => htmlspecialchars($text)]);
-        }
-        $template = new TemplateProcessor($file);
-        $template->setValue('name', htmlspecialchars($bast->name));
-        $template->setValue('city', htmlspecialchars($bast->city));
-        $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
-        $path = public_path('master/' . $name . '.docx');
-        $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
-    }
-
-    private function training(Bast $bast)
-    {
-        $file = public_path('master/training.docx');
-        $items = [];
-        foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
-            $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
-        }
-        $template = new TemplateProcessor($file);
-        $template->setValue('name', htmlspecialchars($bast->name));
-        $template->setValue('city', htmlspecialchars($bast->city));
-        $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('training_' . $bast->do . '_' . $bast->name, '_');
-        $path = public_path('master/' . $name . '.docx');
-        $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
-    }
-
-    private function bast(Bast $bast)
-    {
-        $file = public_path('master/bast.docx');
-        $items = [];
-        foreach ($bast->details as $key => $item) {
-            $lot = !empty($item->lot) ? ('SN/Lot : ' . $item->lot) : '';
-            $text =  $item->qty . ' (' . ucfirst(trim(terbilang($item->qty))) . ') ' . $item->satuan . ' '  . $item->product->name . ' (' . $item->product->code . ') ' . $lot . '.';
-            array_push($items, ['items' => '• ' . htmlspecialchars($text)]);
-        }
-        $template = new TemplateProcessor($file);
-        $template->setValue('name', htmlspecialchars($bast->name));
-        $template->setValue('city', htmlspecialchars($bast->city));
-        $template->setValue('address', htmlspecialchars($bast->address));
-        $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name, '_');
-        $path = public_path('master/' . $name . '.docx');
-        $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
     }
 }

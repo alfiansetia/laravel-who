@@ -54,7 +54,7 @@
             </div>
 
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
-                <div class="card menu-card h-100" onclick="window.location='{{ route('bast.index') }}'">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('basts.index') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-file-contract menu-icon mr-3"></i>
                         <div>

@@ -7,7 +7,7 @@
 @section('content')
     <div class="container-fluid">
 
-        <form method="POST" action="{{ route('bast.update', $data->id) }}" id="form">
+        <form method="POST" action="{{ route('api.basts.update', $data->id) }}" id="form">
             @csrf
             @method('PUT')
             <div class="card card-primary mt-3">
@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="card-footer text-center">
-                    <a href="{{ route('bast.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('basts.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
                     <button type="button" id="add" class="btn btn-info">
@@ -76,12 +76,12 @@
                             <i class="fas fa-download mr-1"></i>Download
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=tanda_terima"
+                            <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=tanda_terima"
                                 target="_blank">Tanda Terima</a>
-                            <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=training"
+                            <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=training"
                                 target="_blank">Daftar
                                 Training</a>
-                            <a class="dropdown-item" href="{{ route('bast.show', $data->id) }}?type=bast"
+                            <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=bast"
                                 target="_blank">BAST</a>
                         </div>
                     </div>
@@ -114,7 +114,13 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX = "{{ route('basts.index') }}";
+        const URL_INDEX_API = "{{ route('api.basts.index') }}";
+        const CURRENT_ID = "{{ $data->id }}";
         var id = 0;
+
+        const URL_INDEX_DETAIL_API = "{{ route('api.detail_basts.index') }}";
+
         var data = [];
         $(document).ready(function() {
 
@@ -190,10 +196,10 @@
 
             var table = $('#table').DataTable({
                 ajax: {
-                    url: "{{ route('api.bast.show', $data->id) }}",
-                    dataSrc: function(result) {
-                        return result.data.details
-                    }
+                    url: URL_INDEX_DETAIL_API,
+                    data: function(dt) {
+                        dt['bast_id'] = CURRENT_ID;
+                    },
                 },
                 searching: false,
                 info: false,
@@ -215,7 +221,7 @@
                     className: 'text-left',
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
-                            return row.product.code + ' ' + row.product.name
+                            return `[${row.product.code}] ${row.product.name}`;
                         } else {
                             return data
                         }
@@ -228,7 +234,7 @@
                     className: 'text-center',
                 }, {
                     data: "lot",
-                    className: 'text-center',
+                    className: 'text-left',
                 }, {
                     data: "id",
                     className: "text-center",
@@ -247,19 +253,28 @@
                 $('#product_modal').modal('show')
             })
 
+            $('#product_modal').on('shown.bs.modal', function() {
+                $('#qty_prod').focus()
+            });
 
-            $('#btn_modal_save').click(function() {
+            $('#edit_modal').on('shown.bs.modal', function() {
+                $('#qty_prod_edit').focus()
+            });
+
+
+            $('#form_add').submit(function(e) {
+                e.preventDefault()
                 var selectedData = $('#select_product').select2('data');
                 var selectedText = selectedData[0].text;
                 if (selectedData[0].id == '') {
-                    show_message('Input product')
+                    show_message('Select product!')
                     return
                 }
                 $.ajax({
                     type: 'POST',
-                    url: "{{ route('api.detail_bast.store') }}",
+                    url: URL_INDEX_DETAIL_API,
                     data: {
-                        bast: "{{ $data->id }}",
+                        bast: CURRENT_ID,
                         product: selectedData[0].id,
                         qty: $('#qty_prod').val(),
                         lot: $('#lot_prod').val(),
@@ -275,9 +290,6 @@
 
             $('#form_edit').submit(function(e) {
                 e.preventDefault()
-            })
-
-            $('#btn_modal_save_edit').click(function() {
                 let url = $('#form_edit').attr('action')
                 $.ajax({
                     type: 'PUT',
@@ -296,13 +308,11 @@
             })
 
             $('#table tbody').on('click', '.hapus', function() {
-                var row = table.row($(this).closest('tr'));
+                let row = table.row($(this).closest('tr'));
                 id = row.id();
-                // row.remove().draw(true);
-                let url = "{{ url('api/detail_bast') }}/" + id
                 $.ajax({
                     type: 'DELETE',
-                    url: url,
+                    url: `${URL_INDEX_DETAIL_API}/${id}`,
                 }).done(function(result) {
                     table.ajax.reload()
                     $('#edit_modal').modal('hide')
@@ -319,7 +329,7 @@
                 $('#edit_satuan').val(data.satuan).trigger('change')
                 $('#qty_prod_edit').val(data.qty)
                 $('#lot_prod_edit').val(data.lot)
-                $('#form_edit').attr('action', "{{ url('api/detail_bast/') }}/" + id)
+                $('#form_edit').attr('action', `${URL_INDEX_DETAIL_API}/${id}`)
                 $('#edit_modal').modal('show')
             });
 
@@ -334,12 +344,10 @@
                 }
                 $.ajax({
                     type: 'PUT',
-                    url: "{{ route('api.bast.update', $data->id) }}",
+                    url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     data: data,
                     beforeSend: function() {},
-                    success: function(res) {
-                        // window.open("{{ route('bast.show', $data->id) }}", '_blank')
-                    },
+                    success: function(res) {},
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')
                     }
@@ -347,10 +355,9 @@
             })
 
             $('#btn_sync').click(function() {
-                let url = "{{ route('api.bast.sync', $data->id) }}"
                 $.ajax({
                     type: 'GET',
-                    url: url,
+                    url: `${URL_INDEX_API}/${CURRENT_ID}/sync`,
                 }).done(function(result) {
                     table.ajax.reload()
                 }).fail(function(xhr) {
