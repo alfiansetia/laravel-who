@@ -84,6 +84,6 @@ Route::get('products', [ProductController::class, 'index'])
 Route::get('kontaks', [KontakController::class, 'index'])
     ->name('kontaks.index');
 
-Route::resource('bast', BastController::class)
+Route::resource('basts', BastController::class)
     ->names('basts')
     ->only(['index', 'create', 'edit']);
