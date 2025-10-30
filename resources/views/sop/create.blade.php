@@ -33,7 +33,7 @@
                                     @foreach ($products as $item)
                                         <option data-id="{{ $item->id }}" data-code="{{ $item->code }}"
                                             data-name="{{ $item->name }}" value="{{ $item->id }}">
-                                            {{ $item->code }} {{ $item->name }}</option>
+                                            [{{ $item->code }}] {{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -59,6 +59,18 @@
                                 <div class="input-group-append">
                                     <button type="button" id="btn_import" class="input-group-text">IMPORT</button>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="import">From Item List</label>
+                            <div class="input-group">
+                                <select id="item_list" class="custom-select select2" style="width: 100%" required>
+                                    <option value="">Select Item List</option>
+                                    @foreach ($sop_items as $item)
+                                        <option value="{{ $item->item }}">
+                                            {{ $item->item }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -110,6 +122,21 @@
                 theme: 'bootstrap4',
             }).on('change', function() {
                 get_data()
+            });
+
+            $('#item_list').select2({
+                theme: 'bootstrap4',
+            }).on('change', function() {
+                let item = $('#item_list').val()
+                if (item == '' || item == null) {
+                    return
+                }
+                table
+                    .row
+                    .add({
+                        item: item
+                    })
+                    .draw();
             });
 
             var table = $('#table').DataTable({

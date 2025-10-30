@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Sop;
+use App\Models\SopItem;
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,10 @@ class SopController extends Controller
             new Breadcrumb('Manage SOP QC', route('sops.create'), false),
         ]);
         $products = Product::all();
-        return view('sop.create', compact('products', 'bcms'));
+        $sop_items = SopItem::query()
+            ->select('item')
+            ->distinct()
+            ->get();
+        return view('sop.create', compact('products', 'bcms', 'sop_items'));
     }
 }
