@@ -304,7 +304,7 @@
                     url: `${URL_INDEX_PRODUCT_API}/${product_id}`,
                     type: "GET",
                     success: function(res) {
-                        $('#target').val('1 Unit Menit')
+                        $('#target').val(' Menit 1 EA')
                         if (res.data.sop != null) {
                             $('#btn_download').prop('disabled', false)
                             $('#btn_download').val(res.data.sop.id)
