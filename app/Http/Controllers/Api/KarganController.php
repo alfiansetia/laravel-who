@@ -12,6 +12,11 @@ use Illuminate\Support\Str;
 
 class KarganController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
+    }
+
     public function index()
     {
         $data = Kargan::with('product')->latest()->get();

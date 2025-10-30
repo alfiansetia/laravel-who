@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlamatController;
 use App\Http\Controllers\Api\AtkController;
 use App\Http\Controllers\Api\AtkTransactionController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BastController;
 use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
@@ -146,3 +147,7 @@ Route::apiResource('basts', BastController::class)
 
 Route::apiResource('detail-basts', DetailBastController::class)
     ->names('api.detail_basts');
+
+Route::post('/auth/verify', [AuthController::class, 'verify'])->name('auth.verify');
+Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get('/auth/status', [AuthController::class, 'status'])->name('auth.status');

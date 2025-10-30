@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class VendorController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['destroy', 'update', 'destroy_batch']);
+    }
+
     public function index(Request $request)
     {
         $data = Vendor::query()->withCount(['packs'])->filter($request->only(['name', 'desc']))->get();

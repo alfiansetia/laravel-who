@@ -73,9 +73,13 @@
         integrity="sha512-Zq9o+E00xhhR/7vJ49mxFNJ0KQw1E1TMWkPTxrWcnpfEFDEXgUiwJHIKit93EW/XxE31HSI5GEOW06G6BF1AtA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    @include('components.auth')
+
     @stack('js')
 
     @include('pwa.script')
+
+
 
     <script>
         function show_message(message = 'Kesalahan tidak diketahui!', type = 'error') {
@@ -127,7 +131,7 @@
                         if (callback) callback(true);
                     }, true],
                     ['<button><i class="fas fa-thumbs-down mr-1"></i>Cancel</button>', function(instance,
-                    toast) {
+                        toast) {
                         instance.hide({
                             transitionOut: 'fadeOut'
                         }, toast, 'button');
@@ -140,10 +144,10 @@
         function danger(message) {
             let alert = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
             ${message}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>`
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>`
             $('#notif').html(alert)
         }
 

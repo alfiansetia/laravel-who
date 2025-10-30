@@ -64,6 +64,15 @@
                     <div class="dropdown-divider"></div>
                 </div>
             </li> --}}
+            <li class="nav-item">
+                <a href="javascript:void(0);" class="nav-link d-none" id="btnEnvLogin" data-toggle="modal"
+                    data-target="#authModal">
+                    <i class="fa fa-lock"></i> Login
+                </a>
+                <a href="javascript:void(0);" class="nav-link d-none" id="btnEnvLogout">
+                    <i class="fa fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
         </ul>
     </div>
 </nav>

@@ -16,6 +16,11 @@ use Illuminate\Support\Str;
 class BastController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
+    }
+
     public function index()
     {
         $data = Bast::with('details')->latest()->get();

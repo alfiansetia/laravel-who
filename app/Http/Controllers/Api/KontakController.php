@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class KontakController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
+    }
+
     public function index()
     {
         $data = Kontak::orderBy('name', 'ASC')->get();

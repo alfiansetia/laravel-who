@@ -11,6 +11,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class PackController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['update', 'change', 'destroy', 'destroy_batch']);
+    }
+
     public function index()
     {
         $data = Pack::query()->with(['vendor', 'product', 'items'])->get();

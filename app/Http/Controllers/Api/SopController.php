@@ -11,6 +11,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class SopController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['store']);
+    }
+
     public function index()
     {
         $data = Sop::query()->with(['product', 'items'])->get()->unique('product_id')->values();
