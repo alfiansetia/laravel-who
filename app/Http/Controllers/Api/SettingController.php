@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Artisan;
 
 class SettingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['test_notif', 'store', 'reload']);
+    }
+
     public function index()
     {
         $session = OdooSession::getCurrentSession();
