@@ -263,7 +263,7 @@
                     },
                     {
                         data: "qty",
-                        className: 'text-center',
+                        className: 'text-left',
                     },
                 ],
                 buttons: [{
