@@ -180,7 +180,8 @@ class PackController extends Controller
         $sheet->getStyle($cdakb_row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // === SIMPAN FILE ===
-        $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $pack->product->code);
+        $file = $code . $pdesc;
+        $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $file);
         $output = storage_path("app/{$file_name}.xlsx");
         $writer = new Xlsx($spreadsheet);
         $writer->save($output);
