@@ -60,6 +60,12 @@
                                 <textarea name="name" id="name" class="form-control" maxlength="200" required>Default</textarea>
                             </div>
                         </div>
+                        <div class="form-group col-6">
+                            <label for="name">PRODUCT NAME</label>
+                            <div class="input-group">
+                                <textarea id="p_name" class="form-control" maxlength="200" required></textarea>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-6">
@@ -132,7 +138,8 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modal_item" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal fade" id="modal_item" tabindex="-1" aria-labelledby="staticBackdropLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <form id="form_item">
                     <div class="modal-content">
@@ -184,6 +191,9 @@
                 if (product_id == '' || product_id == null) {
                     return;
                 }
+                let $opt = $(this).find('option[value="' + product_id + '"]');
+                let name = $opt.attr('data-name');
+                $('#p_name').val(name || '');
                 $.ajax({
                     url: "{{ route('api.products.index') }}/" + product_id,
                     type: 'GET',
