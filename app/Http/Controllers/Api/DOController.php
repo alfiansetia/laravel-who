@@ -13,33 +13,20 @@ class DOController extends Controller
     public function index(Request $request)
     {
         $search = $request->param ?? 'CENT/OUT/';
-        try {
-            $response = DoServices::getAll($search);
-            return $this->sendResponse($response);
-        } catch (\Throwable $th) {
-            return $this->sendError($th->getMessage());
-        }
+        $response = DoServices::getAll($search);
+        return $this->sendResponse($response);
     }
 
     public function detail(int $id)
     {
         $id = intval($id);
-        try {
-            $response = DoServices::detail($id);
-            return $this->sendResponse($response);
-            return response()->json(['data' => $response]);
-        } catch (\Throwable $th) {
-            return $this->sendError($th->getMessage());
-        }
+        $response = DoServices::detail($id);
+        return $this->sendResponse($response);
     }
 
     public function monitor()
     {
-        try {
-            $response = DoMonitorService::getAll();
-            return $this->sendResponse($response ?? []);
-        } catch (\Throwable $th) {
-            return $this->sendError($th->getMessage());
-        }
+        $response = DoMonitorService::getAll();
+        return $this->sendResponse($response ?? []);
     }
 }

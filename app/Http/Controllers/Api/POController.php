@@ -11,35 +11,23 @@ class POController extends Controller
 {
     public function index(Request $request)
     {
-        try {
-            $res = POServices::getAll($request->search, $request->limit, $request->offset);
-            return response()->json(['data' => collect($res['records'])->map(function ($item) {
-                $item['vendor'] = get_name($item['partner_id']);
-                $item['user'] = get_name($item['user_id']);
-                return $item;
-            })]);
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
-        }
+        $res = POServices::getAll($request->search, $request->limit, $request->offset);
+        return  $this->sendResponse(['data' => collect($res['records'])->map(function ($item) {
+            $item['vendor'] = get_name($item['partner_id']);
+            $item['user'] = get_name($item['user_id']);
+            return $item;
+        })]);
     }
 
     public function detail(Request $request, string $id)
     {
-        try {
-            $res = POServices::detail(intval($id));
-            return response()->json($res);
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
-        }
+        $res = POServices::detail(intval($id));
+        return $this->sendResponse($res);
     }
 
     public function order_line(Request $request)
     {
-        try {
-            $res = POServices::getOrderLines($request->lines);
-            return response()->json(['data' => PoResource::collection($res['result'])]);
-        } catch (\Throwable $th) {
-            return response()->json($th->getMessage(), 500);
-        }
+        $res = POServices::getOrderLines($request->lines);
+        return $this->sendResponse(['data' => PoResource::collection($res['result'])]);
     }
 }

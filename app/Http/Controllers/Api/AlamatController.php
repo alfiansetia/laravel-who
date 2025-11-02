@@ -124,73 +124,69 @@ class AlamatController extends Controller
 
     public function sync(Alamat $alamat)
     {
-        try {
-            $id = 0;
-            $do = $alamat->do;
-            $json = DoServices::getAll($do);
-            if (count($json['records'] ?? []) > 0) {
-                $id = intval($json['records'][0]['id']);
-            }
-            $detail = DoServices::detail($id);
-            $pd_jd = [];
-
-            $last_key = 0;
-            $details = DetailAlamat::query()->where('alamat_id', $alamat->id)->orderBy('order')->get();
-            foreach ($details as $key => $item) {
-                $item->update([
-                    'order' => $key,
-                ]);
-                $last_key++;
-            }
-            foreach (($detail['move_ids_detail'] ?? []) as $item) {
-                $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
-                    if (isset($item['product_id'][0], $value['product_id'][0])) {
-                        return $item['product_id'][0] === $value['product_id'][0];
-                    }
-                });
-
-                if ($lot->count() <= 2) {
-                    $values = $lot->map(function ($item) {
-                        $lot = $item['lot_id'][1] ?? '';
-                        $ed = $item['expired_date_do'] ?? '';
-                        if ($lot && $ed) {
-                            $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
-                                ->setTimezone(config('app.timezone'))
-                                ->format('d/m/Y');
-                            return $lot . " Ed. " . $ed;
-                        } elseif ($lot) {
-                            return $lot;
-                        }
-                    })->implode(', ');
-                } else {
-                    $values = '';
-                }
-
-                preg_match('/\[(.*?)\]/', ($item['product_id'][1] ?? ''), $matches);
-                if (isset($matches[1])) {
-                    $pro = Product::query()->where('code', $matches[1])->first();
-                    if ($pro) {
-                        array_push($pd_jd, [
-                            'code'      => $matches[1],
-                            'qty'       => $item['quantity_done'] . ' Ea',
-                            'default'   => $item['product_id'][1],
-                            'lot'       => $values,
-                        ]);
-                        DetailAlamat::create([
-                            'product_id'    => $pro->id,
-                            'alamat_id'     => $alamat->id,
-                            'qty'           => $item['quantity_done'] . ' Ea',
-                            'lot'           => $values,
-                            'order'         => $last_key
-                        ]);
-                        $last_key++;
-                    }
-                }
-            }
-            return response()->json(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
+        $id = 0;
+        $do = $alamat->do;
+        $json = DoServices::getAll($do);
+        if (count($json['records'] ?? []) > 0) {
+            $id = intval($json['records'][0]['id']);
         }
+        $detail = DoServices::detail($id);
+        $pd_jd = [];
+
+        $last_key = 0;
+        $details = DetailAlamat::query()->where('alamat_id', $alamat->id)->orderBy('order')->get();
+        foreach ($details as $key => $item) {
+            $item->update([
+                'order' => $key,
+            ]);
+            $last_key++;
+        }
+        foreach (($detail['move_ids_detail'] ?? []) as $item) {
+            $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
+                if (isset($item['product_id'][0], $value['product_id'][0])) {
+                    return $item['product_id'][0] === $value['product_id'][0];
+                }
+            });
+
+            if ($lot->count() <= 2) {
+                $values = $lot->map(function ($item) {
+                    $lot = $item['lot_id'][1] ?? '';
+                    $ed = $item['expired_date_do'] ?? '';
+                    if ($lot && $ed) {
+                        $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
+                            ->setTimezone(config('app.timezone'))
+                            ->format('d/m/Y');
+                        return $lot . " Ed. " . $ed;
+                    } elseif ($lot) {
+                        return $lot;
+                    }
+                })->implode(', ');
+            } else {
+                $values = '';
+            }
+
+            preg_match('/\[(.*?)\]/', ($item['product_id'][1] ?? ''), $matches);
+            if (isset($matches[1])) {
+                $pro = Product::query()->where('code', $matches[1])->first();
+                if ($pro) {
+                    array_push($pd_jd, [
+                        'code'      => $matches[1],
+                        'qty'       => $item['quantity_done'] . ' Ea',
+                        'default'   => $item['product_id'][1],
+                        'lot'       => $values,
+                    ]);
+                    DetailAlamat::create([
+                        'product_id'    => $pro->id,
+                        'alamat_id'     => $alamat->id,
+                        'qty'           => $item['quantity_done'] . ' Ea',
+                        'lot'           => $values,
+                        'order'         => $last_key
+                    ]);
+                    $last_key++;
+                }
+            }
+        }
+        return $this->sendResponse(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
     }
 
     public function destroy_batch(Request $request)
@@ -200,7 +196,6 @@ class AlamatController extends Controller
             'ids.*'     => 'integer|exists:alamats,id',
         ]);
         $deleted = Alamat::whereIn('id', $request->ids)->delete();
-
         return $this->sendResponse([
             'deleted_count' => $deleted
         ], 'Alamat deleted successfully.');

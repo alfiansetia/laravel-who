@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\OdooException;
 use Illuminate\Support\Facades\Http;
 
 class Odoo
@@ -105,7 +106,11 @@ class Odoo
             $response = $http->get($url);
         }
         if (!$response->successful()) {
-            $response->throw();
+            throw new OdooException(
+                'Odoo API Error',
+                $response->status(),
+                $response->json() ?? $response->body()
+            );
         }
         if (static::$state_file) {
             return $response;

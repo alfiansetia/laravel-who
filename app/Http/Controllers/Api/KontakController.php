@@ -54,29 +54,25 @@ class KontakController extends Controller
             ],
             ["id" => 288682884],
         ];
-        try {
-            $url_param = '/web/dataset/search_read';
-            $json = Odoo::asJson()
-                ->withUrlParam($url_param)
-                ->withData($data)
-                ->method('POST')
-                ->get();
-            $records = $json['result']['records'] ?? [];
-            $chunks = array_chunk($records, 100);
-            foreach ($chunks as $chunk) {
-                foreach ($chunk as $item) {
-                    Kontak::query()->updateOrCreate([
-                        'name' => $item['display_name'],
-                    ], [
-                        'name'      => $item['display_name'],
-                        'street'    => $item['street'] ?? '',
-                        'phone'     => $item['phone'],
-                    ]);
-                }
+        $url_param = '/web/dataset/search_read';
+        $json = Odoo::asJson()
+            ->withUrlParam($url_param)
+            ->withData($data)
+            ->method('POST')
+            ->get();
+        $records = $json['result']['records'] ?? [];
+        $chunks = array_chunk($records, 100);
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $item) {
+                Kontak::query()->updateOrCreate([
+                    'name' => $item['display_name'],
+                ], [
+                    'name'      => $item['display_name'],
+                    'street'    => $item['street'] ?? '',
+                    'phone'     => $item['phone'],
+                ]);
             }
-            return response()->json(['message' => 'Success!', 'data' => $json['result']],);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
+        return $this->sendResponse(['message' => 'Success!', 'data' => $json['result']],);
     }
 }

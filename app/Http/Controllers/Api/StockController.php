@@ -62,17 +62,13 @@ class StockController extends Controller
         foreach ($request->location ?? [] as $item) {
             array_push($param['params']['kwargs']['domain'], ['location_id', 'ilike', $item]);
         }
-        try {
-            $url_param = '/web/dataset/call_kw/stock.quant/read_group';
-            $data = Odoo::asJson()
-                ->withData($param)
-                ->withUrlParam($url_param)
-                ->method('POST')
-                ->get();
-            return response()->json(['data' => StockResource::collection($data['result'] ?? [])]);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
-        }
+        $url_param = '/web/dataset/call_kw/stock.quant/read_group';
+        $data = Odoo::asJson()
+            ->withData($param)
+            ->withUrlParam($url_param)
+            ->method('POST')
+            ->get();
+        return $this->sendResponse(['data' => StockResource::collection($data['result'] ?? [])]);
     }
 
     public function lot(Request $request, int $id)
@@ -132,17 +128,13 @@ class StockController extends Controller
         foreach ($request->location ?? [] as $item) {
             array_push($param['params']['domain'], ['location_id', 'ilike', $item]);
         }
-        try {
-            $url_param = '/web/dataset/search_read';
-            $data = Odoo::asJson()
-                ->withData($param)
-                ->withUrlParam($url_param)
-                ->method('POST')
-                ->get();
-            // return response()->json($data);
-            return response()->json(['data' => LotResource::collection($data['result']['records'] ?? [])]);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
-        }
+        $url_param = '/web/dataset/search_read';
+        $data = Odoo::asJson()
+            ->withData($param)
+            ->withUrlParam($url_param)
+            ->method('POST')
+            ->get();
+        // return response()->json($data);
+        $this->sendResponse(['data' => LotResource::collection($data['result']['records'] ?? [])]);
     }
 }

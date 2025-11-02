@@ -77,32 +77,28 @@ class ProductController extends Controller
             ],
             'id' => 353031512
         ];
-        try {
-            $url_param = '/web/dataset/search_read';
-            $json = Odoo::asJson()
-                ->withUrlParam($url_param)
-                ->withData($data)
-                ->method('POST')
-                ->get();
-            $records = $json['result']['records'] ?? [];
-            $chunks = array_chunk($records, 100);
-            foreach ($chunks as $chunk) {
-                foreach ($chunk as $item) {
-                    Product::query()->updateOrCreate([
-                        'code' => $item['default_code'],
-                    ], [
-                        'odoo_id'   => $item['id'],
-                        'code'      => $item['default_code'],
-                        'name'      => $item['name'] ?? null,
-                        'akl'       => $item['akl_id'] != false ? $item['akl_id'][1] : null,
-                        'akl_exp'   => $item['x_studio_valid_to_akl'] != false ? date('Y-m-d', strtotime($item['x_studio_valid_to_akl'])) : null,
-                        'desc'      => $item['description'] != false ? $item['description'] : null,
-                    ]);
-                }
+        $url_param = '/web/dataset/search_read';
+        $json = Odoo::asJson()
+            ->withUrlParam($url_param)
+            ->withData($data)
+            ->method('POST')
+            ->get();
+        $records = $json['result']['records'] ?? [];
+        $chunks = array_chunk($records, 100);
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $item) {
+                Product::query()->updateOrCreate([
+                    'code' => $item['default_code'],
+                ], [
+                    'odoo_id'   => $item['id'],
+                    'code'      => $item['default_code'],
+                    'name'      => $item['name'] ?? null,
+                    'akl'       => $item['akl_id'] != false ? $item['akl_id'][1] : null,
+                    'akl_exp'   => $item['x_studio_valid_to_akl'] != false ? date('Y-m-d', strtotime($item['x_studio_valid_to_akl'])) : null,
+                    'desc'      => $item['description'] != false ? $item['description'] : null,
+                ]);
             }
-            return response()->json(['message' => 'Success!', 'data' => $json['result']],);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage(), 'data' => []], 500);
         }
+        return $this->sendResponse(['message' => 'Success!', 'data' => $json['result']],);
     }
 }
