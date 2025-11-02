@@ -12,10 +12,7 @@ class Controller extends BaseController
 
     public function sendNotFound()
     {
-        return response()->json([
-            'data'      => null,
-            'message'   => 'Not Found!',
-        ], 404);
+        return $this->sendResponse(null, 'Not Found!', 404);
     }
 
     public function sendResponse($data = null, $message = '', $code = 200)
@@ -36,9 +33,6 @@ class Controller extends BaseController
 
     public function sendError($message, $code = 500)
     {
-        return response()->json([
-            'data'      => null,
-            'message'   => $message,
-        ], $code);
+        return $this->sendResponse(null, $message, $code);
     }
 }
