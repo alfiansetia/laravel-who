@@ -35,8 +35,8 @@ Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
-Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
+Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 

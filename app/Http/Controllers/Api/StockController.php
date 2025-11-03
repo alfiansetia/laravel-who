@@ -135,6 +135,6 @@ class StockController extends Controller
             ->method('POST')
             ->get();
         // return response()->json($data);
-        $this->sendResponse(['data' => LotResource::collection($data['result']['records'] ?? [])]);
+        return $this->sendResponse(LotResource::collection($data['result']['records'] ?? []));
     }
 }
