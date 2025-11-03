@@ -64,7 +64,7 @@
                         <div class="form-group col-lg-6">
                             <label for="import">From Item List</label>
                             <div class="input-group">
-                                <select id="item_list" class="custom-select select2" style="width: 100%" required>
+                                <select id="item_list" class="custom-select select2" style="width: 100%">
                                     <option value="">Select Item List</option>
                                     @foreach ($sop_items as $item)
                                         <option value="{{ $item->item }}">
