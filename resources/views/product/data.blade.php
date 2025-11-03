@@ -188,6 +188,9 @@
                     "sSearchPlaceholder": "Search...",
                     "sLengthMenu": "Results :  _MENU_",
                 },
+                order: [
+                    [2, "desc"]
+                ],
                 lengthMenu: [
                     [10, 50, 100, 500, 1000],
                     ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
@@ -386,7 +389,6 @@
                 data = table.row(row).data()
                 id = data.id
 
-                console.log(data);
                 $.ajax({
                     url: `${URL_INDEX_API}/${id}/move`,
                     type: "GET",
