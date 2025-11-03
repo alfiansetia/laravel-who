@@ -190,7 +190,23 @@
                             .remove()
                             .draw();
                     }
-                }],
+                }, {
+                    text: '<i class="fas fa-clipboard mr-1"></i>Export',
+                    className: 'btn btn-sm btn-info',
+                    attr: {
+                        'data-toggle': 'tooltip',
+                        'title': 'Export'
+                    },
+                    action: function(e, dt, node, config) {
+                        let text = table
+                            .rows()
+                            .data()
+                            .toArray()
+                            .map(row => row.item) // ambil hanya kolom 'item'
+                            .join('\n'); // gabung pakai newline
+                        $('#import').val(text);
+                    }
+                }, ],
             });
 
             $('#table').on('click', '.btn-up', function() {
