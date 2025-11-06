@@ -155,7 +155,7 @@
                             if (type == 'display') {
                                 return `<a href="${data}" 
                                             data-lightbox="product" 
-                                            data-title="Images [${row.product.code || '-'}] ${row.product.name}">
+                                            data-title="Images [${row.product.code || '-'}] ${row.product.name} (${row.name})">
                                                 <img src="${data}" 
                                                     class="img-thumbnail"
                                                     style="width:50px;height:50px;object-fit:cover;">
