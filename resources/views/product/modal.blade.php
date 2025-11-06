@@ -1,4 +1,5 @@
-<div class="modal fade" id="modal_pl" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade" id="modal_pl" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -48,6 +49,24 @@
                         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
                             data-parent="#accordionExample">
                             <div class="card-body" id="table_pl_container">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingImages">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed" type="button"
+                                    data-toggle="collapse" data-target="#collapseImages" aria-expanded="false"
+                                    aria-controls="collapseImages">
+                                    Images
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapseImages" class="collapse" aria-labelledby="headingImages"
+                            data-parent="#accordionExample">
+                            <div class="modal-body text-center">
+                                <div id="detail_images"
+                                    class="d-flex flex-wrap gap-2 justify-content-center align-items-center"></div>
                             </div>
                         </div>
                     </div>

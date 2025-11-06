@@ -124,6 +124,18 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('product_images.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-images menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">Images</h6>
+                            <small class="text-muted">Product Images</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <h3 class="mb-4 font-weight-bold"><i class="fab fa-windows mr-1"></i> Odoo Menu</h3>

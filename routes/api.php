@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\QcController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
@@ -151,3 +152,9 @@ Route::apiResource('detail-basts', DetailBastController::class)
 Route::post('/auth/verify', [AuthController::class, 'verify'])->name('auth.verify');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 Route::get('/auth/status', [AuthController::class, 'status'])->name('auth.status');
+
+Route::delete('product_images', [ProductImageController::class, 'destroy_batch'])
+    ->name('api.product_images.destroy_batch');
+Route::apiResource('product_images', ProductImageController::class)
+    ->names('api.product_images')
+    ->only(['index', 'show', 'store', 'destroy']);

@@ -19,7 +19,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $data = Product::query()->with(['packs.items', 'sop.items'])->find($id);
+        $data = Product::query()->with(['packs.items', 'sop.items', 'images'])->find($id);
         if (!$data) {
             return $this->sendNotFound();
         }

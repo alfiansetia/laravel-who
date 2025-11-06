@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Carbon;
+use Intervention\Image\Laravel\Facades\Image;
 
 function terbilang($x)
 {
@@ -76,4 +77,12 @@ function get_name($string)
         }
     }
     return null;
+}
+
+function scaleDown($file, int $size = 800)
+{
+    $image = Image::read($file);
+    $image->orient();
+    $image->scaleDown($size);
+    return $image;
 }

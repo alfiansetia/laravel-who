@@ -11,6 +11,7 @@ use App\Http\Controllers\PackController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
@@ -87,3 +88,6 @@ Route::get('kontaks', [KontakController::class, 'index'])
 Route::resource('basts', BastController::class)
     ->names('basts')
     ->only(['index', 'create', 'edit']);
+
+Route::get('/product_images', [ProductImageController::class, 'index'])
+    ->name('product_images.index');

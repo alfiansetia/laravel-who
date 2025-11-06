@@ -25,4 +25,9 @@ class Product extends Model
     {
         return $this->hasOne(Sop::class);
     }
+
+    public function images()
+    {
+        return $this->hasmany(ProductImage::class);
+    }
 }

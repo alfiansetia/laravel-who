@@ -1,5 +1,7 @@
 @extends('template', ['title' => 'Data Product'])
-
+@push('css')
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
+@endpush
 @section('content')
     <div class="container-fluid">
         {{-- <h1>Data Product</h1> --}}
@@ -28,10 +30,17 @@
 @endsection
 
 @push('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+
     <script>
         const URL_INDEX_API = "{{ route('api.products.index') }}";
         var id = 0
         $(document).ready(function() {
+            lightbox.option({
+                resizeDuration: 200,
+                wrapAround: true
+            });
+
             var table = $('#table').DataTable({
                 rowId: 'id',
                 ajax: URL_INDEX_API,
@@ -376,6 +385,24 @@
                         `);
                         });
                     }
+
+                    let html = '';
+                    if (res.data.images && res.data.images.length > 0) {
+                        res.data.images.forEach((img, i) => {
+                            html += `
+                                <a href="${img.url}" 
+                                    data-lightbox="product-${id}" 
+                                    data-title="Image [${img.product.code} ${img.product.name}]">
+                                        <img src="${img.url}" 
+                                            class="img-thumbnail"
+                                            style="width:100px;height:100px;object-fit:cover;">
+                                </a>
+                            `;
+                        });
+                    } else {
+                        html = '<p class="text-muted">Tidak ada gambar.</p>';
+                    }
+                    $('#detail_images').html(html);
                     $('#modal_pl').modal('show')
 
                 }).fail(function(xhr) {
@@ -410,6 +437,44 @@
                 });
 
 
+
+            });
+
+            $('#table').on('click', '.btn-images', function() {
+                let row = $(this).parents('tr')[0];
+                data = table.row(row).data()
+                id = data.id
+                $.get(URL_INDEX_API + '/' + id).done(function(res) {
+                    let html = '';
+                    if (res.data.images && res.data.images.length > 0) {
+                        res.data.images.forEach((img, i) => {
+                            html += `
+                                <a href="${img.url}" 
+                                    data-lightbox="product-${id}" 
+                                    data-title="Gambar ${i + 1}">
+                                        <img src="${img.url}" 
+                                            class="img-thumbnail"
+                                            style="width:100px;height:100px;object-fit:cover;">
+                                </a>
+                            `;
+                        });
+                    } else {
+                        html = '<p class="text-muted">Tidak ada gambar.</p>';
+                    }
+                    $('#detail_images').html(html);
+                    if (typeof lightbox !== 'undefined') {
+                        lightbox.option({
+                            resizeDuration: 200,
+                            wrapAround: true
+                        });
+                    }
+
+
+                    $('#modal_images').modal('show')
+
+                }).fail(function(xhr) {
+                    show_message('Data Tidak ada!')
+                })
 
             });
 
