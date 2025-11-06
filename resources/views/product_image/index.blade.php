@@ -132,6 +132,7 @@
                         className: "text-center",
                         searchable: false,
                         sortable: false,
+                        width: "40px",
                         render: function(data, type, row, meta) {
                             return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
                         }
