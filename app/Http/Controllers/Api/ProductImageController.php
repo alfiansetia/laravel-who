@@ -33,6 +33,9 @@ class ProductImageController extends Controller
         ]);
 
         $saved = [];
+        if (!Storage::disk('public')->exists('products')) {
+            Storage::disk('public')->makeDirectory('products');
+        }
         foreach ($request->file('images') as $file) {
             $filename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
             $path = 'products/' . $filename;
