@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductImageController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['store', 'destroy', 'destroy_batch']);
+    }
+
     public function index()
     {
         $data = ProductImage::query()->with(['product'])->latest()->get();
