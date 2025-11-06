@@ -141,10 +141,7 @@
                         data: "product_id",
                         className: 'text-left',
                         render: function(data, type, row, meta) {
-                            if (type == 'display') {
-                                return `[${row.product.code ||'-'}] ${row.product.name}`
-                            }
-                            return data
+                            return `[${row.product.code ||'-'}] ${row.product.name}`
                         }
                     },
                     {
