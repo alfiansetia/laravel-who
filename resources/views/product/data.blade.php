@@ -392,7 +392,7 @@
                             html += `
                                 <a href="${img.url}" 
                                     data-lightbox="product-${id}" 
-                                    data-title="Image [${data.product.code}] ${data.product.name} (${img.name})">
+                                    data-title="Image [${res.data.code}] ${res.data.name} (${img.name})">
                                         <img src="${img.url}" 
                                             class="img-thumbnail"
                                             style="width:100px;height:100px;object-fit:cover;">

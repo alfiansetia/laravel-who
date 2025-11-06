@@ -266,20 +266,19 @@
                 FilePondPluginFileValidateType
             );
 
-            // Buat instance filepond
             const pond = FilePond.create(document.querySelector('#images'), {
                 allowMultiple: true,
                 acceptedFileTypes: ['image/*'],
-                instantUpload: false, // biar uploadnya pas submit form
+                instantUpload: false,
+                credits: false
             });
 
 
-            // Submit via AJAX
             $('#form_add').on('submit', function(e) {
                 e.preventDefault();
                 if (pond.getFiles().length === 0) {
                     show_message('⚠️ Minimal 1 file gambar harus diupload!');
-                    return; // stop submit
+                    return;
                 }
                 let formData = new FormData(this);
                 pond.getFiles().forEach(fileItem => {
