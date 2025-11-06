@@ -101,6 +101,7 @@
         $(document).ready(function() {
             $('#product_id').select2({
                 theme: 'bootstrap4',
+                dropdownParent: $('#modal_add'),
             })
 
             lightbox.option({
