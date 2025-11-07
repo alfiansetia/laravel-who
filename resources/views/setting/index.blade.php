@@ -288,6 +288,14 @@
                 }, {
                     data: "user_agent",
                     className: 'text-left',
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            if (!data) return '';
+                            let text = data.length > 20 ? data.substr(0, 20) + '...' : data;
+                            return text
+                        }
+                        return data;
+                    }
                 }, {
                     data: "ip",
                     className: 'text-left',
