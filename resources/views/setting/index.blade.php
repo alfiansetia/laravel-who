@@ -3,7 +3,7 @@
 @section('content')
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12">
+            <div class="col-8">
                 <form method="POST" action="" id="form">
                     @csrf
                     <div class="card card-primary mt-3">
@@ -18,7 +18,7 @@
                                         placeholder="ODOO SESSION USERNAME">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION" required></textarea>
+                                    <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION" rows="4" required></textarea>
                                 </div>
                             </div>
                         </div>
@@ -41,6 +41,19 @@
                         </div>
                     </div>
                 </form>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-primary mt-3">
+                    <div class="card-header mb-0">
+                        <h3 class="mb-0">
+                            Resource <button type="button" id="resource_refresh" class="btn btn-sm btn-warning"><i
+                                    class="fas fa-sync mr-1"></i></button>
+                        </h3>
+                    </div>
+                    <div class="card-body" id="resource-body">
+                        <p class="text-muted mb-0">Loading data...</p>
+                    </div>
+                </div>
             </div>
 
             <div class="col-md-8">
@@ -75,15 +88,15 @@
                 <div class="card card-primary mt-3">
                     <div class="card-header mb-0">
                         <h3 class="mb-0">
-                            Resource <button type="button" id="resource_refresh" class="btn btn-sm btn-warning"><i
-                                    class="fas fa-sync mr-1"></i></button>
+                            Logs
                         </h3>
                     </div>
-                    <div class="card-body" id="resource-body">
-                        <p class="text-muted mb-0">Loading data...</p>
+                    <div class="card-body">
+                        <textarea name="" id="log" class="form-control" rows="5"></textarea>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -191,8 +204,7 @@
                                 </div>
                             </div>
                         `;
-
-
+                        $('#log').val(res.data.logs.content);
                         $('#resource-body').html(html);
                     },
                     error: function(xhr) {
