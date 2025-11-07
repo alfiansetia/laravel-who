@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\QcController;
+use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\SopController;
@@ -158,3 +159,6 @@ Route::delete('product_images', [ProductImageController::class, 'destroy_batch']
 Route::apiResource('product_images', ProductImageController::class)
     ->names('api.product_images')
     ->only(['index', 'show', 'store', 'destroy']);
+
+Route::get('/resources', [ResourceController::class, 'index'])
+    ->name('api.resources.index');

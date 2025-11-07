@@ -2,66 +2,86 @@
 
 @section('content')
     <div class="container-fluid">
-        <form method="POST" action="" id="form">
-            @csrf
-            <div class="card card-primary mt-3">
-                <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <input type="text" disabled class="form-control" id="odoo_session_name"
-                                placeholder="ODOO SESSION USER">
+        <div class="row">
+            <div class="col-12">
+                <form method="POST" action="" id="form">
+                    @csrf
+                    <div class="card card-primary mt-3">
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <input type="text" disabled class="form-control" id="odoo_session_name"
+                                        placeholder="ODOO SESSION USER">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <input type="text" disabled class="form-control" id="odoo_session_username"
+                                        placeholder="ODOO SESSION USERNAME">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION" required></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group col-md-6">
-                            <input type="text" disabled class="form-control" id="odoo_session_username"
-                                placeholder="ODOO SESSION USERNAME">
+                        <div class="card-footer text-center">
+                            <a href="{{ route('index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left mr-1"></i>Kembali
+                            </a>
+                            <button type="button" id="btn_refresh" class="btn btn-warning">
+                                <i class="fas fa-sync mr-1"></i>Refresh
+                            </button>
+                            <button type="button" id="btn_fix" class="btn btn-danger">
+                                <i class="fas fa-hammer mr-1"></i>Fix Session
+                            </button>
+                            <button type="button" id="btn_notif" class="btn btn-info">
+                                <i class="fas fa-bell mr-1"></i>Tes Notif
+                            </button>
+                            <button type="submit" id="btn_simpan" class="btn btn-primary">
+                                <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                            </button>
                         </div>
-                        <div class="form-group col-md-6">
-                            <textarea class="form-control" id="odoo_env" placeholder="ODOO SESSION" required></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card card-primary mt-3">
+                    <div class="card-header mb-0">
+                        <h3 class="mb-0">List Device</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="responsive">
+                            <form id="selected">
+                                <table class="table table-sm table-hover" id="table"
+                                    style="width: 100%;cursor: pointer;">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th class="text-center" style="width: 30px;">No</th>
+                                            <th>Platform</th>
+                                            <th>User Agent</th>
+                                            <th>IP</th>
+                                            <th>Token</th>
+                                            <th>#</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{{ route('index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
-                    </a>
-                    <button type="button" id="btn_refresh" class="btn btn-warning">
-                        <i class="fas fa-sync mr-1"></i>Refresh
-                    </button>
-                    <button type="button" id="btn_fix" class="btn btn-danger">
-                        <i class="fas fa-hammer mr-1"></i>Fix Session
-                    </button>
-                    <button type="button" id="btn_notif" class="btn btn-info">
-                        <i class="fas fa-bell mr-1"></i>Tes Notif
-                    </button>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
-                    </button>
-                </div>
             </div>
-        </form>
-
-        <div class="card card-primary mt-3">
-            <div class="card-header mb-0">
-                <h3 class="mb-0">List Device</h3>
-            </div>
-            <div class="card-body">
-                <div class="responsive">
-                    <form id="selected">
-                        <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th class="text-center" style="width: 30px;">No</th>
-                                    <th>Platform</th>
-                                    <th>User Agent</th>
-                                    <th>IP</th>
-                                    <th>Token</th>
-                                    <th>#</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </form>
+            <div class="col-md-4">
+                <div class="card card-primary mt-3">
+                    <div class="card-header mb-0">
+                        <h3 class="mb-0">
+                            Resource <button type="button" id="resource_refresh" class="btn btn-sm btn-warning"><i
+                                    class="fas fa-sync mr-1"></i></button>
+                        </h3>
+                    </div>
+                    <div class="card-body" id="resource-body">
+                        <p class="text-muted mb-0">Loading data...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,7 +137,8 @@
         const URL_INDEX_API = "{{ route('api.settings.index') }}"
         const currentToken = localStorage.getItem('fcm_token');
         $(document).ready(function() {
-            getData()
+            getData();
+            getResource();
 
             function getData() {
                 $.ajax({
@@ -131,6 +152,52 @@
                     },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+            }
+
+            $('#resource_refresh').click(function() {
+                getResource()
+            })
+
+            function getResource() {
+                $.ajax({
+                    url: "{{ route('api.resources.index') }}",
+                    type: 'GET',
+                    beforeSend: function() {
+                        $('#resource-body').html('<p class="text-muted mb-0">Loading data...</p>');
+                    },
+                    success: function(res) {
+                        const data = res.data;
+                        let html = `
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="p-3 rounded-lg border shadow-sm d-flex justify-content-between align-items-center" style="background: #e8f1ff;">
+                                        <div>
+                                            <h6 class="mb-1 text-primary font-weight-bold">Products</h6>
+                                            <small class="text-muted">${data.products.value.toLocaleString()} bytes</small>
+                                        </div>
+                                        <span class="badge badge-primary px-3 py-2">${data.products.parse}</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 rounded-lg border shadow-sm d-flex justify-content-between align-items-center" style="background: #f5f6f7;">
+                                        <div>
+                                            <h6 class="mb-1 text-secondary font-weight-bold">Logs</h6>
+                                            <small class="text-muted">${data.logs.value.toLocaleString()} bytes</small>
+                                        </div>
+                                        <span class="badge badge-secondary px-3 py-2">${data.logs.parse}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+
+                        $('#resource-body').html(html);
+                    },
+                    error: function(xhr) {
+                        const message = xhr.responseJSON?.message || 'Gagal mengambil data resource';
+                        $('#resource-body').html(`<p class="text-danger mb-0">${message}</p>`);
                     }
                 });
             }
@@ -355,6 +422,8 @@
                 }
                 $('#modal_detail').modal('show')
             });
+
+
 
 
         });

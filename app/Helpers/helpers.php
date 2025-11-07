@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 
 function terbilang($x)
@@ -85,4 +86,30 @@ function scaleDown($file, int $size = 800)
     $image->orient();
     $image->scaleDown($size);
     return $image;
+}
+
+
+function getFolderSize($path)
+{
+    $totalSize = 0;
+    if (!is_dir($path)) {
+        return 0;
+    }
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $file) {
+        if ($file->isFile()) {
+            $totalSize += $file->getSize();
+        }
+    }
+    return $totalSize;
+}
+
+function formatBytes($bytes)
+{
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    $i = 0;
+    while ($bytes >= 1024 && $i < count($units) - 1) {
+        $bytes /= 1024;
+        $i++;
+    }
+    return round($bytes, 2) . ' ' . $units[$i];
 }
