@@ -160,5 +160,8 @@ Route::apiResource('product_images', ProductImageController::class)
     ->names('api.product_images')
     ->only(['index', 'show', 'store', 'destroy']);
 
+
+Route::delete('/resources', [ResourceController::class, 'destroy_log'])
+    ->name('api.resources.destroy_log');
 Route::get('/resources', [ResourceController::class, 'index'])
     ->name('api.resources.index');

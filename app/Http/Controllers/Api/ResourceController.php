@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class ResourceController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')->only(['destroy_log']);
+    }
+
     public function index()
     {
         $products = getFolderSize(storage_path('app/public/products'));
@@ -29,5 +34,14 @@ class ResourceController extends Controller
                 'content'   => $log_content
             ],
         ]);
+    }
+
+    public function destroy_log(Request $request)
+    {
+        $logPath = storage_path('logs/laravel.log');
+        if (file_exists($logPath)) {
+            file_put_contents($logPath, '');
+            return $this->sendResponse(null, 'Log berhasil dikosongkan.');
+        }
     }
 }

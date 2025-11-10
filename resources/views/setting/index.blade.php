@@ -44,11 +44,11 @@
             </div>
             <div class="col-md-4">
                 <div class="card card-primary mt-3">
-                    <div class="card-header mb-0">
-                        <h3 class="mb-0">
-                            Resource <button type="button" id="resource_refresh" class="btn btn-sm btn-warning"><i
-                                    class="fas fa-sync mr-1"></i></button>
-                        </h3>
+                    <div class="card-header mb-0 d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Resource</h3>
+                        <button type="button" id="resource_refresh" class="btn btn-sm btn-warning">
+                            <i class="fas fa-sync mr-1"></i>
+                        </button>
                     </div>
                     <div class="card-body" id="resource-body">
                         <p class="text-muted mb-0">Loading data...</p>
@@ -86,13 +86,15 @@
             </div>
             <div class="col-md-4">
                 <div class="card card-primary mt-3">
-                    <div class="card-header mb-0">
-                        <h3 class="mb-0">
-                            Logs
-                        </h3>
+                    <div class="card-header mb-0 d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Logs</h3>
+                        <button type="button" id="btn_clear_log" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash mr-1"></i>
+                        </button>
                     </div>
+
                     <div class="card-body">
-                        <textarea name="" id="log" class="form-control" rows="5"></textarea>
+                        <textarea name="" id="log" class="form-control" rows="6"></textarea>
                     </div>
                 </div>
             </div>
@@ -442,6 +444,26 @@
                 }
                 $('#modal_detail').modal('show')
             });
+
+
+
+            $('#btn_clear_log').click(function() {
+                confirmation('Clear Log?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: "{{ route('api.resources.destroy_log') }}",
+                            type: "DELETE",
+                            success: function(res) {
+                                getResource();
+                                show_message(res.message, 'success')
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
+                    }
+                })
+            })
 
 
 
