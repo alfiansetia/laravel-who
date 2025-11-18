@@ -138,27 +138,27 @@
                     buttons: [{
                         extend: 'copy',
                         exportOptions: {
-                            columns: ':visible'
+                            columns: ':visible:not(:first-child)'
                         }
                     }, {
                         extend: 'csv',
                         exportOptions: {
-                            columns: ':visible'
+                            columns: ':visible:not(:first-child)'
                         }
                     }, {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: ':visible'
+                            columns: ':visible:not(:first-child)'
                         }
                     }, {
                         extend: 'excel',
                         exportOptions: {
-                            columns: ':visible'
+                            columns: ':visible:not(:first-child)'
                         }
                     }, {
                         extend: 'print',
                         exportOptions: {
-                            columns: ':visible'
+                            columns: ':visible:not(:first-child)'
                         }
                     }],
                 }, ],
