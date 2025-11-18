@@ -7,6 +7,7 @@ use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
+use App\Http\Controllers\LaporanPengirimanController;
 use App\Http\Controllers\PackController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
@@ -71,6 +72,9 @@ Route::resource('form-qc', QcController::class)
 
 Route::get('sn/', [SnController::class, 'index'])
     ->name('sn.index');
+
+Route::get('laporan-pengiriman/', [LaporanPengirimanController::class, 'index'])
+    ->name('laporan_pengiriman.index');
 
 Route::get('settings/', [SettingController::class, 'index'])
     ->name('settings.index');

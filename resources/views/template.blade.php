@@ -1,3 +1,6 @@
+@php
+    $title = $title ?? '';
+@endphp
 <!doctype html>
 <html lang="en">
 
