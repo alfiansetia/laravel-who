@@ -62,8 +62,8 @@ class MonitorDo extends Command
                         $message .= ' TO : ' . get_name($value['partner_id']) . ', ';
                         $message .= ' NOTE : ' . ($value['note_to_wh'] ?? '') . ', ';
                         // $this->info('⚠️ Ada DO!, ' . $value['origin'] . $message);
-                        FirebaseServices::send('⚠️ Ada DO Baru!, ' . $value['name'], $message);
-                        TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . $value['name'] . $message);
+                        FirebaseServices::send('⚠️ Ada DO Baru!, ' . ($value['name'] ?? '-'), $message);
+                        TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . ($value['name'] ?? '-') . $message);
                     }
                 }
             } else {
