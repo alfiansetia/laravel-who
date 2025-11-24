@@ -56,6 +56,7 @@ return [
     'telegram' => [
         'token' => env('TELEGRAM_BOT_TOKEN'),
         'group' => env('TELE_GROUP_ID'),
+        'enabled' => env('TELEGRAM_ENABLED', false),
     ]
 
 ];

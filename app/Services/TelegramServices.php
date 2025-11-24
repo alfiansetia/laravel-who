@@ -15,6 +15,11 @@ class TelegramServices
         return config('services.telegram.token');
     }
 
+    public static function getEnabled(): bool
+    {
+        return config('services.telegram.enabled');
+    }
+
     public static function getGroupId()
     {
         return config('services.telegram.group');
@@ -28,6 +33,9 @@ class TelegramServices
 
     public static function send($chat_id, $message)
     {
+        if (!static::getEnabled()) {
+            return true;
+        }
         $token  = static::getToken();
         $url = static::$base_url . "bot$token/sendMessage";
         $post = Http::post($url, [
