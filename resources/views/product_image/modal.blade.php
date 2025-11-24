@@ -29,6 +29,9 @@
                         <label>Upload Gambar Produk</label>
                         <input type="file" id="images" name="images[]" multiple>
                     </div>
+                    <div class="form-group col-12" id="prev_image">
+
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">

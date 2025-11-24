@@ -102,6 +102,33 @@
             $('#product_id').select2({
                 theme: 'bootstrap4',
                 dropdownParent: $('#modal_add'),
+            }).on('change', function() {
+                $('#prev_image').html('')
+
+                let val = $(this).val();
+                if (!val) return;
+
+                val = parseInt(val);
+
+                let rows = table.rows().data(); // semua data
+                let result = rows.toArray().filter(r => parseInt(r.product_id) === val);
+
+                console.log("Hasil pencarian:", result);
+                result.forEach(item => {
+                    if (item.url) {
+                        $('#prev_image').append(`
+                            <a href="${item.url}" 
+                                data-lightbox="product-${item.product_id}" 
+                                data-title="Images [${item.product.code || '-'}] ${item.product.name} (${item.name})">
+                                    <img src="${item.url}" 
+                                        class="img-thumbnail"
+                                        style="width:100px;height:100px;object-fit:cover;">
+                            </a>
+                        `);
+                    }
+                });
+
+
             })
 
             lightbox.option({
