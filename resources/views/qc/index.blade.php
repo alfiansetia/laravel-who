@@ -564,6 +564,14 @@
                             show_message('No packs found!');
                             return;
                         }
+                        if (packs.length == 1) {
+                            packs[0].items.forEach(item => {
+                                generate_form_kelengkapan(
+                                    `${escapeHtml(item.item)} (${escapeHtml(item.qty)})`,
+                                    true);
+                            });
+                            return
+                        }
 
                         // generate tombol di modal
                         let html = '';
