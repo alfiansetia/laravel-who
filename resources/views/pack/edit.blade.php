@@ -49,7 +49,7 @@
                                         <option data-id="{{ $item->id }}" data-code="{{ $item->code }}"
                                             data-name="{{ $item->name }}" value="{{ $item->id }}"
                                             @selected($data->product_id == $item->id)>
-                                            {{ $item->code }} {{ $item->name }}</option>
+                                            [{{ $item->code }}] {{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
