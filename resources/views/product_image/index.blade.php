@@ -113,7 +113,7 @@
                 let rows = table.rows().data(); // semua data
                 let result = rows.toArray().filter(r => parseInt(r.product_id) === val);
 
-                console.log("Hasil pencarian:", result);
+                // console.log("Hasil pencarian:", result);
                 result.forEach(item => {
                     if (item.url) {
                         $('#prev_image').append(`
@@ -127,6 +127,13 @@
                         `);
                     }
                 });
+                if (result.length < 1) {
+                    $('#prev_image').html(`
+                    <div class="alert alert-danger" role="alert">
+                        Tidak ada Gambar
+                    </div>
+                    `)
+                }
 
 
             })
