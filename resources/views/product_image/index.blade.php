@@ -206,7 +206,7 @@
                             'title': 'Tambah Data'
                         },
                         action: function(e, dt, node, config) {
-                            $('#modal_add').modal('show')
+                            addData()
                         }
                     }, {
                         extend: "colvis",
@@ -334,6 +334,12 @@
                     }
                 });
             });
+
+            function addData() {
+                pond.removeFiles();
+                $('#product_id').val('').change()
+                $('#modal_add').modal('show')
+            }
 
         });
     </script>
