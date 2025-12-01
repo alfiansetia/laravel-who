@@ -221,7 +221,7 @@
             <tr>
                 <td class="style18" style="width: 17%">No DO</td>
                 <td class="style18" colspan="3">: {{ $data->do }} @if (!empty($data->epur))
-                        ({{ $data->epur }})
+                        (<span style="font-size: 16pt">{{ $data->epur }}</span>)
                     @endif
                 </td>
             </tr>
