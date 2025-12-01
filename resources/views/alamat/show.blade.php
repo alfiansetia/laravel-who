@@ -29,6 +29,8 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="author" content="ASA" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
+    <title>Alamat {{ $data->do ?? '-' }}</title>
 
 </head>
 
