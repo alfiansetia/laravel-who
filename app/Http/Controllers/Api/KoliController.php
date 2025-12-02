@@ -16,8 +16,9 @@ class KoliController extends Controller
     public function index(Request $request)
     {
         $data = Koli::query()
-            ->with(['alamatBaru', 'items.product'])
+            ->with(['items.product'])
             ->filter($request->only(['alamat_baru_id']))
+            ->latest()
             ->get();
         return $this->sendResponse($data);
     }
