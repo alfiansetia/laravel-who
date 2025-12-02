@@ -121,7 +121,7 @@
                         <i class="fas fa-plus mr-1"></i>Tambah Koli
                     </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fas fa-print mr-1"></i>Simpan & Print
+                        <i class="fas fa-print mr-1"></i>Simpan & Print All
                     </button>
                     <button type="button" id="btn_duplicate" class="btn btn-warning">
                         <i class="fas fa-clone mr-1"></i>Duplicate
