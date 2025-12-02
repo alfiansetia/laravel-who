@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AlamatController;
+use App\Http\Controllers\Api\AlamatBaruController;
 use App\Http\Controllers\Api\AtkController;
 use App\Http\Controllers\Api\AtkTransactionController;
 use App\Http\Controllers\Api\AuthController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\KarganController;
+use App\Http\Controllers\Api\KoliController;
+use App\Http\Controllers\Api\KoliItemController;
 use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\PackController;
 use App\Http\Controllers\Api\PackItemController;
@@ -98,6 +101,32 @@ Route::delete('alamats', [AlamatController::class, 'destroy_batch'])
     ->name('api.alamats.delete_batch');
 Route::apiResource('alamats', AlamatController::class)
     ->names('api.alamats');
+
+// Alamat Baru Routes
+Route::post('alamat-baru/{alamatBaru}/duplicate', [AlamatBaruController::class, 'duplicate'])
+    ->name('api.alamat_baru.duplicate');
+Route::get('alamat-baru/{alamatBaru}/sync', [AlamatBaruController::class, 'sync'])
+    ->name('api.alamat_baru.sync');
+Route::delete('alamat-baru', [AlamatBaruController::class, 'destroy_batch'])
+    ->name('api.alamat_baru.delete_batch');
+Route::apiResource('alamat-baru', AlamatBaruController::class)
+    ->names('api.alamat_baru');
+
+// Koli Routes
+Route::get('koli/{koli}/sync', [KoliController::class, 'sync'])
+    ->name('api.koli.sync');
+Route::post('koli/{koli}/duplicate', [KoliController::class, 'duplicate'])
+    ->name('api.koli.duplicate');
+Route::post('koli/{koli}/order', [KoliController::class, 'order'])
+    ->name('api.koli.order');
+Route::apiResource('koli', KoliController::class)
+    ->names('api.koli');
+
+// Koli Item Routes
+Route::post('koli-item/{koliItem}/order', [KoliItemController::class, 'order'])
+    ->name('api.koli_item.order');
+Route::apiResource('koli-item', KoliItemController::class)
+    ->names('api.koli_item');
 
 Route::post('form-qc/', [QcController::class, 'store'])
     ->name('api.qc.store');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlamatController;
+use App\Http\Controllers\AlamatBaruController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
@@ -64,6 +65,10 @@ Route::resource('sops', SopController::class)
 
 Route::resource('alamats', AlamatController::class)
     ->names('alamats')
+    ->only(['index', 'create', 'edit', 'show']);
+
+Route::resource('alamat-baru', AlamatBaruController::class)
+    ->names('alamat_baru')
     ->only(['index', 'create', 'edit', 'show']);
 
 Route::resource('form-qc', QcController::class)

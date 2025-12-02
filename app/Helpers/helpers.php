@@ -113,3 +113,24 @@ function formatBytes($bytes)
     }
     return round($bytes, 2) . ' ' . $units[$i];
 }
+
+function parseNumberList($str)
+{
+    $result = [];
+    $parts = explode(',', $str); // pisah berdasarkan koma
+
+    foreach ($parts as $p) {
+        if (strpos($p, '-') !== false) {
+            // Jika range, contoh: "3-5"
+            list($start, $end) = explode('-', $p);
+            for ($i = (int)$start; $i <= (int)$end; $i++) {
+                $result[] = $i;
+            }
+        } else {
+            // Jika angka tunggal
+            $result[] = (int)$p;
+        }
+    }
+
+    return $result;
+}

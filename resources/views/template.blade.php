@@ -78,11 +78,8 @@
 
     @include('components.auth')
 
-    @stack('js')
 
     @include('pwa.script')
-
-
 
     <script>
         function show_message(message = 'Kesalahan tidak diketahui!', type = 'error') {
@@ -206,6 +203,8 @@
     @endif
 
     @include('components.notif')
+
+    @stack('js')
 
 </body>
 
