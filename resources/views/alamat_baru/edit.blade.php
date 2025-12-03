@@ -170,14 +170,14 @@
         });
 
         $(document).ready(function() {
-            $.get("{{ route('api.products.index') }}").done(function(res) {
-                for (let i = 0; i < res.data.length; i++) {
-                    let option = new Option(`[${res.data[i].code}] ${res.data[i].name || ''}`, res.data[i]
-                        .id,
-                        false, false);
-                    $('#select_product').append(option);
-                }
-            });
+            // $.get("{{ route('api.products.index') }}").done(function(res) {
+            //     for (let i = 0; i < res.data.length; i++) {
+            //         let option = new Option(`[${res.data[i].code}] ${res.data[i].name || ''}`, res.data[i]
+            //             .id,
+            //             false, false);
+            //         $('#select_product').append(option);
+            //     }
+            // });
 
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()

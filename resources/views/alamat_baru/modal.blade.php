@@ -117,6 +117,9 @@
                         <label for="select_product">Product</label>
                         <select class="form-control select2" id="select_product" style="width: 100%" required>
                             <option value="">Pilih Product</option>
+                            @foreach ($products as $product)
+                                <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
