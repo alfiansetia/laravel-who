@@ -34,8 +34,7 @@ class AlamatBaruController extends Controller
             new Breadcrumb($alamatBaru->do, route('alamat_baru.edit', $alamatBaru->id), false),
         ]);
         $data = $alamatBaru;
-        $products = Product::all();
-        return view('alamat_baru.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Alamat Baru']);
+        return view('alamat_baru.edit', compact(['data', 'bcms']))->with(['title' => 'Edit Alamat Baru']);
     }
 
     public function show(Request $request, AlamatBaru $alamatBaru)

@@ -170,7 +170,6 @@
         });
 
         $(document).ready(function() {
-            // Load products for select2
             $.get("{{ route('api.products.index') }}").done(function(res) {
                 for (let i = 0; i < res.data.length; i++) {
                     let option = new Option(`[${res.data[i].code}] ${res.data[i].name || ''}`, res.data[i]
@@ -356,8 +355,8 @@
                         <td>${item.lot || ''}</td>
                         <td>
                             <div class="btn-group">
-                                ${index > 0 ? `<button class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>` : ''}
-                                ${index < items.length - 1 ? `<button class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>` : ''}
+                                <button ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>
+                                <button ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>
                                 <button class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}"><i class="fas fa-edit"></i></button>
                                 <button class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}"><i class="fas fa-trash"></i></button>
                             </div>
