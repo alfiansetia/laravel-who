@@ -54,6 +54,18 @@
             </div>
 
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('alamat_baru.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-shipping-fast menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">Alamat Baru</h6>
+                            <small class="text-muted">List Alamat Baru</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('basts.index') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-file-contract menu-icon mr-3"></i>

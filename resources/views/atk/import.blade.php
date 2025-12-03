@@ -89,7 +89,8 @@
                     info: false,
                     // ordering: false,
                     columns: [{
-                        data: 'code'
+                        data: 'code',
+                        className: "text-left",
                     }, {
                         data: 'name'
                     }, {

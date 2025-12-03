@@ -111,6 +111,7 @@
                         }
                     }, {
                         data: "code",
+                        className: "text-left",
                     },
                     {
                         data: "name",

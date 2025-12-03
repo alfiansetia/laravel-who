@@ -25,9 +25,9 @@
                     <i class="fas fa-clipboard-check mr-1"></i>QC
                 </a>
             </li>
-            <li class="nav-item <?= $title == 'List Alamat' ? 'active' : '' ?>">
-                <a class="nav-link" href="{{ route('alamats.index') }}">
-                    <i class="fas fa-shipping-fast mr-1"></i>Alamat
+            <li class="nav-item <?= $title == 'List Alamat Baru' ? 'active' : '' ?>">
+                <a class="nav-link" href="{{ route('alamat_baru.index') }}">
+                    <i class="fas fa-shipping-fast mr-1"></i>Alamat Baru
                 </a>
             </li>
             <li class="nav-item <?= $title == 'List BAST' ? 'active' : '' ?>">
