@@ -296,49 +296,69 @@
                 kolis.forEach((koli, index) => {
                     let koliHtml = `
                         <div class="col-12 col-xl-6 mb-3">
-                            <div class="koli-card" data-koli-id="${koli.id}">
-                                <div class="koli-header card-header">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>
-                                            Koli ${koli.urutan} 
-                                            ${koli.nilai ? `<span class="badge badge-light ml-2">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : ''}
-                                        </span>
-                                        <div>
-                                            <button class="btn btn-sm btn-warning btn-edit-koli" data-koli-id="${koli.id}" title="Edit"><i class="fas fa-edit"></i></button>
-                                            <button class="btn btn-sm btn-danger btn-delete-koli" data-koli-id="${koli.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                            <button class="btn btn-sm btn-danger btn-sync-koli" data-koli-id="${koli.id}" title="Sync"><i class="fas fa-sync"></i></button>
-                                            <button class="btn btn-sm btn-warning btn-duplicate-koli" data-koli-id="${koli.id}" title="Duplicate"><i class="fas fa-copy"></i></button>
-                                            <button class="btn btn-sm btn-info btn-add-item" data-koli-id="${koli.id}" title="Add Item"><i class="fas fa-plus"></i></button>
-                                            <button class="btn btn-sm btn-primary btn-print-koli" data-koli-id="${koli.id}" title="Print"><i class="fas fa-print"></i></button>
+                            <form class="form-koli-inline" data-koli-id="${koli.id}">
+                                <div class="koli-card" data-koli-id="${koli.id}">
+                                    <div class="koli-header card-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <strong>Koli</strong> 
+                                                <input type="text" class="form-control d-inline-block" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 90px; height: 30px; padding: 5px; background: white; color: #333;" placeholder="1-7 / 1,3,4" required>
+                                                ${koli.nilai ? `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
+                                            </span>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-danger btn-delete-koli" data-koli-id="${koli.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                                                <button type="button" class="btn btn-sm btn-warning btn-sync-koli" data-koli-id="${koli.id}" title="Sync"><i class="fas fa-sync"></i></button>
+                                                <button type="button" class="btn btn-sm btn-warning btn-duplicate-koli" data-koli-id="${koli.id}" title="Duplicate"><i class="fas fa-copy"></i></button>
+                                                <button type="button" class="btn btn-sm btn-info btn-add-item" data-koli-id="${koli.id}" title="Add Item"><i class="fas fa-plus"></i></button>
+                                                <button type="button" class="btn btn-sm btn-primary btn-print-koli" data-koli-id="${koli.id}" title="Print"><i class="fas fa-print"></i></button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mt-2">
-                                        <small>
-                                            ${koli.is_do == 'yes' ? '<span class="badge badge-danger">SURAT JALAN</span> ' : ''}
-                                            ${koli.is_pk == 'yes' ? '<span class="badge badge-warning">PACKING KAYU</span> ' : ''}
-                                            ${koli.is_asuransi == 'yes' ? '<span class="badge badge-info">ASURANSI</span> ' : ''}
-                                            ${koli.is_banting == 'yes' ? '<span class="badge badge-dark">JANGAN DIBANTING</span> ' : ''}
-                                        </small>
+                                    <div class="card-body p-1">
+                                        <table class="table table-sm table-bordered" style="width: 100%;">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Product</th>
+                                                    <th>Desc</th>
+                                                    <th>Qty</th>
+                                                    <th>Lot</th>
+                                                    <th>Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="items_${koli.id}">
+                                                ${renderItems(koli.items, koli.id)}
+                                            </tbody>
+                                        </table>
+                                        <div class="mb-2">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text" id="basic-addon1">Rp.</span>
+                                                </div>
+                                                <input type="text" class="form-control mask_angka" name="nilai" id="nilai_${koli.id}" value="${koli.nilai || ''}" placeholder="Nilai Koli ${koli.urutan || ''}">
+                                            </div>
+                                        </div>
+                                        <div class="form-group mb-0 d-flex flex-wrap justify-content-center">
+                                            <div class="custom-control custom-checkbox mr-3">
+                                                <input type="checkbox" class="custom-control-input" name="is_do" id="is_do_koli_${koli.id}" ${koli.is_do == 'yes' ? 'checked' : ''}>
+                                                <label class="custom-control-label" for="is_do_koli_${koli.id}">SURAT JALAN/DO</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox mr-3">
+                                                <input type="checkbox" class="custom-control-input" name="is_pk" id="is_pk_koli_${koli.id}" ${koli.is_pk == 'yes' ? 'checked' : ''}>
+                                                <label class="custom-control-label" for="is_pk_koli_${koli.id}">PACKING KAYU</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox mr-3">
+                                                <input type="checkbox" class="custom-control-input" name="is_asuransi" id="is_asuransi_koli_${koli.id}" ${koli.is_asuransi == 'yes' ? 'checked' : ''}>
+                                                <label class="custom-control-label" for="is_asuransi_koli_${koli.id}">ASURANSI</label>
+                                            </div>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" name="is_banting" id="is_banting_koli_${koli.id}" ${koli.is_banting == 'yes' ? 'checked' : ''}>
+                                                <label class="custom-control-label" for="is_banting_koli_${koli.id}">JANGAN DIBANTING</label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="card-body p-1">
-                                    <table class="table table-sm table-bordered" style="width: 100%;">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Product</th>
-                                                <th>Desc</th>
-                                                <th>Qty</th>
-                                                <th>Lot</th>
-                                                <th>Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="items_${koli.id}">
-                                            ${renderItems(koli.items, koli.id)}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            </form>
                         </div>
                     `;
                     $('#koli_container').append(koliHtml);
@@ -346,6 +366,19 @@
 
                 // Attach event handlers
                 attachKoliEventHandlers();
+                attachFormHandlers();
+
+                // Re-initialize input mask for nilai fields
+                $('.mask_angka').inputmask({
+                    alias: 'numeric',
+                    groupSeparator: '.',
+                    autoGroup: true,
+                    digits: 0,
+                    rightAlign: false,
+                    removeMaskOnSubmit: true,
+                    autoUnmask: true,
+                    min: 0,
+                });
             }
 
             function renderItems(items, koliId) {
@@ -373,12 +406,6 @@
             }
 
             function attachKoliEventHandlers() {
-                // Edit koli
-                $('.btn-edit-koli').click(function() {
-                    let koliId = $(this).data('koli-id');
-                    editKoli(koliId);
-                });
-
                 // Delete koli
                 $('.btn-delete-koli').click(function() {
                     let koliId = $(this).data('koli-id');
@@ -428,6 +455,47 @@
                 });
                 $('.btn-item-down').click(function() {
                     orderItem($(this).data('item-id'), 'down');
+                });
+            }
+
+            // Form submit handlers for inline editing
+            function attachFormHandlers() {
+                // Auto-submit on input blur (when user finishes typing and leaves field)
+                $('.form-koli-inline input[type="text"]').off('change').on('change', function() {
+                    $(this).closest('form').trigger('submit');
+                });
+
+                // Auto-submit on checkbox change
+                $('.form-koli-inline input[type="checkbox"]').off('change').on('change', function() {
+                    $(this).closest('form').trigger('submit');
+                });
+
+                // Handle form submission
+                $('.form-koli-inline').off('submit').on('submit', function(e) {
+                    e.preventDefault();
+
+                    let koliId = $(this).data('koli-id');
+                    let formData = {
+                        urutan: $(this).find('[name="urutan"]').val(),
+                        nilai: $(this).find('[name="nilai"]').val(),
+                        is_do: $(this).find('[name="is_do"]').prop('checked') ? 'yes' : 'no',
+                        is_pk: $(this).find('[name="is_pk"]').prop('checked') ? 'yes' : 'no',
+                        is_asuransi: $(this).find('[name="is_asuransi"]').prop('checked') ? 'yes' :
+                            'no',
+                        is_banting: $(this).find('[name="is_banting"]').prop('checked') ? 'yes' : 'no',
+                    };
+
+                    $.ajax({
+                        type: 'PUT',
+                        url: `${URL_KOLI_API}/${koliId}`,
+                        data: formData
+                    }).done(function(result) {
+                        loadKolis();
+                        show_message(result.message || 'Data koli berhasil disimpan!', 'success');
+                    }).fail(function(xhr) {
+                        show_message(xhr.responseJSON.message || 'Gagal menyimpan data koli!',
+                            'error');
+                    });
                 });
             }
 
