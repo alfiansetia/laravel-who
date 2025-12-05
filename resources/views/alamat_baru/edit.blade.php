@@ -121,8 +121,11 @@
                         <i class="fas fa-plus mr-1"></i>Tambah Koli
                     </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fas fa-print mr-1"></i>Simpan & Print All
+                        <i class="fas fa-save mr-1"></i>Simpan
                     </button>
+                    <a href="{{ route('alamat_baru.show', $data->id) }}" target="_blank" class="btn btn-primary">
+                        <i class="fas fa-print mr-1"></i>Print All
+                    </a>
                     <button type="button" id="btn_duplicate" class="btn btn-warning">
                         <i class="fas fa-clone mr-1"></i>Duplicate
                     </button>
@@ -625,10 +628,11 @@
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        window.open(`${URL_INDEX}/${CURRENT_ID}`, '_blank')
+                        show_message(res.message || 'Success!', 'success')
+                        // window.open(`${URL_INDEX}/${CURRENT_ID}`, '_blank')
                     },
                     error: function(xhr, status, error) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!', 'error')
                     }
                 });
             })
