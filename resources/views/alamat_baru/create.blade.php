@@ -13,7 +13,7 @@
                     <div class="form-group col-md-6 mb-0">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="CENT/OUT/">
+                                value="CENT/OUT/" autofocus>
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary" id="btn_get_do">
                                     <i class="fas fa-search mr-1"></i>GET
@@ -170,7 +170,7 @@
                     }
                     if (res.data.delivery_manual != false) {
                         up = res.data.delivery_manual
-                        if(up == '-'){
+                        if (up == '-') {
                             up = ''
                         }
                     }
@@ -179,7 +179,7 @@
                     }
                     if (res.data.no_aks != false) {
                         epur = res.data.no_aks
-                        if(epur == '-'){
+                        if (epur == '-') {
                             epur = ''
                         }
                     }

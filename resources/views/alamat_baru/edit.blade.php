@@ -26,7 +26,7 @@
                     <div class="form-group col-md-6 mb-0">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="{{ $data->do ?? 'CENT/OUT/' }}">
+                                value="{{ $data->do ?? 'CENT/OUT/' }}" autofocus>
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary" id="btn_get_do">
                                     <i class="fas fa-search mr-1"></i>GET
@@ -224,14 +224,18 @@
                     }
                     if (res.data.delivery_manual != false) {
                         up = res.data.delivery_manual
-                        if(up == '-'){up = ''}
+                        if (up == '-') {
+                            up = ''
+                        }
                     }
                     if (res.data.name != false) {
                         name = res.data.name
                     }
                     if (res.data.no_aks != false) {
                         epur = res.data.no_aks
-                        if(epur == '-'){epur = ''}
+                        if (epur == '-') {
+                            epur = ''
+                        }
                     }
                     let alamat = res.data.partner_address
                     if (res.data.partner_address2 != false) {
@@ -669,19 +673,19 @@
                 window.open(`${URL_INDEX}/${CURRENT_ID}?koli_id=${koli_id}`, '_blank')
             }
 
-            $('#koli_modal').on('shown.bs.modal',function() {
+            $('#koli_modal').on('shown.bs.modal', function() {
                 $('#urutan').focus();
             });
 
-            $('#edit_koli_modal').on('shown.bs.modal',function() {
+            $('#edit_koli_modal').on('shown.bs.modal', function() {
                 $('#urutan_edit').focus();
             });
 
-            $('#item_modal').on('shown.bs.modal',function() {
+            $('#item_modal').on('shown.bs.modal', function() {
                 $('#qty_item').focus();
             });
 
-            $('#edit_item_modal').on('shown.bs.modal',function() {
+            $('#edit_item_modal').on('shown.bs.modal', function() {
                 $('#qty_item_edit').focus();
             });
 

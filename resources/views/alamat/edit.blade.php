@@ -14,7 +14,7 @@
                     <div class="form-group col-md-6 mb-0">
                         <div class="input-group">
                             <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="{{ $data->do ?? 'CENT/OUT/' }}">
+                                value="{{ $data->do ?? 'CENT/OUT/' }}" autofocus>
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary" id="btn_get_do">
                                     <i class="fas fa-search mr-1"></i>GET

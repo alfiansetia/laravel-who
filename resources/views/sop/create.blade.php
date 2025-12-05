@@ -42,7 +42,7 @@
                             <div class="input-group">
                                 <label for="target">TARGET</label>
                                 <div class="input-group">
-                                    <input name="target" id="target" class="form-control" required>
+                                    <input name="target" id="target" class="form-control" required autofocus>
                                     <div class="input-group-append">
                                         <button type="button" id="btn_target_clear" class="input-group-text">CLEAR</button>
                                     </div>
@@ -62,7 +62,7 @@
                             </div>
                         </div>
                         <div class="form-group col-lg-6">
-                            <label for="import">From Item List</label>
+                            <label for="item_list">From Item List</label>
                             <div class="input-group">
                                 <select id="item_list" class="custom-select select2" style="width: 100%">
                                     <option value="">Select Item List</option>
