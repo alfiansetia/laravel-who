@@ -301,8 +301,12 @@
                                     <div class="koli-header card-header">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>
-                                                <strong>Koli</strong> 
-                                                <input type="text" class="form-control d-inline-block" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 90px; height: 30px; padding: 5px; background: white; color: #333;" placeholder="1-7 / 1,3,4" required>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><strong>Koli</strong></span>
+                                                    </div>
+                                                    <input type="text" class="form-control d-inline-block" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 90px; padding: 5px; background: white; color: #333;" placeholder="1-7 / 1,3,4" required>
+                                                </div>
                                                 ${koli.nilai ? `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
                                             </span>
                                             <div>
@@ -475,8 +479,14 @@
                     e.preventDefault();
 
                     let koliId = $(this).data('koli-id');
+                    let urutan = $(this).find('[name="urutan"]').val();
+                    if (urutan == '') {
+                        show_message('Koli harus diisi');
+                        $('#urutan_' + koliId).focus();
+                        return;
+                    }
                     let formData = {
-                        urutan: $(this).find('[name="urutan"]').val(),
+                        urutan: urutan,
                         nilai: $(this).find('[name="nilai"]').val(),
                         is_do: $(this).find('[name="is_do"]').prop('checked') ? 'yes' : 'no',
                         is_pk: $(this).find('[name="is_pk"]').prop('checked') ? 'yes' : 'no',
