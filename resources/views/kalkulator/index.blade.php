@@ -90,7 +90,9 @@
                         <div class="card border-0 bg-gradient-total">
                             <div class="card-body py-2 px-3">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="text-white mb-0">💰 Total Keseluruhan</h5>
+                                    <h5 class="text-white mb-0"><i class="fas fa-money-bill-wave"></i>
+                                        Total Keseluruhan
+                                    </h5>
                                     <h4 class="text-white mb-0 fw-bold" id="grandTotal">Rp 0</h4>
                                 </div>
                             </div>
