@@ -313,7 +313,31 @@
 </body>
 
 <script>
-    window.print()
+    // Auto print saat halaman dimuat
+    window.print();
+
+    // Auto close tab setelah print selesai atau dibatalkan
+    // Method 1: Menggunakan afterprint event (untuk browser modern)
+    window.addEventListener('afterprint', function() {
+        window.close();
+    });
+
+    // Method 2: Fallback untuk browser yang tidak support afterprint
+    // Deteksi saat user kembali ke halaman (cancel print atau selesai print)
+    let isPrinting = true;
+    window.onbeforeprint = function() {
+        isPrinting = true;
+    };
+
+    window.onfocus = function() {
+        if (isPrinting) {
+            isPrinting = false;
+            // Delay sedikit untuk memastikan print dialog sudah tertutup
+            setTimeout(function() {
+                window.close();
+            }, 100);
+        }
+    };
 </script>
 
 </html>
