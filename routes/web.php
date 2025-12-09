@@ -48,6 +48,11 @@ Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.ek
 
 
 // NEW ROUTE
+Route::get('stt', function () {
+    $title = 'Speech To Text';
+    return view('stt', compact('title'));
+})->name('stt');
+
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
 
