@@ -6,6 +6,7 @@ use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KalkulatorController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\LaporanPengirimanController;
@@ -82,6 +83,9 @@ Route::resource('form-qc', QcController::class)
 
 Route::get('sn/', [SnController::class, 'index'])
     ->name('sn.index');
+
+Route::get('kalkulator/', [KalkulatorController::class, 'index'])
+    ->name('kalkulator.index');
 
 Route::get('laporan-pengiriman/', [LaporanPengirimanController::class, 'index'])
     ->name('laporan_pengiriman.index');
