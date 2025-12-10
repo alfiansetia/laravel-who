@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class TelegramServices
 {
@@ -33,18 +35,49 @@ class TelegramServices
 
     public static function send($chat_id, $message)
     {
-        if (!static::getEnabled()) {
-            return true;
+        try {
+            if (!static::getEnabled()) {
+                return true;
+            }
+
+            $token = static::getToken();
+
+            if (empty($token)) {
+                Log::warning('Telegram: Token tidak tersedia');
+                return false;
+            }
+
+            $url = static::$base_url . "bot$token/sendMessage";
+
+            // Kirim request dengan timeout 10 detik
+            $post = Http::timeout(10)->post($url, [
+                'chat_id' => $chat_id,
+                'text'    => $message
+            ]);
+
+            // Cek apakah request berhasil
+            if ($post->successful()) {
+                Log::info('Telegram: Pesan berhasil dikirim', [
+                    'chat_id' => $chat_id,
+                    'message_length' => strlen($message)
+                ]);
+                return $post->json();
+            } else {
+                Log::warning('Telegram: Gagal mengirim pesan', [
+                    'chat_id' => $chat_id,
+                    'status_code' => $post->status(),
+                    'response' => $post->body()
+                ]);
+                return false;
+            }
+        } catch (Exception $e) {
+            // Log error tanpa mengganggu proses lain
+            Log::error('Telegram: Exception saat mengirim pesan', [
+                'chat_id' => $chat_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
         }
-        $token  = static::getToken();
-        $url = static::$base_url . "bot$token/sendMessage";
-        $post = Http::post($url, [
-            'chat_id'   => $chat_id,
-            'text'      => $message
-        ]);
-        // if (!$post->successful()) {
-        //     $post->throw();
-        // }
-        return $post->json();
     }
 }
