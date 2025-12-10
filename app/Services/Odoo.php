@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Exceptions\OdooException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
+use Exception;
 
 class Odoo
 {
@@ -41,13 +44,13 @@ class Odoo
     public static function getSession()
     {
         $data  = OdooSession::getCurrentSession();
-        return $data['session_id'] ?? '';
+        return Arr::get($data, 'session_id', '');
     }
 
     public static function getUID()
     {
         $data  = OdooSession::getCurrentSession();
-        return $data['uid'] ?? 0;
+        return Arr::get($data, 'uid', 0);
     }
 
     public static function setCookie()
@@ -97,25 +100,62 @@ class Odoo
 
     public static function get()
     {
-        $base_url = static::getBaseUrl();
-        $url = $base_url . static::$url_param;
-        $http = Http::withHeaders(static::$headers);
-        if (static::$method === 'POST') {
-            $response = $http->post($url,  static::$data_param);
-        } else {
-            $response = $http->get($url);
-        }
-        if (!$response->successful()) {
+        $url = ''; // Initialize $url to ensure it's always defined for the catch block
+        try {
+            $base_url = static::getBaseUrl();
+
+            if (empty($base_url)) {
+                Log::warning('Odoo: Base URL tidak dikonfigurasi');
+                throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500, []);
+            }
+
+            $url = $base_url . static::$url_param;
+
+            // HTTP request dengan timeout 15 detik
+            $http = Http::timeout(15)->withHeaders(static::$headers);
+
+            if (static::$method === 'POST') {
+                $response = $http->post($url, static::$data_param);
+            } else {
+                $response = $http->get($url);
+            }
+
+            if (!$response->successful()) {
+                Log::warning('Odoo: API request gagal', [
+                    'url' => $url,
+                    'method' => static::$method,
+                    'status_code' => $response->status()
+                ]);
+
+                // Throw OdooException, Laravel akan handle via render() dan report()
+                throw new OdooException(
+                    'Odoo API Error',
+                    $response->status(),
+                    $response->json() ?? $response->body()
+                );
+            }
+
+            if (static::$state_file) {
+                return $response;
+            }
+
+            return $response->json();
+        } catch (OdooException $e) {
+            // Re-throw OdooException, biarkan Laravel handle
+            throw $e;
+        } catch (Exception $e) {
+            // Tangkap exception lain (timeout, connection error) dan wrap ke OdooException
+            Log::error('Odoo: Connection error', [
+                'error' => $e->getMessage(),
+                'url' => $url ?? 'unknown'
+            ]);
+
             throw new OdooException(
-                'Odoo API Error',
-                $response->status(),
-                $response->json() ?? $response->body()
+                'Odoo Connection Error: ' . $e->getMessage(),
+                500,
+                ['original_error' => $e->getMessage()]
             );
         }
-        if (static::$state_file) {
-            return $response;
-        }
-        return $response->json();
     }
 
     public static function getProfile()

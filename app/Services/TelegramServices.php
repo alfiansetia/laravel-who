@@ -57,10 +57,6 @@ class TelegramServices
 
             // Cek apakah request berhasil
             if ($post->successful()) {
-                Log::info('Telegram: Pesan berhasil dikirim', [
-                    'chat_id' => $chat_id,
-                    'message_length' => strlen($message)
-                ]);
                 return $post->json();
             } else {
                 Log::warning('Telegram: Gagal mengirim pesan', [

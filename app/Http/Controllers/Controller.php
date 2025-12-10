@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Arr;
 
 class Controller extends BaseController
 {
@@ -21,7 +22,7 @@ class Controller extends BaseController
             $message = $data;
             $data = null;
         }
-        if (is_array($data) && (array_key_exists('data', $data) || array_key_exists('message', $data))) {
+        if (is_array($data) && (Arr::exists($data, 'data') || Arr::exists($data, 'message'))) {
             return response()->json($data, $code);
         }
 

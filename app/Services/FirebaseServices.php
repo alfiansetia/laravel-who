@@ -27,7 +27,6 @@ class FirebaseServices
             $cachedToken = Cache::get(self::$cacheKey);
 
             if (!empty($cachedToken)) {
-                Log::debug('Firebase: Menggunakan access token dari cache');
                 return $cachedToken;
             }
 
@@ -63,10 +62,6 @@ class FirebaseServices
             // Simpan token ke cache untuk 50 menit
             Cache::put(self::$cacheKey, $access_token, now()->addMinutes(self::$cacheDuration));
 
-            Log::info('Firebase: Access token baru berhasil didapatkan dan disimpan ke cache', [
-                'cache_duration' => self::$cacheDuration . ' menit'
-            ]);
-
             return $access_token;
         } catch (Exception $e) {
             Log::error('Firebase: Exception saat mendapatkan access token', [
@@ -83,7 +78,6 @@ class FirebaseServices
     public static function clearAccessToken()
     {
         Cache::forget(self::$cacheKey);
-        Log::info('Firebase: Access token cache dihapus');
     }
 
     public static function send($title, $body)
@@ -92,7 +86,6 @@ class FirebaseServices
             $tokens = FcmToken::all();
 
             if ($tokens->isEmpty()) {
-                Log::info('Firebase: Tidak ada FCM token yang terdaftar');
                 return true;
             }
 
@@ -138,10 +131,6 @@ class FirebaseServices
 
                     if ($post->successful()) {
                         $successCount++;
-                        Log::debug('Firebase: Notifikasi berhasil dikirim', [
-                            'token_id' => $token->id,
-                            'title' => $title
-                        ]);
                     } else {
                         $failedCount++;
                         Log::warning('Firebase: Gagal mengirim notifikasi, token dihapus', [
@@ -162,13 +151,6 @@ class FirebaseServices
                     $token->delete();
                 }
             }
-
-            Log::info('Firebase: Selesai mengirim notifikasi', [
-                'total' => $tokens->count(),
-                'success' => $successCount,
-                'failed' => $failedCount,
-                'title' => $title
-            ]);
 
             return true;
         } catch (Exception $e) {
