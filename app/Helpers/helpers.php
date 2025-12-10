@@ -46,36 +46,30 @@ function jam($date, $hours = 7)
 
 function pecah_code($string)
 {
-    if (!is_array($string)) {
+    if (!is_array($string) || count($string) === 0) {
         return [0, '-', '-'];
     }
-    if (count($string) ?? [] > 0) {
-        $id = $string[0];
-        if (is_array($string) && isset($string[1])) {
-            $productString = $string[1];
-            preg_match('/\[(.*?)\] (.*)/', $productString, $matches);
 
-            if (isset($matches[1])) {
-                $code = $matches[1];
-            }
+    $id = $string[0] ?? 0;
+    $code = '-';
+    $name = '-';
 
-            if (isset($matches[2])) {
-                $name = $matches[2];
-            }
-        }
-        return [$id, $code, $name];
-    } else {
-        return [0, '', ''];
+    if (isset($string[1])) {
+        $productString = $string[1];
+        preg_match('/\[(.*?)\] (.*)/', $productString, $matches);
+
+        $code = $matches[1] ?? '-';
+        $name = $matches[2] ?? '-';
     }
+
+    return [$id, $code, $name];
 }
 
 
 function get_name($string)
 {
-    if (is_array($string) && count($string) ?? [] > 0) {
-        if (isset($string[1])) {
-            return $string[1];
-        }
+    if (is_array($string) && isset($string[1])) {
+        return $string[1];
     }
     return null;
 }
