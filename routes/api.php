@@ -194,3 +194,10 @@ Route::delete('/resources', [ResourceController::class, 'destroy_log'])
     ->name('api.resources.destroy_log');
 Route::get('/resources', [ResourceController::class, 'index'])
     ->name('api.resources.index');
+
+// Shipping Estimate API Routes
+Route::delete('shipping-estimate', [\App\Http\Controllers\Api\ShippingEstimateController::class, 'destroyBatch'])
+    ->name('api.shipping_estimate.destroy_batch');
+Route::apiResource('shipping-estimate', \App\Http\Controllers\Api\ShippingEstimateController::class)
+    ->names('api.shipping_estimate')
+    ->only(['index', 'show', 'destroy']);

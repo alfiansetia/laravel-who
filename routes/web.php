@@ -109,3 +109,7 @@ Route::resource('basts', BastController::class)
 
 Route::get('/product_images', [ProductImageController::class, 'index'])
     ->name('product_images.index');
+
+// Shipping Estimate Routes
+Route::resource('shipping-estimate', \App\Http\Controllers\ShippingEstimateController::class)
+    ->names('shipping_estimate');
