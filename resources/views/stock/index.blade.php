@@ -229,31 +229,56 @@
                             className: 'btn btn-sm btn-primary',
                             buttons: [{
                                 extend: 'copy',
-                                title: `${code} - ${name}`,
+                                title: function() {
+                                    let now = new Date();
+                                    let datetime = now.toLocaleDateString('id-ID') +
+                                        ' ' + now.toLocaleTimeString('id-ID');
+                                    return `[${code}] - ${name}\n${datetime}`;
+                                },
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'csv',
-                                title: `${code} - ${name}`,
+                                title: function() {
+                                    let now = new Date();
+                                    let datetime = now.toLocaleDateString('id-ID') +
+                                        ' ' + now.toLocaleTimeString('id-ID');
+                                    return `[${code}] - ${name} (${datetime})`;
+                                },
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'pdf',
-                                title: `${code} - ${name}`,
+                                title: function() {
+                                    let now = new Date();
+                                    let datetime = now.toLocaleDateString('id-ID') +
+                                        ' ' + now.toLocaleTimeString('id-ID');
+                                    return `[${code}] - ${name}\n${datetime}`;
+                                },
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'excel',
-                                title: `${code} - ${name}`,
+                                title: function() {
+                                    let now = new Date();
+                                    let datetime = now.toLocaleDateString('id-ID') +
+                                        ' ' + now.toLocaleTimeString('id-ID');
+                                    return `[${code}] - ${name} (${datetime})`;
+                                },
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'print',
-                                title: `${code} - ${name}`,
+                                title: function() {
+                                    let now = new Date();
+                                    let datetime = now.toLocaleDateString('id-ID') +
+                                        ' ' + now.toLocaleTimeString('id-ID');
+                                    return `[${code}] - ${name}<br><small>${datetime}</small>`;
+                                },
                                 exportOptions: {
                                     columns: ':visible'
                                 }
