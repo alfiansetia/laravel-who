@@ -229,26 +229,31 @@
                             className: 'btn btn-sm btn-primary',
                             buttons: [{
                                 extend: 'copy',
+                                title: `${code} - ${name}`,
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'csv',
+                                title: `${code} - ${name}`,
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'pdf',
+                                title: `${code} - ${name}`,
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'excel',
+                                title: `${code} - ${name}`,
                                 exportOptions: {
                                     columns: ':visible'
                                 }
                             }, {
                                 extend: 'print',
+                                title: `${code} - ${name}`,
                                 exportOptions: {
                                     columns: ':visible'
                                 }
