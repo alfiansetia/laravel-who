@@ -19,6 +19,7 @@ class AuthController extends Controller
         if (Hash::check($request->password, $configPassword)) {
             $request->session()->put('env_authenticated', true);
             $request->session()->put('env_auth_time', now());
+            $request->session()->put('env_auth_hash', $configPassword); // Simpan hash untuk validasi
 
             return $this->sendResponse([
                 'auth'          => true,
@@ -31,7 +32,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->forget(['env_authenticated', 'env_auth_time']);
+        $request->session()->forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
 
         return $this->sendResponse([
             'auth' => false
@@ -45,7 +46,7 @@ class AuthController extends Controller
 
         // kalau sudah login tapi lewat 1 hari, hapus session otomatis
         if ($authenticated && $loginTime && now()->diffInHours($loginTime) >= 24) {
-            $request->session()->forget(['env_authenticated', 'env_auth_time']);
+            $request->session()->forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
             $authenticated = false;
         }
 
