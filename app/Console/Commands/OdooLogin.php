@@ -7,6 +7,8 @@ use App\Services\OdooSession;
 use App\Services\TelegramServices;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
 
 class OdooLogin extends Command
@@ -19,11 +21,10 @@ class OdooLogin extends Command
         try {
             $profile = Odoo::getProfile();
             $this->info('Session Valid!');
-            return;
+            return 0;
         } catch (\Throwable $th) {
             $this->info('Session Invalid, otw Login!');
-            $this->login();
-            return;
+            return $this->login();
         }
     }
 
@@ -33,15 +34,36 @@ class OdooLogin extends Command
             $db = Odoo::getDB();
             $baseUrl = Odoo::getBaseUrl();
 
-            // 1. Ambil halaman login
-            $client = new Client(['cookies' => true]);
+            if (empty($db) || empty($baseUrl)) {
+                $this->error('Konfigurasi Odoo tidak lengkap');
+                return 1;
+            }
+
+            // 1. Ambil halaman login dengan timeout 15 detik
+            $client = new Client([
+                'cookies' => true,
+                'timeout' => 15,
+                'connect_timeout' => 10
+            ]);
+
+            $this->info('Mengambil halaman login...');
             $loginPage = $client->get($baseUrl . '/web?db=' . $db);
             $html = $loginPage->getBody();
+
             // 2. Ambil csrf_token dari HTML
             $crawler = new Crawler($html);
-            $csrfToken = $crawler->filter('input[name="csrf_token"]')->attr('value');
+            $csrfInput = $crawler->filter('input[name="csrf_token"]');
+
+            if ($csrfInput->count() === 0) {
+                $this->error('CSRF token tidak ditemukan di halaman login');
+                return 1;
+            }
+
+            $csrfToken = $csrfInput->attr('value');
             $this->info("csrf_token => " . $csrfToken);
+
             // 3. Kirim POST login dengan cookies
+            $this->info('Mengirim request login...');
             $res = $client->post($baseUrl . '/web/login', [
                 'form_params' => [
                     'csrf_token'    => $csrfToken,
@@ -51,7 +73,9 @@ class OdooLogin extends Command
                 ],
             ]);
 
+            $this->info('Mengambil session info...');
             $html2 = $client->get($baseUrl . '/web?')->getBody()->getContents();
+
             // Cari isi session_info dengan regex
             if (preg_match('/odoo\.session_info\s*=\s*(\{.*?\});/s', $html2, $matches)) {
                 $json = $matches[1];
@@ -59,42 +83,45 @@ class OdooLogin extends Command
                 $session_info = json_decode($json, true);
 
                 if (json_last_error() === JSON_ERROR_NONE) {
-                    $session_id = $session_info['session_id'];
+                    // Validasi data session menggunakan Arr::get untuk safe access
+                    $session_id = Arr::get($session_info, 'session_id');
+                    $uid = Arr::get($session_info, 'uid');
+
+                    if (empty($session_id) || empty($uid)) {
+                        $this->error('Session ID atau UID kosong');
+                        return 1;
+                    }
+
                     $data = [
-                        'session_id'            => $session_info['session_id'],
-                        'uid'                   => $session_info['uid'],
-                        'db'                    => $session_info['db'],
-                        'name'                  => $session_info['name'],
-                        'username'              => $session_info['username'],
-                        'partner_display_name'  => $session_info['partner_display_name'],
-                        'partner_id'            => $session_info['partner_id'],
+                        'session_id'            => Arr::get($session_info, 'session_id'),
+                        'uid'                   => Arr::get($session_info, 'uid'),
+                        'db'                    => Arr::get($session_info, 'db'),
+                        'name'                  => Arr::get($session_info, 'name'),
+                        'username'              => Arr::get($session_info, 'username'),
+                        'partner_display_name'  => Arr::get($session_info, 'partner_display_name'),
+                        'partner_id'            => Arr::get($session_info, 'partner_id'),
                     ];
+
                     OdooSession::saveSession($data);
-                    TelegramServices::sendToGroup('Success Login, session : ' . $session_id);
+                    $url = config('app.url');
+
+                    // Kirim notifikasi Telegram (sudah ada error handling internal)
+                    TelegramServices::sendToGroup('Success Login on : ' . $url . ', session : ' . $session_id);
+
                     $this->info('Session ID berhasil disimpan: ' . $session_id);
+                    return 0;
                 } else {
                     $this->error("Gagal decode session_info JSON: " . json_last_error_msg());
+                    return 1;
                 }
             } else {
                 $this->error("session_info tidak ditemukan di HTML");
+                return 1;
             }
-            // // 4. Ambil session_id dari cookie
-            // $cookies = $client->getConfig('cookies');
-            // $sessionId = '';
-            // foreach ($cookies->toArray() as $cookie) {
-            //     if ($cookie['Name'] === 'session_id') {
-            //         $sessionId = $cookie['Value'];
-            //         break;
-            //     }
-            // }
-
-            // if (!$sessionId) {
-            //     $this->error('Gagal mendapatkan session_id');
-            //     return 1;
-            // }
-            return 0;
         } catch (\Exception $e) {
+            // Kirim notifikasi error (sudah ada error handling internal)
             TelegramServices::sendToGroup('Error Login : ' . $e->getMessage());
+
             $this->error('Terjadi kesalahan: ' . $e->getMessage());
             return 1;
         }
