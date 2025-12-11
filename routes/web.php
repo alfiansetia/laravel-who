@@ -21,6 +21,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SnController;
 use App\Http\Controllers\SopController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,10 +50,10 @@ Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.ek
 
 
 // NEW ROUTE
-Route::get('stt', function () {
-    $title = 'Speech To Text';
-    return view('stt', compact('title'));
-})->name('stt');
+Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');
+Route::get('tools/kalkulator', [ToolController::class, 'kalkulator'])->name('tools.kalkulator');
+Route::get('tools/laporan-pengiriman', [ToolController::class, 'laporan_pengiriman'])->name('tools.laporan_pengiriman');
+Route::get('tools/sn', [ToolController::class, 'index'])->name('tools.sn');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
@@ -80,15 +81,6 @@ Route::resource('alamat-baru', AlamatBaruController::class)
 Route::resource('form-qc', QcController::class)
     ->names('qc')
     ->only(['index', 'show']);
-
-Route::get('sn/', [SnController::class, 'index'])
-    ->name('sn.index');
-
-Route::get('kalkulator/', [KalkulatorController::class, 'index'])
-    ->name('kalkulator.index');
-
-Route::get('laporan-pengiriman/', [LaporanPengirimanController::class, 'index'])
-    ->name('laporan_pengiriman.index');
 
 Route::get('settings/', [SettingController::class, 'index'])
     ->name('settings.index');
