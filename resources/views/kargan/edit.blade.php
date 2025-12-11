@@ -55,8 +55,12 @@
                         <i class="fas fa-clone mr-1"></i>Duplicate
                     </button>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan Download
+                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
                     </button>
+                    <a href="{{ route('api.kargans.download', $data->id) }}" id="btn_download" class="btn btn-primary"
+                        target="_blank">
+                        <i class="fas fa-file-download mr-1"></i>Download
+                    </a>
                 </div>
             </div>
 
@@ -114,10 +118,10 @@
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
-                        window.open(`${URL_INDEX_API}/${CURRENT_ID}/download`, '_blank')
+                        show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                        show_message(xhr.responseJSON.message || 'Error!', 'error')
                     }
                 });
             })
