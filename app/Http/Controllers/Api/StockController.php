@@ -7,6 +7,7 @@ use App\Http\Resources\LotResource;
 use App\Http\Resources\StockResource;
 use App\Services\Odoo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class StockController extends Controller
 {
@@ -68,7 +69,7 @@ class StockController extends Controller
             ->withUrlParam($url_param)
             ->method('POST')
             ->get();
-        return $this->sendResponse(['data' => StockResource::collection($data['result'] ?? [])]);
+        return $this->sendResponse(['data' => StockResource::collection(Arr::get($data, 'result', []) ?? [])]);
     }
 
     public function lot(Request $request, int $id)
@@ -135,6 +136,6 @@ class StockController extends Controller
             ->method('POST')
             ->get();
         // return response()->json($data);
-        return $this->sendResponse(LotResource::collection($data['result']['records'] ?? []));
+        return $this->sendResponse(LotResource::collection(Arr::get($data, 'result.records', [])));
     }
 }
