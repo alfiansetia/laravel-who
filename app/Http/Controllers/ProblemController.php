@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Problem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProblemController extends Controller
@@ -12,7 +13,8 @@ class ProblemController extends Controller
      */
     public function index()
     {
-        return view('problem.index')->with('title', 'Data Problem');
+        $products = Product::orderBy('code')->get();
+        return view('problem.index', compact('products'))->with('title', 'Data Problem');
     }
 
     /**
@@ -20,7 +22,8 @@ class ProblemController extends Controller
      */
     public function create()
     {
-        return view('problem.create')->with('title', 'Data Problem');
+        $products = Product::orderBy('code')->get();
+        return view('problem.create', compact('products'))->with('title', 'Data Problem');
     }
 
     /**
@@ -38,6 +41,21 @@ class ProblemController extends Controller
             'email_on',
             'pic',
         ]));
+
+        // Create items if provided
+        if ($request->has('items') && is_array($request->items)) {
+            foreach ($request->items as $item) {
+                if (!empty($item['product_id']) && !empty($item['qty'])) {
+                    $problem->items()->create([
+                        'product_id' => $item['product_id'],
+                        'qty' => $item['qty'],
+                        'lot' => $item['lot'] ?? null,
+                        'desc' => $item['desc'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('problem.edit', $problem->id);
     }
 
@@ -55,7 +73,8 @@ class ProblemController extends Controller
     public function edit(Problem $problem)
     {
         $data = $problem->load(['items.product', 'logs']);
-        return view('problem.edit', compact('data'))->with('title', 'Data Problem');
+        $products = Product::orderBy('code')->get();
+        return view('problem.edit', compact('data', 'products'))->with('title', 'Data Problem');
     }
 
     /**

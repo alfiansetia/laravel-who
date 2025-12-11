@@ -47,6 +47,16 @@ Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do
 
 Route::apiResource('problem', ProblemController::class)->names('api.problem');
 
+// Problem Item Routes
+Route::apiResource('problem-item', \App\Http\Controllers\Api\ProblemItemController::class)
+    ->names('api.problem_item')
+    ->only(['store', 'show', 'update', 'destroy']);
+
+// Problem Log Routes
+Route::apiResource('problem-log', \App\Http\Controllers\Api\ProblemLogController::class)
+    ->names('api.problem_log')
+    ->only(['store', 'show', 'update', 'destroy']);
+
 Route::get('po', [POController::class, 'index'])->name('api.po.index');
 Route::get('po/order-line', [POController::class, 'order_line'])->name('api.po.order_line');
 Route::get('po/{id}', [POController::class, 'detail'])->name('api.po.detail');

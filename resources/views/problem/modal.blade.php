@@ -1,63 +1,82 @@
-<!-- Modal -->
-<div class="modal fade" id="product_modal" tabindex="-1" aria-labelledby="product_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+<!-- Modal Add/Edit Item -->
+<div class="modal fade" id="modal_item" tabindex="-1" aria-labelledby="modal_item_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="product_modalLabel">Pilih Product</h5>
+                <h5 class="modal-title" id="modal_item_title">Tambah Item</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="form-group mb-2">
-                    <select name="select_product" id="select_product" class="form-control select2" style="width: 100%">
-                    </select>
+            <form id="form_item" action="store">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="select_product">Product <span class="text-danger">*</span></label>
+                        <select name="product_id" id="select_product" class="form-control select2" style="width: 100%"
+                            required>
+                            <option value="">-- Pilih Product --</option>
+                            @foreach ($products as $item)
+                                <option value="{{ $item->id }}">[{{ $item->code }}] {{ $item->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="item_qty">Qty <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="item_qty" name="qty" placeholder="Qty"
+                            min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item_lot">Lot/SN</label>
+                        <textarea class="form-control" id="item_lot" name="lot" placeholder="Lot/SN" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="item_desc">Description</label>
+                        <textarea class="form-control" id="item_desc" name="desc" placeholder="Description" rows="3"></textarea>
+                    </div>
                 </div>
-                <div class="form-group mb-2">
-                    <input type="text" class="form-control" id="desc_prod" placeholder="DESCRIPTION">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="button" id="btn_save_item" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Simpan
+                    </button>
                 </div>
-                <div class="form-group mb-2">
-                    <input type="text" class="form-control" id="qty_prod" value="100 Pcs" placeholder="QTY">
-                </div>
-                <div class="form-group mb-2">
-                    <textarea class="form-control" id="lot_prod" placeholder="LOT /ED" rows="7">E002/2023.02</textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="btn_modal_save" class="btn btn-primary">Save changes</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
-
-<div class="modal fade" id="edit_modal" tabindex="-1" aria-labelledby="edit_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+<!-- Modal Add/Edit Log -->
+<div class="modal fade" id="modal_log" tabindex="-1" aria-labelledby="modal_log_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="edit_modalLabel">Pilih Product</h5>
+                <h5 class="modal-title" id="modal_log_title">Tambah Log</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <form action="" id="form_edit">
-                    <div class="form-group mb-2">
-                        <input type="text" class="form-control" id="qty_prod_edit" placeholder="QTY">
+            <form id="form_log" action="store">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="log_date">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="log_date" name="date" required>
                     </div>
-                    <div class="form-group mb-2">
-                        <input type="text" class="form-control" id="desc_prod_edit" placeholder="DESCRIPTION">
+                    <div class="form-group">
+                        <label for="log_desc">Description</label>
+                        <textarea class="form-control" id="log_desc" name="desc" placeholder="Description / Note / Progress" rows="5"></textarea>
                     </div>
-                    <div class="form-group mb-2">
-                        <textarea class="form-control" id="lot_prod_edit" placeholder="LOT /ED" rows="7"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="btn_modal_save_edit" class="btn btn-primary">Save changes</button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="button" id="btn_save_log" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Simpan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
