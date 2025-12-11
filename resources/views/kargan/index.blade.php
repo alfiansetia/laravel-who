@@ -11,7 +11,7 @@
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
                             <th>No</th>
-                            <th>Tgl</th>
+                            <th class="text-nowrap">Tgl</th>
                             <th>SN</th>
                             <th>Product</th>
                         </tr>
