@@ -59,7 +59,7 @@
                         <div class="form-group col-md-6">
                             <label for="status">Status</label>
                             <select name="status" id="status" class="form-control" style="width: 100%;">
-                                <option value="pending">Pending</option>
+                                <option value="pending" selected>Pending</option>
                                 <option value="done">Done</option>
                             </select>
                         </div>
@@ -83,6 +83,9 @@
                         <span class="badge badge-primary" id="items-count">0</span>
                     </h3>
                     <div class="card-tools">
+                        <button type="button" class="btn btn-sm btn-warning mr-1" id="btn_paste_excel">
+                            <i class="fas fa-paste mr-1"></i>Paste Excel
+                        </button>
                         <button type="button" class="btn btn-sm btn-info" id="btn_add_item">
                             <i class="fas fa-plus mr-1"></i>Tambah Item
                         </button>
@@ -158,6 +161,59 @@
                     </button>
                     <button type="button" id="btn_save_item" class="btn btn-primary">
                         <i class="fas fa-plus mr-1"></i>Tambah
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Paste Excel -->
+    <div class="modal fade" id="modal_paste" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-paste mr-2"></i>Paste from Excel</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Format Excel:</strong> Item No (Tab) Description (Tab) Serial Number (Tab) Hasil QC (Tab)
+                        QTY<br>
+                        <small>Copy baris dari Excel, lalu paste di textarea di bawah ini.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="paste_area">Paste Data Excel:</label>
+                        <textarea class="form-control" id="paste_area" rows="8" placeholder="Paste data dari Excel di sini..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Preview:</label>
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm table-bordered" id="preview_table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item No</th>
+                                        <th>Description</th>
+                                        <th>Serial Number</th>
+                                        <th>Hasil QC</th>
+                                        <th>QTY</th>
+                                        <th>Match</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview_body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Batal
+                    </button>
+                    <button type="button" id="btn_import_items" class="btn btn-success" disabled>
+                        <i class="fas fa-check mr-1"></i>Import Items
                     </button>
                 </div>
             </div>
@@ -263,5 +319,104 @@
             $('#items_body').html(html);
             $('#items-count').text(items.length);
         }
+
+        // Product lookup map for quick search
+        var productMap = {};
+        @foreach ($products as $item)
+            productMap['{{ strtoupper($item->code) }}'] = {
+                id: '{{ $item->id }}',
+                code: '{{ $item->code }}',
+                name: '{{ addslashes($item->name) }}'
+            };
+        @endforeach
+
+        var parsedItems = [];
+
+        // Open paste modal
+        $('#btn_paste_excel').click(function() {
+            $('#paste_area').val('');
+            $('#preview_body').html('');
+            $('#btn_import_items').prop('disabled', true);
+            parsedItems = [];
+            $('#modal_paste').modal('show');
+        });
+
+        // Parse pasted data
+        $('#paste_area').on('input', function() {
+            let text = $(this).val().trim();
+            if (!text) {
+                $('#preview_body').html('');
+                $('#btn_import_items').prop('disabled', true);
+                parsedItems = [];
+                return;
+            }
+
+            let lines = text.split('\n');
+            let html = '';
+            parsedItems = [];
+
+            lines.forEach((line, idx) => {
+                if (!line.trim()) return;
+
+                // Split by tab (Excel copy)
+                let cols = line.split('\t');
+
+                // Expected: Item No, Description, Serial Number, Hasil QC, QTY
+                let itemNo = (cols[0] || '').trim().toUpperCase();
+                let description = (cols[1] || '').trim();
+                let serialNumber = (cols[2] || '').trim();
+                let hasilQC = (cols[3] || '').trim();
+                let qty = parseInt(cols[4]) || 1;
+
+                // Find product by code
+                let product = productMap[itemNo] || null;
+                let status = product ? '<span class="badge badge-success">OK</span>' :
+                    '<span class="badge badge-danger">Not Found</span>';
+
+                parsedItems.push({
+                    itemNo: itemNo,
+                    description: description,
+                    serialNumber: serialNumber,
+                    hasilQC: hasilQC,
+                    qty: qty,
+                    product: product
+                });
+
+                html += `<tr class="${product ? '' : 'table-danger'}">
+                    <td>${idx + 1}</td>
+                    <td>${itemNo}</td>
+                    <td>${description}</td>
+                    <td>${serialNumber}</td>
+                    <td>${hasilQC}</td>
+                    <td>${qty}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+
+            $('#preview_body').html(html);
+
+            // Enable import button if at least one valid item
+            let validItems = parsedItems.filter(i => i.product);
+            $('#btn_import_items').prop('disabled', validItems.length === 0);
+        });
+
+        // Import items
+        $('#btn_import_items').click(function() {
+            let validItems = parsedItems.filter(i => i.product);
+
+            validItems.forEach(item => {
+                items.push({
+                    product_id: item.product.id,
+                    qty: item.qty,
+                    lot: item.serialNumber,
+                    desc: item.hasilQC,
+                    display: `[${item.product.code}] ${item.product.name}`
+                });
+            });
+
+            renderItems();
+            $('#modal_paste').modal('hide');
+            show_message(`${validItems.length} item berhasil diimport!`, 'success');
+        });
     </script>
 @endpush
