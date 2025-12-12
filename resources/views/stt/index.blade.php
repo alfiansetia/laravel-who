@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Speech To Text - Web Speech API</title>
-
-    <!-- Bootstrap 4 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
+@extends('template')
+@push('css')
     <style>
         #result {
             height: 220px;
@@ -18,15 +10,15 @@
             font-weight: bold;
         }
     </style>
-</head>
+@endpush
 
-<body class="bg-light">
-
-    <div class="container mt-5">
+@section('content')
+    <div class="container-fluid">
         <div class="card shadow">
+            <div class="card-header">
+                <h3 class="text-center"><i class="fa fa-microphone"></i> Speech to Text (Web Speech API)</h3>
+            </div>
             <div class="card-body">
-
-                <h3 class="mb-4 text-center">🎤 Speech to Text (Web Speech API)</h3>
 
                 <div class="form-group">
                     <label for="result">Hasil Transkripsi:</label>
@@ -34,16 +26,16 @@
                 </div>
 
                 <div class="text-center mt-4">
-                    <button id="startBtn" class="btn btn-primary btn-lg px-4">
-                        Mulai Rekam 🎤
+                    <button id="startBtn" class="btn btn-primary btn-lg px-4 mb-1">
+                        Mulai Rekam <i class="fa fa-microphone"></i>
                     </button>
 
-                    <button id="stopBtn" class="btn btn-danger btn-lg px-4" disabled>
-                        Stop ⛔
+                    <button id="stopBtn" class="btn btn-danger btn-lg px-4 mb-1" disabled>
+                        Stop <i class="fa fa-stop"></i>
                     </button>
 
-                    <button id="copyBtn" class="btn btn-success btn-lg px-4">
-                        Copy Text 📋
+                    <button id="copyBtn" class="btn btn-success btn-lg px-4 mb-1">
+                        Copy Text <i class="fa fa-copy"></i>
                     </button>
                 </div>
 
@@ -51,7 +43,9 @@
             </div>
         </div>
     </div>
+@endsection
 
+@push('js')
     <script>
         let recognition;
         let isRecording = false;
@@ -160,7 +154,4 @@
             }, 2000);
         };
     </script>
-
-</body>
-
-</html>
+@endpush
