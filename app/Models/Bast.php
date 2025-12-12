@@ -13,6 +13,6 @@ class Bast extends Model
 
     public function details()
     {
-        return $this->hasMany(DetailBast::class, 'bast_id');
+        return $this->hasMany(DetailBast::class, 'bast_id')->orderBy('order');
     }
 }

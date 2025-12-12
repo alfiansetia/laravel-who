@@ -11,7 +11,11 @@ class DetailBastController extends Controller
 
     public function index(Request $request)
     {
-        $data = DetailBast::query()->with('product')->filter($request->only(['bast_id']))->get();
+        $data = DetailBast::query()
+            ->with('product')
+            ->filter($request->only(['bast_id']))
+            ->orderBy('order', 'asc')
+            ->get();
         return $this->sendResponse($data);
     }
 
@@ -24,12 +28,16 @@ class DetailBastController extends Controller
             'lot'       => 'nullable',
             'satuan'    => 'required|in:Pcs,Pck,Unit,EA,Box,Btl,Vial',
         ]);
+
+        $lastOrder = DetailBast::where('bast_id', $request->bast)->max('order') ?? -1;
+
         $data = DetailBast::create([
             'bast_id'       => $request->bast,
             'product_id'    => $request->product,
             'qty'           => $request->qty,
             'lot'           => $request->lot,
             'satuan'        => $request->satuan,
+            'order'         => $lastOrder + 1,
         ]);
         return $this->sendResponse($data, 'Created!');
     }
@@ -59,5 +67,41 @@ class DetailBastController extends Controller
     {
         $detail_bast->delete();
         return $this->sendResponse($detail_bast, 'Deleted!');
+    }
+
+    public function order(Request $request, DetailBast $detail_bast)
+    {
+        $this->validate($request, [
+            'type' => 'required|in:up,down',
+        ]);
+
+        $currentOrder = $detail_bast->order;
+        $bastId = $detail_bast->bast_id;
+
+        if ($request->type === 'up') {
+            $swapItem = DetailBast::where('bast_id', $bastId)
+                ->where('order', '<', $currentOrder)
+                ->orderBy('order', 'desc')
+                ->first();
+
+            if ($swapItem) {
+                $tempOrder = $swapItem->order;
+                $swapItem->update(['order' => $currentOrder]);
+                $detail_bast->update(['order' => $tempOrder]);
+            }
+        } else {
+            $swapItem = DetailBast::where('bast_id', $bastId)
+                ->where('order', '>', $currentOrder)
+                ->orderBy('order', 'asc')
+                ->first();
+
+            if ($swapItem) {
+                $tempOrder = $swapItem->order;
+                $swapItem->update(['order' => $currentOrder]);
+                $detail_bast->update(['order' => $tempOrder]);
+            }
+        }
+
+        return $this->sendResponse($detail_bast, 'Order updated!');
     }
 }

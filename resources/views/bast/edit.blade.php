@@ -207,7 +207,7 @@
                 paging: false,
                 rowId: 'id',
                 columns: [{
-                    data: 'id',
+                    data: 'order',
                     className: 'text-left',
                     render: function(data, type, row, meta) {
                         if (type == 'display') {
@@ -239,8 +239,15 @@
                     data: "id",
                     className: "text-center",
                     render: function(data, type, row, meta) {
+                        var totalRows = meta.settings.aoData.length;
+                        var isFirst = meta.row === 0;
+                        var isLast = meta.row === totalRows - 1;
+                        var upDisabled = isFirst ? 'disabled' : '';
+                        var downDisabled = isLast ? 'disabled' : '';
                         return `
                             <div class="btn-group" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-sm btn-secondary order-up" title="Naikkan" ${upDisabled}><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" class="btn btn-sm btn-secondary order-down" title="Turunkan" ${downDisabled}><i class="fas fa-arrow-down"></i></button>
                                 <button type="button" class="btn btn-sm btn-primary edit"><i class="fas fa-edit"></i></button>
                                 <button type="button" class="btn btn-sm btn-danger hapus"><i class="fas fa-trash"></i></button>
                             </div>
@@ -331,6 +338,38 @@
                 $('#lot_prod_edit').val(data.lot)
                 $('#form_edit').attr('action', `${URL_INDEX_DETAIL_API}/${id}`)
                 $('#edit_modal').modal('show')
+            });
+
+            $('#table tbody').on('click', '.order-up', function() {
+                var row = table.row($(this).closest('tr'));
+                var itemId = row.id();
+                $.ajax({
+                    type: 'POST',
+                    url: `${URL_INDEX_DETAIL_API}/${itemId}/order`,
+                    data: {
+                        type: 'up'
+                    }
+                }).done(function(result) {
+                    table.ajax.reload(null, false);
+                }).fail(function(xhr) {
+                    show_message(xhr.responseJSON.message || 'Error!');
+                });
+            });
+
+            $('#table tbody').on('click', '.order-down', function() {
+                var row = table.row($(this).closest('tr'));
+                var itemId = row.id();
+                $.ajax({
+                    type: 'POST',
+                    url: `${URL_INDEX_DETAIL_API}/${itemId}/order`,
+                    data: {
+                        type: 'down'
+                    }
+                }).done(function(result) {
+                    table.ajax.reload(null, false);
+                }).fail(function(xhr) {
+                    show_message(xhr.responseJSON.message || 'Error!');
+                });
             });
 
             $('#form').submit(function(e) {

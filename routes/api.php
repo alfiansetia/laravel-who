@@ -186,6 +186,8 @@ Route::get('basts/{bast}/download', [BastController::class, 'download'])
 Route::apiResource('basts', BastController::class)
     ->names('api.basts');
 
+Route::post('detail-basts/{detail_bast}/order', [DetailBastController::class, 'order'])
+    ->name('api.detail_basts.order');
 Route::apiResource('detail-basts', DetailBastController::class)
     ->names('api.detail_basts');
 
