@@ -131,6 +131,36 @@
             font-weight: 600;
         }
 
+        /* Pagination Styles */
+        .gallery-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 1rem;
+            padding: 16px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            flex-wrap: wrap;
+        }
+
+        .gallery-pagination .btn {
+            min-width: 40px;
+        }
+
+        .gallery-pagination .page-info {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .gallery-pagination select {
+            width: auto;
+            display: inline-block;
+        }
+
         /* Mobile Responsive Styles */
         @media (max-width: 767.98px) {
             .filter-bar .row>div {
@@ -274,6 +304,9 @@
 
         let allImages = [];
         let groupedData = {};
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentFilteredGroups = {};
 
         $(document).ready(function() {
             // Initialize Select2 for modal
@@ -414,7 +447,7 @@
                 });
             }
 
-            function filterAndRender() {
+            function filterAndRender(resetPage = true) {
                 const searchTerm = $('#searchInput').val().toLowerCase().trim();
                 const filterProductId = $('#filterProduct').val();
 
@@ -438,17 +471,27 @@
                     filteredGroups[productId] = group;
                 });
 
+                // Reset to page 1 when filtering
+                if (resetPage) {
+                    currentPage = 1;
+                }
+
                 renderGallery(filteredGroups);
             }
 
             function renderGallery(groups) {
+                // Store for later use
+                currentFilteredGroups = groups;
+
                 const container = $('#productGalleryContainer');
                 const productIds = Object.keys(groups);
+                const totalProducts = productIds.length;
+                const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
                 // Update product count
-                $('#productCount').text(`${productIds.length} Produk`);
+                $('#productCount').text(`${totalProducts} Produk`);
 
-                if (productIds.length === 0) {
+                if (totalProducts === 0) {
                     container.html(`
                         <div class="text-center py-5">
                             <i class="fas fa-images fa-3x text-muted mb-3"></i>
@@ -458,8 +501,14 @@
                     return;
                 }
 
+                // Calculate pagination
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, totalProducts);
+                const paginatedProductIds = productIds.slice(startIndex, endIndex);
+
+                // Build gallery HTML
                 let html = '';
-                productIds.forEach(productId => {
+                paginatedProductIds.forEach(productId => {
                     const group = groups[productId];
                     const product = group.product;
                     const images = group.images;
@@ -496,7 +545,66 @@
                     `;
                 });
 
+                // Add pagination controls
+                html += `
+                    <div class="gallery-pagination">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnFirstPage" ${currentPage === 1 ? 'disabled' : ''}>
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnPrevPage" ${currentPage === 1 ? 'disabled' : ''}>
+                            <i class="fas fa-angle-left"></i> Prev
+                        </button>
+                        <span class="page-info">
+                            Halaman <strong>${currentPage}</strong> dari <strong>${totalPages}</strong>
+                            <small class="text-muted ml-2">(${startIndex + 1}-${endIndex} dari ${totalProducts})</small>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnNextPage" ${currentPage >= totalPages ? 'disabled' : ''}>
+                            Next <i class="fas fa-angle-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnLastPage" ${currentPage >= totalPages ? 'disabled' : ''}>
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                        <select class="form-control form-control-sm" id="pageSizeSelect" style="width: 100px;">
+                            <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5 / hal</option>
+                            <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10 / hal</option>
+                            <option value="20" ${itemsPerPage === 20 ? 'selected' : ''}>20 / hal</option>
+                            <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50 / hal</option>
+                        </select>
+                    </div>
+                `;
+
                 container.html(html);
+
+                // Bind pagination events
+                $('#btnFirstPage').off('click').on('click', function() {
+                    currentPage = 1;
+                    renderGallery(currentFilteredGroups);
+                    scrollToTop();
+                });
+                $('#btnPrevPage').off('click').on('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderGallery(currentFilteredGroups);
+                        scrollToTop();
+                    }
+                });
+                $('#btnNextPage').off('click').on('click', function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderGallery(currentFilteredGroups);
+                        scrollToTop();
+                    }
+                });
+                $('#btnLastPage').off('click').on('click', function() {
+                    currentPage = totalPages;
+                    renderGallery(currentFilteredGroups);
+                    scrollToTop();
+                });
+                $('#pageSizeSelect').off('change').on('change', function() {
+                    itemsPerPage = parseInt($(this).val());
+                    currentPage = 1;
+                    renderGallery(currentFilteredGroups);
+                });
 
                 // Bind delete event
                 $('.btn-delete-image').off('click').on('click', function(e) {
@@ -505,6 +613,12 @@
                     const imageId = $(this).data('id');
                     deleteImage(imageId);
                 });
+            }
+
+            function scrollToTop() {
+                $('html, body').animate({
+                    scrollTop: $('#productGalleryContainer').offset().top - 20
+                }, 300);
             }
 
             function deleteImage(imageId) {
