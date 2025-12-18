@@ -95,7 +95,7 @@
 
         .collage-grid {
             display: grid;
-            gap: 2mm;
+            gap: 5mm;
             width: 100%;
             align-content: start;
         }
@@ -110,6 +110,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .collage-item img {
