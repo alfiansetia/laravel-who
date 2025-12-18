@@ -86,7 +86,8 @@
 
             .paper {
                 width: 100% !important;
-                height: 100vh !important;
+                height: auto !important;
+                min-height: var(--a4-height) !important;
                 margin: 0 !important;
                 padding: 10mm !important;
                 box-shadow: none !important;
@@ -96,9 +97,9 @@
 
         .collage-grid {
             display: grid;
-            gap: 5mm;
+            gap: 2mm;
             width: 100%;
-            height: 100%;
+            align-content: start;
         }
 
         .collage-item {
@@ -211,7 +212,7 @@
                         <select id="heightSelect" class="form-control form-control-sm">
                             <option value="auto">Otomatis</option>
                             <option value="200px">Kecil (200px)</option>
-                            <option value="300px">Sedang (300px)</option>
+                            <option value="300px" selected>Sedang (300px)</option>
                             <option value="400px">Besar (400px)</option>
                             <option value="fill">Penuhi Baris</option>
                         </select>
