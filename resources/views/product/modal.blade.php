@@ -2,11 +2,16 @@
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Product Detail</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-header d-block">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="modal-title font-weight-bold" id="detail_product_name">Product Detail</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="detail_product_code" class="text-muted small"></div>
+                <div id="detail_product_desc" class="text-secondary small mt-1"
+                    style="white-space: pre-wrap; font-style: italic;"></div>
             </div>
             <div class="modal-body">
                 <div class="accordion" id="accordionExample">

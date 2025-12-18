@@ -326,6 +326,10 @@
                     $('#target_value').html('')
                     $('#table_pl_container').empty(); // clear container
 
+                    $('#detail_product_name').html(res.data.name);
+                    $('#detail_product_code').html(`KODE: ${res.data.code || '-'}`);
+                    $('#detail_product_desc').html(res.data.desc || 'Tidak ada deskripsi.');
+
                     res.data.packs.forEach((pack, packIndex) => {
                         let rows = '';
 
