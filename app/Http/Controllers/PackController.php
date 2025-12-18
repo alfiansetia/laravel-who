@@ -47,4 +47,10 @@ class PackController extends Controller
         $product = Product::query()->with('pls')->findOrFail($id);
         return view('pack.show', compact('product'));
     }
+
+    public function print(Pack $pack)
+    {
+        $pack->load(['product.sop.items', 'vendor', 'items']);
+        return view('pack.print', compact('pack'));
+    }
 }

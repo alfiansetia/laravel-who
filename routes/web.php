@@ -61,6 +61,8 @@ Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::resource('packs', PackController::class)
     ->names('packs')
     ->only(['index', 'show', 'create', 'edit']);
+Route::get('packs/{pack}/print', [PackController::class, 'print'])
+    ->name('packs.print');
 
 Route::resource('vendors', VendorController::class)
     ->names('vendors')
@@ -68,7 +70,9 @@ Route::resource('vendors', VendorController::class)
 
 Route::resource('sops', SopController::class)
     ->names('sops')
-    ->only(['index', 'show', 'create']);
+    ->only(['index', 'show', 'create', 'edit']);
+Route::get('sops/{sop}/print', [SopController::class, 'print'])
+    ->name('sops.print');
 
 Route::resource('alamats', AlamatController::class)
     ->names('alamats')

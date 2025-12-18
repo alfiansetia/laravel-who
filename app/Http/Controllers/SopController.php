@@ -31,4 +31,10 @@ class SopController extends Controller
             ->get();
         return view('sop.create', compact('products', 'bcms', 'sop_items'));
     }
+
+    public function print(Sop $sop)
+    {
+        $sop->load(['product', 'items']);
+        return view('sop.print', compact('sop'));
+    }
 }

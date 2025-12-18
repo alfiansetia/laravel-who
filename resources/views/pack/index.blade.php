@@ -171,7 +171,8 @@
                         render: function(data, type, row, meta) {
                             return `
                             <div class="btn-group" role="group" aria-label="Basic example">
-                                <button type="button" class="btn btn-sm btn-info btn-download"><i class="fas fa-download"></i></button>
+                                <button type="button" class="btn btn-sm btn-info btn-download" title="Export Excel"><i class="fas fa-file-excel"></i></button>
+                                <button type="button" class="btn btn-sm btn-secondary btn-print" title="Print HTML"><i class="fas fa-print"></i></button>
                                 <button type="button" class="btn btn-sm btn-primary btn-edit"><i class="fas fa-edit"></i></button>
                                 <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>
                             </div>
@@ -373,6 +374,12 @@
                 row = $(this).parents('tr')[0];
                 id = table.row(row).data().id
                 window.open(`${URL_INDEX_API}/${id}/download`)
+            });
+
+            $('#table tbody').on('click', 'tr .btn-print', function() {
+                row = $(this).parents('tr')[0];
+                id = table.row(row).data().id
+                window.open(`${URL_INDEX}/${id}/print`, '_blank')
             });
 
             $('#table tbody').on('click', 'tr .btn-delete', function() {
