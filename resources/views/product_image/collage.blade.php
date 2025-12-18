@@ -87,11 +87,9 @@
             .paper {
                 width: 100% !important;
                 height: auto !important;
-                min-height: var(--a4-height) !important;
                 margin: 0 !important;
                 padding: 10mm !important;
                 box-shadow: none !important;
-                page-break-after: always;
             }
         }
 
