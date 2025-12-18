@@ -15,13 +15,14 @@
 
         .page {
             width: 210mm;
-            min-height: 297mm;
             padding: 5mm 10mm;
             margin: 10px auto;
             background: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
             box-sizing: border-box;
+            min-height: 148mm;
+            /* Half A4 height by default */
         }
 
         .header {
@@ -57,14 +58,14 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 3px;
             font-size: 14px;
         }
 
         th,
         td {
             border: 1px solid black;
-            padding: 8px;
+            padding: 2px;
             text-align: left;
         }
 
@@ -79,10 +80,18 @@
 
         .footer-code {
             position: absolute;
-            bottom: 15mm;
+            bottom: 5mm;
             right: 15mm;
             font-size: 12px;
             font-style: italic;
+        }
+
+        .copy-separator {
+            border-top: 1px dashed #ccc;
+            margin: 20px 0;
+            width: 210mm;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         @media print {
@@ -99,15 +108,26 @@
 
             .page {
                 margin: 0;
-                padding: 5mm;
+                padding: 4mm 10mm;
                 box-shadow: none;
                 width: 100%;
                 height: auto;
                 min-height: 0;
+                border-bottom: none;
             }
 
             .no-print {
                 display: none !important;
+            }
+
+            .copy-separator {
+                border-top: 1px dashed #000;
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .copy-separator:last-child {
+                display: none;
             }
         }
 
@@ -116,6 +136,7 @@
             margin: 0 auto 10px auto;
             display: flex;
             justify-content: flex-end;
+            align-items: center;
             gap: 10px;
         }
 
@@ -137,76 +158,111 @@
             background-color: #6c757d;
             color: white;
         }
+
+        #copy-count {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 
 <body>
     <div class="controls no-print">
+        <div style="margin-right: auto;">
+            <label for="copy-count">Perulangan Tabel:</label>
+            <select id="copy-count">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
         <button class="btn btn-close" onclick="window.close()">Tutup</button>
         <button class="btn btn-print" onclick="window.print()">Cetak</button>
     </div>
 
-    <div class="page">
-        <div class="header-kop" style="margin-bottom: 2px; padding-bottom: 2px; ">
-            <img src="{{ asset('images/map.png') }}" alt="Kop Map" style="height: 60px; width: auto; max-width: 100%;">
-        </div>
-        <div class="info-section">
-            <div class="info-row">
-                <div class="info-label">Pabrikan :</div>
-                <div class="info-value">
-                    {{ $pack->vendor->name ?? '-' }}
-                    @if ($pack->vendor_desc)
-                        ({{ $pack->vendor_desc }})
-                    @endif
+    <div id="print-container">
+        <div class="page">
+            <div class="header-kop" style="margin-bottom: 2px; padding-bottom: 2px; ">
+                <img src="{{ asset('images/map.png') }}" alt="Kop Map"
+                    style="height: 60px; width: auto; max-width: 100%;">
+            </div>
+            <div class="info-section">
+                <div class="info-row">
+                    <div class="info-label">Pabrikan :</div>
+                    <div class="info-value">
+                        {{ $pack->vendor->name ?? '-' }}
+                        @if ($pack->vendor_desc)
+                            ({{ $pack->vendor_desc }})
+                        @endif
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Produk :</div>
+                    <div class="info-value">
+                        <strong>{{ $pack->product->code ?? '-' }}</strong> {{ $pack->product->name ?? '-' }}
+                        @if ($pack->desc)
+                            ({{ $pack->desc }})
+                        @endif
+                    </div>
+                </div>
+                <div class="header">
+                    <h1>Part List</h1>
                 </div>
             </div>
-            <div class="info-row">
-                <div class="info-label">Produk :</div>
-                <div class="info-value">
-                    <strong>{{ $pack->product->code ?? '-' }}</strong> {{ $pack->product->name ?? '-' }}
-                    @if ($pack->desc)
-                        ({{ $pack->desc }})
-                    @endif
-                </div>
-            </div>
-            <div class="header">
-                <h1>Part List</h1>
-            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10px;">No</th>
+                        <th>Item</th>
+                        <th style="width: 100px;">Quantity</th>
+                        <th style="width: 100px;">Check List</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($pack->items as $index => $item)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $item->item }}</td>
+                            <td class="text-center">{{ $item->qty }}</td>
+                            <td class="text-center">&nbsp;</td>
+                        </tr>
+                    @endforeach
+                    @for ($i = count($pack->items); $i < 1; $i++)
+                        <tr>
+                            <td class="text-center">{{ $i + 1 }}</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    @endfor
+                    <tr>
+                        <td colspan="4" style="border: none;text-align: right;">{{ config('cdakb.pack') }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50px;">No</th>
-                    <th>Item</th>
-                    <th style="width: 100px;">Quantity</th>
-                    <th style="width: 100px;">Check List</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($pack->items as $index => $item)
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $item->item }}</td>
-                        <td class="text-center">{{ $item->qty }}</td>
-                        <td class="text-center">&nbsp;</td>
-                    </tr>
-                @endforeach
-                @for ($i = count($pack->items); $i < 1; $i++)
-                    <tr>
-                        <td class="text-center">{{ $i + 1 }}</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                @endfor
-                <tr>
-                    <td colspan="4" style="border: none;text-align: right;">{{ config('cdakb.pack') }}</td>
-                </tr>
-            </tbody>
-        </table>
-
     </div>
+
+    <script>
+        const printContainer = document.getElementById('print-container');
+        const copyCountSelect = document.getElementById('copy-count');
+        const originalContent = printContainer.innerHTML;
+
+        copyCountSelect.addEventListener('change', function() {
+            const count = parseInt(this.value);
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += originalContent;
+                if (i < count - 1) {
+                    html += '<div class="copy-separator"></div>';
+                }
+            }
+            printContainer.innerHTML = html;
+        });
+    </script>
 </body>
 
 </html>
