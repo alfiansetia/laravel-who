@@ -338,6 +338,14 @@
                 addData();
             });
 
+            // Event: Print Product Collage
+            $(document).on('click', '.btn-print-product', function() {
+                const productId = $(this).data('product-id');
+                let url = "{{ route('product_images.collage', ':id') }}";
+                url = url.replace(':id', productId);
+                window.open(url, '_blank');
+            });
+
             // Event: Reset filters
             $('#btnResetFilter').on('click', function() {
                 $('#searchInput').val('');
@@ -517,7 +525,12 @@
                         <div class="product-card" data-product-id="${productId}">
                             <div class="product-card-header">
                                 <h6><i class="fas fa-box mr-2"></i>[${product.code || '-'}] ${product.name}</h6>
-                                <span class="badge">${images.length} gambar</span>
+                                <div class="d-flex align-items-center">
+                                    <button type="button" class="btn btn-xs btn-sm btn-light mr-2 btn-print-product" data-product-id="${productId}" title="Cetak Kolase">
+                                        <i class="fas fa-print mr-1"></i> Cetak
+                                    </button>
+                                    <span class="badge">${images.length} gambar</span>
+                                </div>
                             </div>
                             <div class="product-gallery">
                     `;
