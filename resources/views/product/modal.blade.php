@@ -12,11 +12,16 @@
                 <div class="accordion" id="accordionExample">
                     <div class="card">
                         <div class="card-header" id="headingOne">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <button class="btn btn-link text-left p-0" type="button" data-toggle="collapse"
                                     data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                                     SOP QC
                                 </button>
+                                <button type="button" class="btn btn-xs btn-outline-secondary d-none"
+                                    id="btn-print-sop">
+                                    <i class="fas fa-print"></i> Cetak SOP
+                                </button>
+                            </div>
                             </h2>
                         </div>
                         <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
@@ -55,11 +60,17 @@
                     <div class="card">
                         <div class="card-header" id="headingImages">
                             <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button"
-                                    data-toggle="collapse" data-target="#collapseImages" aria-expanded="false"
-                                    aria-controls="collapseImages">
-                                    Images
-                                </button>
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <button class="btn btn-link text-left p-0 collapsed" type="button"
+                                        data-toggle="collapse" data-target="#collapseImages" aria-expanded="false"
+                                        aria-controls="collapseImages">
+                                        Images
+                                    </button>
+                                    <button type="button" class="btn btn-xs btn-outline-primary d-none"
+                                        id="btn-print-collage">
+                                        <i class="fas fa-print"></i> Cetak Kolase
+                                    </button>
+                                </div>
                             </h2>
                         </div>
                         <div id="collapseImages" class="collapse" aria-labelledby="headingImages"

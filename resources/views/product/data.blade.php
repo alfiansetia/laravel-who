@@ -355,8 +355,11 @@
                         // render tabel per pack
                         $('#table_pl_container').append(`
                             <div class="card mb-3 shadow-sm">
-                                <div class="card-header">
-                                    <strong>Pack ${packIndex + 1}:</strong> ${pack.name || '(Tanpa Nama)'}
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <strong>Pack ${packIndex + 1}: ${pack.name || '(Tanpa Nama)'}</strong>
+                                    <button type="button" class="btn btn-xs btn-outline-info btn-print-pl" data-id="${pack.id}">
+                                        <i class="fas fa-print"></i> Cetak PL
+                                    </button>
                                 </div>
                                 <div class="card-body p-0">
                                     <table class="table table-sm table-hover mb-0">
@@ -374,7 +377,9 @@
                                 </div>
                             </div>`);
                     });
+
                     if (res.data.sop != null) {
+                        $('#btn-print-sop').removeClass('d-none').data('id', res.data.sop.id);
                         $('#target_value').html(res.data.sop.target)
                         res.data.sop.items.forEach((item, index) => {
                             $('#table_target tbody').append(`
@@ -384,10 +389,13 @@
                             </tr>
                         `);
                         });
+                    } else {
+                        $('#btn-print-sop').addClass('d-none');
                     }
 
                     let html = '';
                     if (res.data.images && res.data.images.length > 0) {
+                        $('#btn-print-collage').removeClass('d-none').data('id', id);
                         res.data.images.forEach((img, i) => {
                             html += `
                                 <a href="${img.url}" 
@@ -400,6 +408,7 @@
                             `;
                         });
                     } else {
+                        $('#btn-print-collage').addClass('d-none');
                         html = '<p class="text-muted">Tidak ada gambar.</p>';
                     }
                     $('#detail_images').html(html);
@@ -409,6 +418,13 @@
                     show_message('Data Tidak ada!')
                 })
 
+            });
+
+            $('#btn-print-collage').on('click', function() {
+                const productId = $(this).data('id');
+                let url = "{{ route('product_images.collage', ':id') }}";
+                url = url.replace(':id', productId);
+                window.open(url, '_blank');
             });
 
             $('#table').on('click', '.btn-move', function() {
@@ -476,6 +492,16 @@
                     show_message('Data Tidak ada!')
                 })
 
+            });
+
+            $(document).on('click', '.btn-print-pl', function() {
+                const id = $(this).data('id');
+                window.open(`{{ url('packs') }}/${id}/print`, '_blank');
+            });
+
+            $('#btn-print-sop').on('click', function() {
+                const id = $(this).data('id');
+                window.open(`{{ url('sops') }}/${id}/print`, '_blank');
             });
 
 
