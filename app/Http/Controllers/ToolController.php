@@ -41,4 +41,10 @@ class ToolController extends Controller
         ]);
         return view('sn.index', compact('bcms'))->with(['title' => 'Tool Sn']);
     }
+
+    public function scoreboard()
+    {
+        $title = 'Scoreboard';
+        return view('scoreboard.index', compact('title'));
+    }
 }
