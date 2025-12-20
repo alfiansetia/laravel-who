@@ -5,13 +5,13 @@
     <style>
         .koli-card {
             border: 2px solid #007bff;
-            /* margin-bottom: 15px; */
+            margin-bottom: 0px;
         }
 
         .koli-header {
             background-color: #90c0f3ff;
             color: white;
-            /* padding: 10px; */
+            padding: 2px 10px !important;
             font-weight: bold;
         }
     </style>
@@ -135,7 +135,8 @@
 
         {{-- Koli List --}}
         <div class="row" id="koli_container">
-            {{-- Kolis will be loaded here --}}
+            <div class="col-12 col-xl-6" id="koli_left"></div>
+            <div class="col-12 col-xl-6" id="koli_right"></div>
         </div>
     </div>
     @include('alamat_baru.modal')
@@ -286,28 +287,30 @@
             }
 
             function renderKolis(kolis) {
-                $('#koli_container').empty();
+                $('#koli_left, #koli_right').empty();
                 if (kolis.length === 0) {
-                    $('#koli_container').html(
+                    $('#koli_left').html(
                         '<p class="text-center">Belum ada koli. Klik "Tambah Koli" untuk menambahkan.</p>');
                     return;
                 }
 
                 kolis.forEach((koli, index) => {
                     let koliHtml = `
-                        <div class="col-12 col-xl-6 mb-3">
+                        <div class="mb-2">
                             <form class="form-koli-inline" data-koli-id="${koli.id}">
                                 <div class="koli-card" data-koli-id="${koli.id}">
                                     <div class="koli-header card-header">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text"><strong>Koli</strong></span>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="input-group input-group-sm mr-2" style="width: auto;">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><strong>Koli</strong></span>
+                                                        </div>
+                                                        <input type="text" class="form-control" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 80px;" placeholder="1-7" required>
                                                     </div>
-                                                    <input type="text" class="form-control d-inline-block" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 90px; padding: 5px; background: white; color: #333;" placeholder="1-7 / 1,3,4" required>
+                                                    ${koli.nilai ? `<span class="badge badge-light" id="badge_nilai_${koli.id}">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
                                                 </div>
-                                                ${koli.nilai ? `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light ml-2" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
                                             </span>
                                             <div>
                                                 <button type="button" class="btn btn-sm btn-danger btn-delete-koli" data-koli-id="${koli.id}" title="Delete"><i class="fas fa-trash"></i></button>
@@ -319,7 +322,7 @@
                                         </div>
                                     </div>
                                     <div class="card-body p-1">
-                                        <table class="table table-sm table-bordered" style="width: 100%;">
+                                        <table class="table table-sm table-bordered mb-1" style="width: 100%;">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
@@ -365,7 +368,11 @@
                             </form>
                         </div>
                     `;
-                    $('#koli_container').append(koliHtml);
+                    if (index % 2 === 0) {
+                        $('#koli_left').append(koliHtml);
+                    } else {
+                        $('#koli_right').append(koliHtml);
+                    }
                 });
 
                 // Attach event handlers
