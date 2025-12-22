@@ -47,4 +47,10 @@ class ToolController extends Controller
         $title = 'Scoreboard';
         return view('scoreboard.index', compact('title'));
     }
+
+    public function ocr()
+    {
+        $title = 'OCR Tool';
+        return view('ocr.index', compact('title'));
+    }
 }
