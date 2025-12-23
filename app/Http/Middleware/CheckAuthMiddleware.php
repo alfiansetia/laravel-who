@@ -23,7 +23,14 @@ class CheckAuthMiddleware
         // Validasi 1: Cek apakah session ada
         if (!$authenticated || !$loginTime || !$sessionHash) {
             $this->clearSession($request);
-            return response()->json(['message' => 'Session expired or unauthorized.'], 401);
+
+            // Jika request dari API, return JSON
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Session expired or unauthorized.'], 401);
+            }
+
+            // Jika request dari web, redirect ke home dengan pesan
+            return redirect()->route('home')->with('error', 'Anda harus login terlebih dahulu untuk mengakses halaman ini.');
         }
 
         // Validasi 2: Cek apakah hash masih cocok dengan ENV
@@ -31,14 +38,24 @@ class CheckAuthMiddleware
         if ($sessionHash !== $configPassword) {
             Log::warning('CheckAuthMiddleware: Hash mismatch, possible session manipulation');
             $this->clearSession($request);
-            return response()->json(['message' => 'Invalid session.'], 401);
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Invalid session.'], 401);
+            }
+
+            return redirect()->route('home')->with('error', 'Session tidak valid.');
         }
 
         // Validasi 3: Cek apakah session sudah expired (24 jam)
         if (now()->diffInHours($loginTime) >= 24) {
             Log::info('CheckAuthMiddleware: Session expired after 24 hours');
             $this->clearSession($request);
-            return response()->json(['message' => 'Session expired.'], 401);
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Session expired.'], 401);
+            }
+
+            return redirect()->route('home')->with('error', 'Session telah expired. Silakan login kembali.');
         }
 
         return $next($request);

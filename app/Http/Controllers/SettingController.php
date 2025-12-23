@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth');
+    }
+
     public function index()
     {
         $bcms = collect([

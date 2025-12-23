@@ -202,6 +202,18 @@
         </script>
     @endif
 
+    @if (session()->has('error'))
+        <script>
+            show_message("{{ session('error') }}", 'error')
+        </script>
+    @endif
+
+    @if (session()->has('success'))
+        <script>
+            show_message("{{ session('success') }}", 'success')
+        </script>
+    @endif
+
     @include('components.notif')
 
     @stack('js')
