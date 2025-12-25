@@ -65,6 +65,8 @@ Route::resource('packs', PackController::class)
     ->only(['index', 'show', 'create', 'edit']);
 Route::get('packs/{pack}/print', [PackController::class, 'print'])
     ->name('packs.print');
+Route::get('packs/{pack}/print-combined', [PackController::class, 'printCombined'])
+    ->name('packs.print_combined');
 
 Route::resource('vendors', VendorController::class)
     ->names('vendors')
