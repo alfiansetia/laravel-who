@@ -43,12 +43,19 @@
 
         .info-row {
             display: flex;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
+            line-height: 1.2;
         }
 
         .info-label {
-            width: 100px;
+            width: 95px;
             font-weight: bold;
+        }
+
+        .info-colon {
+            width: 15px;
+            font-weight: bold;
+            text-align: center;
         }
 
         .info-value {
@@ -190,7 +197,8 @@
             </div>
             <div class="info-section">
                 <div class="info-row">
-                    <div class="info-label">Pabrikan :</div>
+                    <div class="info-label">Pabrikan</div>
+                    <div class="info-colon">:</div>
                     <div class="info-value">
                         {{ $pack->vendor->name ?? '-' }}
                         @if ($pack->vendor_desc)
@@ -199,7 +207,8 @@
                     </div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Produk :</div>
+                    <div class="info-label">Produk</div>
+                    <div class="info-colon">:</div>
                     <div class="info-value">
                         <strong>{{ $pack->product->code ?? '-' }}</strong> {{ $pack->product->name ?? '-' }}
                         @if ($pack->desc)

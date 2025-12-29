@@ -364,6 +364,9 @@
                                     <button type="button" class="btn btn-xs btn-outline-info btn-print-pl" data-id="${pack.id}">
                                         <i class="fas fa-print"></i> Cetak PL
                                     </button>
+                                    <button type="button" class="btn btn-xs btn-outline-primary btn-print-combined ${res.data.sop ? '' : 'd-none'}" data-id="${pack.id}">
+                                        <i class="fas fa-file-alt"></i> Cetak SOP + PL
+                                    </button>
                                 </div>
                                 <div class="card-body p-0">
                                     <table class="table table-sm table-hover mb-0">
@@ -501,6 +504,11 @@
             $(document).on('click', '.btn-print-pl', function() {
                 const id = $(this).data('id');
                 window.open(`{{ url('packs') }}/${id}/print`, '_blank');
+            });
+
+            $(document).on('click', '.btn-print-combined', function() {
+                const id = $(this).data('id');
+                window.open(`{{ url('packs') }}/${id}/print-combined`, '_blank');
             });
 
             $('#btn-print-sop').on('click', function() {

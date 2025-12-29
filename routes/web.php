@@ -6,10 +6,8 @@ use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\KalkulatorController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
-use App\Http\Controllers\LaporanPengirimanController;
 use App\Http\Controllers\PackController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
@@ -18,7 +16,7 @@ use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SnController;
+use App\Http\Controllers\ShippingEstimateController;
 use App\Http\Controllers\SopController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
@@ -65,6 +63,8 @@ Route::resource('packs', PackController::class)
     ->only(['index', 'show', 'create', 'edit']);
 Route::get('packs/{pack}/print', [PackController::class, 'print'])
     ->name('packs.print');
+Route::get('packs/{pack}/print-combined', [PackController::class, 'printCombined'])
+    ->name('packs.print_combined');
 
 Route::resource('vendors', VendorController::class)
     ->names('vendors')
@@ -111,5 +111,5 @@ Route::get('/product_images/{product}/collage', [ProductImageController::class, 
     ->name('product_images.collage');
 
 // Shipping Estimate Routes
-Route::resource('shipping-estimate', \App\Http\Controllers\ShippingEstimateController::class)
+Route::resource('shipping-estimate', ShippingEstimateController::class)
     ->names('shipping_estimate');
