@@ -48,6 +48,9 @@
                     </div>
                 </div>
                 <div class="card-footer text-center">
+                    <button type="button" onclick="window.close()" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i>Tutup Tab
+                    </button>
                     <a href="{{ route('kargans.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
