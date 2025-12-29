@@ -140,6 +140,7 @@
             .page {
                 margin: 0;
                 padding: 5mm;
+                padding-right: 8mm;
                 box-shadow: none;
                 width: 100%;
                 height: auto;
