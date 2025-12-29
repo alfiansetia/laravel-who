@@ -219,10 +219,10 @@
                     </div>
                 </div>
                 <div class="col-md-6 text-right">
-                    <button type="button" class="btn btn-light btn-sm mr-2" onclick="window.close()">
+                    <button type="button" class="btn btn-secondary btn-sm mr-2" onclick="window.close()">
                         <i class="fas fa-times mr-1"></i> Tutup Tab
                     </button>
-                    <button class="btn btn-print" onclick="window.print()">
+                    <button class="btn btn-primary btn-sm" onclick="window.print()">
                         <i class="fas fa-print mr-1"></i> Cetak Kolase
                     </button>
                 </div>
