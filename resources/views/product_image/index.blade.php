@@ -35,7 +35,8 @@
         }
 
         .product-card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            background: #7e8f9cff;
             color: #fff;
             padding: 12px 16px;
             display: flex;
@@ -268,7 +269,7 @@
                         <button type="button" class="btn btn-info btn-sm mr-2 mb-1" id="btnAddImage">
                             <i class="fas fa-plus mr-1"></i> Tambah Gambar
                         </button>
-                        <span class="product-count mb-1" id="productCount">0 Produk</span>
+                        <span class="badge badge-info mb-1" id="productCount">0 Produk</span>
                     </div>
                 </div>
             </div>
