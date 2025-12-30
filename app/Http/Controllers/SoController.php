@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Breadcrumb;
+use App\Services\SoServices;
 use Illuminate\Http\Request;
 
 class SoController extends Controller
@@ -13,5 +14,11 @@ class SoController extends Controller
             new Breadcrumb('List SO', route('so.index'), false),
         ]);
         return view('so.index', compact('bcms'))->with('title', 'SO');
+    }
+
+    public function print($id)
+    {
+        $data = SoServices::detail($id);
+        return view('so.print', compact('data'));
     }
 }

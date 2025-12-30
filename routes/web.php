@@ -43,6 +43,7 @@ Route::resource('problem', ProblemController::class);
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('so', [SoController::class, 'index'])->name('so.index');
+Route::get('so/{id}/print', [SoController::class, 'print'])->name('so.print');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');

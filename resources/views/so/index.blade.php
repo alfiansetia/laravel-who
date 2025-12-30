@@ -28,6 +28,7 @@
                             <th>DATE</th>
                             <th>CUSTOMER</th>
                             <th>NOTES</th>
+                            <th style="width: 80px">ACTION</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,6 +64,9 @@
                     </table>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="btn_print">
+                        <i class="fas fa-print mr-1"></i>Print
+                    </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-1"></i>Close
                     </button>
@@ -140,6 +144,19 @@
                                 return `${data.substr(0, 35)}`
                             }
                             return data
+                        }
+                    }, {
+                        data: "id",
+                        className: 'text-center',
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            if (type === 'display') {
+                                return `<button class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
+                                    <i class="fas fa-print"></i>
+                                </button>`;
+                            }
+                            return data;
                         }
                     },
                 ],
@@ -275,8 +292,23 @@
                 ],
             });
 
-            $('#table tbody').on('click', 'tr td', function() {
-                row = $(this).parents('tr')[0];
+            // Handle print button click
+            $('#table tbody').on('click', '.btn-print-so', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent row click event
+                const soId = $(this).data('id');
+                window.open(`{{ url('so') }}/${soId}/print`, '_blank');
+                return false;
+            });
+
+            // Handle row click (exclude buttons)
+            $('#table tbody').on('click', 'tr', function(e) {
+                // Check if clicked element is a button or inside a button
+                if ($(e.target).closest('button').length > 0) {
+                    return; // Don't trigger modal if button was clicked
+                }
+
+                row = $(this);
                 id = table.row(this).id()
                 let name = table.row(this).data().name
                 $('#modal_productLabel').html(`List Item SO No : ${name}`)
@@ -307,6 +339,14 @@
             function hrg(x) {
                 return parseInt(x).toLocaleString('en-US')
             }
+
+            $('#btn_print').click(function() {
+                if (id > 0) {
+                    window.open(`{{ url('so') }}/${id}/print`, '_blank');
+                } else {
+                    show_message('Silakan pilih SO terlebih dahulu!', 'warning');
+                }
+            });
 
             $('#btn_get_po').click(function() {
                 table.ajax.reload()
