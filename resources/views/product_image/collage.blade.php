@@ -185,7 +185,7 @@
                         <p class="text-muted small mb-0">
                             <strong>{{ $images->first()->product->name }}</strong>
                             <span class="mx-2">|</span>
-                            Kode: <code>{{ $images->first()->product->code ?? '-' }}</code>
+                            Kode: <strong>{{ $images->first()->product->code ?? '-' }}</strong>
                         </p>
                     </div>
                     <div>
