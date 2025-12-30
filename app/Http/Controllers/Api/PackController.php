@@ -182,7 +182,7 @@ class PackController extends Controller
         // === SIMPAN FILE ===
         $file = $code . $pdesc;
         $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $file);
-        $output = storage_path("app/{$file_name}.xlsx");
+        $output = storage_path("app/{$file_name}-PL.xlsx");
         $writer = new Xlsx($spreadsheet);
         $writer->save($output);
 

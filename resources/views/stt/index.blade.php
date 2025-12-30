@@ -19,8 +19,14 @@
                 <h3 class="text-center"><i class="fa fa-microphone"></i> Speech to Text (Web Speech API)</h3>
             </div>
             <div class="card-body">
+                <div id="browserWarning" class="alert alert-warning d-none">
+                    <i class="fa fa-exclamation-triangle"></i> <strong>Peringatan!</strong> Browser Anda tidak mendukung Web
+                    Speech API.
+                    Beberapa fitur mungkin tidak berfungsi. Kami menyarankan menggunakan <strong>Google Chrome</strong> atau
+                    <strong>Microsoft Edge</strong>.
+                </div>
 
-                <div class="form-group">
+                <div class="form-group text-capitalize">
                     <label for="result">Hasil Transkripsi:</label>
                     <textarea id="result" class="form-control" readonly placeholder="Mulai berbicara..."></textarea>
                 </div>
@@ -56,7 +62,11 @@
 
         // Check Web Speech API support
         if (!SpeechRecognition) {
-            alert("Browser Anda tidak mendukung Web Speech API. Gunakan Chrome / Edge.");
+            document.getElementById("browserWarning").classList.remove("d-none");
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("copyBtn").disabled = true;
+            document.getElementById("status").innerText = "Browser tidak mendukung fitur ini.";
+            document.getElementById("status").className = "text-center text-danger mt-3";
         } else {
             recognition = new SpeechRecognition();
             recognition.lang = "id-ID";
@@ -85,6 +95,12 @@
 
                 for (let i = 0; i < event.results.length; i++) {
                     text += event.results[i][0].transcript + " ";
+                }
+
+                text = text.trim();
+                // Make the first letter uppercase
+                if (text.length > 0) {
+                    text = text.charAt(0).toUpperCase() + text.slice(1);
                 }
 
                 document.getElementById("result").value = text;
@@ -145,13 +161,46 @@
 
         // COPY TEXT
         document.getElementById("copyBtn").onclick = function() {
-            const text = document.getElementById("result").value;
-            navigator.clipboard.writeText(text);
+            const resultTextarea = document.getElementById("result");
+            const text = resultTextarea.value;
 
-            document.getElementById("status").innerText = "📋 Teks disalin!";
+            if (!text || text.trim() === "") {
+                document.getElementById("status").innerText = "⚠️ Tidak ada teks untuk disalin.";
+                document.getElementById("status").className = "text-center text-warning mt-3";
+                return;
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopySuccess();
+                }).catch(err => {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        };
+
+        function fallbackCopyText(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                alert("Gagal menyalin teks. Silakan salin secara manual.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showCopySuccess() {
+            document.getElementById("status").innerText = "📋 Teks disalin ke clipboard!";
+            document.getElementById("status").className = "text-center text-success mt-3";
             setTimeout(() => {
                 document.getElementById("status").innerText = "";
-            }, 2000);
-        };
+            }, 3000);
+        }
     </script>
 @endpush

@@ -62,8 +62,8 @@ class SopController extends Controller
         $templatePath = public_path("master/master_sop.xlsx");
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
-        $product_code  = 'Kode barang : ' . $sop->product->code ?? '';
-        $product_name  = 'Nama barang : ' . $sop->product->name ?? '';
+        $product_code  = 'Kode barang : ' . ($sop->product->code ?? '');
+        $product_name  = 'Nama barang : ' . ($sop->product->name ?? '');
         $target  = 'Target : ' . $sop->target ?? '';
 
         // === HEADER INFO ===
@@ -93,8 +93,8 @@ class SopController extends Controller
         }
 
         // === SIMPAN FILE ===
-        $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $sop->product->code);
-        $output = storage_path("app/{$file_name}.xlsx");
+        $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', ($sop->product->code ?? ''));
+        $output = storage_path("app/{$file_name}-SOP.xlsx");
         $writer = new Xlsx($spreadsheet);
         $writer->save($output);
 
