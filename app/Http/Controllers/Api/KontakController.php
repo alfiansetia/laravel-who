@@ -48,7 +48,7 @@ class KontakController extends Controller
                 "sort" => "",
                 "context" => [
                     "lang" => "en_US",
-                    "tz" => "GMT",
+                    "tz" => "Asia/Jakarta",
                     "uid" => 192
                 ],
             ],

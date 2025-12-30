@@ -25,7 +25,7 @@ class FileDownloaderController extends Controller
                     ],
                     [
                         "lang" => "en_US",
-                        "tz" => "GMT",
+                        "tz" => "Asia/Jakarta",
                         "uid" => 192,
                         "params" => [
                             "id" => 12508,

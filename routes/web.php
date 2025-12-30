@@ -18,6 +18,7 @@ use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
 use App\Http\Controllers\SopController;
+use App\Http\Controllers\SoController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
@@ -41,6 +42,7 @@ Route::get('monitor-do', function () {
 Route::resource('problem', ProblemController::class);
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
+Route::get('so', [SoController::class, 'index'])->name('so.index');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');

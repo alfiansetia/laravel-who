@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\QcController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\SoController;
 use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\VendorController;
@@ -36,6 +37,9 @@ Route::get('/user', function (Request $request) {
 
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
+
+Route::get('so', [SoController::class, 'index'])->name('api.so.index');
+Route::get('so/{id}', [SOController::class, 'detail'])->name('api.so.detail');
 
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');

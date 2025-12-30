@@ -109,7 +109,7 @@ class StockController extends Controller
                 "sort" => "",
                 "context" => [
                     "lang" => "en_US",
-                    "tz" => "GMT",
+                    "tz" => "Asia/Jakarta",
                     "uid" => 192,
                     "active_model" => "product.template",
                     "active_id" => 21418,
