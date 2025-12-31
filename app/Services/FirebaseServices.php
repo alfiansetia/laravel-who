@@ -80,7 +80,7 @@ class FirebaseServices
         Cache::forget(self::$cacheKey);
     }
 
-    public static function send($title, $body)
+    public static function send($title, $body, $so_id = 0)
     {
         try {
             $tokens = FcmToken::all();
@@ -115,6 +115,8 @@ class FirebaseServices
                             "title" => $title,
                             "body"  => $body,
                             "icon"  => asset('images/asa.png'),
+                            'so_id' => $so_id,
+                            'url'   => route('so.print', $so_id),
                         ],
                     ];
 

@@ -60,7 +60,8 @@ class DoServices extends Odoo
                     'backorder_id',
                     'state',
                     'priority',
-                    'picking_type_id'
+                    'picking_type_id',
+                    'sale_id',
                 ],
                 "limit" => intval($limit),
                 "offset" => intval($offset),

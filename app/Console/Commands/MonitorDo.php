@@ -84,7 +84,8 @@ class MonitorDo extends Command
                         $message .= ' NOTE : ' . Arr::get($value, 'note_to_wh', '') . ', ';
 
                         $doName = Arr::get($value, 'name', '-');
-                        FirebaseServices::send('⚠️ Ada DO Baru!, ' . $doName, $message);
+                        $so_id = Arr::get($value, 'sale_id.0', '0');
+                        FirebaseServices::send('⚠️ Ada DO Baru!, ' . $doName, $message, $so_id);
                         TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . $doName . $message);
                     }
                 }

@@ -1,37 +1,62 @@
-importScripts(
-    "https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"
-);
-importScripts(
-    "https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js"
-);
+importScripts('https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js');
 
-// Konfigurasi Firebase
+// Inisialisasi Firebase di Service Worker
 firebase.initializeApp({
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: "",
-    measurementId: "",
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
 });
 
-const message = firebase.messaging();
+const messaging = firebase.messaging();
 
-// Tangani notifikasi background
-message.onBackgroundMessage((payload) => {
-    console.log("🔔 Background message:", payload);
-    const { title, body, icon } = payload.data;
+// Tangani pesan saat aplikasi di background
+messaging.onBackgroundMessage((payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
-    self.registration.showNotification(title, {
-        body: body,
-        icon: icon,
-        vibrate: [200, 100, 200],
-    });
+    const notificationTitle = payload.data.title || "Notifikasi Baru";
+    const notificationOptions = {
+        body: payload.data.body || "Anda memiliki pesan baru",
+        icon: payload.data.icon || "/images/asa.png",
+        data: {
+            // PENTING: Masukkan url ke dalam objek data agar bisa dibaca saat diklik
+            url: payload.data.url || "/" 
+        }
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Tangani klik notifikasi agar membuka halaman web tertentu
+// Tangani klik pada notifikasi
 self.addEventListener("notificationclick", (event) => {
+    console.log('[firebase-messaging-sw.js] Notification click Received.');
+    
     event.notification.close();
-    event.waitUntil(clients.openWindow("/"));
+
+    // Ambil URL dari event.notification.data yang kita set di atas
+    const urlToOpen = event.notification.data && event.notification.data.url 
+                        ? event.notification.data.url 
+                        : "/";
+
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        }).then((windowClients) => {
+            // Cek jika ada tab yang sudah membuka URL tersebut, maka fokuskan
+            for (let i = 0; i < windowClients.length; i++) {
+                const client = windowClients[i];
+                if (client.url === urlToOpen && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Jika tidak ada tab yang cocok, buka tab baru
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
 });

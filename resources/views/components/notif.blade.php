@@ -99,14 +99,25 @@
                 const {
                     title,
                     body,
-                    icon
+                    icon,
+                    so_id,
+                    url
                 } = payload.data;
 
-                new Notification(title, {
+                const notification = new Notification(title, {
                     body,
                     icon,
+                    data: {
+                        url: url
+                    },
                     vibrate: [200, 100, 200],
                 });
+
+                notification.onclick = function(event) {
+                    event.preventDefault();
+                    window.open(this.data.url, '_blank');
+                    notification.close();
+                };
             });
             success('✅ Notifikasi sudah siap. 😁👍')
         } else {
