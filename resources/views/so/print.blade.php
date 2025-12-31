@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Sales Order - {{ $so_number ?? 'SO14803' }}</title>
+    <title>Print Sales Order - {{ $data['name'] ?? '' }}</title>
     <style>
         * {
             margin: 0;
@@ -97,30 +97,30 @@
 
         .order-info {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 5px 30px;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
         }
 
         .info-row {
             display: flex;
+            flex-direction: column;
             font-size: 9pt;
         }
 
         .info-label {
             font-weight: bold;
-            min-width: 120px;
-            margin-right: 10px;
+            margin-bottom: 3px;
         }
 
         .info-value {
-            flex: 1;
+            color: #333;
         }
 
         /* Note Section */
         .note-section {
-            margin-bottom: 20px;
-            padding: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
             background: #f9f9f9;
             border-left: 3px solid #333;
         }
@@ -134,6 +134,7 @@
         .note-content {
             font-size: 9pt;
             color: #333;
+            white-space: pre-line;
         }
 
         /* Table Section */
@@ -177,7 +178,7 @@
         .summary-section {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
 
         .summary-box {
@@ -186,11 +187,13 @@
         }
 
         .summary-row {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 10px;
             padding: 8px 12px;
             border-bottom: 1px solid #ddd;
             font-size: 10pt;
+            align-items: center;
         }
 
         .summary-row:last-child {
@@ -202,17 +205,22 @@
 
         .summary-label {
             font-weight: 600;
+            text-align: left;
         }
 
         .summary-value {
-            text-align: right;
+            text-align: left;
+        }
+
+        .summary-colon {
+            text-align: center;
         }
 
         /* Signature Section */
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 40px;
+            margin-top: 10px;
             gap: 30px;
         }
 
@@ -275,23 +283,42 @@
             <div class="address-box">
                 <div class="address-title">Invoicing and shipping address:</div>
                 <div class="address-content">
-                    Mitra Asa Pratama, PT<br>
-                    MTH Square Lt. 1 No. 6-7-8, Jl. Letjen M.T. Haryono<br>
-                    No.Kav. 10, RT.6/RW.12, Kp. Melayu, Kecamatan<br>
-                    Jatinegara<br>
-                    Jakarta Timur<br>
-                    13330<br>
-                    Indonesia
+                    {{ Arr::get($data['partner_invoice_id_detail'], 'display_name') }}
+                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street2'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'city'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'zip'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = get_name(Arr::get($data['partner_invoice_id_detail'], 'country_id')))
+                        <br>{{ $val }}
+                    @endif
                 </div>
             </div>
             <div class="address-box">
                 <div class="address-content">
-                    {{ get_name($data['partner_shipping_id']) }}<br>
-                    Jl. Raya Cilimus No.172 Cilimus Kuningan Jawa Barat<br><br>
-                    False<br>
-                    Kuningan<br>
-                    False<br>
-                    Indonesia
+                    {{ Arr::get($data['partner_shipping_id_detail'], 'display_name') }}
+                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street2'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'city'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'zip'))
+                        <br>{{ $val }}
+                    @endif
+                    @if ($val = get_name(Arr::get($data['partner_shipping_id_detail'], 'country_id')))
+                        <br>{{ $val }}
+                    @endif
                 </div>
             </div>
         </div>
@@ -303,15 +330,16 @@
         <div class="order-info">
             <div class="info-row">
                 <span class="info-label">Date Order :</span>
-                <span class="info-value">False</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">No PO :</span>
-                <span class="info-value">{{ get_name($data['no_po']) ?? 'False' }}</span>
+                <span
+                    class="info-value">{{ $data['confirmation_date'] != false ? date('d/m/Y', strtotime($data['confirmation_date'])) : 'False' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Salesperson :</span>
-                <span class="info-value">Kantor</span>
+                <span class="info-value"> {{ get_name($data['user_id']) ?? 'False' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">No PO :</span>
+                <span class="info-value">{{ $data['no_po'] ?? 'False' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Payment Term :</span>
@@ -319,23 +347,22 @@
             </div>
             <div class="info-row">
                 <span class="info-label">No. ID Paket :</span>
-                <span class="info-value">{{ get_name($data['no_aks']) ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">SKA:</span>
-                <span class="info-value">False</span>
+                <span class="info-value">{{ $data['no_aks'] ?? 'False' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Ekspedisi :</span>
                 <span class="info-value">{{ get_name($data['nama_ekspedisi']) ?? 'False' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">SKA:</span>
+                <span class="info-value">{{ $data['no_ska'] ?? 'False' }}</span>
             </div>
         </div>
 
         <!-- Note Warehouse -->
         <div class="note-section">
             <div class="note-title">Note Warehouse</div>
-            <div class="note-content">
-                {!! $data['note_to_wh'] ?? '' !!}
+            <div class="note-content">{{ preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim($data['note_to_wh'] ?? '')) }}
             </div>
         </div>
 
@@ -353,10 +380,14 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $subtotal = 0;
+                        $total_tax = 0;
+                    @endphp
                     @foreach ($data['order_line_detail'] ?? [] as $item)
                         <tr>
-                            <td>{{ $item['default_code'] }} {{ $item['name'] }}</td>
-                            <td class="text-center">{{ $item['product_uom_qty'] }}
+                            <td>[{{ $item['default_code'] }}] {{ $item['name'] }}</td>
+                            <td class="text-center">{{ number_format($item['product_uom_qty'], 1) }}
                                 {{ get_name($item['product_uom']) }}
                             </td>
                             <td class="text-right">{{ $item['unit_price1'] }}</td>
@@ -364,6 +395,10 @@
                             <td class="text-center">Tax 12.00%<br>PPN KELUARAN<br>(INCLUDED)</td>
                             <td class="text-right">{{ $item['price_subtotal1'] }}</td>
                         </tr>
+                        @php
+                            $subtotal += $item['price_subtotal'] ?? 0;
+                            $total_tax += $item['price_tax'] ?? 0;
+                        @endphp
                     @endforeach
                 </tbody>
             </table>
@@ -374,11 +409,13 @@
             <div class="summary-box">
                 <div class="summary-row">
                     <span class="summary-label">Subtotal</span>
-                    <span class="summary-value">: 347,027.02</span>
+                    <span class="summary-colon">:</span>
+                    <span class="summary-value">{{ number_format($subtotal, 2) }}</span>
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">Total</span>
-                    <span class="summary-value">: 385,199.99</span>
+                    <span class="summary-colon">:</span>
+                    <span class="summary-value">{{ number_format($subtotal + $total_tax, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -401,33 +438,23 @@
     </div>
 
     <script>
-        // Auto print when page loads (optional)
         window.onload = function() {
-            // Auto print saat halaman dimuat
             window.print();
-
-            // Auto close tab setelah print selesai atau dibatalkan
-            // Method 1: Menggunakan afterprint event (untuk browser modern)
-            window.addEventListener('afterprint', function() {
-                window.close();
-            });
-
-            // Method 2: Fallback untuk browser yang tidak support afterprint
-            // Deteksi saat user kembali ke halaman (cancel print atau selesai print)
-            let isPrinting = true;
-            window.onbeforeprint = function() {
-                isPrinting = true;
-            };
-
-            window.onfocus = function() {
-                if (isPrinting) {
-                    isPrinting = false;
-                    // Delay sedikit untuk memastikan print dialog sudah tertutup
-                    setTimeout(function() {
-                        window.close();
-                    }, 100);
-                }
-            };
+            // window.addEventListener('afterprint', function() {
+            //     window.close();
+            // });
+            // let isPrinting = true;
+            // window.onbeforeprint = function() {
+            //     isPrinting = true;
+            // };
+            // window.onfocus = function() {
+            //     if (isPrinting) {
+            //         isPrinting = false;
+            //         setTimeout(function() {
+            //             window.close();
+            //         }, 100);
+            //     }
+            // };
         }
     </script>
 </body>

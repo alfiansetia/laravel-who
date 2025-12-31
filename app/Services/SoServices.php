@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Arr;
 
 class SoServices extends Odoo
 {
@@ -281,7 +282,31 @@ class SoServices extends Odoo
         } catch (\Throwable $th) {
             $response['result'][0]['order_line_detail'] = [];
         }
-        return $response['result'][0];
+        try {
+            $partner_ids = array_unique(array_filter([
+                Arr::get($response, 'result.0.partner_id.0'),
+                Arr::get($response, 'result.0.partner_invoice_id.0'),
+                Arr::get($response, 'result.0.partner_shipping_id.0'),
+            ]));
+            $partners = static::getPartners(array_values($partner_ids));
+            $part_res = $partners['result'] ?? [];
+            $response['result'][0]['partner_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($response, 'result.0.partner_id.0'))
+                ->first();
+            $response['result'][0]['partner_invoice_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($response, 'result.0.partner_invoice_id.0'))
+                ->first();
+            $response['result'][0]['partner_shipping_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($response, 'result.0.partner_shipping_id.0'))
+                ->first();
+            $response['result'][0]['partner_details'] = $part_res;
+        } catch (\Throwable $th) {
+            $response['result'][0]['partner_id_detail'] = [];
+            $response['result'][0]['partner_invoice_id_detail'] = [];
+            $response['result'][0]['partner_shipping_id_detail'] = [];
+            $response['result'][0]['partner_details'] = [];
+        }
+        return Arr::get($response, 'result.0', []);
     }
 
     public static function getOrderLines(array $line)
@@ -346,6 +371,145 @@ class SoServices extends Odoo
             ->method('POST')
             ->withUrlParam('/web/dataset/call_kw/sale.order.line/read')
             ->withData($data_line)
+            ->get();
+        return $order_line;
+    }
+
+    public static function getPartners(array $ids)
+    {
+        $id_parts =  array_map('intval', array_filter($ids, 'is_numeric'));
+        $data_parts = [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
+                    $id_parts,
+                    [
+                        "partner_gid",
+                        "additional_info",
+                        "partner_ledger_label",
+                        "active",
+                        "is_company",
+                        "company_type",
+                        "name",
+                        "parent_id",
+                        "company_name",
+                        "nomor_partner",
+                        "type",
+                        "street",
+                        "street2",
+                        "city",
+                        "kota_id",
+                        "kecamatan_id",
+                        "kelurahan_id",
+                        "state_id",
+                        "zip",
+                        "country_id",
+                        "vat",
+                        "is_driver",
+                        "no_ktp",
+                        "is_npwp_pribadi",
+                        "nama_npwp",
+                        "alamat_npwp",
+                        "kategori_pajak",
+                        "is_ekspedisi",
+                        "date",
+                        "create_date",
+                        "crm_tag_ids",
+                        "is_shipper",
+                        "is_consignee",
+                        "is_buyer",
+                        "is_seller",
+                        "is_forwarding_agent",
+                        "agency_type",
+                        "function",
+                        "phone",
+                        "mobile",
+                        "user_ids",
+                        "is_blacklisted",
+                        "email",
+                        "insurance",
+                        "website",
+                        "x_studio_fax",
+                        "d_id",
+                        "fax_msi",
+                        "title",
+                        "lang",
+                        "category_id",
+                        "kode",
+                        "detail_lokasi",
+                        "red_colour",
+                        "red_flag",
+                        "colour",
+                        "note",
+                        "comment",
+                        "customer",
+                        "user_id",
+                        "message_bounce",
+                        "supplier",
+                        "credit_check",
+                        "credit_limit_custom",
+                        "blocking_limit",
+                        "is_hold",
+                        "active_date",
+                        "deactive_date",
+                        "ref",
+                        "barcode",
+                        "company_id",
+                        "website_id",
+                        "industry_id",
+                        "is_dist",
+                        "exp_date",
+                        "idak_exp",
+                        "status_expired",
+                        "disk_transaksi",
+                        "add_exp_datetime",
+                        "allowed_city_ids",
+                        "allowed_products_ids",
+                        "add_allowed_city_ids",
+                        "add_allowed_products_ids",
+                        "is_rel_partner",
+                        "add_rel_exp_datetime",
+                        "rel_allowed_city_ids",
+                        "rel_allowed_products_ids",
+                        "add_rel_allowed_city_ids",
+                        "add_rel_allowed_products_ids",
+                        "currency_id",
+                        "nama_npwp_new",
+                        "kode_pajak",
+                        "nama_faktur",
+                        "npwp",
+                        "alamat_lengkap",
+                        "blok",
+                        "nomor",
+                        "rt",
+                        "rw",
+                        "is_efaktur_exported",
+                        "date_efaktur_exported",
+                        "is_berikat",
+                        "display_name"
+                    ]
+                ],
+                'model' => 'res.partner',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        "lang" => "en_US",
+                        "tz" => "Asia/Jakarta",
+                        "uid" => 192,
+                        "search_default_customer" => 1,
+                        "show_address" => 1,
+                        "show_vat" => true,
+                        "default_type" => "delivery",
+                        "bin_size" => true
+                    ]
+                ]
+            ],
+        ];
+        $order_line = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/res.partner/read')
+            ->withData($data_parts)
             ->get();
         return $order_line;
     }
