@@ -19,6 +19,9 @@ class SoController extends Controller
     public function print($id)
     {
         $data = SoServices::detail($id);
+        if (empty($data)) {
+            return redirect()->route('so.index')->with('error', 'Data Tidak Ditemukan');
+        }
         return view('so.print', compact('data'));
     }
 }
