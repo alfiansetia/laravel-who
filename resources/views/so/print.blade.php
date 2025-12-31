@@ -174,15 +174,17 @@
             text-align: right;
         }
 
-        /* Summary Section */
-        .summary-section {
+        /* Footer Combine Section */
+        .footer-combine {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 10px;
+            gap: 20px;
         }
 
         .summary-box {
-            min-width: 300px;
+            min-width: 250px;
             border: 1px solid #ddd;
         }
 
@@ -216,12 +218,11 @@
             text-align: center;
         }
 
-        /* Signature Section */
         .signature-section {
             display: flex;
+            flex: 1;
             justify-content: space-between;
-            margin-top: 10px;
-            gap: 30px;
+            gap: 20px;
         }
 
         .signature-box {
@@ -231,7 +232,7 @@
 
         .signature-title {
             font-weight: bold;
-            margin-bottom: 60px;
+            margin-bottom: 70px;
             font-size: 10pt;
         }
 
@@ -239,6 +240,7 @@
             border-top: 1px solid #333;
             padding-top: 5px;
             font-size: 9pt;
+            text-align: left;
         }
 
         /* Print Styles */
@@ -357,6 +359,10 @@
                 <span class="info-label">SKA:</span>
                 <span class="info-value">{{ $data['no_ska'] ?? 'False' }}</span>
             </div>
+            <div class="info-row">
+                <span class="info-label">Sistem:</span>
+                <span class="info-value">{{ $data['sistem'] ?? 'False' }}</span>
+            </div>
         </div>
 
         <!-- Note Warehouse -->
@@ -404,8 +410,25 @@
             </table>
         </div>
 
-        <!-- Summary -->
-        <div class="summary-section">
+        <!-- Footer Combined (Summary & Signatures) -->
+        <div class="footer-combine">
+            <!-- Signature portion -->
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-title">Prepared By</div>
+                    <div class="signature-line">Date:</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-title">Reviewed By</div>
+                    <div class="signature-line">Date:</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-title">Approved By</div>
+                    <div class="signature-line">Date:</div>
+                </div>
+            </div>
+
+            <!-- Summary portion -->
             <div class="summary-box">
                 <div class="summary-row">
                     <span class="summary-label">Subtotal</span>
@@ -419,27 +442,11 @@
                 </div>
             </div>
         </div>
-
-        <!-- Signature Section -->
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-title">Prepared By</div>
-                <div class="signature-line">Date:</div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-title">Reviewed By</div>
-                <div class="signature-line">Date:</div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-title">Approved By</div>
-                <div class="signature-line">Date:</div>
-            </div>
-        </div>
     </div>
 
     <script>
         window.onload = function() {
-            window.print();
+            // window.print();
             // window.addEventListener('afterprint', function() {
             //     window.close();
             // });
