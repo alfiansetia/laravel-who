@@ -230,19 +230,25 @@
 
     @if (session()->has('message'))
         <script>
-            show_message("{{ session('message') }}")
+            $(document).ready(function() {
+                show_message("{{ session('message') }}")
+            })
         </script>
     @endif
 
     @if (session()->has('error'))
         <script>
-            show_message("{{ session('error') }}", 'error')
+            $(document).ready(function() {
+                show_message("{{ session('error') }}", 'error')
+            })
         </script>
     @endif
 
     @if (session()->has('success'))
         <script>
-            show_message("{{ session('success') }}", 'success')
+            $(document).ready(function() {
+                show_message("{{ session('success') }}", 'success')
+            })
         </script>
     @endif
 

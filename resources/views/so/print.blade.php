@@ -446,22 +446,22 @@
 
     <script>
         window.onload = function() {
-            // window.print();
-            // window.addEventListener('afterprint', function() {
-            //     window.close();
-            // });
-            // let isPrinting = true;
-            // window.onbeforeprint = function() {
-            //     isPrinting = true;
-            // };
-            // window.onfocus = function() {
-            //     if (isPrinting) {
-            //         isPrinting = false;
-            //         setTimeout(function() {
-            //             window.close();
-            //         }, 100);
-            //     }
-            // };
+            window.print();
+            window.addEventListener('afterprint', function() {
+                window.close();
+            });
+            let isPrinting = true;
+            window.onbeforeprint = function() {
+                isPrinting = true;
+            };
+            window.onfocus = function() {
+                if (isPrinting) {
+                    isPrinting = false;
+                    setTimeout(function() {
+                        window.close();
+                    }, 100);
+                }
+            };
         }
     </script>
 </body>
