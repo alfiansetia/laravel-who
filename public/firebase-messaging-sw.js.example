@@ -60,3 +60,12 @@ self.addEventListener("notificationclick", (event) => {
         })
     );
 });
+
+// Force immediate activation of the new service worker version
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+});

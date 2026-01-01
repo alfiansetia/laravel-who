@@ -48,7 +48,7 @@
     // Registrasi Service Worker
     try {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            navigator.serviceWorker.register('/firebase-messaging-sw.js?v=1' + new Date().getTime())
                 .then(registration => {
                     console.log("✅ Service Worker terdaftar");
                     // console.log("✅ Service Worker terdaftar:", registration);
