@@ -149,19 +149,19 @@
         }
 
         table thead {
-            background: #f0f0f0;
+            /* background: #f0f0f0; */
         }
 
         table th {
             padding: 10px 8px;
             text-align: left;
             font-weight: bold;
-            border: 1px solid #ddd;
+            border: 1px solid #000000ff;
         }
 
         table td {
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid #000000ff;
         }
 
         table th.text-center,
@@ -185,7 +185,7 @@
 
         .summary-box {
             min-width: 250px;
-            border: 1px solid #ddd;
+            border: 1px solid #000000ff;
         }
 
         .summary-row {
@@ -193,14 +193,14 @@
             grid-template-columns: 1fr auto 1fr;
             gap: 10px;
             padding: 8px 12px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #000000ff;
             font-size: 10pt;
             align-items: center;
         }
 
         .summary-row:last-child {
             border-bottom: none;
-            background: #f0f0f0;
+            /* background: #f0f0f0; */
             font-weight: bold;
             font-size: 11pt;
         }
