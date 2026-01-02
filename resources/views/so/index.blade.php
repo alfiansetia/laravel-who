@@ -37,6 +37,10 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-2">
+                        <span><b>Notes</b> : </span>
+                        <span id="modal_note"></span>
+                    </div>
                     <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
                         <thead>
                             <tr>
@@ -100,6 +104,12 @@
                 columns: [{
                         data: "name",
                         className: 'text-left font-weight-bold',
+                        render: function(data, type, row) {
+                            if (type === 'display' && row.sistem.toLowerCase() == 'mf') {
+                                return `${data} <span class="badge badge-danger">MF</span>`;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: "date_order",
@@ -251,6 +261,7 @@
                 if (!rowData) return;
 
                 id = rowData.id;
+                $('#modal_note').html(rowData.note_to_wh);
                 $('#modal_productLabel').html(`<i class="fas fa-list mr-2"></i>Item SO: ${rowData.name}`);
 
                 $.ajax({

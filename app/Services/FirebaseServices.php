@@ -112,11 +112,11 @@ class FirebaseServices
                     $param['message'] = [
                         'token' => $token->token,
                         'data'  => [
-                            "title" => $title,
-                            "body"  => $body,
-                            "icon"  => asset('images/asa.png'),
-                            'so_id' => $so_id,
-                            'url'   => route('so.print', $so_id),
+                            "title" => (string) $title,
+                            "body"  => (string) $body,
+                            "icon"  => (string) asset('images/asa.png'),
+                            'so_id' => (string) $so_id,
+                            'url'   => (string) route('so.print', $so_id),
                         ],
                     ];
 

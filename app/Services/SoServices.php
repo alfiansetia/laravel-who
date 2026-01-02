@@ -70,7 +70,8 @@ class SoServices extends Odoo
                     "is_green",
                     "is_yellow",
                     "is_red",
-                    "note_to_wh"
+                    "note_to_wh",
+                    'sistem'
                 ],
                 "limit" => intval($limit),
                 "offset" => intval($offset),
