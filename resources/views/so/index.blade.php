@@ -6,19 +6,6 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="form-group col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search" placeholder="CARI No SO">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-primary" id="btn_get_po">
-                            <i class="fas fa-search mr-1"></i>SEARCH
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
@@ -28,6 +15,7 @@
                             <th>DATE</th>
                             <th>CUSTOMER</th>
                             <th>NOTES</th>
+                            <th>DO</th>
                             <th style="width: 80px">ACTION</th>
                         </tr>
                     </thead>
@@ -85,15 +73,12 @@
         $(document).ready(function() {
             var table = $('#table').DataTable({
                 rowId: 'id',
+                processing: true,
+                serverSide: true,
                 ajax: {
                     url: URL_INDEX,
-                    data: function(dt) {
-                        search = $('#search').val()
-                        dt['search'] = search
-                        dt['limit'] = 80
-                    },
-                    error: function(xhr, textStatus, errorThrown) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!', 'error');
                     },
                 },
                 order: [
@@ -114,102 +99,62 @@
                 lengthChange: false,
                 columns: [{
                         data: "name",
-                        className: 'text-left',
-                        render: function(data, type, row, meta) {
-                            if (type === 'display') {
-                                return `<b>${data}</b>`
-                            }
-                            return data
-                        }
+                        className: 'text-left font-weight-bold',
                     },
                     {
                         data: "date_order",
                         className: 'text-left',
-                    }, {
-                        data: "customer",
+                    },
+                    {
+                        data: "partner_id",
                         className: 'text-left',
-                        render: function(data, type, row, meta) {
-                            let name = ''
-                            if (type === 'display') {
-                                name = `${row.partner_id == false ? '': row.partner_id[1]}`
-                                return name.substr(0, 25)
+                        render: function(data, type, row) {
+                            if (type === 'display' && Array.isArray(data)) {
+                                return data[1].substring(0, 30);
                             }
-                            return name
+                            return data ? data[1] : '-';
                         }
-                    }, {
+                    },
+                    {
                         data: "note_to_wh",
                         className: 'text-left',
-                        render: function(data, type, row, meta) {
-                            if (type === 'display') {
-                                return `${data.substr(0, 35)}`
+                        render: function(data, type) {
+                            if (type === 'display' && data) {
+                                return data.length > 40 ? data.substring(0, 40) + '...' : data;
                             }
-                            return data
+                            return data || '-';
                         }
-                    }, {
+                    },
+                    {
+                        data: "delivery_count",
+                        className: 'text-center',
+                        orderable: false,
+                    },
+                    {
                         data: "id",
                         className: 'text-center',
                         orderable: false,
-                        searchable: false,
-                        render: function(data, type, row, meta) {
-                            if (type === 'display') {
-                                return `<button class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
-                                    <i class="fas fa-print"></i>
-                                </button>`;
-                            }
-                            return data;
+                        render: function(data) {
+                            return `<button class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
                         }
                     },
                 ],
                 buttons: [{
                         extend: "colvis",
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Column Visible'
-                        },
-                        className: 'btn btn-sm btn-primary'
+                        className: 'btn btn-sm btn-primary',
+                        titleAttr: 'Kolom Terlihat'
                     },
                     {
                         extend: "pageLength",
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Page Length'
-                        },
                         className: 'btn btn-sm btn-info'
                     },
                     {
                         extend: "collection",
                         text: '<i class="fas fa-download mr-1"></i>Export',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Export Data'
-                        },
-                        className: 'btn btn-sm btn-primary',
-                        buttons: [{
-                            extend: 'copy',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'csv',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'pdf',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'excel',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'print',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }],
+                        className: 'btn btn-sm btn-secondary',
+                        buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
                     }
                 ],
             });
@@ -220,137 +165,66 @@
                 dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
                     "<'table-responsive'tr>" +
                     "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
-                oLanguage: {
-                    "sSearchPlaceholder": "Search...",
-                    "sLengthMenu": "Results :  _MENU_",
-                },
-                lengthMenu: [
-                    [10, 50, 100, 500, 1000],
-                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
-                ],
                 paging: false,
                 scrollCollapse: true,
                 scrollY: '400px',
                 columns: [{
-                        data: "default_code",
-                    }, {
-                        data: "name",
+                        data: "default_code"
+                    },
+                    {
+                        data: "name"
                     },
                     {
                         data: "unit_price1",
-                    }, {
-                        data: "product_uom_qty",
-                        className: 'text-center',
-                    }, {
-                        data: "qty_delivered",
-                        className: 'text-center',
-                    },
-                ],
-                buttons: [{
-                        extend: "colvis",
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Column Visible'
-                        },
-                        className: 'btn btn-sm btn-primary'
+                        className: 'text-right',
+                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
                     },
                     {
-                        extend: "collection",
-                        text: '<i class="fas fa-download mr-1"></i>Export',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Export Data'
-                        },
-                        className: 'btn btn-sm btn-primary',
-                        buttons: [{
-                            extend: 'copy',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'csv',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'pdf',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'excel',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'print',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }],
-                    }
+                        data: "product_uom_qty",
+                        className: 'text-center'
+                    },
+                    {
+                        data: "qty_delivered",
+                        className: 'text-center'
+                    },
                 ],
+                buttons: ['colvis']
             });
 
-            // Handle print button click
+
+            // Handle Klik Tombol Print di Tabel
             $('#table tbody').on('click', '.btn-print-so', function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent row click event
+                e.stopPropagation();
                 const soId = $(this).data('id');
                 window.open(`{{ url('so') }}/${soId}/print`, '_blank');
-                return false;
             });
 
-            // Handle row click (exclude buttons)
+            // Handle Klik Baris (Buka Modal Detail)
             $('#table tbody').on('click', 'tr', function(e) {
-                // Check if clicked element is a button or inside a button
-                if ($(e.target).closest('button').length > 0) {
-                    return; // Don't trigger modal if button was clicked
-                }
+                if ($(e.target).closest('button').length > 0) return;
 
-                row = $(this);
-                id = table.row(this).id()
-                let name = table.row(this).data().name
-                $('#modal_productLabel').html(`List Item SO No : ${name}`)
+                const rowData = table.row(this).data();
+                if (!rowData) return;
+
+                id = rowData.id;
+                $('#modal_productLabel').html(`<i class="fas fa-list mr-2"></i>Item SO: ${rowData.name}`);
+
                 $.ajax({
                     url: `${URL_INDEX}/${id}`,
                     type: 'GET',
                     success: function(res) {
-                        table_product.clear().draw();
-                        table_product.rows.add(res.data.order_line_detail).draw();
-                        $('#modal_product').modal('show')
+                        table_product.clear().rows.add(res.data.order_line_detail).draw();
+                        $('#modal_product').modal('show');
                     }
-                })
-
+                });
             });
-
-            $('#refresh').click(function() {
-                table.ajax.reload()
-            })
-
-            $('#location').select2({
-                allowClear: false
-            })
-
-            function reload_table() {
-                table.ajax.reload()
-            }
-
-            function hrg(x) {
-                return parseInt(x).toLocaleString('en-US')
-            }
 
             $('#btn_print').click(function() {
                 if (id > 0) {
                     window.open(`{{ url('so') }}/${id}/print`, '_blank');
-                } else {
-                    show_message('Silakan pilih SO terlebih dahulu!', 'warning');
                 }
             });
-
-            $('#btn_get_po').click(function() {
-                table.ajax.reload()
-            })
         });
     </script>
 @endpush

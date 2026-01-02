@@ -11,9 +11,29 @@ class SoController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->search ?? '';
-        $response = SoServices::getAll($search);
-        return $this->sendResponse(Arr::get($response, 'records'));
+        // Ambil parameter dari DataTables
+        $draw   = $request->draw;
+        $start  = $request->start ?? 0;
+        $length = $request->length ?? 10;
+        $search = $request->input('search');
+        if (is_array($search)) {
+            $search = $search['value'] ?? '';
+        }
+        $search = (string) ($search ?? '');
+
+        // Panggil Service dengan limit dan offset (start)
+        $response = SoServices::getAll($search, $length, $start);
+
+        // Odoo (dataset/search_read) mengembalikan 'length' dan 'records'
+        $totalRecords = Arr::get($response, 'length', 0);
+        $data = Arr::get($response, 'records', []);
+
+        return response()->json([
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $totalRecords, // Odoo 'length' adalah jumlah yang sudah terfilter keyword
+            'data'            => $data
+        ]);
     }
 
     public function detail(int $id)

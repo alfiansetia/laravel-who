@@ -378,7 +378,7 @@
                 <thead>
                     <tr>
                         <th>Product</th>
-                        <th class="text-center">Qty</th>
+                        <th class="text-center" style="white-space: nowrap;">Qty</th>
                         <th class="text-right">Unit Price</th>
                         <th class="text-center">Disc(%)</th>
                         <th class="text-center">Taxes</th>
@@ -386,25 +386,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        $subtotal = 0;
-                        $total_tax = 0;
-                    @endphp
+
                     @foreach ($data['order_line_detail'] ?? [] as $item)
                         <tr>
                             <td>[{{ $item['default_code'] }}] {{ $item['name'] }}</td>
-                            <td class="text-center">{{ number_format($item['product_uom_qty'], 1) }}
-                                {{ get_name($item['product_uom']) }}
+                            <td class="text-center" style="white-space: nowrap;">
+                                {{ number_format($item['product_uom_qty'], 1) }} {{ get_name($item['product_uom']) }}
                             </td>
                             <td class="text-right">{{ $item['unit_price1'] }}</td>
                             <td class="text-center">{{ $item['plus_disc'] }}</td>
                             <td class="text-center">{{ get_name($data['disc_tax_id1']) ?? 'False' }}</td>
                             <td class="text-right">{{ $item['price_subtotal1'] }}</td>
                         </tr>
-                        @php
-                            $subtotal += $item['price_subtotal'] ?? 0;
-                            $total_tax += $item['price_tax'] ?? 0;
-                        @endphp
                     @endforeach
                 </tbody>
             </table>
@@ -433,12 +426,12 @@
                 <div class="summary-row">
                     <span class="summary-label">Subtotal</span>
                     <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($subtotal, 2) }}</span>
+                    <span class="summary-value">{{ number_format($data['amount_untaxed'], 2) }}</span>
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">Total</span>
                     <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($subtotal + $total_tax, 2) }}</span>
+                    <span class="summary-value">{{ number_format($data['amount_total'], 2) }}</span>
                 </div>
             </div>
         </div>
