@@ -174,7 +174,10 @@
         $(document).ready(function() {
             let blockTimeout;
 
-            $(document).ajaxStart(function() {
+            $(document).ajaxSend(function() {
+                // Clear timeout lama jika masih ada (mencegah bentrok antar request)
+                if (blockTimeout) clearTimeout(blockTimeout);
+
                 $.blockUI({
                     message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...',
                     baseZ: 2000,
@@ -183,31 +186,18 @@
                 // Set timeout untuk auto unblock setelah 10 detik
                 blockTimeout = setTimeout(function() {
                     $.unblockUI();
-                    console.warn('BlockUI timeout - automatically unblocked after 10 seconds');
                 }, 10000);
             });
 
-            $(document).ajaxStop(function() {
-                // Clear timeout jika ajax selesai sebelum timeout
-                if (blockTimeout) {
-                    clearTimeout(blockTimeout);
-                }
+            $(document).ajaxComplete(function() {
+                if (blockTimeout) clearTimeout(blockTimeout);
                 $.unblockUI();
             });
 
-            // Handle AJAX errors
             $(document).ajaxError(function(event, jqxhr, settings, thrownError) {
-                // Clear timeout jika ada error
-                if (blockTimeout) {
-                    clearTimeout(blockTimeout);
-                }
-                $.unblockUI();
-
-                // Optional: tampilkan error message
-                console.error('AJAX Error:', thrownError);
-
-                // Uncomment jika ingin tampilkan notifikasi error
-                // show_message('Terjadi kesalahan: ' + thrownError, 'error');
+                // console.error('AJAX Error:', thrownError);
+                // Notifikasi error opsional
+                // show_message('Terjadi kesalahan pada server', 'error');
             });
 
             bsCustomFileInput.init();
