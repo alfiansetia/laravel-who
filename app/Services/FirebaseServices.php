@@ -135,22 +135,28 @@ class FirebaseServices
                         $successCount++;
                     } else {
                         $failedCount++;
-                        Log::warning('Firebase: Gagal mengirim notifikasi, token dihapus', [
+                        $errorStatus = $post->json('error.status');
+
+                        Log::warning('Firebase: Gagal mengirim notifikasi', [
                             'token_id' => $token->id,
                             'status_code' => $post->status(),
+                            'error_status' => $errorStatus,
                             'response' => $post->body()
                         ]);
-                        $token->delete();
+
+                        // Hanya hapus jika token memang sudah tidak terdaftar (UNREGISTERED)
+                        if ($errorStatus === 'UNREGISTERED') {
+                            $token->delete();
+                            Log::info("Firebase: Token ID {$token->id} dihapus karena UNREGISTERED");
+                        }
                     }
                 } catch (Exception $e) {
-                    // Jangan biarkan 1 token error menghentikan pengiriman ke token lain
                     $failedCount++;
                     Log::error('Firebase: Exception saat mengirim ke token', [
                         'token_id' => $token->id,
                         'error' => $e->getMessage()
                     ]);
-                    // Hapus token yang bermasalah
-                    $token->delete();
+                    // Jangan menghapus token jika terjadi exception (misal: timeout/koneksi)
                 }
             }
 
