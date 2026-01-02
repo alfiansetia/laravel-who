@@ -285,7 +285,7 @@
             <div class="address-box">
                 <div class="address-title">Invoicing and shipping address:</div>
                 <div class="address-content">
-                    {{ Arr::get($data['partner_invoice_id_detail'], 'display_name') }}
+                    <b>{{ Arr::get($data['partner_invoice_id_detail'], 'display_name') }}</b>
                     @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street'))
                         <br>{{ $val }}
                     @endif
@@ -305,7 +305,7 @@
             </div>
             <div class="address-box">
                 <div class="address-content">
-                    {{ Arr::get($data['partner_shipping_id_detail'], 'display_name') }}
+                    <b>{{ Arr::get($data['partner_shipping_id_detail'], 'display_name') }}</b>
                     @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street'))
                         <br>{{ $val }}
                     @endif
