@@ -188,7 +188,50 @@
                         className: 'text-center'
                     },
                 ],
-                buttons: ['colvis']
+                buttons: [{
+                        extend: "colvis",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Column Visible'
+                        },
+                        className: 'btn btn-sm btn-primary'
+                    },
+                    {
+                        extend: "collection",
+                        text: '<i class="fas fa-download mr-1"></i>Export',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Export Data'
+                        },
+                        className: 'btn btn-sm btn-primary',
+                        buttons: [{
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }],
+                    }
+                ],
             });
 
 
