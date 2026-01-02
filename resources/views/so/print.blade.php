@@ -359,17 +359,17 @@
                 <span class="info-label">SKA:</span>
                 <span class="info-value">{{ $data['no_ska'] ?? 'False' }}</span>
             </div>
-            <div class="info-row">
-                <span class="info-label">System:</span>
-                <span class="info-value">{{ $data['sistem'] ?? 'False' }}</span>
-            </div>
         </div>
 
+        @php
+            $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim($data['note_to_wh'] ?? ''));
+            $mf = strtolower($data['sistem'] ?? '') == 'mf';
+            $label_mf = $mf ? '<b>' . strtoupper($data['sistem']) . '</b><br/>' : '';
+        @endphp
         <!-- Note Warehouse -->
         <div class="note-section">
             <div class="note-title">Note Warehouse</div>
-            <div class="note-content">{{ preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim($data['note_to_wh'] ?? '')) }}
-            </div>
+            <div class="note-content">{!! $label_mf !!}{!! $note_to_wh !!}</div>
         </div>
 
         <!-- Product Table -->
@@ -395,7 +395,7 @@
                             </td>
                             <td class="text-right">{{ $item['unit_price1'] }}</td>
                             <td class="text-center">{{ $item['plus_disc'] }}</td>
-                            <td class="text-center">{{ get_name($data['disc_tax_id1']) ?? 'False' }}</td>
+                            <td class="text-center">{{ Arr::get($item, 'tax_id_detail.display_name', 'False') }}</td>
                             <td class="text-right">{{ $item['price_subtotal1'] }}</td>
                         </tr>
                     @endforeach

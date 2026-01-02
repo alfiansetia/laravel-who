@@ -372,6 +372,30 @@ class SoServices extends Odoo
             ->withUrlParam('/web/dataset/call_kw/sale.order.line/read')
             ->withData($data_line)
             ->get();
+        try {
+            $tax_ids = [];
+            foreach ($order_line['result'] as $value) {
+                $line_taxes = Arr::get($value, 'tax_id', []);
+                if (is_array($line_taxes)) {
+                    $tax_ids = array_merge($tax_ids, $line_taxes);
+                }
+            }
+            $tax_ids = array_values(array_unique(array_filter($tax_ids)));
+
+            $tax_response = static::getTaxes($tax_ids);
+            $tax_res = $tax_response['result'] ?? [];
+
+            foreach ($order_line['result'] as $key => $value) {
+                $first_tax_id = Arr::get($value, 'tax_id.0');
+                $order_line['result'][$key]['tax_id_detail'] = collect($tax_res)
+                    ->where('id', $first_tax_id)
+                    ->first();
+            }
+        } catch (\Throwable $th) {
+            foreach ($order_line['result'] as $key => $value) {
+                $order_line['result'][$key]['tax_id_detail'] = [];
+            }
+        }
         return $order_line;
     }
 
@@ -510,6 +534,39 @@ class SoServices extends Odoo
             ->method('POST')
             ->withUrlParam('/web/dataset/call_kw/res.partner/read')
             ->withData($data_parts)
+            ->get();
+        return $order_line;
+    }
+
+    public static function getTaxes(array $ids)
+    {
+        $id_tax =  array_map('intval', array_filter($ids, 'is_numeric'));
+        $data_tax = [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
+                    $id_tax,
+                    [
+                        "display_name"
+                    ]
+                ],
+                'model' => 'account.tax',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        "lang" => "en_US",
+                        "tz" => "Asia/Jakarta",
+                        "uid" => 192,
+                        "search_default_my_quotation" => 1
+                    ]
+                ]
+            ],
+        ];
+        $order_line = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/account.tax/read')
+            ->withData($data_tax)
             ->get();
         return $order_line;
     }
