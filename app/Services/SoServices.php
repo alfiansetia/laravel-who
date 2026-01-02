@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\OdooException;
 use Exception;
 use Illuminate\Support\Arr;
 
@@ -276,37 +277,41 @@ class SoServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
+        $res = Arr::get($response, 'result.0', null);
+        if (!$res) {
+            throw new OdooException('Data Not Found!', 404);
+        }
         try {
-            $order_ids = static::getOrderLines($response['result'][0]['order_line'] ?? []);
-            $response['result'][0]['order_line_detail'] = $order_ids['result'] ?? [];
+            $order_ids = static::getOrderLines($res['order_line'] ?? []);
+            $res['order_line_detail'] = $order_ids['result'] ?? [];
         } catch (\Throwable $th) {
-            $response['result'][0]['order_line_detail'] = [];
+            $res['order_line_detail'] = [];
         }
         try {
             $partner_ids = array_unique(array_filter([
-                Arr::get($response, 'result.0.partner_id.0'),
-                Arr::get($response, 'result.0.partner_invoice_id.0'),
-                Arr::get($response, 'result.0.partner_shipping_id.0'),
+                Arr::get($res, 'partner_id.0'),
+                Arr::get($res, 'partner_invoice_id.0'),
+                Arr::get($res, 'partner_shipping_id.0'),
             ]));
             $partners = static::getPartners(array_values($partner_ids));
             $part_res = $partners['result'] ?? [];
-            $response['result'][0]['partner_id_detail'] = collect($part_res)
-                ->where('id', Arr::get($response, 'result.0.partner_id.0'))
+            $res['partner_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($res, 'partner_id.0'))
                 ->first();
-            $response['result'][0]['partner_invoice_id_detail'] = collect($part_res)
-                ->where('id', Arr::get($response, 'result.0.partner_invoice_id.0'))
+            $res['partner_invoice_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($res, 'partner_invoice_id.0'))
                 ->first();
-            $response['result'][0]['partner_shipping_id_detail'] = collect($part_res)
-                ->where('id', Arr::get($response, 'result.0.partner_shipping_id.0'))
+            $res['partner_shipping_id_detail'] = collect($part_res)
+                ->where('id', Arr::get($res, 'partner_shipping_id.0'))
                 ->first();
-            $response['result'][0]['partner_details'] = $part_res;
+            $res['partner_details'] = $part_res;
         } catch (\Throwable $th) {
-            $response['result'][0]['partner_id_detail'] = [];
-            $response['result'][0]['partner_invoice_id_detail'] = [];
-            $response['result'][0]['partner_shipping_id_detail'] = [];
-            $response['result'][0]['partner_details'] = [];
+            $res['partner_id_detail'] = [];
+            $res['partner_invoice_id_detail'] = [];
+            $res['partner_shipping_id_detail'] = [];
+            $res['partner_details'] = [];
         }
-        return Arr::get($response, 'result.0', []);
+        return $res;
     }
 
     public static function getOrderLines(array $line)

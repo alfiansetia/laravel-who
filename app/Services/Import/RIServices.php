@@ -2,8 +2,10 @@
 
 namespace App\Services\Import;
 
+use App\Exceptions\OdooException;
 use App\Services\Odoo;
 use Exception;
+use Illuminate\Support\Arr;
 
 class RIServices extends Odoo
 {
@@ -107,7 +109,7 @@ class RIServices extends Odoo
         return $response['result'];
     }
 
-    public static function detail($id)
+    public static function detail(int $id)
     {
         $url_param = '/web/dataset/call_kw/stock.picking/read';
         $data = [
@@ -237,17 +239,20 @@ class RIServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
-        try {
-            $order_line = static::move_line_without($response['result'][0]['move_ids_without_package']);
-            $response['result'][0]['move_ids_without_package_detail'] = $order_line['result'] ?? [];
-        } catch (\Throwable $th) {
-            $response['result'][0]['move_ids_without_package_detail'] = [];
+        $res = Arr::get($response, 'result.0', null);
+        if (!$res) {
+            throw new OdooException('Data Not Found!', 404);
         }
-
-        return $response['result'];
+        try {
+            $order_line = static::getMovesWithoutPackages($res['move_ids_without_package']);
+            $res['move_without_package_detail'] = $order_line['result'] ?? [];
+        } catch (\Throwable $th) {
+            $res['move_without_package_detail'] = [];
+        }
+        return $res;
     }
 
-    public static function getOrderLines(array $line)
+    public static function getMovesWithoutPackages(array $line)
     {
         $id_prod =  array_map('intval', array_filter($line, 'is_numeric'));
         $data_line = [

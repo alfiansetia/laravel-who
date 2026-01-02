@@ -6,20 +6,6 @@
 
 @section('content')
     <div class="container-fluid">
-        {{-- <h1>{{ $title }}</h1> --}}
-        <div class="row mb-2">
-            <div class="form-group col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search" placeholder="CARI No PO" value="PO">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-primary" id="btn_get_po">
-                            <i class="fas fa-search mr-1"></i>SEARCH
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
@@ -29,6 +15,7 @@
                             <th>VENDOR</th>
                             <th>USER</th>
                             <th>NOTES</th>
+                            <th>RI</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,18 +25,22 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_lot" data-backdrop="static" tabindex="-1" aria-labelledby="modal_lotLabel"
+    <div class="modal fade" id="modal_product" data-backdrop="static" tabindex="-1" aria-labelledby="modal_productLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal_lotLabel">Modal title</h5>
+                    <h5 class="modal-title" id="modal_productLabel">Modal title</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-hover" id="table_lot" style="width: 100%;cursor: pointer;">
+                    <div class="mb-2">
+                        <span><b>Note</b> : </span>
+                        <span id="modal_note"></span>
+                    </div>
+                    <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -57,6 +48,7 @@
                                 <th>AKL</th>
                                 <th style="width: 30px">QTY</th>
                                 <th style="width: 30px">QTY RI</th>
+                                <th style="width: 30px">QTY SISA</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,21 +68,18 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        var URL_INDEX_API = "{{ route('api.po.index') }}"
+        var id = 0
         $(document).ready(function() {
-            var url_index = "{{ route('api.po.index') }}"
-            var id = 0
+
             var table = $('#table').DataTable({
                 rowId: 'id',
+                processing: true,
+                serverSide: true,
                 ajax: {
-                    url: url_index,
-                    // dataSrc: 'records',
-                    data: function(dt) {
-                        search = $('#search').val()
-                        dt['search'] = search
-                        dt['limit'] = 500
-                    },
-                    error: function(xhr, textStatus, errorThrown) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                    url: URL_INDEX_API,
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!', 'error');
                     },
                 },
                 order: [
@@ -111,13 +100,40 @@
                 lengthChange: false,
                 columns: [{
                         data: "name",
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                return `<b>${data}</b>`
+                            }
+                            return data;
+                        }
                     },
                     {
-                        data: "vendor",
+                        data: "partner_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data || '-';
+                        }
                     }, {
-                        data: "user",
+                        data: "user_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data || '-';
+                        }
                     }, {
                         data: "notes",
+                        render: function(data, type, row) {
+                            if (type === 'display' && data) {
+                                return data.length > 40 ? data.substring(0, 40) + '...' : data
+                            }
+                            return data || '-';
+                        }
+                    }, {
+                        data: "picking_count",
+                        className: 'text-center'
                     },
                 ],
                 buttons: [{
@@ -174,124 +190,138 @@
                 ],
             });
 
+            var table_product = $("#table_product").DataTable({
+                processing: true,
+                serverSide: false,
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
+                    "<'table-responsive'tr>" +
+                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
+                oLanguage: {
+                    "sSearchPlaceholder": "Search...",
+                    "sLengthMenu": "Results :  _MENU_",
+                },
+                lengthMenu: [
+                    [10, 50, 100, 500, 1000],
+                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
+                ],
+                paging: false,
+                scrollCollapse: true,
+                scrollY: '400px',
+                columns: [{
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            let text = Array.isArray(data) ? data[1] : data;
+                            return getCode(text)
+                        }
+                    }, {
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            let text = Array.isArray(data) ? data[1] : data;
+                            return getDesc(text)
+                        }
+                    },
+                    {
+                        data: "akl",
+                        render: function(data, type, row) {
+                            return Array.isArray(data) ? data[1] : data;
+                        }
+                    }, {
+                        data: "product_qty",
+                        className: 'text-center',
+                    }, {
+                        data: "qty_received",
+                        className: 'text-center',
+                    }, {
+                        data: "qty_received",
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            return row.product_qty - data
+                        }
+                    },
+                ],
+                buttons: [{
+                        extend: "colvis",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Column Visible'
+                        },
+                        className: 'btn btn-sm btn-primary'
+                    },
+                    {
+                        extend: "collection",
+                        text: '<i class="fas fa-download mr-1"></i>Export',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Export Data'
+                        },
+                        className: 'btn btn-sm btn-primary',
+                        buttons: [{
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }],
+                    }
+                ],
+            });
+
             $('#table tbody').on('click', 'tr td', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(this).id()
                 let name = table.row(row).data().name
-                var lines = table.row(row).data().order_line
-                $('#modal_lotLabel').html(`List Item PO No : ${name}`)
-                $('#table_lot').DataTable().clear().destroy();
-                table_lot = $("#table_lot").DataTable({
-                    processing: true,
-                    serverSide: false,
-                    ajax: {
-                        url: `{{ url('api/po') }}/order-line`,
-                        // dataSrc: 'result',
-                        data: function(dt) {
-                            dt['lines[]'] = lines
-                        },
-                        error: function(xhr, textStatus, errorThrown) {
-                            show_message(xhr.responseJSON.message || 'Error!')
-                        },
+                let note = table.row(row).data().notes
+                $('#modal_productLabel').html(`List Item PO No : ${name}`)
+                $('#modal_note').html(note)
+                $.ajax({
+                    url: `${URL_INDEX_API}/${id}`,
+                    type: 'GET',
+                    success: function(res) {
+                        table_product.clear().rows.add(res.data.order_line_detail).draw();
+                        $('#modal_product').modal('show');
                     },
-                    dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
-                        "<'table-responsive'tr>" +
-                        "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
-                    oLanguage: {
-                        "sSearchPlaceholder": "Search...",
-                        "sLengthMenu": "Results :  _MENU_",
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!',
+                            'error');
                     },
-                    lengthMenu: [
-                        [10, 50, 100, 500, 1000],
-                        ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
-                    ],
-                    paging: false,
-                    scrollCollapse: true,
-                    scrollY: '400px',
-                    columns: [{
-                            data: "code",
-                        }, {
-                            data: "name",
-                        },
-                        {
-                            data: "akl",
-                        }, {
-                            data: "quantity",
-                            className: 'text-center',
-                        }, {
-                            data: "qty_ri",
-                            className: 'text-center',
-                        },
-                    ],
-                    buttons: [{
-                            extend: "colvis",
-                            attr: {
-                                'data-toggle': 'tooltip',
-                                'title': 'Column Visible'
-                            },
-                            className: 'btn btn-sm btn-primary'
-                        },
-                        {
-                            extend: "collection",
-                            text: '<i class="fas fa-download mr-1"></i>Export',
-                            attr: {
-                                'data-toggle': 'tooltip',
-                                'title': 'Export Data'
-                            },
-                            className: 'btn btn-sm btn-primary',
-                            buttons: [{
-                                extend: 'copy',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }, {
-                                extend: 'csv',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }, {
-                                extend: 'pdf',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }, {
-                                extend: 'excel',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }, {
-                                extend: 'print',
-                                exportOptions: {
-                                    columns: ':visible'
-                                }
-                            }],
-                        }
-                    ],
                 });
-
-                $('#modal_lot').modal('show')
-
             });
 
-            $('#refresh').click(function() {
-                table.ajax.reload()
-            })
+            function getCode(str) {
+                if (!str) return '';
+                let match = str.match(/\[(.*?)\]/);
+                return match ? match[1] : '';
+            }
 
-            $('#location').select2({
-                allowClear: false
-            })
-
-            function reload_table() {
-                table.ajax.reload()
+            function getDesc(str) {
+                if (!str) return '';
+                let match = str.match(/\]\s*(.*)/);
+                return match ? match[1] : str;
             }
 
             function hrg(x) {
                 return parseInt(x).toLocaleString('en-US')
             }
 
-            $('#btn_get_po').click(function() {
-                table.ajax.reload()
-            })
         });
     </script>
 @endpush

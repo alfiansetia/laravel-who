@@ -2,8 +2,10 @@
 
 namespace App\Services\Import;
 
+use App\Exceptions\OdooException;
 use App\Services\Odoo;
 use Exception;
+use Illuminate\Support\Arr;
 
 class POServices extends Odoo
 {
@@ -168,15 +170,18 @@ class POServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
+        $res = Arr::get($response, 'result.0', null);
+        if (!$res) {
+            throw new OdooException('Data Not Found!', 404);
+        }
         try {
-            $order_line = static::getOrderLines($response['result'][0]['order_line']);
-            $response['result'][0]['order_line_detail'] = $order_line['result'] ?? [];
+            $order_line = static::getOrderLines($res['order_line']);
+            $res['order_line_detail'] = $order_line['result'] ?? [];
         } catch (\Throwable $th) {
-            $response['result'][0]['order_line_detail'] = [];
-            //throw $th;
+            $res['order_line_detail'] = [];
         }
 
-        return $response['result'];
+        return $res;
     }
 
     public static function getOrderLines(array $line)

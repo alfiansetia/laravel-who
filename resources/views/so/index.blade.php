@@ -67,7 +67,7 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        const URL_INDEX = "{{ route('api.so.index') }}"
+        const URL_INDEX_API = "{{ route('api.so.index') }}"
         var id = 0;
 
         $(document).ready(function() {
@@ -76,7 +76,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: URL_INDEX,
+                    url: URL_INDEX_API,
                     error: function(xhr) {
                         show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!', 'error');
                     },
@@ -211,12 +211,16 @@
                 $('#modal_productLabel').html(`<i class="fas fa-list mr-2"></i>Item SO: ${rowData.name}`);
 
                 $.ajax({
-                    url: `${URL_INDEX}/${id}`,
+                    url: `${URL_INDEX_API}/${id}`,
                     type: 'GET',
                     success: function(res) {
                         table_product.clear().rows.add(res.data.order_line_detail).draw();
                         $('#modal_product').modal('show');
-                    }
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!',
+                            'error');
+                    },
                 });
             });
 

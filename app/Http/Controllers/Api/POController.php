@@ -6,22 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PoResource;
 use App\Services\Import\POServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class POController extends Controller
 {
     public function index(Request $request)
     {
-        $res = POServices::getAll($request->search, $request->limit, $request->offset);
-        return  $this->sendResponse(['data' => collect($res['records'])->map(function ($item) {
-            $item['vendor'] = get_name($item['partner_id']);
-            $item['user'] = get_name($item['user_id']);
-            return $item;
-        })]);
+        $draw   = $request->draw;
+        $start  = $request->start ?? 0;
+        $length = $request->length ?? 10;
+        $search = $request->input('search');
+        if (is_array($search)) {
+            $search = $search['value'] ?? '';
+        }
+        $search = (string) ($search ?? '');
+        $response = POServices::getAll($search, $length, $start);
+        $totalRecords = Arr::get($response, 'length', 0);
+        $data = Arr::get($response, 'records', []);
+
+        return response()->json([
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data'            => $data
+        ]);
     }
 
     public function detail(Request $request, string $id)
     {
-        $res = POServices::detail(intval($id));
+        $res = POServices::detail($id);
         return $this->sendResponse($res);
     }
 
