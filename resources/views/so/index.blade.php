@@ -129,6 +129,20 @@
                     {
                         data: "date_order",
                         className: 'text-left',
+                        render: function(data, type, row) {
+                            if (type === 'display' && data) {
+                                let date = new Date(data.replace(' ', 'T'));
+                                date.setHours(date.getHours() + 7);
+                                let d = ("0" + date.getDate()).slice(-2);
+                                let m = ("0" + (date.getMonth() + 1)).slice(-2);
+                                let y = date.getFullYear();
+                                let h = ("0" + date.getHours()).slice(-2);
+                                let min = ("0" + date.getMinutes()).slice(-2);
+                                let s = ("0" + date.getSeconds()).slice(-2);
+                                return `${d}/${m}/${y} ${h}:${min}:${s}`;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: "partner_id",

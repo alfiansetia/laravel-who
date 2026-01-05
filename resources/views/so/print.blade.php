@@ -30,9 +30,6 @@
         .header {
             display: flex;
             justify-content: space-between;
-            /* margin-bottom: 15px; */
-            /* padding-bottom: 15px; */
-            /* border-bottom: 2px solid #333; */
         }
 
         .header-left {
@@ -77,7 +74,7 @@
 
         .address-title {
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 1px;
             font-size: 10pt;
         }
 
@@ -148,20 +145,16 @@
             font-size: 9pt;
         }
 
-        table thead {
-            /* background: #f0f0f0; */
-        }
-
         table th {
             padding: 10px 8px;
             text-align: left;
             font-weight: bold;
-            border: 1px solid #000000ff;
+            border: 1px solid #000;
         }
 
         table td {
             padding: 8px;
-            border: 1px solid #000000ff;
+            border: 1px solid #000;
         }
 
         table th.text-center,
@@ -185,7 +178,7 @@
 
         .summary-box {
             min-width: 250px;
-            border: 1px solid #000000ff;
+            border: 1px solid #000;
         }
 
         .summary-row {
@@ -193,14 +186,13 @@
             grid-template-columns: 1fr auto 1fr;
             gap: 10px;
             padding: 8px 12px;
-            border-bottom: 1px solid #000000ff;
+            border-bottom: 1px solid #000;
             font-size: 10pt;
             align-items: center;
         }
 
         .summary-row:last-child {
             border-bottom: none;
-            /* background: #f0f0f0; */
             font-weight: bold;
             font-size: 11pt;
         }
@@ -281,9 +273,9 @@
         </div>
 
         <!-- Address Section -->
+        <div class="address-title">Invoicing and shipping address:</div>
         <div class="address-section">
             <div class="address-box">
-                <div class="address-title">Invoicing and shipping address:</div>
                 <div class="address-content">
                     <b>{{ Arr::get($data['partner_invoice_id_detail'], 'display_name') }}</b>
                     @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street'))
@@ -379,7 +371,7 @@
                     <tr>
                         <th>Product</th>
                         <th class="text-center" style="white-space: nowrap;">Qty</th>
-                        <th class="text-right">Unit Price</th>
+                        <th class="text-right" style="white-space: nowrap;">Unit Price</th>
                         <th class="text-center">Disc(%)</th>
                         <th class="text-center">Taxes</th>
                         <th class="text-right">Amount</th>
