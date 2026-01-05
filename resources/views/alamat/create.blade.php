@@ -191,15 +191,16 @@
                 $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
                     $('#select_do').empty()
                     $('#select_do').append('<option value="">Pilih</option>');
-                    for (let i = 0; i < res.data.records.length; i++) {
-                        let name = res.data.records[i].name
-                        if (res.data.records[i].group_id != false) {
-                            name += ' (' + res.data.records[i].group_id[1] + ')'
+                    let resData = res.data
+                    for (let i = 0; i < resData.length; i++) {
+                        let name = resData[i].name
+                        if (resData[i].group_id != false) {
+                            name += ' (' + resData[i].group_id[1] + ')'
                         }
-                        if (res.data.records[i].partner_id != false) {
-                            name += ' ' + res.data.records[i].partner_id[1]
+                        if (resData[i].partner_id != false) {
+                            name += ' ' + resData[i].partner_id[1]
                         }
-                        let option = new Option(name, res.data.records[i].id,
+                        let option = new Option(name, resData[i].id,
                             true, true);
                         $('#select_do').append(option);
                     }

@@ -4,6 +4,7 @@ use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AlamatBaruController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
+use App\Http\Controllers\DoController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KarganController;
@@ -49,6 +50,8 @@ Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
 Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.eksport');
 
+Route::get('do', [DoController::class, 'index'])->name('do.index');
+Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print');
 
 // NEW ROUTE
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');
