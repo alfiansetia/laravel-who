@@ -119,7 +119,8 @@
                         data: "name",
                         className: 'text-left font-weight-bold',
                         render: function(data, type, row) {
-                            if (type === 'display' && row.sistem?.toLowerCase() == 'mf') {
+                            if (type === 'display' && row.sistem && row.sistem.toLowerCase() ===
+                                'mf') {
                                 return `${data} <span class="badge badge-danger">MF</span>`;
                             }
                             return data;
