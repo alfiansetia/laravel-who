@@ -7,10 +7,10 @@
 @section('content')
     <div class="container-fluid">
         <div class="row mb-2">
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <select class="form-control" id="filter">
                     <option value="">All</option>
-                    <option value="print_ok">Print OK</option>
+                    <option value="print_ok">Blm Print OK</option>
                 </select>
             </div>
         </div>
