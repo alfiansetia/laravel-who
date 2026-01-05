@@ -56,7 +56,7 @@
 
         .company-address {
             font-size: 9pt;
-            color: #666;
+            color: #000;
             line-height: 1.6;
         }
 
@@ -266,7 +266,7 @@
                     MTH Square Lt. 1 No. 6, Jl. Letjen M.T. Haryono<br>
                     No.Kav. 10, RT.6/RW.12, Kp. Melayu,<br>
                     Kecamatan Jatinegara<br>
-                    Jakarta Timur DK 13330<br>
+                    Jakarta Timur JK 13330<br>
                     Indonesia
                 </div>
             </div>
