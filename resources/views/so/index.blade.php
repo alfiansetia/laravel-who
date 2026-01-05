@@ -223,7 +223,6 @@
                     {
                         data: "unit_price1",
                         className: 'text-right',
-                        render: $.fn.dataTable.render.number(',', '.', 0, 'Rp ')
                     },
                     {
                         data: "product_uom_qty",
