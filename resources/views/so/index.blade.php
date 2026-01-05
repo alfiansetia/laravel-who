@@ -6,6 +6,14 @@
 
 @section('content')
     <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <select class="form-control" id="filter">
+                    <option value="">All</option>
+                    <option value="print_ok">Print OK</option>
+                </select>
+            </div>
+        </div>
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
@@ -37,10 +45,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-2">
-                        <span><b>Notes</b> : </span>
-                        <span id="modal_note"></span>
-                    </div>
                     <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
                         <thead>
                             <tr>
@@ -54,6 +58,11 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <hr class="my-2">
+                    <div class="mt-2">
+                        <b>Notes</b> :
+                        <div id="modal_note" style="white-space: pre-wrap;"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success" id="btn_print">
@@ -75,12 +84,17 @@
         var id = 0;
 
         $(document).ready(function() {
+            $('#filter').select2();
+
             var table = $('#table').DataTable({
                 rowId: 'id',
                 processing: true,
                 serverSide: true,
                 ajax: {
                     url: URL_INDEX_API,
+                    data: function(d) {
+                        d.filter = $('#filter').val();
+                    },
                     error: function(xhr) {
                         show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!', 'error');
                     },
@@ -165,6 +179,13 @@
                         text: '<i class="fas fa-download mr-1"></i>Export',
                         className: 'btn btn-sm btn-secondary',
                         buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+                    },
+                    {
+                        text: '<i class="fas fa-sync mr-1"></i>Refresh',
+                        className: 'btn btn-sm btn-info',
+                        action: function(e, dt, node, config) {
+                            table.ajax.reload();
+                        }
                     }
                 ],
             });
@@ -282,6 +303,10 @@
                 if (id > 0) {
                     window.open(`{{ url('so') }}/${id}/print`, '_blank');
                 }
+            });
+
+            $('#filter').change(function() {
+                table.ajax.reload();
             });
         });
     </script>

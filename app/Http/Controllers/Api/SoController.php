@@ -19,7 +19,18 @@ class SoController extends Controller
             $search = $search['value'] ?? '';
         }
         $search = (string) ($search ?? '');
-        $response = SoServices::getAll($search, $length, $start);
+        $filter = $request->input('filter');
+        $filters = [];
+        if ($filter == 'print_ok') {
+            $filters = [
+                [
+                    "note_to_wh",
+                    "not ilike",
+                    "PRINT OK"
+                ]
+            ];
+        }
+        $response = SoServices::getAll($search, $length, $start, $filters);
         $totalRecords = Arr::get($response, 'length', 0);
         $data = Arr::get($response, 'records', []);
 

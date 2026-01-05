@@ -35,14 +35,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-1">
-                        <span><b>Origin/PO</b> : </span>
-                        <span id="modal_origin"></span>
-                    </div>
-                    <div class="mb-2">
-                        <span><b>Notes</b> : </span>
-                        <span id="modal_note"></span>
-                    </div>
                     <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
                         <thead>
                             <tr>
@@ -58,6 +50,15 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <hr class="my-2">
+                    <div class="mt-2">
+                        <span><b>Origin/PO</b> : </span>
+                        <span id="modal_origin"></span>
+                    </div>
+                    <div class="mt-2">
+                        <span><b>Notes</b> : </span>
+                        <span id="modal_note" style="white-space: pre-wrap;"></span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">

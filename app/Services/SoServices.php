@@ -10,7 +10,7 @@ class SoServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll(string $query = '', int $limit = 80, int $offset = 0)
+    public static function getAll(string $query = '', int $limit = 80, int $offset = 0, array $filter = [])
     {
         $url_param = '/web/dataset/search_read';
         $data =         [
@@ -35,7 +35,8 @@ class SoServices extends Odoo
                         "partner_id",
                         "child_of",
                         $query
-                    ]
+                    ],
+                    ...$filter
                 ],
                 'fields' => [
                     "message_needaction",
