@@ -175,7 +175,7 @@
                         className: 'text-center',
                         orderable: false,
                         render: function(data) {
-                            return `<button class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
+                            return `<button class="btn btn-sm btn-success btn-print-do" data-id="${data}" title="Print DO">
                                         <i class="fas fa-print"></i>
                                     </button>`;
                         }
@@ -298,11 +298,11 @@
 
 
             // Handle Klik Tombol Print di Tabel
-            $('#table tbody').on('click', '.btn-print-so', function(e) {
+            $('#table tbody').on('click', '.btn-print-do', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                const soId = $(this).data('id');
-                window.open(`{{ url('so') }}/${soId}/print`, '_blank');
+                const doId = $(this).data('id');
+                window.open(`{{ url('do') }}/${doId}/print`, '_blank');
             });
 
             // Handle Klik Baris (Buka Modal Detail)
