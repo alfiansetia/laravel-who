@@ -157,6 +157,11 @@
             border: 1px solid #000;
         }
 
+        /* Spacer untuk halaman baru */
+        .table-header-spacer {
+            display: none;
+        }
+
         table th.text-center,
         table td.text-center {
             text-align: center;
@@ -238,7 +243,9 @@
         /* Print Styles */
         @media print {
             body {
-                padding: 8mm;
+                padding: 10mm 15mm !important;
+                /* Atur jarak halaman 1 di sini */
+                margin: 0 !important;
             }
 
             .container {
@@ -246,7 +253,24 @@
             }
 
             @page {
-                margin: 15mm;
+                margin: 0;
+                /* Matikan margin @page agar tidak dobel */
+            }
+
+            .table-container {
+                margin-top: -10mm;
+                /* Menarik tabel ke atas untuk membatalkan spacer di halaman 1 */
+            }
+
+            .table-header-spacer {
+                display: table-row;
+            }
+
+            .table-header-spacer th {
+                height: 10mm;
+                /* Harus sama dengan padding-top body */
+                border: none !important;
+                padding: 0 !important;
             }
         }
     </style>
@@ -368,6 +392,9 @@
         <div class="table-container">
             <table>
                 <thead>
+                    <tr class="table-header-spacer">
+                        <th colspan="6"></th>
+                    </tr>
                     <tr>
                         <th>Product</th>
                         <th class="text-center" style="white-space: nowrap;">Qty</th>
