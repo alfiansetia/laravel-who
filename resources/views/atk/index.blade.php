@@ -43,7 +43,7 @@
     <script>
         $.fn.dataTable.ext.errMode = 'none';
 
-        var BASE_URL_API = "{{ route('api.atk.index') }}"
+        const BASE_URL_API = "{{ route('api.atk.index') }}"
         var ID = 0;
 
         var table_detail;
@@ -111,7 +111,7 @@
                         }
                     }, {
                         data: "code",
-                        className: "text-left",
+                        className: "text-center",
                     },
                     {
                         data: "name",
@@ -308,9 +308,11 @@
                     ordering: false,
                     columns: [{
                             data: "date",
+                            className: "text-left",
                         },
                         {
                             data: "pic",
+                            className: "text-left",
                         }, {
                             data: "qty",
                             className: "text-center",
@@ -537,7 +539,9 @@
                 });
             })
 
-
+            $('#modal_trx').on('show.bs.modal', function(e) {
+                $('#trx_qty').focus()
+            })
         });
     </script>
 
