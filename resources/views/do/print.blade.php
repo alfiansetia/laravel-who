@@ -242,15 +242,15 @@
                 <div class="do-header-title">Delivery Order</div>
                 <table class="do-info-table">
                     <tr>
-                        <th style="width: 50%;">Delivery Date</th>
-                        <th>DO No</th>
+                        <th style="width: 50%;"><u>Delivery Date</u></th>
+                        <th><u>DO No</u></th>
                     </tr>
                     <tr>
                         <td>05/01/2026</td>
                         <td>{{ $data['name'] ?? 'CENT/OUT/16061' }}</td>
                     </tr>
                     <tr>
-                        <th colspan="2">PO No</th>
+                        <th colspan="2"><u>PO No</u></th>
                     </tr>
                     <tr>
                         <td colspan="2" style="text-align: center; font-size: 8pt;">
@@ -262,10 +262,10 @@
                             <table style="width: 100%; border-collapse: collapse; border: none;">
                                 <tr>
                                     <td style="border: none; border-right: 1px solid #000; width: 50%; padding: 2px;">
-                                        <strong>Terms</strong><br>60 Days
+                                        <strong><u>Terms</u></strong><br>60 Days
                                     </td>
                                     <td style="border: none; padding: 2px;">
-                                        <strong>ID Paket</strong><br>
+                                        <strong><u>ID Paket</u></strong><br>
                                         EP-01KCTZD9FMX5VTYHKTVA1R4CR8 PUSKESMAS PAKKAT
                                     </td>
                                 </tr>
@@ -273,7 +273,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="2">Ship Via</th>
+                        <th colspan="2"><u>Ship Via</u></th>
                     </tr>
                     <tr>
                         <td colspan="2">Tiki Regular</td>
