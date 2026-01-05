@@ -6,23 +6,16 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-md-3">
-                <select class="form-control" id="filter">
-                    <option value="">All</option>
-                    <option value="print_ok">Blm Print OK</option>
-                </select>
-            </div>
-        </div>
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                     <thead class="thead-dark">
                         <tr>
                             <th>NO DO</th>
-                            <th>DATE</th>
+                            <th>FDATE</th>
                             <th>PARTNER</th>
                             <th>SO</th>
+                            <th>STATUS</th>
                             <th>NOTES</th>
                             <th style="width: 80px">ACTION</th>
                         </tr>
@@ -50,15 +43,19 @@
                             <tr>
                                 <th>Code</th>
                                 <th>Desc</th>
-                                <th>Price</th>
-                                <th style="width: 30px">QTY Order</th>
-                                <th style="width: 30px">QTY Delivered</th>
+                                <th>AKL</th>
+                                <th style="width: 30px">QTY SO</th>
+                                <th style="width: 30px">QTY DONE</th>
                             </tr>
                         </thead>
                         <tbody>
                         </tbody>
                     </table>
                     <hr class="my-2">
+                    <div class="mt-2">
+                        <b>Status</b> :
+                        <div id="modal_status"></div>
+                    </div>
                     <div class="mt-2">
                         <b>Notes</b> :
                         <div id="modal_note" style="white-space: pre-wrap;"></div>
@@ -80,6 +77,7 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX = "{{ route('do.index') }}"
         const URL_INDEX_API = "{{ route('api.do.index') }}"
         var id = 0;
 
@@ -159,6 +157,10 @@
                         className: 'text-center',
                     },
                     {
+                        data: "state",
+                        className: 'text-center',
+                    },
+                    {
                         data: "note_to_wh",
                         className: 'text-left',
                         render: function(data, type) {
@@ -214,21 +216,37 @@
                 scrollCollapse: true,
                 scrollY: '400px',
                 columns: [{
-                        data: "default_code"
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return getCode(data[1]);
+                            }
+                            return data;
+                        }
                     },
                     {
-                        data: "name"
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return getDesc(data[1]);
+                            }
+                            return data;
+                        }
                     },
                     {
-                        data: "unit_price1",
-                        className: 'text-right',
+                        data: "akl_id",
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            return Array.isArray(data) ? data[1] : data;
+                        }
                     },
                     {
                         data: "product_uom_qty",
                         className: 'text-center'
                     },
+
                     {
-                        data: "qty_delivered",
+                        data: "quantity_done",
                         className: 'text-center'
                     },
                 ],
@@ -296,13 +314,16 @@
 
                 id = rowData.id;
                 $('#modal_note').html(rowData.note_to_wh);
+                $('#modal_status').html(
+                    `<span class="badge badge-warning">${rowData.state}</span>`
+                );
                 $('#modal_productLabel').html(`<i class="fas fa-list mr-2"></i>Item SO: ${rowData.name}`);
 
                 $.ajax({
                     url: `${URL_INDEX_API}/${id}`,
                     type: 'GET',
                     success: function(res) {
-                        table_product.clear().rows.add(res.data.order_line_detail).draw();
+                        table_product.clear().rows.add(res.data.move_ids_detail).draw();
                         $('#modal_product').modal('show');
                     },
                     error: function(xhr) {
@@ -314,12 +335,8 @@
 
             $('#btn_print').click(function() {
                 if (id > 0) {
-                    window.open(`{{ url('so') }}/${id}/print`, '_blank');
+                    window.open(`${URL_INDEX}/${id}/print`, '_blank');
                 }
-            });
-
-            $('#filter').change(function() {
-                table.ajax.reload();
             });
 
             function getCode(str) {

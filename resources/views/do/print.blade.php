@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Sales Order - {{ $data['name'] ?? '' }}</title>
+    <title>Print Delivery Order - {{ $data['name'] ?? 'Dummy-DO' }}</title>
     <style>
         * {
             margin: 0;
@@ -13,264 +13,187 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.4;
-            padding: 20px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 9pt;
+            line-height: 1.2;
+            /* padding: 10mm; */
             background: white;
+            color: #000;
         }
 
         .container {
-            max-width: 210mm;
+            width: 100%;
             margin: 0 auto;
-            background: white;
         }
 
-        /* Header Section */
-        .header {
+        /* Top Header */
+        .top-header {
             display: flex;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            flex: 1;
-        }
-
-        .logo {
-            width: 150px;
-            height: auto;
-            margin-bottom: 10px;
-        }
-
-        .header-right {
-            flex: 1;
-            text-align: right;
-        }
-
-        .company-name {
-            font-size: 16pt;
-            font-weight: bold;
-            color: #333;
+            align-items: flex-start;
             margin-bottom: 5px;
         }
 
-        .company-address {
-            font-size: 9pt;
-            color: #000;
-            line-height: 1.6;
-        }
-
-        /* Address Section */
-        .address-section {
+        .logo-section {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            gap: 30px;
+            align-items: center;
+            width: 33%;
         }
 
-        .address-box {
-            flex: 1;
+        .logo-img {
+            height: 45px;
+            margin-right: 10px;
         }
 
-        .address-title {
-            font-weight: bold;
-            margin-bottom: 1px;
+        .logo-text {
+            border-left: 1px solid #000;
+            padding-left: 10px;
             font-size: 10pt;
-        }
-
-        .address-content {
-            font-size: 9pt;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        /* Order Info Section */
-        .order-title {
-            font-size: 18pt;
             font-weight: bold;
-            margin-bottom: 10px;
-            text-align: left;
+            line-height: 1;
         }
 
-        .order-info {
+        /* Info Grid (Company, Ship To, DO Info) */
+        .info-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px 30px;
-            margin-bottom: 15px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            margin-bottom: 5px;
         }
 
-        .info-row {
-            display: flex;
-            flex-direction: column;
-            font-size: 9pt;
+        .info-box {
+            border: 1px solid #000;
+            padding: 5px;
+            min-height: 100px;
         }
 
-        .info-label {
+        .info-title {
             font-weight: bold;
+            text-decoration: underline;
             margin-bottom: 3px;
         }
 
-        .info-value {
-            color: #333;
-        }
-
-        /* Note Section */
-        .note-section {
-            margin-bottom: 10px;
-            padding: 8px;
-            background: #f9f9f9;
-            border-left: 3px solid #333;
-        }
-
-        .note-title {
+        .do-header-title {
+            text-align: center;
+            font-size: 16pt;
             font-weight: bold;
-            font-size: 10pt;
             margin-bottom: 5px;
         }
 
-        .note-content {
-            font-size: 9pt;
-            color: #333;
-            white-space: pre-line;
+        /* Detail Table (Right side of header) */
+        .do-info-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        /* Table Section */
-        .table-container {
+        .do-info-table th,
+        .do-info-table td {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        .do-info-table th {
+            font-weight: bold;
+            background-color: #fff;
+        }
+
+        /* Middle Section (Bill To & Description) */
+        .middle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
             margin-bottom: 10px;
         }
 
-        table {
+        .middle-box {
+            border: 1px solid #000;
+            padding: 5px;
+            min-height: 80px;
+        }
+
+        /* Main Items Table */
+        .items-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9pt;
+            margin-bottom: 20px;
+            table-layout: fixed;
         }
 
-        table th {
-            padding: 10px 8px;
+        .items-table th,
+        .items-table td {
+            border: 1px solid #000;
+            padding: 4px;
             text-align: left;
-            font-weight: bold;
-            border: 1px solid #000;
+            font-size: 8.5pt;
+            word-wrap: break-word;
         }
 
-        table td {
-            padding: 8px;
-            border: 1px solid #000;
-        }
-
-        /* Spacer untuk halaman baru */
-        .table-header-spacer {
-            display: none;
-        }
-
-        table th.text-center,
-        table td.text-center {
+        .items-table th {
             text-align: center;
+            font-weight: bold;
         }
 
-        table th.text-right,
-        table td.text-right {
-            text-align: right;
+        .text-center {
+            text-align: center !important;
         }
 
-        /* Footer Combine Section */
-        .footer-combine {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-top: 10px;
-            gap: 20px;
+        .text-right {
+            text-align: right !important;
         }
 
-        .summary-box {
-            min-width: 250px;
-            border: 1px solid #000;
-        }
-
-        .summary-row {
+        /* Footer / Signatures */
+        .footer-signatures {
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 10px;
-            padding: 8px 12px;
-            border-bottom: 1px solid #000;
-            font-size: 10pt;
-            align-items: center;
-        }
-
-        .summary-row:last-child {
-            border-bottom: none;
-            font-weight: bold;
-            font-size: 11pt;
-        }
-
-        .summary-label {
-            font-weight: 600;
-            text-align: left;
-        }
-
-        .summary-value {
-            text-align: left;
-        }
-
-        .summary-colon {
+            grid-template-columns: repeat(5, 1fr);
+            margin-top: 30px;
             text-align: center;
-        }
-
-        .signature-section {
-            display: flex;
-            flex: 1;
-            justify-content: space-between;
-            gap: 20px;
         }
 
         .signature-box {
-            flex: 1;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 80px;
         }
 
-        .signature-title {
-            font-weight: bold;
-            margin-bottom: 70px;
-            font-size: 10pt;
+        .signature-name {
+            font-weight: normal;
         }
 
         .signature-line {
-            border-top: 1px solid #333;
-            padding-top: 5px;
-            font-size: 9pt;
-            text-align: left;
+            width: 80%;
+            margin: 0 auto;
+            border-bottom: 1px solid #000;
         }
 
-        /* Print Styles */
+        .signature-date {
+            margin-top: 2px;
+            text-align: left;
+            padding-left: 10%;
+            font-size: 8pt;
+        }
+
+        .form-code {
+            /* position: fixed; */
+            /* bottom: 10mm; */
+            /* right: 15mm; */
+            margin-top: 8px;
+            text-align: right;
+            font-size: 8pt;
+        }
+
         @media print {
             body {
-                padding: 10mm 15mm !important;
-                /* Atur jarak halaman 1 di sini */
-                margin: 0 !important;
+                padding: 8mm;
             }
 
             .container {
-                max-width: 100%;
+                width: 100%;
             }
 
             @page {
                 margin: 0;
-                /* Matikan margin @page agar tidak dobel */
-            }
-
-            .table-container {
-                margin-top: -10mm;
-                /* Menarik tabel ke atas untuk membatalkan spacer di halaman 1 */
-            }
-
-            .table-header-spacer {
-                display: table-row;
-            }
-
-            .table-header-spacer th {
-                height: 10mm;
-                /* Harus sama dengan padding-top body */
-                border: none !important;
-                padding: 0 !important;
             }
         }
     </style>
@@ -278,203 +201,204 @@
 
 <body>
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-left">
-                <img src="{{ asset('images/asa_old.jpg') }}" alt="Company Logo" class="logo">
+        <!-- Top Logo Header -->
+        <div class="top-header">
+            <div class="logo-section">
+                <img src="{{ asset('images/map_do.png') }}" alt="Logo" class="logo-img">
             </div>
-            <div class="header-right">
-                <div class="company-name">Mitra Asa Pratama</div>
-                <div class="company-address">
-                    PT MITRA ASA PRATAMA<br>
-                    MTH Square Lt. 1 No. 6, Jl. Letjen M.T. Haryono<br>
-                    No.Kav. 10, RT.6/RW.12, Kp. Melayu,<br>
-                    Kecamatan Jatinegara<br>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <!-- Company Info -->
+            <div class="info-box">
+                <div class="info-title" style="text-decoration: none;">PT MITRA ASA PRATAMA</div>
+                <div>
+                    MTH Square Lt. 1 No. 6, Jl. Letjen M.T.<br>
+                    Haryono No.Kav. 10, RT.6/RW.12, Kp.<br>
+                    Melayu, Kecamatan Jatinegara<br>
                     Jakarta Timur JK 13330<br>
                     Indonesia
                 </div>
             </div>
-        </div>
 
-        <!-- Address Section -->
-        <div class="address-title">Invoicing and shipping address:</div>
-        <div class="address-section">
-            <div class="address-box">
-                <div class="address-content">
-                    <b>{{ Arr::get($data['partner_invoice_id_detail'], 'display_name') }}</b>
-                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'street2'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'city'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_invoice_id_detail'], 'zip'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = get_name(Arr::get($data['partner_invoice_id_detail'], 'country_id')))
-                        <br>{{ $val }}
-                    @endif
+            <!-- Ship To -->
+            <div class="info-box">
+                <div class="info-title">Ship To</div>
+                <div>
+                    Humbang Hasundutan Kab, Dinkes<br>
+                    Jl. Sisingamangaraja, Kompleks<br>
+                    Perkantoran Tano Tubu KM 2.5,<br>
+                    Doloksanggul Kode Pos 22457<br>
+                    Humbang Hasundutan<br>
+                    Indonesia<br>
+                    UP : Ibu Neli Purba PPK 0813-7017-5245<br>
+                    Tlp : - / -
                 </div>
             </div>
-            <div class="address-box">
-                <div class="address-content">
-                    <b>{{ Arr::get($data['partner_shipping_id_detail'], 'display_name') }}</b>
-                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street2'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'city'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = Arr::get($data['partner_shipping_id_detail'], 'zip'))
-                        <br>{{ $val }}
-                    @endif
-                    @if ($val = get_name(Arr::get($data['partner_shipping_id_detail'], 'country_id')))
-                        <br>{{ $val }}
-                    @endif
-                </div>
-            </div>
-        </div>
 
-        <!-- Order Title -->
-        <div class="order-title">ORDER - {{ $data['name'] ?? '' }}</div>
-
-        <!-- Order Info Grid -->
-        <div class="order-info">
-            <div class="info-row">
-                <span class="info-label">Date Order :</span>
-                <span
-                    class="info-value">{{ $data['confirmation_date'] != false ? date('d/m/Y', strtotime($data['confirmation_date'])) : 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Salesperson :</span>
-                <span class="info-value"> {{ get_name($data['user_id']) ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">No PO :</span>
-                <span class="info-value">{{ $data['no_po'] ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Payment Term :</span>
-                <span class="info-value">{{ get_name($data['payment_term_id']) ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">No. ID Paket :</span>
-                <span class="info-value">{{ $data['no_aks'] ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Ekspedisi :</span>
-                <span class="info-value">{{ get_name($data['nama_ekspedisi']) ?? 'False' }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">SKA:</span>
-                <span class="info-value">{{ $data['no_ska'] ?? 'False' }}</span>
-            </div>
-        </div>
-
-        @php
-            $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim($data['note_to_wh'] ?? ''));
-            $mf = strtolower($data['sistem'] ?? '') == 'mf';
-            $label_mf = $mf ? '<b>' . strtoupper($data['sistem']) . '</b><br/>' : '';
-        @endphp
-        <!-- Note Warehouse -->
-        <div class="note-section">
-            <div class="note-title">Note Warehouse</div>
-            <div class="note-content">{!! $label_mf !!}{!! $note_to_wh !!}</div>
-        </div>
-
-        <!-- Product Table -->
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr class="table-header-spacer">
-                        <th colspan="6"></th>
+            <!-- DO Details -->
+            <div style="display: flex; flex-direction: column;">
+                <div class="do-header-title">Delivery Order</div>
+                <table class="do-info-table">
+                    <tr>
+                        <th style="width: 50%;">Delivery Date</th>
+                        <th>DO No</th>
                     </tr>
                     <tr>
-                        <th>Product</th>
-                        <th class="text-center" style="white-space: nowrap;">Qty</th>
-                        <th class="text-right" style="white-space: nowrap;">Unit Price</th>
-                        <th class="text-center">Disc(%)</th>
-                        <th class="text-center">Taxes</th>
-                        <th class="text-right">Amount</th>
+                        <td>05/01/2026</td>
+                        <td>{{ $data['name'] ?? 'CENT/OUT/16061' }}</td>
                     </tr>
-                </thead>
-                <tbody>
-
-                    @foreach ($data['order_line_detail'] ?? [] as $item)
-                        <tr>
-                            <td>[{{ $item['default_code'] }}] {{ $item['name'] }}</td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                {{ number_format($item['product_uom_qty'], 1) }} {{ get_name($item['product_uom']) }}
-                            </td>
-                            <td class="text-right">{{ $item['unit_price1'] }}</td>
-                            <td class="text-center">{{ $item['plus_disc'] }}</td>
-                            <td class="text-center">{{ Arr::get($item, 'tax_id_detail.display_name', 'False') }}</td>
-                            <td class="text-right">{{ $item['price_subtotal1'] }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    <tr>
+                        <th colspan="2">PO No</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: center; font-size: 8pt;">
+                            EP-01KCTZD9FMX5VTYHKTVA1R4CR8 PUSKESMAS S PAKKAT
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 0;">
+                            <table style="width: 100%; border-collapse: collapse; border: none;">
+                                <tr>
+                                    <td style="border: none; border-right: 1px solid #000; width: 50%; padding: 2px;">
+                                        <strong>Terms</strong><br>60 Days
+                                    </td>
+                                    <td style="border: none; padding: 2px;">
+                                        <strong>ID Paket</strong><br>
+                                        EP-01KCTZD9FMX5VTYHKTVA1R4CR8 PUSKESMAS PAKKAT
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2">Ship Via</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Tiki Regular</td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
-        <!-- Footer Combined (Summary & Signatures) -->
-        <div class="footer-combine">
-            <!-- Signature portion -->
-            <div class="signature-section">
-                <div class="signature-box">
-                    <div class="signature-title">Prepared By</div>
-                    <div class="signature-line">Date:</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-title">Reviewed By</div>
-                    <div class="signature-line">Date:</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-title">Approved By</div>
-                    <div class="signature-line">Date:</div>
+        <!-- Middle Grid -->
+        <div class="middle-grid">
+            <div class="middle-box">
+                <div class="info-title">Bill To</div>
+                <div>
+                    Humbang Hasundutan Kab, Dinkes<br>
+                    Jl. Sisingamangaraja, Kompleks Perkantoran<br>
+                    Tano Tubu KM 2.5, Doloksanggul Kode Pos<br>
+                    22457<br>
+                    Humbang Hasundutan<br>
+                    Indonesia
                 </div>
             </div>
-
-            <!-- Summary portion -->
-            <div class="summary-box">
-                <div class="summary-row">
-                    <span class="summary-label">Subtotal</span>
-                    <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($data['amount_untaxed'], 2) }}</span>
+            <div class="middle-box" style="grid-column: span 2;">
+                <div class="info-title">Description:</div>
+                <div>
+                    CBP<br>
+                    ACC DSS 5/1/2026 : Kirim Semua.<br><br>
+                    Packaging LABEL: BMHP JKN UPT<br>
+                    PUSKESMAS PAKKAT<br>
+                    Nilai kontrak Rp 23.035.053 Dateline kontrak 23/2/2026
                 </div>
-                <div class="summary-row">
-                    <span class="summary-label">Total</span>
-                    <span class="summary-colon">:</span>
-                    <span class="summary-value">{{ number_format($data['amount_total'], 2) }}</span>
+            </div>
+        </div>
+
+        <!-- Main Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Item</th>
+                    <th style="width: 35%;">Item Description</th>
+                    <th style="width: 15%;">AKL</th>
+                    <th style="width: 10%;">LOT/SN</th>
+                    <th style="width: 10%;">ED</th>
+                    <th style="width: 8%;">QTY</th>
+                    <th style="width: 7%;">Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dummy Data Rows -->
+                <tr>
+                    <td>PDL.NLC-U25</td>
+                    <td>Nubion LifeCheck UA 1x25</td>
+                    <td class="text-center">AKD 20101420145</td>
+                    <td class="text-center">FE41</td>
+                    <td class="text-center">31/07/2027</td>
+                    <td class="text-center">0.0</td>
+                    <td class="text-center">EA</td>
+                </tr>
+                <tr>
+                    <td>PDL.NLC-G50</td>
+                    <td>Nubion LifeCheck GLU 2x25</td>
+                    <td class="text-center">AKD 20101324087</td>
+                    <td class="text-center">F1b3.</td>
+                    <td class="text-center">31/07/2027</td>
+                    <td class="text-center">0.0</td>
+                    <td class="text-center">EA</td>
+                </tr>
+                <tr>
+                    <td>PDL.NLC-C10</td>
+                    <td>Nubion LifeCheck TC 1x10</td>
+                    <td class="text-center">AKD 20101420146</td>
+                    <td class="text-center">22E2</td>
+                    <td class="text-center">28/02/2027</td>
+                    <td class="text-center">0.0</td>
+                    <td class="text-center">EA</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Signatures -->
+        <div class="footer-signatures">
+            <div class="signature-box">
+                <div>Prepared By</div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div class="signature-date">Date</div>
+                </div>
+            </div>
+            <div class="signature-box">
+                <div>Approved By</div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div class="signature-date">Date</div>
+                </div>
+            </div>
+            <div class="signature-box">
+                <div>PJT</div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div class="signature-date">Date</div>
+                </div>
+            </div>
+            <div class="signature-box">
+                <div>Shipped By</div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div class="signature-date">Date</div>
+                </div>
+            </div>
+            <div class="signature-box">
+                <div>Received By</div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div class="signature-date">Date</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Form Code -->
+    <div class="form-code">FORM/WH/013/20.1</div>
+
     <script>
         window.onload = function() {
             window.print();
-            window.addEventListener('afterprint', function() {
-                window.close();
-            });
-            let isPrinting = true;
-            window.onbeforeprint = function() {
-                isPrinting = true;
-            };
-            window.onfocus = function() {
-                if (isPrinting) {
-                    isPrinting = false;
-                    setTimeout(function() {
-                        window.close();
-                    }, 100);
-                }
-            };
-        }
+        };
     </script>
 </body>
 

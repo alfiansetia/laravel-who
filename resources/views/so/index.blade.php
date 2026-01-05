@@ -80,6 +80,7 @@
 @push('js')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        const URL_INDEX = "{{ route('so.index') }}"
         const URL_INDEX_API = "{{ route('api.so.index') }}"
         var id = 0;
 
@@ -315,7 +316,7 @@
 
             $('#btn_print').click(function() {
                 if (id > 0) {
-                    window.open(`{{ url('so') }}/${id}/print`, '_blank');
+                    window.open(`${URL_INDEX}/${id}/print`, '_blank');
                 }
             });
 
