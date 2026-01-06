@@ -98,4 +98,10 @@ class KoliItemController extends Controller
 
         return $this->sendResponse($koliItem, 'Order updated!');
     }
+
+    public function clearLot(KoliItem $koliItem)
+    {
+        $koliItem->update(['lot' => null]);
+        return $this->sendResponse($koliItem, 'Lot cleared!');
+    }
 }

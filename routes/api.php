@@ -139,6 +139,8 @@ Route::apiResource('koli', KoliController::class)
 // Koli Item Routes
 Route::post('koli-item/{koliItem}/order', [KoliItemController::class, 'order'])
     ->name('api.koli_item.order');
+Route::post('koli-item/{koliItem}/clear-lot', [KoliItemController::class, 'clearLot'])
+    ->name('api.koli_item.clear_lot');
 Route::apiResource('koli-item', KoliItemController::class)
     ->names('api.koli_item');
 

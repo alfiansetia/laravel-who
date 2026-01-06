@@ -413,6 +413,7 @@
                                 <button type="button" ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>
                                 <button type="button" ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>
                                 <button type="button" class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="btn btn-sm btn-info btn-clear-lot" data-item-id="${item.id}" title="Clear Lot" ${item.lot ? '' : 'disabled'}><i class="fas fa-broom"></i></button>
                                 <button type="button" class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
@@ -462,6 +463,12 @@
                 $('.btn-delete-item').click(function() {
                     let itemId = $(this).data('item-id');
                     deleteItem(itemId);
+                });
+
+                // Clear Lot
+                $('.btn-clear-lot').click(function() {
+                    let itemId = $(this).data('item-id');
+                    clearLotItem(itemId);
                 });
 
                 // Item order
@@ -678,6 +685,23 @@
                     show_message(result.message, 'success');
                 }).fail(function(xhr) {
                     show_message(xhr.responseJSON.message || 'Error!');
+                });
+            }
+
+            // Clear lot item
+            function clearLotItem(itemId) {
+                confirmation('Hapus Lot?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            type: 'POST',
+                            url: `${URL_KOLI_ITEM_API}/${itemId}/clear-lot`,
+                        }).done(function(result) {
+                            loadKolis();
+                            show_message(result.message, 'success');
+                        }).fail(function(xhr) {
+                            show_message(xhr.responseJSON.message || 'Error!');
+                        });
+                    }
                 });
             }
 
