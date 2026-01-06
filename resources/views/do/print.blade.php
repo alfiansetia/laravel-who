@@ -15,8 +15,7 @@
         body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 9pt;
-            line-height: 1.2;
-            /* padding: 10mm; */
+            line-height: 1.15;
             background: white;
             color: #000;
         }
@@ -26,63 +25,54 @@
             margin: 0 auto;
         }
 
-        /* Top Header */
-        .top-header {
-            display: flex;
-            align-items: flex-start;
+        /* Top Header Logo */
+        .top-logo-row {
             margin-bottom: 5px;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            width: 33%;
         }
 
         .logo-img {
-            height: 45px;
-            margin-right: 10px;
+            height: 40px;
         }
 
-        .logo-text {
-            border-left: 1px solid #000;
-            padding-left: 10px;
-            font-size: 10pt;
-            font-weight: bold;
-            line-height: 1;
-        }
-
-        /* Info Grid (Company, Ship To, DO Info) */
-        .info-grid {
+        /* Unified Header Grid */
+        .header-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
-            margin-bottom: 5px;
+            grid-template-columns: 1fr 1fr 0.8fr;
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
-        .info-box {
+        .address-box {
             border: 1px solid #000;
             padding: 5px;
-            min-height: 100px;
+            font-size: 8.5pt;
         }
 
-        .info-title {
+        .box-title {
             font-weight: bold;
-            text-decoration: underline;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
-        .do-header-title {
-            text-align: center;
-            font-size: 16pt;
+        /* DO Info Table (Right Column, Spans 2 rows) */
+        .do-info-container {
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .do-title {
+            font-size: 18pt;
             font-weight: bold;
             margin-bottom: 5px;
+            width: 100%;
+            text-align: right;
         }
 
-        /* Detail Table (Right side of header) */
         .do-info-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 8pt;
         }
 
         .do-info-table th,
@@ -90,41 +80,31 @@
             border: 1px solid #000;
             padding: 2px 4px;
             text-align: center;
-            font-size: 8pt;
         }
 
         .do-info-table th {
             font-weight: bold;
-            background-color: #fff;
+            border-bottom: none;
+            /* Hilangkan garis bawah judul */
         }
 
-        /* Middle Section (Bill To & Description) */
-        .middle-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-
-        .middle-box {
-            border: 1px solid #000;
-            padding: 5px;
-            min-height: 80px;
+        .do-info-table td {
+            border-top: none;
+            /* Hilangkan garis atas value */
         }
 
         /* Main Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
             table-layout: fixed;
+            margin-bottom: 20px;
         }
 
         .items-table th,
         .items-table td {
             border: 1px solid #000;
-            padding: 4px;
-            text-align: left;
+            padding: 3px 5px;
             font-size: 8.5pt;
             word-wrap: break-word;
         }
@@ -142,54 +122,43 @@
             text-align: right !important;
         }
 
-        /* Footer / Signatures */
-        .footer-signatures {
+        /* Footer Signatures */
+        .signature-row {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: center;
         }
 
-        .signature-box {
+        .sig-box {
+            height: 90px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 80px;
         }
 
-        .signature-name {
-            font-weight: normal;
-        }
-
-        .signature-line {
-            width: 80%;
+        .sig-line {
+            width: 85%;
             margin: 0 auto;
             border-bottom: 1px solid #000;
         }
 
-        .signature-date {
-            margin-top: 2px;
+        .sig-date {
             text-align: left;
             padding-left: 10%;
-            font-size: 8pt;
+            font-size: 7.5pt;
+            margin-top: 1px;
         }
 
         .form-code {
-            /* position: fixed; */
-            /* bottom: 10mm; */
-            /* right: 15mm; */
-            margin-top: 8px;
             text-align: right;
             font-size: 8pt;
+            margin-top: 10px;
         }
 
         @media print {
             body {
-                padding: 8mm;
-            }
-
-            .container {
-                width: 100%;
+                padding: 10mm;
             }
 
             @page {
@@ -201,199 +170,181 @@
 
 <body>
     <div class="container">
-        <!-- Top Logo Header -->
-        <div class="top-header">
-            <div class="logo-section">
-                <img src="{{ asset('images/map_do.png') }}" alt="Logo" class="logo-img">
-            </div>
+        <!-- Logo -->
+        <div class="top-logo-row">
+            <img src="{{ asset('images/map_do.png') }}" alt="Logo" class="logo-img">
         </div>
 
-        <!-- Info Grid -->
-        <div class="info-grid">
-            <!-- Company Info -->
-            <div class="info-box">
-                <div class="info-title" style="text-decoration: none;">PT MITRA ASA PRATAMA</div>
-                <div>
-                    MTH Square Lt. 1 No. 6, Jl. Letjen M.T.<br>
-                    Haryono No.Kav. 10, RT.6/RW.12, Kp.<br>
-                    Melayu, Kecamatan Jatinegara<br>
-                    Jakarta Timur JK 13330<br>
-                    Indonesia
-                </div>
+        <!-- Unified Header Section -->
+        <div class="header-grid">
+            <!-- Row 1, Col 1: PT MAP -->
+            <div class="address-box">
+                <div class="box-title">PT MITRA ASA PRATAMA</div>
+                MTH Square Lt. 1 No. 6, Jl. Letjen M.T.<br>
+                Haryono No.Kav. 10, RT.6/RW.12, Kp.<br>
+                Melayu, Kecamatan Jatinegara<br>
+                Jakarta Timur JK 13330<br>
+                Indonesia
             </div>
 
-            <!-- Ship To -->
-            <div class="info-box">
-                <div class="info-title">Ship To</div>
-                <div>
-                    Humbang Hasundutan Kab, Dinkes<br>
-                    Jl. Sisingamangaraja, Kompleks<br>
-                    Perkantoran Tano Tubu KM 2.5,<br>
-                    Doloksanggul Kode Pos 22457<br>
-                    Humbang Hasundutan<br>
-                    Indonesia<br>
-                    UP : Ibu Neli Purba PPK 0813-7017-5245<br>
-                    Tlp : - / -
-                </div>
+            <!-- Row 1, Col 2: Ship To -->
+            <div class="address-box">
+                <div class="box-title">Ship To</div>
+                @php
+                    $add = [];
+                    $partner = $data['partner_detail'] ?? [];
+                    $add[] = $partner['street'] ?? '';
+                    $add[] = $partner['city'] ?? '';
+                    $add[] = $partner['state_id'][1] ?? '';
+                    $add[] = $partner['country_id'][1] ?? '';
+                    $manual = $data['delivery_manual'] ?? '';
+                    if ($manual != '-' && !empty($manual)) {
+                        $add[] = 'UP: ' . $manual;
+                    }
+                    $phone = $partner['phone'] ?? '-';
+                    if ($phone != '-' && !empty($phone)) {
+                        $add[] = 'Tlp: ' . $phone;
+                    }
+                @endphp
+                {{ $partner['name'] ?? '' }}<br>
+                {!! implode(', ', $add) !!}
             </div>
 
-            <!-- DO Details -->
-            <div style="display: flex; flex-direction: column;">
-                <div class="do-header-title">Delivery Order</div>
+            <!-- Row 1 & 2, Col 3: DO Info Stack (Spans 2 rows) -->
+            <div class="do-info-container">
+                <div class="do-title">Delivery Order</div>
                 <table class="do-info-table">
                     <tr>
                         <th style="width: 50%;"><u>Delivery Date</u></th>
                         <th><u>DO No</u></th>
                     </tr>
                     <tr>
-                        <td>05/01/2026</td>
-                        <td>{{ $data['name'] ?? 'CENT/OUT/16061' }}</td>
-                    </tr>
-                    <tr>
-                        <th colspan="2"><u>PO No</u></th>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: center; font-size: 8pt;">
-                            EP-01KCTZD9FMX5VTYHKTVA1R4CR8 PUSKESMAS S PAKKAT
+                        <td>
+                            {{ Arr::get($data, 'force_date', 'False') ? date('d/m/Y', strtotime($data['force_date'])) : ($data['date_done'] ? date('d/m/Y', strtotime($data['date_done'])) : '') }}
                         </td>
+                        <td>{{ Arr::get($data, 'name', 'False') }}</td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="padding: 0;">
-                            <table style="width: 100%; border-collapse: collapse; border: none;">
-                                <tr>
-                                    <td style="border: none; border-right: 1px solid #000; width: 50%; padding: 2px;">
-                                        <strong><u>Terms</u></strong><br>60 Days
-                                    </td>
-                                    <td style="border: none; padding: 2px;">
-                                        <strong><u>ID Paket</u></strong><br>
-                                        EP-01KCTZD9FMX5VTYHKTVA1R4CR8 PUSKESMAS PAKKAT
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
+                        <th><u>PO No</u></th>
+                        <th><u>Terms</u></th>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: top;">{{ Arr::get($data, 'no_po', 'False') }}</td>
+                        @php
+                            $terms = Arr::get($data, 'so_detail.payment_term_id.1', 'False');
+                        @endphp
+                        <td style="vertical-align: middle;">{{ $terms }}</td>
+                    </tr>
+                    <tr>
+                        <th colspan="2"><u>ID Paket</u></th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">{{ Arr::get($data, 'no_aks', 'False') }}</td>
                     </tr>
                     <tr>
                         <th colspan="2"><u>Ship Via</u></th>
                     </tr>
                     <tr>
-                        <td colspan="2">Tiki Regular</td>
+                        <td colspan="2">{{ Arr::get($data, 'ekspedisi_id.1', 'False') }}</td>
                     </tr>
                 </table>
             </div>
-        </div>
 
-        <!-- Middle Grid -->
-        <div class="middle-grid">
-            <div class="middle-box">
-                <div class="info-title">Bill To</div>
-                <div>
-                    Humbang Hasundutan Kab, Dinkes<br>
-                    Jl. Sisingamangaraja, Kompleks Perkantoran<br>
-                    Tano Tubu KM 2.5, Doloksanggul Kode Pos<br>
-                    22457<br>
-                    Humbang Hasundutan<br>
-                    Indonesia
+            <!-- Row 2, Col 1: Bill To -->
+            <div class="address-box">
+                <div class="box-title">Bill To</div>
+                @php
+                    $bill = Arr::get($data, 'bill_to_detail', []);
+                    $add = [];
+                    $add[] = $bill['name'] ?? '';
+                    $add[] = $bill['street'] ?? '';
+                    $add[] = $bill['city'] ?? '';
+                    $add[] = $bill['state_id'][1] ?? '';
+                    $add[] = $bill['country_id'][1] ?? '';
+                @endphp
+                {!! implode(', ', $add) !!}
+            </div>
+
+            <!-- Row 2, Col 2: Description -->
+            <div class="address-box">
+                <div class="box-title">Description:</div>
+                <div style="font-size: 8pt;">
+                    {!! Arr::get($data, 'note_to_wh', '') !!}
                 </div>
             </div>
-            <div class="middle-box" style="grid-column: span 2;">
-                <div class="info-title">Description:</div>
-                <div>
-                    CBP<br>
-                    ACC DSS 5/1/2026 : Kirim Semua.<br><br>
-                    Packaging LABEL: BMHP JKN UPT<br>
-                    PUSKESMAS PAKKAT<br>
-                    Nilai kontrak Rp 23.035.053 Dateline kontrak 23/2/2026
-                </div>
-            </div>
         </div>
 
-        <!-- Main Items Table -->
+        <!-- Item Table -->
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 15%;">Item</th>
-                    <th style="width: 35%;">Item Description</th>
-                    <th style="width: 15%;">AKL</th>
-                    <th style="width: 10%;">LOT/SN</th>
+                    <th style="width: 18%;">Item</th>
+                    <th style="width: 32%;">Item Description</th>
+                    <th style="width: 12%;">AKL</th>
+                    <th style="width: 15%;">LOT/SN</th>
                     <th style="width: 10%;">ED</th>
-                    <th style="width: 8%;">QTY</th>
-                    <th style="width: 7%;">Unit</th>
+                    <th style="width: 7%;">QTY</th>
+                    <th style="width: 6%;">Unit</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Dummy Data Rows -->
-                <tr>
-                    <td>PDL.NLC-U25</td>
-                    <td>Nubion LifeCheck UA 1x25</td>
-                    <td class="text-center">AKD 20101420145</td>
-                    <td class="text-center">FE41</td>
-                    <td class="text-center">31/07/2027</td>
-                    <td class="text-center">0.0</td>
-                    <td class="text-center">EA</td>
-                </tr>
-                <tr>
-                    <td>PDL.NLC-G50</td>
-                    <td>Nubion LifeCheck GLU 2x25</td>
-                    <td class="text-center">AKD 20101324087</td>
-                    <td class="text-center">F1b3.</td>
-                    <td class="text-center">31/07/2027</td>
-                    <td class="text-center">0.0</td>
-                    <td class="text-center">EA</td>
-                </tr>
-                <tr>
-                    <td>PDL.NLC-C10</td>
-                    <td>Nubion LifeCheck TC 1x10</td>
-                    <td class="text-center">AKD 20101420146</td>
-                    <td class="text-center">22E2</td>
-                    <td class="text-center">28/02/2027</td>
-                    <td class="text-center">0.0</td>
-                    <td class="text-center">EA</td>
-                </tr>
+                @foreach (Arr::get($data, 'move_line_detail', []) as $line)
+                    <tr>
+                        <td>{{ Arr::get($line, 'product_id.1', 'False') }}</td>
+                        <td>{{ Arr::get($line, 'product_name', 'False') }}</td>
+                        <td class="text-center">{{ Arr::get($line, 'x_studio_akl', 'False') }}</td>
+                        <td class="text-center">{{ Arr::get($line, 'lot_id.1', 'False') }}</td>
+                        <td class="text-center">
+                            {{ Arr::get($line, 'life_date', 'False') ? date('d/m/Y', strtotime(Arr::get($line, 'life_date', 'False'))) : '' }}
+                        </td>
+                        <td class="text-center">{{ number_format(Arr::get($line, 'qty_done', 0), 1) }}</td>
+                        <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', 'False') }}</td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
 
-        <!-- Footer Signatures -->
-        <div class="footer-signatures">
-            <div class="signature-box">
+        <!-- Signatures -->
+        <div class="signature-row">
+            <div class="sig-box">
                 <div>Prepared By</div>
                 <div>
-                    <div class="signature-line"></div>
-                    <div class="signature-date">Date</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-date">Date</div>
                 </div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div>Approved By</div>
                 <div>
-                    <div class="signature-line"></div>
-                    <div class="signature-date">Date</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-date">Date</div>
                 </div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div>PJT</div>
                 <div>
-                    <div class="signature-line"></div>
-                    <div class="signature-date">Date</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-date">Date</div>
                 </div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div>Shipped By</div>
                 <div>
-                    <div class="signature-line"></div>
-                    <div class="signature-date">Date</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-date">Date</div>
                 </div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div>Received By</div>
                 <div>
-                    <div class="signature-line"></div>
-                    <div class="signature-date">Date</div>
+                    <div class="sig-line"></div>
+                    <div class="sig-date">Date</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Form Code -->
-    <div class="form-code">FORM/WH/013/20.1</div>
+        <div class="form-code">FORM/WH/013/20.1</div>
+    </div>
 
     <script>
         window.onload = function() {

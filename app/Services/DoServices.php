@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use Exception;
+use App\Exceptions\OdooException;
+use Illuminate\Support\Arr;
 
 class DoServices extends Odoo
 {
@@ -90,10 +91,11 @@ class DoServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
-        if (!isset($response['result'])) {
-            throw new Exception('Odoo Error');
+        $res = Arr::get($response, 'result', null);
+        if (!$res) {
+            throw new OdooException('Data Not Found!', 404);
         }
-        return $response['result'];
+        return $res;
     }
 
     public static function detail(int $id)
@@ -183,7 +185,7 @@ class DoServices extends Odoo
                         "move_temp_id",
                         "message_follower_ids",
                         "activity_ids",
-                        "display_name"
+                        "display_name",
                     ]
                 ],
                 'model' => 'stock.picking',
@@ -211,16 +213,46 @@ class DoServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
-        try {
-            $order_ids = static::getOrderLines($response['result'][0]['move_ids_without_package'] ?? []);
-            $order_line = static::getOrderLinesDetail($response['result'][0]['move_line_ids_without_package'] ?? []);
-            $response['result'][0]['move_ids_detail'] = $order_ids['result'] ?? [];
-            $response['result'][0]['move_line_detail'] = $order_line['result'] ?? [];
-        } catch (\Throwable $th) {
-            $response['result'][0]['move_ids_detail'] = [];
-            $response['result'][0]['move_line_detail'] = [];
+        $res = Arr::get($response, 'result.0', null);
+        if (!$res) {
+            throw new OdooException('Data Not Found!', 404);
         }
-        return $response['result'][0];
+        try {
+            $order_ids = static::getOrderLines($res['move_ids_without_package'] ?? []);
+            $order_line = static::getOrderLinesDetail($res['move_line_ids_without_package'] ?? []);
+            $res['move_ids_detail'] = $order_ids['result'] ?? [];
+            $res['move_line_detail'] = $order_line['result'] ?? [];
+        } catch (\Throwable $th) {
+            $res['move_ids_detail'] = [];
+            $res['move_line_detail'] = [];
+        }
+        try {
+            $partner_ids = array_unique(array_filter([
+                Arr::get($res, 'bill_to.0'),
+                Arr::get($res, 'partner_id.0'),
+            ]));
+            $partners = static::getPartners(array_values($partner_ids));
+            $part_res = $partners['result'] ?? [];
+            $res['bill_to_detail'] = collect($part_res)
+                ->where('id', Arr::get($res, 'bill_to.0'))
+                ->first();
+            $res['partner_detail'] = collect($part_res)
+                ->where('id', Arr::get($res, 'partner_id.0'))
+                ->first();
+            $res['partner_details'] = $part_res;
+        } catch (\Throwable $th) {
+            $res['bill_to_detail'] = [];
+            $res['partner_detail'] = [];
+            $res['partner_details'] = [];
+        }
+        try {
+            $so_id = Arr::get($res, 'sale_id.0');
+            $so = SoServices::detail($so_id);
+            $res['so_detail'] = $so;
+        } catch (\Throwable $th) {
+            $res['so_detail'] = [];
+        }
+        return $res;
     }
 
     public static function getOrderLines(array $line)
@@ -358,6 +390,145 @@ class DoServices extends Odoo
             ->method('POST')
             ->withUrlParam('/web/dataset/call_kw/stock.move/read')
             ->withData($data_line)
+            ->get();
+        return $order_line;
+    }
+
+    public static function getPartners(array $ids)
+    {
+        $id_parts =  array_map('intval', array_filter($ids, 'is_numeric'));
+        $data_parts = [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
+                    $id_parts,
+                    [
+                        "partner_gid",
+                        "additional_info",
+                        "partner_ledger_label",
+                        "active",
+                        "is_company",
+                        "company_type",
+                        "name",
+                        "parent_id",
+                        "company_name",
+                        "nomor_partner",
+                        "type",
+                        "street",
+                        "street2",
+                        "city",
+                        "kota_id",
+                        "kecamatan_id",
+                        "kelurahan_id",
+                        "state_id",
+                        "zip",
+                        "country_id",
+                        "vat",
+                        "is_driver",
+                        "no_ktp",
+                        "is_npwp_pribadi",
+                        "nama_npwp",
+                        "alamat_npwp",
+                        "kategori_pajak",
+                        "is_ekspedisi",
+                        "date",
+                        "create_date",
+                        "crm_tag_ids",
+                        "is_shipper",
+                        "is_consignee",
+                        "is_buyer",
+                        "is_seller",
+                        "is_forwarding_agent",
+                        "agency_type",
+                        "function",
+                        "phone",
+                        "mobile",
+                        "user_ids",
+                        "is_blacklisted",
+                        "email",
+                        "insurance",
+                        "website",
+                        "x_studio_fax",
+                        "d_id",
+                        "fax_msi",
+                        "title",
+                        "lang",
+                        "category_id",
+                        "kode",
+                        "detail_lokasi",
+                        "red_colour",
+                        "red_flag",
+                        "colour",
+                        "note",
+                        "comment",
+                        "customer",
+                        "user_id",
+                        "message_bounce",
+                        "supplier",
+                        "credit_check",
+                        "credit_limit_custom",
+                        "blocking_limit",
+                        "is_hold",
+                        "active_date",
+                        "deactive_date",
+                        "ref",
+                        "barcode",
+                        "company_id",
+                        "website_id",
+                        "industry_id",
+                        "is_dist",
+                        "exp_date",
+                        "idak_exp",
+                        "status_expired",
+                        "disk_transaksi",
+                        "add_exp_datetime",
+                        "allowed_city_ids",
+                        "allowed_products_ids",
+                        "add_allowed_city_ids",
+                        "add_allowed_products_ids",
+                        "is_rel_partner",
+                        "add_rel_exp_datetime",
+                        "rel_allowed_city_ids",
+                        "rel_allowed_products_ids",
+                        "add_rel_allowed_city_ids",
+                        "add_rel_allowed_products_ids",
+                        "currency_id",
+                        "nama_npwp_new",
+                        "kode_pajak",
+                        "nama_faktur",
+                        "npwp",
+                        "alamat_lengkap",
+                        "blok",
+                        "nomor",
+                        "rt",
+                        "rw",
+                        "is_efaktur_exported",
+                        "date_efaktur_exported",
+                        "is_berikat",
+                        "display_name"
+                    ]
+                ],
+                'model' => 'res.partner',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        "lang" => "en_US",
+                        "tz" => "Asia/Jakarta",
+                        "uid" => 192,
+                        "search_default_customer" => 1,
+                        "show_address" => 1,
+                        "show_vat" => true,
+                        "default_type" => "delivery",
+                        "bin_size" => true
+                    ]
+                ]
+            ],
+        ];
+        $order_line = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/call_kw/res.partner/read')
+            ->withData($data_parts)
             ->get();
         return $order_line;
     }

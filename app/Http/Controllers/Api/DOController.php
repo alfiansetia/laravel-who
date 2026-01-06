@@ -21,10 +21,12 @@ class DOController extends Controller
             $search = $search['value'] ?? '';
         }
         $search = (string) ($search ?? '');
+        if ($request->filled('param')) {
+            $search = $request->param;
+        }
         $response = DoServices::getAll($search, $length, $start);
         $totalRecords = Arr::get($response, 'length', 0);
         $data = Arr::get($response, 'records', []);
-
         return response()->json([
             'draw'            => intval($draw),
             'recordsTotal'    => $totalRecords,
