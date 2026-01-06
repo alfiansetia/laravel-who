@@ -18,8 +18,14 @@ class Atk extends Model
 
     public function getStokAttribute()
     {
-        return $this->transactions()
-            ->selectRaw("SUM(CASE WHEN type = 'in' THEN qty ELSE 0 END) - SUM(CASE WHEN type = 'out' THEN qty ELSE 0 END) as stok")
-            ->value('stok') ?? 0;
+        $in = $this->transactions()
+            ->where('type', 'in')
+            ->sum('qty');
+
+        $out = $this->transactions()
+            ->where('type', 'out')
+            ->sum('qty');
+
+        return $in - $out;
     }
 }
