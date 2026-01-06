@@ -196,7 +196,6 @@
                     $partner = $data['partner_detail'] ?? [];
                     $add[] = $partner['street'] ?? '';
                     $add[] = $partner['city'] ?? '';
-                    $add[] = $partner['state_id'][1] ?? '';
                     $add[] = $partner['country_id'][1] ?? '';
                     $manual = $data['delivery_manual'] ?? '';
                     if ($manual != '-' && !empty($manual)) {
@@ -265,8 +264,11 @@
                     $add[] = $bill['name'] ?? '';
                     $add[] = $bill['street'] ?? '';
                     $add[] = $bill['city'] ?? '';
-                    $add[] = $bill['state_id'][1] ?? '';
                     $add[] = $bill['country_id'][1] ?? '';
+                    $phone = $bill['phone'] ?? '-';
+                    if ($phone != '-' && !empty($phone)) {
+                        $add[] = 'Tlp: ' . $phone;
+                    }
                 @endphp
                 {!! implode(', ', $add) !!}
             </div>
