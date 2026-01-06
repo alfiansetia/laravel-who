@@ -79,7 +79,7 @@
         $(document).ready(function() {
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()
-                $.get("{{ route('api.do.index') }}?param=" + param).done(function(res) {
+                $.get("{{ route('api.do.index') }}?search=" + param).done(function(res) {
                     $('#select_do').empty()
                     $('#select_do').append('<option value="">Pilih</option>');
                     let resData = res.data
