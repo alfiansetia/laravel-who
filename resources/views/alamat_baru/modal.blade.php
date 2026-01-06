@@ -41,8 +41,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Save
+                    </button>
                 </div>
             </form>
         </div>
@@ -93,8 +97,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Save
+                    </button>
                 </div>
             </form>
         </div>
@@ -118,13 +126,15 @@
                         <select class="form-control select2" id="select_product" style="width: 100%" required>
                             <option value="">Pilih Product</option>
                             @foreach ($products as $product)
-                                <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}</option>
+                                <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="qty_item">Qty</label>
-                        <input type="text" class="form-control" id="qty_item" name="qty" placeholder="Qty" value="Ea">
+                        <input type="text" class="form-control" id="qty_item" name="qty" placeholder="Qty"
+                            value="Ea">
                     </div>
                     <div class="form-group">
                         <label for="desc_item">Desc</label>
@@ -137,8 +147,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Save
+                    </button>
                 </div>
             </form>
         </div>
@@ -174,8 +188,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>Save
+                    </button>
                 </div>
             </form>
         </div>
