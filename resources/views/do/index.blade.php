@@ -65,6 +65,9 @@
                     <button type="button" class="btn btn-success" id="btn_print">
                         <i class="fas fa-print mr-1"></i>Print
                     </button>
+                    <button type="button" class="btn btn-warning" id="btn_print_lot">
+                        <i class="fas fa-print mr-1"></i>Print Lot
+                    </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times mr-1"></i>Close
                     </button>
@@ -346,6 +349,12 @@
             $('#btn_print').click(function() {
                 if (id > 0) {
                     window.open(`${URL_INDEX}/${id}/print`, '_blank');
+                }
+            });
+
+            $('#btn_print_lot').click(function() {
+                if (id > 0) {
+                    window.open(`${URL_INDEX}/${id}/print?with_lot=true`, '_blank');
                 }
             });
 

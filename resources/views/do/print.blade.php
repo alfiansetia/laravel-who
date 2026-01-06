@@ -285,8 +285,8 @@
             <thead>
                 <tr>
                     <th style="width: 18%;">Item</th>
-                    <th style="width: 32%;">Item Description</th>
-                    <th style="width: 12%;">AKL</th>
+                    <th style="width: 27%;">Item Description</th>
+                    <th style="width: 17%;">AKL</th>
                     <th style="width: 15%;">LOT/SN</th>
                     <th style="width: 10%;">ED</th>
                     <th style="width: 7%;">QTY</th>
@@ -294,73 +294,56 @@
                 </tr>
             </thead>
             <tbody>
-                @if ($with_lot)
+                @php
+                    $move_ids_detail = Arr::get($data, 'move_ids_detail', []);
+                    $count = count($move_ids_detail);
+                @endphp
+                @foreach ($move_ids_detail as $line)
                     @php
-                        $move_line_detail = Arr::get($data, 'move_line_detail', []);
-                        $count = count($move_line_detail);
-                    @endphp
-                    @foreach ($move_line_detail as $line)
-                        @php
-                            $prod = pecah_code(Arr::get($line, 'product_id', ''));
-                        @endphp
-                        <tr>
-                            <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
-                            <td style="vertical-align: top;">{!! $prod[2] !!}</td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'x_studio_akl', '') }}</td>
-                            <td style="vertical-align: top;" class="text-center">{{ Arr::get($line, 'lot_id.1', '') }}
-                            </td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'life_date', '') ? date('d/m/Y', strtotime(Arr::get($line, 'life_date', 'False'))) : '' }}
-                            </td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ number_format(Arr::get($line, 'qty_done', 0)) }}</td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'product_uom_id.1', '') }}</td>
-                        </tr>
-                    @endforeach
-                @else
-                    @php
-                        $move_ids_detail = Arr::get($data, 'move_ids_detail', []);
-                        $count = count($move_ids_detail);
-                    @endphp
-                    @foreach ($move_ids_detail as $line)
-                        @php
-                            $prod = pecah_code(Arr::get($line, 'product_id', ''));
-                            $prod_lot = collect(Arr::get($data, 'move_line_detail', []))
-                                ->where(function ($item) use ($line) {
-                                    return $item['product_id'] == $line['product_id'];
-                                })
-                                ->map(function ($item) {
-                                    $ed = $item['expired_date_do']
-                                        ? date('d/m/Y', strtotime($item['expired_date_do']))->timezone(
-                                            config('app.timezone'),
+                        $prod = pecah_code(Arr::get($line, 'product_id', ''));
+                        $prod_lot = collect(Arr::get($data, 'move_line_detail', []))
+                            ->where(function ($item) use ($line) {
+                                return Arr::get($item, 'product_id.0') == Arr::get($line, 'product_id.0');
+                            })
+                            ->map(function ($item) {
+                                $ed =
+                                    isset($item['expired_date_do']) &&
+                                    $item['expired_date_do'] &&
+                                    $item['expired_date_do'] !== 'False'
+                                        ? \Carbon\Carbon::createFromFormat(
+                                            'Y-m-d H:i:s',
+                                            $item['expired_date_do'],
+                                            'UTC',
                                         )
+                                            ->setTimezone(config('app.timezone'))
+                                            ->format('d/m/Y')
                                         : '';
-                                    return [
-                                        'lot' => $item['lot_id'][1] ?? null,
-                                        'ed' => $ed,
-                                        'qty' => $item['qty_done'] ?? 0,
-                                    ];
-                                })
-                                ->toArray();
-                            $lot = collect($prod_lot)->pluck('lot')->filter()->unique()->implode(', ');
-                            $ed = collect($prod_lot)->pluck('ed')->filter()->unique()->implode(', ');
-                        @endphp
-                        <tr>
-                            <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
-                            <td style="vertical-align: top;">{!! $prod[2] !!}</td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'akl_id.1', '') }}</td>
-                            <td style="vertical-align: top;" class="text-center">{{ $lot }}</td>
-                            <td style="vertical-align: top;" class="text-center">{{ $ed }}</td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
-                            <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'product_uom_id.1', '') }}</td>
-                        </tr>
-                    @endforeach
-                @endif
+                                return [
+                                    'lot' => $item['lot_id'][1] ?? null,
+                                    'ed' => $ed,
+                                    'qty' => $item['qty_done'] ?? 0,
+                                ];
+                            })
+                            ->toArray();
+                        $lotp = collect($prod_lot)->pluck('lot')->filter()->unique()->implode(', ');
+                        $edp = collect($prod_lot)->pluck('ed')->filter()->unique()->implode(', ');
+                    @endphp
+                    <tr>
+                        <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
+                        <td style="vertical-align: top;">{!! $prod[2] !!}</td>
+                        <td style="vertical-align: top;white-space: nowrap;" class="text-center">
+                            {{ Arr::get($line, 'akl_id.1', '') }}</td>
+                        <td style="vertical-align: top;" class="text-center">
+                            {{ $with_lot ? $lotp : '' }}
+                        </td>
+                        <td style="vertical-align: top;" class="text-center">
+                            {{ $with_lot ? $edp : '' }}</td>
+                        <td style="vertical-align: top;" class="text-center">
+                            {{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
+                        <td style="vertical-align: top;" class="text-center">
+                            {{ Arr::get($line, 'product_uom.1', '') }}</td>
+                    </tr>
+                @endforeach
 
 
             </tbody>
