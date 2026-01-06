@@ -131,7 +131,7 @@
         }
 
         .sig-box {
-            height: 90px;
+            height: 80px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
