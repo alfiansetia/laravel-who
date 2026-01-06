@@ -327,14 +327,33 @@
                     @foreach ($move_ids_detail as $line)
                         @php
                             $prod = pecah_code(Arr::get($line, 'product_id', ''));
+                            $prod_lot = collect(Arr::get($data, 'move_line_detail', []))
+                                ->where(function ($item) use ($line) {
+                                    return $item['product_id'] == $line['product_id'];
+                                })
+                                ->map(function ($item) {
+                                    $ed = $item['expired_date_do']
+                                        ? date('d/m/Y', strtotime($item['expired_date_do']))->timezone(
+                                            config('app.timezone'),
+                                        )
+                                        : '';
+                                    return [
+                                        'lot' => $item['lot_id'][1] ?? null,
+                                        'ed' => $ed,
+                                        'qty' => $item['qty_done'] ?? 0,
+                                    ];
+                                })
+                                ->toArray();
+                            $lot = collect($prod_lot)->pluck('lot')->filter()->unique()->implode(', ');
+                            $ed = collect($prod_lot)->pluck('ed')->filter()->unique()->implode(', ');
                         @endphp
                         <tr>
                             <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
                             <td style="vertical-align: top;">{!! $prod[2] !!}</td>
                             <td style="vertical-align: top;" class="text-center">
-                                {{ Arr::get($line, 'x_studio_akl', '') }}</td>
-                            <td style="vertical-align: top;" class="text-center"></td>
-                            <td style="vertical-align: top;" class="text-center"></td>
+                                {{ Arr::get($line, 'akl_id.1', '') }}</td>
+                            <td style="vertical-align: top;" class="text-center">{{ $lot }}</td>
+                            <td style="vertical-align: top;" class="text-center">{{ $ed }}</td>
                             <td style="vertical-align: top;" class="text-center">
                                 {{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
                             <td style="vertical-align: top;" class="text-center">
