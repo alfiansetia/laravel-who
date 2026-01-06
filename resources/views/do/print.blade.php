@@ -158,7 +158,8 @@
 
         @media print {
             body {
-                padding: 10mm;
+                padding: 8mm;
+                padding-top: 2mm;
             }
 
             @page {
