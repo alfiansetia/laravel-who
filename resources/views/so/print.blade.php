@@ -357,30 +357,31 @@
             </div>
             <div class="info-row">
                 <span class="info-label">No PO :</span>
-                <span class="info-value">{{ $data['no_po'] ?? 'False' }}</span>
+                <span class="info-value">{{ Arr::get($data, 'no_po', 'False') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Payment Term :</span>
-                <span class="info-value">{{ get_name($data['payment_term_id']) ?? 'False' }}</span>
+                <span class="info-value">{{ get_name(Arr::get($data, 'payment_term_id', '')) ?? 'False' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">No. ID Paket :</span>
-                <span class="info-value">{{ $data['no_aks'] ?? 'False' }}</span>
+                <span class="info-value">{{ Arr::get($data, 'no_aks', 'False') }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Ekspedisi :</span>
-                <span class="info-value">{{ get_name($data['nama_ekspedisi']) ?? 'False' }}</span>
+                <span class="info-value">{{ get_name(Arr::get($data, 'nama_ekspedisi', '')) ?? 'False' }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">SKA:</span>
-                <span class="info-value">{{ $data['no_ska'] ?? 'False' }}</span>
+                <span class="info-value">{{ Arr::get($data, 'no_ska', 'False') }}</span>
             </div>
         </div>
 
         @php
-            $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim($data['note_to_wh'] ?? ''));
-            $mf = strtolower($data['sistem'] ?? '') == 'mf';
-            $label_mf = $mf ? '<b>' . strtoupper($data['sistem']) . '</b><br/>' : '';
+            $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim(Arr::get($data, 'note_to_wh', '')));
+            $sistem = Arr::get($data, 'sistem', '');
+            $mf = strtolower($sistem) == 'mf';
+            $label_mf = $mf ? '<b>' . strtoupper($sistem) . '</b><br/>' : '';
         @endphp
         <!-- Note Warehouse -->
         <div class="note-section">
