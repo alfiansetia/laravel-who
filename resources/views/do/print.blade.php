@@ -295,35 +295,50 @@
             </thead>
             <tbody>
                 @if ($with_lot)
-                    @foreach (Arr::get($data, 'move_line_detail', []) as $line)
+                    @php
+                        $move_line_detail = Arr::get($data, 'move_line_detail', []);
+                        $count = count($move_line_detail);
+                    @endphp
+                    @foreach ($move_line_detail as $line)
                         @php
                             $prod = pecah_code(Arr::get($line, 'product_id', ''));
                         @endphp
                         <tr>
-                            <td>{{ $prod[1] }}</td>
-                            <td>{{ $prod[2] }}</td>
-                            <td class="text-center">{{ Arr::get($line, 'x_studio_akl', '') }}</td>
-                            <td class="text-center">{{ Arr::get($line, 'lot_id.1', '') }}</td>
-                            <td class="text-center">
+                            <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
+                            <td style="vertical-align: top;">{!! $prod[2] !!}</td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ Arr::get($line, 'x_studio_akl', '') }}</td>
+                            <td style="vertical-align: top;" class="text-center">{{ Arr::get($line, 'lot_id.1', '') }}
+                            </td>
+                            <td style="vertical-align: top;" class="text-center">
                                 {{ Arr::get($line, 'life_date', '') ? date('d/m/Y', strtotime(Arr::get($line, 'life_date', 'False'))) : '' }}
                             </td>
-                            <td class="text-center">{{ number_format(Arr::get($line, 'qty_done', 0)) }}</td>
-                            <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', '') }}</td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ number_format(Arr::get($line, 'qty_done', 0)) }}</td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ Arr::get($line, 'product_uom_id.1', '') }}</td>
                         </tr>
                     @endforeach
                 @else
-                    @foreach (Arr::get($data, 'move_ids_detail', []) as $line)
+                    @php
+                        $move_ids_detail = Arr::get($data, 'move_ids_detail', []);
+                        $count = count($move_ids_detail);
+                    @endphp
+                    @foreach ($move_ids_detail as $line)
                         @php
                             $prod = pecah_code(Arr::get($line, 'product_id', ''));
                         @endphp
                         <tr>
-                            <td>{{ $prod[1] }}</td>
-                            <td>{{ $prod[2] }}</td>
-                            <td class="text-center">{{ Arr::get($line, 'x_studio_akl', '') }}</td>
-                            <td class="text-center"></td>
-                            <td class="text-center"></td>
-                            <td class="text-center">{{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
-                            <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', '') }}</td>
+                            <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
+                            <td style="vertical-align: top;">{!! $prod[2] !!}</td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ Arr::get($line, 'x_studio_akl', '') }}</td>
+                            <td style="vertical-align: top;" class="text-center"></td>
+                            <td style="vertical-align: top;" class="text-center"></td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
+                            <td style="vertical-align: top;" class="text-center">
+                                {{ Arr::get($line, 'product_uom_id.1', '') }}</td>
                         </tr>
                     @endforeach
                 @endif
