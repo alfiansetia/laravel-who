@@ -45,7 +45,7 @@
         .address-box {
             border: 1px solid #000;
             padding: 5px;
-            font-size: 8.5pt;
+            font-size: 9pt;
         }
 
         .box-title {
@@ -72,7 +72,7 @@
         .do-info-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8pt;
+            font-size: 9pt;
         }
 
         .do-info-table th,
@@ -105,7 +105,7 @@
         .items-table td {
             border: 1px solid #000;
             padding: 3px 5px;
-            font-size: 8.5pt;
+            font-size: 9pt;
             word-wrap: break-word;
         }
 
@@ -146,7 +146,7 @@
         .sig-date {
             text-align: left;
             padding-left: 10%;
-            font-size: 7.5pt;
+            font-size: 8pt;
             margin-top: 1px;
         }
 
