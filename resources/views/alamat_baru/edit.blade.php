@@ -410,11 +410,11 @@
                         <td>${item.lot || ''}</td>
                         <td>
                             <div class="btn-group">
-                                <button type="button" ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>
-                                <button type="button" ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>
-                                <button type="button" class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}"><i class="fas fa-edit"></i></button>
+                                <button type="button" ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}" title="Move Up"><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}" title="Move Down"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}" title="Edit"><i class="fas fa-edit"></i></button>
                                 <button type="button" class="btn btn-sm btn-info btn-clear-lot" data-item-id="${item.id}" title="Clear Lot" ${item.lot ? '' : 'disabled'}><i class="fas fa-broom"></i></button>
-                                <button type="button" class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}" title="Delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>

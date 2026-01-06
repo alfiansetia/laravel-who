@@ -85,7 +85,7 @@
                             if (type == 'display') {
                                 let text =
                                     `
-                                    <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger btn-delete" title="Delete"><i class="fas fa-trash"></i></button>
                                     `
                                 return text
                             } else {

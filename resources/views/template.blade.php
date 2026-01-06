@@ -178,6 +178,9 @@
                 // Clear timeout lama jika masih ada (mencegah bentrok antar request)
                 if (blockTimeout) clearTimeout(blockTimeout);
 
+                // Hilangkan tooltip yang sedang menggantung/terbuka
+                $('.tooltip').remove();
+
                 $.blockUI({
                     message: '<img src="{{ asset('images/loading.gif') }}" width="20px" height="20px" /> Just a moment...',
                     baseZ: 2000,
@@ -201,6 +204,9 @@
             });
 
             bsCustomFileInput.init();
+            $('body').tooltip({
+                selector: '[title]'
+            });
         })
 
         function multiCheck(tb_var) {
