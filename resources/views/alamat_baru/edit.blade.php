@@ -410,10 +410,10 @@
                         <td>${item.lot || ''}</td>
                         <td>
                             <div class="btn-group">
-                                <button ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>
-                                <button ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>
-                                <button class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}"><i class="fas fa-trash"></i></button>
+                                <button type="button" ${index > 0 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-up" data-item-id="${item.id}"><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" ${index < items.length - 1 ? '' : 'disabled'} class="btn btn-sm btn-secondary btn-item-down" data-item-id="${item.id}"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn btn-sm btn-warning btn-edit-item" data-item-id="${item.id}" data-koli-id="${koliId}"><i class="fas fa-edit"></i></button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete-item" data-item-id="${item.id}"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
