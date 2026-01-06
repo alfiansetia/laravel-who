@@ -206,8 +206,7 @@
                         $add[] = 'Tlp: ' . $phone;
                     }
                 @endphp
-                {{ $partner['name'] ?? '' }}<br>
-                {!! implode(', ', $add) !!}
+                {{ $partner['name'] ?? '' }}<br>{!! implode(', ', $add) !!}
             </div>
 
             <!-- Row 1 & 2, Col 3: DO Info Stack (Spans 2 rows) -->
@@ -229,7 +228,13 @@
                         <th><u>Terms</u></th>
                     </tr>
                     <tr>
-                        <td style="vertical-align: top;">{{ Arr::get($data, 'no_po', 'False') }}</td>
+                        @php
+                            $po = Arr::get($data, 'no_po', 'False');
+                        @endphp
+                        <td
+                            style="vertical-align: top;max-width: 100px;
+                        word-wrap: break-word;">
+                            {{ $po }}</td>
                         @php
                             $terms = Arr::get($data, 'so_detail.payment_term_id.1', 'False');
                         @endphp
@@ -288,19 +293,41 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (Arr::get($data, 'move_line_detail', []) as $line)
-                    <tr>
-                        <td>{{ Arr::get($line, 'product_id.1', 'False') }}</td>
-                        <td>{{ Arr::get($line, 'product_name', 'False') }}</td>
-                        <td class="text-center">{{ Arr::get($line, 'x_studio_akl', 'False') }}</td>
-                        <td class="text-center">{{ Arr::get($line, 'lot_id.1', 'False') }}</td>
-                        <td class="text-center">
-                            {{ Arr::get($line, 'life_date', 'False') ? date('d/m/Y', strtotime(Arr::get($line, 'life_date', 'False'))) : '' }}
-                        </td>
-                        <td class="text-center">{{ number_format(Arr::get($line, 'qty_done', 0), 1) }}</td>
-                        <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', 'False') }}</td>
-                    </tr>
-                @endforeach
+                @if ($with_lot)
+                    @foreach (Arr::get($data, 'move_line_detail', []) as $line)
+                        @php
+                            $prod = pecah_code(Arr::get($line, 'product_id', ''));
+                        @endphp
+                        <tr>
+                            <td>{{ $prod[1] }}</td>
+                            <td>{{ $prod[2] }}</td>
+                            <td class="text-center">{{ Arr::get($line, 'x_studio_akl', '') }}</td>
+                            <td class="text-center">{{ Arr::get($line, 'lot_id.1', '') }}</td>
+                            <td class="text-center">
+                                {{ Arr::get($line, 'life_date', '') ? date('d/m/Y', strtotime(Arr::get($line, 'life_date', 'False'))) : '' }}
+                            </td>
+                            <td class="text-center">{{ number_format(Arr::get($line, 'qty_done', 0)) }}</td>
+                            <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', '') }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    @foreach (Arr::get($data, 'move_ids_detail', []) as $line)
+                        @php
+                            $prod = pecah_code(Arr::get($line, 'product_id', ''));
+                        @endphp
+                        <tr>
+                            <td>{{ $prod[1] }}</td>
+                            <td>{{ $prod[2] }}</td>
+                            <td class="text-center">{{ Arr::get($line, 'x_studio_akl', '') }}</td>
+                            <td class="text-center"></td>
+                            <td class="text-center"></td>
+                            <td class="text-center">{{ number_format(Arr::get($line, 'product_uom_qty', 0)) }}</td>
+                            <td class="text-center">{{ Arr::get($line, 'product_uom_id.1', '') }}</td>
+                        </tr>
+                    @endforeach
+                @endif
+
+
             </tbody>
         </table>
 

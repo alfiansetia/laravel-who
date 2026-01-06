@@ -16,12 +16,13 @@ class DoController extends Controller
         return view('do.index', compact('bcms'))->with('title', 'DO');
     }
 
-    public function print($id)
+    public function print(Request $request, $id)
     {
+        $with_lot = $request->with_lot ?? false;
         $data = DoServices::detail($id);
         if (!isset($data['id'])) {
             return redirect()->route('do.index')->with('error', 'Data Tidak Ditemukan');
         }
-        return view('do.print', compact('data'));
+        return view('do.print', compact('data', 'with_lot'));
     }
 }

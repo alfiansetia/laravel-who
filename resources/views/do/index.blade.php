@@ -177,6 +177,9 @@
                         render: function(data) {
                             return `<button class="btn btn-sm btn-success btn-print-do" data-id="${data}" title="Print DO">
                                         <i class="fas fa-print"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning btn-print-lot" data-id="${data}" title="Print Lot">
+                                        <i class="fas fa-print"></i>
                                     </button>`;
                         }
                     },
@@ -302,7 +305,14 @@
                 e.preventDefault();
                 e.stopPropagation();
                 const doId = $(this).data('id');
-                window.open(`{{ url('do') }}/${doId}/print`, '_blank');
+                window.open(`${URL_INDEX}/${doId}/print`, '_blank');
+            });
+
+            $('#table tbody').on('click', '.btn-print-lot', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const doId = $(this).data('id');
+                window.open(`${URL_INDEX}/${doId}/print?with_lot=true`, '_blank');
             });
 
             // Handle Klik Baris (Buka Modal Detail)
