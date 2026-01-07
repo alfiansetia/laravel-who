@@ -1,8 +1,14 @@
 @extends('template', ['title' => 'Data QC Lot'])
 @push('css')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <style>
+        table.dataTable tbody tr.bg-duplicate,
+        table.dataTable tbody tr.bg-duplicate td {
+            background-color: #fff3cd !important;
+            /* Kuning pucat */
+        }
+    </style>
 @endpush
 @section('content')
     <div class="container-fluid">
@@ -138,9 +144,34 @@
                     }, {
                         data: "qc_note",
                         className: 'text-left',
-                        visible: false,
+                        width: '20%',
                     },
                 ],
+                drawCallback: function(settings) {
+                    var api = this.api();
+                    var data = api.rows().data(); // Ambil dari SELURUH data tabel
+                    var lotCounts = {};
+
+                    // Hitung jumlah setiap lot dari seluruh dataset
+                    data.each(function(row) {
+                        var lot = row.lot_number;
+                        if (lot) {
+                            lotCounts[lot] = (lotCounts[lot] || 0) + 1;
+                        }
+                    });
+
+                    // Tandai baris yang duplikat (hanya untuk baris yang tampil saat ini)
+                    api.rows({
+                        page: 'current'
+                    }).every(function() {
+                        var rowData = this.data();
+                        if (lotCounts[rowData.lot_number] > 1) {
+                            $(this.node()).addClass('bg-duplicate');
+                        } else {
+                            $(this.node()).removeClass('bg-duplicate');
+                        }
+                    });
+                },
                 buttons: [{
                         text: '<i class="fas fa-plus mr-1"></i>Tambah',
                         className: 'btn btn-sm btn-info',

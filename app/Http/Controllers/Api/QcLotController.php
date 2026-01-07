@@ -15,6 +15,7 @@ class QcLotController extends Controller
     {
         $data = QcLot::query()
             ->with('product')
+            ->latest()
             ->get();
         return $this->sendResponse($data, 'QcLot retrieved successfully');
     }
