@@ -142,7 +142,7 @@
                         data: "lot_number",
                         className: 'text-left',
                         render: function(data, type, row, meta) {
-                            return `${row.lot_number} / ${row.lot_expiry}`;
+                            return row.lot_number + (row.lot_expiry ? `/${row.lot_expiry}` : '');
                         }
                     }, {
                         data: "qc_date",
