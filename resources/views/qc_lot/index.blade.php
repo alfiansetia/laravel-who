@@ -87,11 +87,22 @@
                 singleDatePicker: true,
                 "autoApply": true,
                 locale: {
-                    format: 'DD/MM/YYYY'
+                    format: 'YYYY-MM-DD'
                 }
             });
             $('#product_id').select2({
                 theme: 'bootstrap4',
+            });
+            $('#edit_qc_date').daterangepicker({
+                singleDatePicker: true,
+                "autoApply": true,
+                locale: {
+                    format: 'YYYY-MM-DD'
+                }
+            });
+            $('#edit_product_id').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $('#modal_edit')
             });
             var table = $('#table').DataTable({
                 rowId: 'id',
@@ -299,6 +310,44 @@
                         $('#qc_date').val('');
                         $('#qc_by').val('');
                         $('#qc_note').val('');
+                        show_message(res.message, 'success')
+                        table.ajax.reload();
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+            });
+
+            $('#table tbody').on('click', 'td:not(:first-child)', function() {
+                let rowData = table.row($(this).parents('tr')).data();
+                $('#edit_id').val(rowData.id);
+                $('#edit_product_id').val(rowData.product_id).trigger('change');
+                $('#edit_lot_number').val(rowData.lot_number);
+                $('#edit_lot_expiry').val(rowData.lot_expiry);
+                $('#edit_qc_date').data('daterangepicker').setStartDate(moment(rowData.qc_date).format(
+                    'YYYY-MM-DD'));
+                $('#edit_qc_date').data('daterangepicker').setEndDate(moment(rowData.qc_date).format(
+                    'YYYY-MM-DD'));
+                $('#edit_qc_by').val(rowData.qc_by);
+                $('#edit_qc_note').val(rowData.qc_note);
+                $('#modal_edit').modal('show');
+            });
+
+            $('#modal_edit').on('shown.bs.modal', function(e) {
+                $('#edit_lot_number').focus();
+            })
+
+            $('#form_edit').submit(function(e) {
+                e.preventDefault();
+                let data = $(this).serialize();
+                let id = $('#edit_id').val();
+                $.ajax({
+                    url: `${URL_INDEX_API}/${id}`,
+                    type: "PUT",
+                    data: data,
+                    success: function(res) {
+                        $('#modal_edit').modal('hide');
                         show_message(res.message, 'success')
                         table.ajax.reload();
                     },

@@ -37,11 +37,10 @@ class QcLotController extends Controller
         $this->validate($request, [
             'product_id' => 'required|exists:products,id',
             'lot_number' => 'required|max:200',
-            'lot_expiry' => 'required|max:200',
+            'lot_expiry' => 'nullable|max:200',
             'qc_date'   => 'required|date_format:Y-m-d',
             'qc_by'     => 'required|max:200',
-            'qc_result' => 'required|max:200',
-            'qc_note'   => 'required|max:200',
+            'qc_note'   => 'nullable|max:200',
         ]);
         $qcLot = QcLot::create([
             'product_id' => $request->product_id,
@@ -49,7 +48,6 @@ class QcLotController extends Controller
             'lot_expiry' => $request->lot_expiry,
             'qc_date'    => $request->qc_date,
             'qc_by'      => $request->qc_by,
-            'qc_result'  => $request->qc_result,
             'qc_note'    => $request->qc_note,
         ]);
         return $this->sendResponse($qcLot, 'QcLot created successfully');
@@ -71,11 +69,10 @@ class QcLotController extends Controller
         $this->validate($request, [
             'product_id' => 'required|exists:products,id',
             'lot_number' => 'required|max:200',
-            'lot_expiry' => 'required|max:200',
+            'lot_expiry' => 'nullable|max:200',
             'qc_date'   => 'required|date_format:Y-m-d',
             'qc_by'     => 'required|max:200',
-            'qc_result' => 'required|max:200',
-            'qc_note'   => 'required|max:200',
+            'qc_note'   => 'nullable|max:200',
         ]);
         $qcLot->update([
             'product_id' => $request->product_id,
@@ -83,7 +80,6 @@ class QcLotController extends Controller
             'lot_expiry' => $request->lot_expiry,
             'qc_date'    => $request->qc_date,
             'qc_by'      => $request->qc_by,
-            'qc_result'  => $request->qc_result,
             'qc_note'    => $request->qc_note,
         ]);
         return $this->sendResponse($qcLot, 'QcLot updated successfully');
