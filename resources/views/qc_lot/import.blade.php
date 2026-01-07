@@ -32,7 +32,7 @@
                             <button type="reset" class="btn btn-info mt-2">
                                 <i class="fas fa-redo mr-1"></i>Ulangi
                             </button>
-                            <a href="{{ asset('master/stock.xls') }}" class="btn btn-secondary mt-2" target="_blank">
+                            <a href="{{ asset('master/qc_lots.xlsx') }}" class="btn btn-secondary mt-2" target="_blank">
                                 <i class="fas fa-file-excel mr-1"></i>Sample file
                             </a>
                         </form>
