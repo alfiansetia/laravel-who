@@ -13,8 +13,7 @@
                         <tr>
                             <th class="text-center" style="width: 30px;">No</th>
                             <th>PRODUCT</th>
-                            <th>LOT</th>
-                            <th>ED</th>
+                            <th>LOT / ED</th>
                             <th>DATE</th>
                             <th>QC BY</th>
                             <th>QC NOTE</th>
@@ -124,14 +123,15 @@
                     {
                         data: "lot_number",
                         className: 'text-left',
-                    }, {
-                        data: "lot_expiry",
-                        className: 'text-left',
-                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            return `${row.lot_number} / ${row.lot_expiry}`;
+                        }
                     }, {
                         data: "qc_date",
                         className: 'text-left',
-                        searchable: false,
+                        render: function(data, type, row, meta) {
+                            return moment(data).format('DD-MM-YYYY');
+                        }
                     }, {
                         data: "qc_by",
                         className: 'text-left',
