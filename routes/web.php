@@ -15,6 +15,7 @@ use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\QcController;
+use App\Http\Controllers\QcLotController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
@@ -115,6 +116,11 @@ Route::get('/product_images', [ProductImageController::class, 'index'])
     ->name('product_images.index');
 Route::get('/product_images/{product}/collage', [ProductImageController::class, 'collage'])
     ->name('product_images.collage');
+
+Route::get('/qc-lots', [QcLotController::class, 'index'])
+    ->name('qc_lots.index');
+Route::get('/qc-lots/import', [QcLotController::class, 'import'])
+    ->name('qc_lots.import');
 
 // Shipping Estimate Routes
 Route::resource('shipping-estimate', ShippingEstimateController::class)

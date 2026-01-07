@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\QcController;
+use App\Http\Controllers\Api\QcLotController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
@@ -212,6 +213,13 @@ Route::delete('/resources', [ResourceController::class, 'destroy_log'])
     ->name('api.resources.destroy_log');
 Route::get('/resources', [ResourceController::class, 'index'])
     ->name('api.resources.index');
+
+Route::delete('qc-lots', [QcLotController::class, 'destroy_batch'])
+    ->name('api.qc_lots.destroy_batch');
+Route::apiResource('qc-lots', QcLotController::class)
+    ->names('api.qc_lots');
+Route::post('qc-lots/import', [QcLotController::class, 'import'])
+    ->name('api.qc_lots.import');
 
 // Shipping Estimate API Routes
 Route::delete('shipping-estimate', [\App\Http\Controllers\Api\ShippingEstimateController::class, 'destroyBatch'])
