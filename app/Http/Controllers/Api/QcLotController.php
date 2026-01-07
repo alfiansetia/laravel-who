@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class QcLotController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('env_auth')
+            ->only([
+                'destroy',
+                'destroy_batch',
+                'import',
+                'update',
+                'store',
+            ]);
+    }
+
     public function index()
     {
         $data = QcLot::query()

@@ -12,7 +12,7 @@
                 <div class="modal-body">
                     <div class="form-group col-12">
                         <label for="product_id">Product</label>
-                        <select name="product_id" id="product_id" class="form-control">
+                        <select name="product_id" id="product_id" class="form-control" style="width: 100%;">
                             <option value="">--Pilih--</option>
                             @foreach ($products as $product)
                                 <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}</option>
