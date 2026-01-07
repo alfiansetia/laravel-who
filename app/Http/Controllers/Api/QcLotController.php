@@ -15,7 +15,7 @@ class QcLotController extends Controller
     {
         $data = QcLot::query()
             ->with('product')
-            ->latest()
+            ->latest('qc_date')
             ->get();
         return $this->sendResponse($data, 'QcLot retrieved successfully');
     }
