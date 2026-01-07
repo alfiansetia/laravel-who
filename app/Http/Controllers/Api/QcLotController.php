@@ -103,7 +103,7 @@ class QcLotController extends Controller
         $this->validate($request, [
             'data'              => 'required|array',
             'data.*'            => 'array',
-            'data.*.product'    => 'required|exists:products,code',
+            'data.*.product'    => 'required',
             'data.*.lot'        => 'required|max:200',
             'data.*.ed'         => 'nullable|max:200',
             'data.*.date'       => 'required|date_format:Y-m-d',
