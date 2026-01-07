@@ -19,16 +19,22 @@
                                         <label class="custom-file-label" for="file">Choose file</label>
                                     </div>
                                 </div>
-                                <a href="{{ route('atk.index') }}" class="btn btn-secondary mt-2">
-                                    <i class="fas fa-arrow-left mr-1"></i>Kembali
-                                </a>
-                                <button type="reset" class="btn btn-info mt-2">
-                                    <i class="fas fa-redo mr-1"></i>Ulangi
-                                </button>
-                                <a href="{{ asset('master/stock.xls') }}" class="btn btn-secondary mt-2" target="_blank">
-                                    <i class="fas fa-file-excel mr-1"></i>Sample file
-                                </a>
                             </div>
+                            <div id="sheet_section" style="display: none;">
+                                <div class="form-group mt-2">
+                                    <label>Pilih Sheet (Klik untuk Load):</label>
+                                    <div id="sheet_buttons" class="d-flex flex-wrap" style="gap: 5px;"></div>
+                                </div>
+                            </div>
+                            <a href="{{ route('atk.index') }}" class="btn btn-secondary mt-2">
+                                <i class="fas fa-arrow-left mr-1"></i>Kembali
+                            </a>
+                            <button type="reset" class="btn btn-info mt-2">
+                                <i class="fas fa-redo mr-1"></i>Ulangi
+                            </button>
+                            <a href="{{ asset('master/stock.xls') }}" class="btn btn-secondary mt-2" target="_blank">
+                                <i class="fas fa-file-excel mr-1"></i>Sample file
+                            </a>
                         </form>
 
                     </div>
@@ -134,6 +140,7 @@
                 $('#file').trigger('change')
             }
 
+            let currentWorkbook = null;
 
             document.getElementById('file').addEventListener('change', function(event) {
                 let file = event.target.files[0];
@@ -141,38 +148,65 @@
 
                 reader.onload = function(e) {
                     let data = new Uint8Array(e.target.result);
-                    let workbook = XLSX.read(data, {
+                    currentWorkbook = XLSX.read(data, {
                         type: 'array'
                     });
 
-                    let sheetName = workbook.SheetNames[0];
-                    let sheet = workbook.Sheets[sheetName];
-
-                    // Konversi ke JSON
-                    let json = XLSX.utils.sheet_to_json(sheet, {
-                        header: 1
+                    // Tampilkan pilihan tombol sheet
+                    let sheetBtnContainer = $('#sheet_buttons');
+                    sheetBtnContainer.empty();
+                    currentWorkbook.SheetNames.forEach(name => {
+                        sheetBtnContainer.append(
+                            `<button type="button" class="btn btn-outline-primary btn-load-sheet" data-sheet="${name}"><i class="fas fa-file-excel mr-1"></i>${name}</button>`
+                            );
                     });
-
-                    $.fn.dataTable.ext.errMode = 'none';
-
-                    table.on('error.dt', function(e, settings, techNote, message) {
-                        // console.log('An error has been reported by DataTables: ', message);
-                    });
-                    table.clear().draw();
-                    json.forEach((element, index) => {
-                        if (index != 0) {
-                            if (!element[0] || !element[1] || !element[2]) return;
-                            let param = {
-                                code: element[0],
-                                name: element[1],
-                                satuan: element[2].toLowerCase(),
-                            }
-                            table.row.add(param).draw();
-                        }
-                    });
+                    $('#sheet_section').fadeIn();
                 };
 
                 reader.readAsArrayBuffer(file);
+            });
+
+            // Handle klik tombol sheet
+            $('#sheet_buttons').on('click', '.btn-load-sheet', function() {
+                if (!currentWorkbook) return;
+
+                let sheetName = $(this).data('sheet');
+
+                // Ubah styling tombol yang aktif
+                $('.btn-load-sheet').removeClass('btn-primary').addClass('btn-outline-primary');
+                $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+
+                let sheet = currentWorkbook.Sheets[sheetName];
+
+                // Konversi ke JSON
+                let json = XLSX.utils.sheet_to_json(sheet, {
+                    header: 1
+                });
+
+                $.fn.dataTable.ext.errMode = 'none';
+
+                table.on('error.dt', function(e, settings, techNote, message) {
+                    // console.log('An error has been reported by DataTables: ', message);
+                });
+                table.clear().draw();
+                json.forEach((element, index) => {
+                    if (index != 0) {
+                        if (!element[0] || !element[1] || !element[2]) return;
+                        let param = {
+                            code: element[0],
+                            name: element[1],
+                            satuan: element[2].toString().toLowerCase(),
+                        }
+                        table.row.add(param).draw();
+                    }
+                });
+            });
+
+            $('button[type="reset"]').click(function() {
+                $('#sheet_section').hide();
+                $('#sheet_buttons').empty();
+                table.clear().draw();
+                currentWorkbook = null;
             });
 
             function save_data() {
