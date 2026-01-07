@@ -7,7 +7,6 @@
 
 @section('content')
     <div class="container-fluid">
-        {{-- <h1>{{ $title }}</h1> --}}
         <div class="row">
             <div class="col-lg-8">
                 <div class="card">
@@ -162,18 +161,15 @@
             });
 
             $('#btn_import').click(function() {
-                let skip = $('#skip').val() || []; // hasilnya array
+                let skip = $('#skip').val() || [];
                 skip = skip.filter(v => v !== "").map(Number);
 
                 let imp = $('#import').val().trim();
                 let rows = imp.split('\n');
                 if (rows.length > 0) {
                     rows.forEach((row, index) => {
-                        // misal skip ke array skip
                         if (row != '' || row != null) {
                             let cols = row.split('\t');
-                            // console.log(cols);
-
                             cols.forEach((col, i) => {
                                 if (col) {
                                     if (!skip.includes(i + 1)) {
@@ -194,32 +190,21 @@
                 let imp = $('#import').val('')
             });
 
-
             $('#table_tool tbody').on('click', 'td:not(:first-child)', function() {
                 let cell = table_tool.cell(this);
                 let oldValue = cell.data();
-
-                // Cegah double input
                 if ($(this).find('input').length > 0) return;
-
-                // Ganti isi jadi input
                 $(this).html(
                     `<input type="text" class="form-control edit-input" value="${oldValue||''}" />`);
                 let input = $(this).find('input');
                 input.focus();
-
-                // Handle keluar dari input (blur)
                 input.on('blur', function() {
                     let newValue = $(this).val().trim();
-
-                    // Update value di tabel
                     cell.data(newValue).draw();
                 });
-
-                // Optional: tekan Enter untuk simpan
                 input.on('keypress', function(e) {
                     if (e.which === 13) {
-                        $(this).blur(); // trigger blur
+                        $(this).blur();
                     }
                 });
             });
@@ -232,14 +217,10 @@
                     .draw();
             });
 
-
             $('#skip').select2({
                 placeholder: "Select a skip",
                 allowClear: true
             })
-
-
-
 
         });
     </script>
