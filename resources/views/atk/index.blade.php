@@ -1,11 +1,38 @@
 @extends('template', ['title' => 'Data ATK'])
+@push('css')
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+@endpush
 
 @section('content')
-    <!-- daterange picker -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <div class="container-fluid">
-        {{-- <h1>Data ATK</h1> --}}
-
+        <div class="row">
+            <div class="col-lg-2 col-md-3 col-sm-6">
+                <div class="form-group">
+                    @php
+                        $satuan = [
+                            'pcs',
+                            'dus',
+                            'pack',
+                            'kotak',
+                            'lusin',
+                            'pad',
+                            'rim',
+                            'roll',
+                            'tube',
+                            'box',
+                            'buah',
+                            'buku',
+                        ];
+                    @endphp
+                    <select name="satuan" id="satuan" class="form-control">
+                        <option value="">All</option>
+                        @foreach ($satuan as $item)
+                            <option value="{{ $item }}">{{ $item }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
         <div class="responsive">
             <form id="selected">
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
@@ -33,13 +60,9 @@
 @endsection
 
 @push('js')
-    <!-- date-range-picker -->
-
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-
     <script>
         $.fn.dataTable.ext.errMode = 'none';
 
@@ -539,9 +562,19 @@
                 });
             })
 
-            $('#modal_trx').on('show.bs.modal', function(e) {
+            $('#modal_trx').on('shown.bs.modal', function(e) {
                 $('#trx_qty').focus()
             })
+            $('#modal_edit').on('shown.bs.modal', function(e) {
+                $('#edit_code').focus()
+            })
+            $('#modal_add').on('shown.bs.modal', function(e) {
+                $('#add_code').focus()
+            })
+
+            $('#satuan').on('change', function() {
+                table.columns(3).search($(this).val()).draw();
+            });
         });
     </script>
 
