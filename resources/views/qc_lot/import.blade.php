@@ -11,7 +11,7 @@
                     <div class="card-body">
 
                         <form action="">
-                            <div class="form-group">
+                            <div class="form-group col-6">
                                 <label for="file">File input</label>
                                 <div class="input-group">
                                     <div class="custom-file">
