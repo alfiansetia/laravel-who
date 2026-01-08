@@ -3,7 +3,9 @@
      <div class="modal-dialog modal-dialog-centered" role="document">
          <div class="modal-content border-0 shadow-lg">
              <div class="modal-header bg-primary text-white">
-                 <h5 class="modal-title" id="authModalLabel">🔒 Verifikasi Akses</h5>
+                 <h5 class="modal-title" id="authModalLabel">
+                     <i class="fas fa-lock mr-1"></i>Verifikasi Akses
+                 </h5>
                  <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                      <span aria-hidden="true">&times;</span>
                  </button>
