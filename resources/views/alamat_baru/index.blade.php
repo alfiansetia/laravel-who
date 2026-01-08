@@ -60,6 +60,7 @@
                         }
                     }, {
                         data: "do",
+                        width: '20%'
                     },
                     {
                         data: "tujuan",
