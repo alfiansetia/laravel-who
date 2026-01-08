@@ -87,25 +87,25 @@
                 iziToast.success({
                     title: 'Success',
                     message: message,
-                    position: 'topRight',
+                    position: 'topCenter',
                 });
             } else if (type == 'warning') {
                 iziToast.warning({
                     title: 'Caution',
                     message: message,
-                    position: 'topRight',
+                    position: 'topCenter',
                 });
             } else if (type == 'info') {
                 iziToast.info({
                     title: 'Hello',
                     message: message,
-                    position: 'topRight',
+                    position: 'topCenter',
                 });
             } else {
                 iziToast.error({
                     title: 'Error',
                     message: message,
-                    position: 'topRight',
+                    position: 'topCenter',
                 });
             }
 
