@@ -9,7 +9,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-8">
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">
                         Featured
                     </div>
@@ -24,6 +24,34 @@
                             <tbody>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <i class="fas fa-magic mr-1"></i>SN GENERATOR
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label>Base SN</label>
+                                    <input type="text" id="gen_base" class="form-control" placeholder="">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Qty (±)</label>
+                                    <input type="number" id="gen_qty" class="form-control" value="100">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label>&nbsp;</label>
+                                <button type="button" id="btn_generate" class="btn btn-primary btn-block">
+                                    <i class="fas fa-cog mr-1"></i>Generate
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -165,7 +193,13 @@
                 skip = skip.filter(v => v !== "").map(Number);
 
                 let imp = $('#import').val().trim();
+                if (!imp) {
+                    show_message('Please enter some text to import!', 'error');
+                    return;
+                }
+
                 let rows = imp.split('\n');
+                let count = 0;
                 if (rows.length > 0) {
                     rows.forEach((row, index) => {
                         if (row != '' || row != null) {
@@ -176,6 +210,7 @@
                                         table_tool.row.add({
                                             item: col.trim(),
                                         });
+                                        count++;
                                     }
                                 }
                             });
@@ -183,6 +218,7 @@
 
                     });
                     table_tool.draw();
+                    show_message(`Successfully imported ${count} items!`, 'success');
                 }
             });
 
@@ -215,6 +251,44 @@
                     .row($(this).parents('tr'))
                     .remove()
                     .draw();
+            });
+
+            $('#btn_generate').click(function() {
+                let base = $('#gen_base').val().trim();
+                let qty = parseInt($('#gen_qty').val());
+
+                if (!base) {
+                    show_message('Base SN is required!');
+                    return;
+                }
+
+                // Regex to find trailing digits
+                let match = base.match(/^(.*?)(\d+)$/);
+                if (!match) {
+                    show_message('Base SN must end with a number!');
+                    return;
+                }
+
+                let prefix = match[1];
+                let numStr = match[2];
+                let startNum = parseInt(numStr);
+                let padLength = numStr.length;
+
+                let start = 0;
+                let end = Math.abs(qty);
+                let step = qty > 0 ? 1 : -1;
+
+                for (let i = 0; i < end; i++) {
+                    let currentNum = startNum + (i * step);
+                    if (currentNum < 0) break;
+
+                    let generatedNum = currentNum.toString().padStart(padLength, '0');
+                    table_tool.row.add({
+                        item: prefix + generatedNum,
+                    });
+                }
+                table_tool.draw();
+                show_message(`Generated ${end} SNs!`, 'success');
             });
 
             $('#skip').select2({
