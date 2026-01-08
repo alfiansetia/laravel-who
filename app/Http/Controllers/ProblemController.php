@@ -57,7 +57,7 @@ class ProblemController extends Controller
             }
         }
 
-        return redirect()->route('problem.edit', $problem->id);
+        return redirect()->route('problems.edit', $problem->id);
     }
 
     /**
@@ -93,7 +93,7 @@ class ProblemController extends Controller
             'email_on',
             'pic',
         ]));
-        return redirect()->route('problem.edit', $problem->id);
+        return redirect()->route('problems.edit', $problem->id);
     }
 
     /**

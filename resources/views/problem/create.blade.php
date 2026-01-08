@@ -7,7 +7,7 @@
 @section('content')
     <div class="container-fluid">
 
-        <form method="POST" action="{{ route('problem.store') }}" id="form">
+        <form method="POST" action="{{ route('api.problem.store') }}" id="form">
             @csrf
             <div class="card card-primary mt-3">
                 <div class="card-header">
@@ -110,7 +110,7 @@
             </div>
 
             <div class="card-footer mt-3">
-                <a href="{{ route('problem.index') }}" class="btn btn-secondary">
+                <a href="{{ route('problems.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left mr-1"></i>Kembali
                 </a>
                 <button type="submit" id="btn_simpan" class="btn btn-primary">

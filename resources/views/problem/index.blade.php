@@ -207,7 +207,7 @@
                             'title': 'Tambah Data'
                         },
                         action: function(e, dt, node, config) {
-                            window.location.href = "{{ route('problem.create') }}"
+                            window.location.href = "{{ route('problems.create') }}"
                         }
                     },
                     {

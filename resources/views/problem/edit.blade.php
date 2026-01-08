@@ -13,7 +13,7 @@
 @section('content')
     <div class="container-fluid">
 
-        <form method="POST" action="{{ route('problem.update', $data->id) }}" id="form">
+        <form method="POST" action="{{ route('api.problem.update', $data->id) }}" id="form">
             @csrf
             @method('PUT')
             <div class="card card-primary mt-3">
@@ -83,7 +83,7 @@
                 </div>
 
                 <div class="card-footer">
-                    <a href="{{ route('problem.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('problems.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-1"></i>Kembali
                     </a>
                     <button type="submit" id="btn_simpan" class="btn btn-primary">
