@@ -319,6 +319,10 @@
                 var data = table
                     .rows()
                     .data().toArray();
+                if (data.length < 1) {
+                    show_message('No data to import!', 'error');
+                    return;
+                }
                 $.ajax({
                     type: 'POST',
                     url: "{{ route('api.qc_lots.import') }}",
