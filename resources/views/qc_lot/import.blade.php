@@ -3,15 +3,14 @@
 @section('content')
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12">
+            <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-header">
                         <h4><i class="fas fa-file-excel mr-1"></i>Import Data Lot</h4>
                     </div>
-                    <div class="card-body">
-
+                    <div class="card-body pb-5">
                         <form action="">
-                            <div class="form-group col-6">
+                            <div class="form-group">
                                 <label for="file">File input</label>
                                 <div class="input-group">
                                     <div class="custom-file">
@@ -39,7 +38,29 @@
 
                     </div>
                 </div>
+            </div>
 
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h4><i class="fas fa-clipboard mr-1"></i>Import From text</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="import_text">Paste dari Excel (Tab Separated)</label>
+                            <textarea id="import_text" class="form-control" placeholder="Paste Text"></textarea>
+                        </div>
+                        <button type="button" id="btn_import_text" class="btn btn-primary mt-2">
+                            <i class="fas fa-file-import mr-1"></i>Import Text
+                        </button>
+                        <button type="button" id="btn_delete_text" class="btn btn-danger mt-2">
+                            <i class="fas fa-trash mr-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h4>
@@ -238,6 +259,60 @@
                 $('#sheet_buttons').empty();
                 table.clear().draw();
                 currentWorkbook = null;
+                $('#import_text').val('');
+            });
+
+            $('#btn_import_text').click(function() {
+                let text = $('#import_text').val().trim();
+                if (!text) {
+                    show_message('Please enter some text to import!', 'error');
+                    return;
+                }
+
+                let rows = text.split('\n');
+                let count = 0;
+
+                rows.forEach((row) => {
+                    if (row.trim() !== "") {
+                        let cols = row.split('\t');
+                        // Mapping disamakan dengan Excel:
+                        // element[2] = Product, element[4] = Lot, element[5] = ED, 
+                        // element[12] = Date, element[13] = QC Note, element[14] = QC By
+
+                        let product = cols[2] ? cols[2].trim() : '';
+                        let lot = cols[4] ? cols[4].trim() : '';
+                        let ed = cols[5] ? cols[5].trim() : '';
+                        let dateRaw = cols[12] ? cols[12].trim() : '';
+                        let qc_note = cols[13] ? cols[13].trim() : '';
+                        let qc_by = cols[14] ? cols[14].trim() : '';
+
+                        // Standardisasi tanggal (Wajib Valid)
+                        let date = '';
+                        if (dateRaw) {
+                            let mDate = moment(dateRaw, ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY'],
+                                true);
+                            if (mDate.isValid()) {
+                                date = mDate.format('YYYY-MM-DD');
+                            }
+                        }
+
+                        // Hanya masukkan jika Product, Lot, dan Date valid tersedia
+                        if (product && lot && date) {
+                            table.row.add({
+                                product: product,
+                                lot: lot,
+                                ed: ed,
+                                date: date,
+                                qc_by: qc_by,
+                                qc_note: qc_note,
+                            });
+                            count++;
+                        }
+                    }
+                });
+
+                table.draw();
+                show_message(`Successfully imported ${count} items from text!`, 'success');
             });
 
             function save_data() {
@@ -289,6 +364,10 @@
                     .remove()
                     .draw();
             });
+
+            $('#btn_delete_text').click(function() {
+                $('#import_text').val('')
+            })
         })
     </script>
 @endpush
