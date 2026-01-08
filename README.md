@@ -20,7 +20,18 @@ Sebuah sistem manajemen internal berbasis Laravel yang dirancang untuk mengelola
 - **🖊️ Manajemen ATK**: Pengelolaan Alat Tulis Kantor dengan sistem transaksi In/Out dan import data.
 - **📱 PWA Support**: Dapat diinstal di perangkat mobile untuk akses cepat.
 
-## 🛠️ Teknologi yang Digunakan
+## �️ Console Monitoring
+
+Proyek ini dilengkapi dengan sistem monitoring otomatis yang berjalan di background via Artisan Command untuk memantau data dari Odoo:
+
+- **Monitor Delivery Order**:
+  Menjalankan pengecekan DO baru secara real-time dari Odoo dan mengirimkan notifikasi ke Telegram & Firebase.
+  ```bash
+  php artisan app:monitor-do
+  ```
+  *Saran: Jalankan menggunakan Task Scheduler (Cron Job) setiap 1-5 menit.*
+
+## �🛠️ Teknologi yang Digunakan
 
 - **Backend**: Laravel 10/11+
 - **Frontend**: Blade Template, Bootstrap 4, DataTables, Select2
