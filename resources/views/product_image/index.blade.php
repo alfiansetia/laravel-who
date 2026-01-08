@@ -250,7 +250,7 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
                         </div>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Cari produk...">
+                        <input type="search" id="searchInput" class="form-control" placeholder="Cari produk...">
                     </div>
                 </div>
                 <div class="col-12 col-md-4 mb-2 mb-md-0">
