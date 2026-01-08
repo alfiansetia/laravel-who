@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Problem;
 use App\Models\Product;
+use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 
 class ProblemController extends Controller
@@ -101,5 +102,15 @@ class ProblemController extends Controller
     public function destroy(Problem $problem)
     {
         //
+    }
+
+
+    public function import()
+    {
+        $bcms = collect([
+            new Breadcrumb('Problem', route('problems.index'), true),
+            new Breadcrumb('Import', route('problems.import'), false),
+        ]);
+        return view('problem.import', compact('bcms'));
     }
 }

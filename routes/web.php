@@ -40,8 +40,8 @@ Route::get('monitor-do', function () {
     return view('monitor.do', compact('title'));
 })->name('monitor.do');
 
-
-Route::resource('problem', ProblemController::class);
+Route::get('problems/import', [ProblemController::class, 'import'])->name('problems.import');
+Route::get('problems', [ProblemController::class, 'index'])->name('problems.index');
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('so', [SoController::class, 'index'])->name('so.index');
