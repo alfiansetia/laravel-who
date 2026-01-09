@@ -60,7 +60,11 @@ class SoController extends Controller
     public function mark_as_unprint(Request $request, int $id)
     {
         $id = intval($id);
-        $new_note = str_replace("PRINT OK", "", ($request->note ?? ''));
+        $note = $request->note ?? '';
+        // Hapus "PRINT OK" secara case-insensitive dan bersihkan spasi/newline di sekitarnya
+        $new_note = preg_replace('/PRINT OK\s*/i', '', $note);
+        $new_note = trim($new_note);
+
         $response = SoServices::writeNote($id, $new_note);
         return $this->sendResponse($response, 'Success mark as unprint');
     }

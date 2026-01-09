@@ -176,7 +176,9 @@
                         orderable: false,
                         render: function(data, type, row) {
                             let isprint = (row.note_to_wh || '').includes('PRINT OK');
-                            return `<button type="button" class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
+                            return `
+                            <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
                                         <i class="fas fa-print"></i>
                                     </button>
                                     <button ${isprint ? 'disabled' : ''} type="button" class="btn btn-sm btn-warning btn-mark-as-print" data-id="${data}" title="Mark As Print">
@@ -184,7 +186,8 @@
                                     </button>
                                     <button ${isprint ? '' : 'disabled'} type="button" class="btn btn-sm btn-danger btn-mark-as-unprint" data-id="${data}" title="Mark As Unprint">
                                         <i class="fas fa-times"></i>
-                                    </button>`;
+                                    </button>
+                                    </div>`;
                         }
                     },
                 ],
