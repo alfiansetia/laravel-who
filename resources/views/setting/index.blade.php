@@ -45,7 +45,7 @@
             <div class="col-md-4">
                 <div class="card card-primary mt-3">
                     <div class="card-header mb-0 d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">Resource</h3>
+                        <h4 class="mb-0"><i class="fas fa-server mr-1"></i>Resource</h4>
                         <button type="button" id="resource_refresh" class="btn btn-sm btn-warning">
                             <i class="fas fa-sync mr-1"></i>
                         </button>
@@ -59,7 +59,7 @@
             <div class="col-md-8">
                 <div class="card card-primary mt-3">
                     <div class="card-header mb-0">
-                        <h3 class="mb-0">List Device</h3>
+                        <h4 class="mb-0"><i class="fas fa-laptop mr-1"></i>List Device</h4>
                     </div>
                     <div class="card-body">
                         <div class="responsive">
@@ -87,7 +87,7 @@
             <div class="col-md-4">
                 <div class="card card-primary mt-3">
                     <div class="card-header mb-0 d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">Logs</h3>
+                        <h4 class="mb-0"><i class="fas fa-history mr-1"></i>Logs</h4>
                         <button type="button" id="btn_clear_log" class="btn btn-sm btn-danger">
                             <i class="fas fa-trash mr-1"></i>
                         </button>
@@ -107,7 +107,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modal_detailLabel">Detail Token</h5>
+                    <h5 class="modal-title" id="modal_detailLabel"><i class="fas fa-info mr-1"></i>Detail Token</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
