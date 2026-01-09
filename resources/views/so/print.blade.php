@@ -414,7 +414,7 @@
                                 {{ number_format($item['product_uom_qty'], 1) }} {{ get_name($item['product_uom']) }}
                             </td>
                             <td class="text-right">{{ $item['unit_price1'] }}</td>
-                            <td class="text-center">{{ $item['plus_disc'] }}</td>
+                            <td class="text-center">{{ number_format($item['discount'], 1) }}</td>
                             <td class="text-center">{{ Arr::get($item, 'tax_id_detail.display_name', 'False') }}</td>
                             <td class="text-right">{{ $item['price_subtotal1'] }}</td>
                         </tr>
