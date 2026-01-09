@@ -48,4 +48,20 @@ class SoController extends Controller
         $response = SoServices::detail($id);
         return $this->sendResponse($response);
     }
+
+    public function mark_as_print(Request $request, int $id)
+    {
+        $id = intval($id);
+        $new_note = "PRINT OK\n" . ($request->note ?? '');
+        $response = SoServices::writeNote($id, $new_note);
+        return $this->sendResponse($response, 'Success mark as print');
+    }
+
+    public function mark_as_unprint(Request $request, int $id)
+    {
+        $id = intval($id);
+        $new_note = str_replace("PRINT OK", "", ($request->note ?? ''));
+        $response = SoServices::writeNote($id, $new_note);
+        return $this->sendResponse($response, 'Success mark as unprint');
+    }
 }

@@ -174,9 +174,16 @@
                         data: "id",
                         className: 'text-center',
                         orderable: false,
-                        render: function(data) {
-                            return `<button class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
+                        render: function(data, type, row) {
+                            let isprint = (row.note_to_wh || '').includes('PRINT OK');
+                            return `<button type="button" class="btn btn-sm btn-success btn-print-so" data-id="${data}" title="Print SO">
                                         <i class="fas fa-print"></i>
+                                    </button>
+                                    <button ${isprint ? 'disabled' : ''} type="button" class="btn btn-sm btn-warning btn-mark-as-print" data-id="${data}" title="Mark As Print">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button ${isprint ? '' : 'disabled'} type="button" class="btn btn-sm btn-danger btn-mark-as-unprint" data-id="${data}" title="Mark As Unprint">
+                                        <i class="fas fa-times"></i>
                                     </button>`;
                         }
                     },
@@ -322,6 +329,56 @@
 
             $('#filter').change(function() {
                 table.ajax.reload();
+            });
+
+            $('#table tbody').on('click', '.btn-mark-as-print', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const soId = $(this).data('id');
+                const note = table.row($(this).parents('tr')[0]).data().note_to_wh;
+                confirmation('Mark as print?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: `${URL_INDEX_API}/${soId}/mark-as-print`,
+                            type: "POST",
+                            data: {
+                                note: note
+                            },
+                            success: function(res) {
+                                table.ajax.reload();
+                                show_message(res.message, 'success')
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
+                    }
+                })
+            });
+
+            $('#table tbody').on('click', '.btn-mark-as-unprint', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const soId = $(this).data('id');
+                const note = table.row($(this).parents('tr')[0]).data().note_to_wh;
+                confirmation('Mark as unprint?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: `${URL_INDEX_API}/${soId}/mark-as-unprint`,
+                            type: "POST",
+                            data: {
+                                note: note
+                            },
+                            success: function(res) {
+                                table.ajax.reload();
+                                show_message(res.message, 'success')
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
+                    }
+                })
             });
         });
     </script>

@@ -577,4 +577,36 @@ class SoServices extends Odoo
             ->get();
         return $order_line;
     }
+
+    public static function writeNote(int $id, string $note = '')
+    {
+        $data = [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'model' => "sale.order",
+                'method' => "write",
+                'args' => [
+                    $id,
+                    [
+                        'note_to_wh' => $note
+                    ]
+                ],
+                'kwargs' => [
+                    'context' => [
+                        "lang"  => "en_US",
+                        "tz"    => "Asia/Jakarta",
+                        "uid"   => 192,
+                        "search_default_my_quotation" => 1
+                    ]
+                ]
+            ],
+        ];
+        $response  = parent::asJson()
+            ->withUrlParam('/web/dataset/call_kw/sale.order/write')
+            ->method('POST')
+            ->withData($data)
+            ->get();
+        return $response;
+    }
 }

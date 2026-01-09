@@ -39,6 +39,8 @@ Route::get('/user', function (Request $request) {
 Route::get('do', [DOController::class, 'index'])->name('api.do.index');
 Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 
+Route::post('so/{id}/mark-as-print', [SoController::class, 'mark_as_print'])->name('api.so.mark_as_print');
+Route::post('so/{id}/mark-as-unprint', [SoController::class, 'mark_as_unprint'])->name('api.so.mark_as_unprint');
 Route::get('so', [SoController::class, 'index'])->name('api.so.index');
 Route::get('so/{id}', [SOController::class, 'detail'])->name('api.so.detail');
 
