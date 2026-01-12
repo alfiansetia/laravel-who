@@ -83,7 +83,7 @@
                                 <label for="tgl" class="col-sm-2 col-form-label">Tgl</label>
                                 <div class="col-sm-10">
                                     <input name="tgl" type="date" class="form-control" id="tgl"
-                                        value="{{ date('Y-m-d', strtotime('-1 day')) }}" required>
+                                        value="{{ $date }}" required>
                                 </div>
                             </div>
                             <div class="form-group row">
