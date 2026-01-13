@@ -321,7 +321,7 @@
             </div>
             <div class="address-box">
                 <div class="address-content">
-                    <b>{{ Arr::get($data['partner_shipping_id_detail'], 'display_name') }}</b>
+                    <b>{{ Arr::get($data['partner_shipping_id_detail'], 'name') }}</b>
                     @if ($val = Arr::get($data['partner_shipping_id_detail'], 'street'))
                         <br>{{ $val }}
                     @endif
