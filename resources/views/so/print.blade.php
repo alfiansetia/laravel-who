@@ -369,11 +369,17 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Ekspedisi :</span>
-                <span class="info-value">{{ get_name(Arr::get($data, 'nama_ekspedisi', '')) ?? 'False' }}</span>
+                <span class="info-value">{{ get_name(Arr::get($data, 'nama_ekspedisi', '')) ?? '-' }}</span>
             </div>
+            @php
+                $no_ska = Arr::get($data, 'no_ska', false);
+                if (!$no_ska) {
+                    $no_ska = 'False';
+                }
+            @endphp
             <div class="info-row">
                 <span class="info-label">SKA:</span>
-                <span class="info-value">{{ Arr::get($data, 'no_ska', 'False') }}</span>
+                <span class="info-value">{{ $no_ska }}</span>
             </div>
         </div>
 
