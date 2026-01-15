@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DetailAlamatController;
 use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
+use App\Http\Controllers\Api\ItController;
 use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KoliController;
 use App\Http\Controllers\Api\KoliItemController;
@@ -43,6 +44,9 @@ Route::post('so/{id}/mark-as-print', [SoController::class, 'mark_as_print'])->na
 Route::post('so/{id}/mark-as-unprint', [SoController::class, 'mark_as_unprint'])->name('api.so.mark_as_unprint');
 Route::get('so', [SoController::class, 'index'])->name('api.so.index');
 Route::get('so/{id}', [SOController::class, 'detail'])->name('api.so.detail');
+
+Route::get('it', [ItController::class, 'index'])->name('api.it.index');
+Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
 
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');

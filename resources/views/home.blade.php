@@ -201,6 +201,18 @@
             </div>
 
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('it.index') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-random menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">IT</h6>
+                            <small class="text-muted">List IT</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('so.index') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-cart-plus menu-icon mr-3"></i>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AlamatBaruController;
+use App\Http\Controllers\ItController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\DoController;
@@ -55,6 +56,8 @@ Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.ek
 
 Route::get('do', [DoController::class, 'index'])->name('do.index');
 Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print');
+
+Route::get('it', [ItController::class, 'index'])->name('it.index');
 
 // NEW ROUTE
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');
