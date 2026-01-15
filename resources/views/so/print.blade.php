@@ -117,9 +117,9 @@
         /* Note Section */
         .note-section {
             margin-bottom: 10px;
-            padding: 8px;
-            background: #f9f9f9;
-            border-left: 3px solid #333;
+            /* padding: 8px; */
+            /* background: #f9f9f9; */
+            /*border-left: 3px solid #333;*/
         }
 
         .note-title {
