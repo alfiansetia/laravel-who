@@ -20,3 +20,4 @@ yarn-error.log
 /.vscode
 /public/files
 public/firebase-messaging-sw.js
+.DS_Store
