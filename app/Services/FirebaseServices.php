@@ -126,6 +126,7 @@ class FirebaseServices
                     ];
 
                     // Kirim request dengan timeout 10 detik
+                    $last_status_at = now();
                     $post = Http::timeout(10)
                         ->withHeaders($headers)
                         ->asJson()
@@ -133,6 +134,9 @@ class FirebaseServices
 
                     if ($post->successful()) {
                         $successCount++;
+                        $token->last_status = 'SUCCESS';
+                        $token->last_status_at = $last_status_at;
+                        $token->save();
                     } else {
                         $failedCount++;
                         $errorStatus = $post->json('error.status');
@@ -143,6 +147,10 @@ class FirebaseServices
                             'error_status' => $errorStatus,
                             'response' => $post->body()
                         ]);
+
+                        $token->last_status = $errorStatus;
+                        $token->last_status_at = $last_status_at;
+                        $token->save();
 
                         // Hanya hapus jika token memang sudah tidak terdaftar (UNREGISTERED)
                         if ($errorStatus === 'UNREGISTERED') {
