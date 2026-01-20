@@ -65,6 +65,20 @@
                             </table>
                         </div>
                         <div class="tab-pane fade" id="product-lot" role="tabpanel" aria-labelledby="product-lot-tab">
+                            <div class="row mb-3 align-items-end">
+                                <div class="col-md-6">
+                                    <label for="filter_product_code">Filter Product Code</label>
+                                    <select id="filter_product_code" class="form-control select2" style="width: 100%;">
+                                        <option value=""></option>
+                                        <option value="">All Products</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" id="btn_reset_filter" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-sync-alt mr-1"></i>Reset
+                                    </button>
+                                </div>
+                            </div>
                             <table class="table table-hover" id="table_product_lot" style="width: 100%;cursor: pointer;">
                                 <thead>
                                     <tr>
@@ -351,6 +365,12 @@
                     }, {
                         data: "expired_date",
                         className: 'text-center',
+                        render: function(data, type, row) {
+                            if (!data) {
+                                return '';
+                            }
+                            return moment(data).format('YYYY.MM.DD');
+                        }
                     },
                 ],
                 buttons: [{
@@ -397,6 +417,25 @@
                         }],
                     }
                 ],
+
+            });
+
+            $('#filter_product_code').select2({
+                placeholder: 'Select Product Code',
+                allowClear: true,
+                theme: 'bootstrap4',
+                dropdownParent: $('#modal_product')
+            }).on('change', function() {
+                var val = $(this).val();
+                table_product_lot
+                    .column(0)
+                    .search(val ? '^' + $.fn.dataTable.util.escapeRegex(val) + '$' : '', true, false)
+                    .draw();
+            });
+
+            $('#btn_reset_filter').on('click', function() {
+                $('#filter_product_code').val('').trigger('change.select2');
+                table_product_lot.search('').columns().search('').draw();
             });
 
             $('#table tbody').on('click', 'tr td', function() {
@@ -420,9 +459,32 @@
 
                         table_product_lot
                             .clear()
+                            .search('') // Clear global search
+                            .columns().search('') // Clear all column searches
                             .rows
                             .add(res.data.move_line_ids_without_package_detail)
                             .draw();
+
+                        // Populate Filter Select2
+                        let filterSelect = $('#filter_product_code');
+                        filterSelect.empty().append(
+                            '<option value=""></option><option value="">All Products</option>'
+                        );
+                        let codes = [];
+                        res.data.move_line_ids_without_package_detail.forEach(function(item) {
+                            let text = Array.isArray(item.product_id) ? item.product_id[
+                                    1] :
+                                item
+                                .product_id;
+                            let code = getCode(text);
+                            if (code && !codes.includes(code)) {
+                                codes.push(code);
+                            }
+                        });
+                        codes.sort().forEach(function(code) {
+                            filterSelect.append(new Option(code, code));
+                        });
+                        filterSelect.val('').trigger('change.select2');
 
                         $('#modal_product').modal('show');
                         $('#product-tab').tab('show'); // Ensure first tab is active
