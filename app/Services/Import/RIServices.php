@@ -245,9 +245,12 @@ class RIServices extends Odoo
         }
         try {
             $order_line = static::getMovesWithoutPackages($res['move_ids_without_package']);
+            $order_line_detail = static::getOrderLinesDetail($res['move_line_ids_without_package'] ?? []);
             $res['move_without_package_detail'] = $order_line['result'] ?? [];
+            $res['move_line_ids_without_package_detail'] = $order_line_detail['result'] ?? [];
         } catch (\Throwable $th) {
             $res['move_without_package_detail'] = [];
+            $res['move_line_ids_without_package_detail'] = [];
         }
         return $res;
     }

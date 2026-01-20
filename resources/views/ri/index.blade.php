@@ -15,6 +15,7 @@
                             <th>VENDOR</th>
                             <th>PO</th>
                             <th>NOTES</th>
+                            <th>STATUS</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,8 +25,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_product" data-backdrop="static" tabindex="-1" aria-labelledby="modal_productLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="modal_product" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="modal_productLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -35,21 +36,50 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Desc</th>
-                                <th>NAME</th>
-                                <th>AKL</th>
-                                <th style="width: 30px">QTY TOTAL</th>
-                                <th style="width: 30px">QTY DONE</th>
-                                <th style="width: 30px">QTY SISA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <ul class="nav nav-tabs" id="modalTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="product-tab" data-toggle="tab" href="#product" role="tab"
+                                aria-controls="product" aria-selected="true">Product</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="product-lot-tab" data-toggle="tab" href="#product-lot" role="tab"
+                                aria-controls="product-lot" aria-selected="false">Product Lot</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="modalTabContent">
+                        <div class="tab-pane fade show active" id="product" role="tabpanel" aria-labelledby="product-tab">
+                            <table class="table table-hover" id="table_product" style="width: 100%;cursor: pointer;">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Desc</th>
+                                        <th>NAME</th>
+                                        <th>AKL</th>
+                                        <th style="width: 30px">QTY TOTAL</th>
+                                        <th style="width: 30px">QTY DONE</th>
+                                        <th style="width: 30px">QTY SISA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="product-lot" role="tabpanel" aria-labelledby="product-lot-tab">
+                            <table class="table table-hover" id="table_product_lot" style="width: 100%;cursor: pointer;">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Desc</th>
+                                        <th>LOT/SN</th>
+                                        <th>QTY</th>
+                                        <th>EXP DATE</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     <hr class="my-2">
                     <div class="mt-2">
                         <span><b>Origin/PO</b> : </span>
@@ -104,23 +134,30 @@
                 lengthChange: false,
                 columns: [{
                         data: "name",
+                        className: 'text-left',
                         render: function(data, type, row) {
                             return `<b>${data}</b>`
                         }
                     },
                     {
                         data: "partner_id",
+                        className: 'text-left',
                         render: function(data, type, row) {
                             return Array.isArray(data) ? data[1] : data;
                         }
                     }, {
                         data: "origin",
+                        className: 'text-left',
                     }, {
                         data: "note_to_wh",
+                        className: 'text-left',
                         render: function(data, type, row) {
                             return data.length > 50 ? data.substring(0, 50) + '...' : data
                         }
-
+                    },
+                    {
+                        data: "state",
+                        className: 'text-center',
                     },
                 ],
                 buttons: [{
@@ -273,6 +310,95 @@
                 ],
             });
 
+            var table_product_lot = $("#table_product_lot").DataTable({
+                processing: true,
+                serverSide: false,
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
+                    "<'table-responsive'tr>" +
+                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
+                oLanguage: {
+                    "sSearchPlaceholder": "Search...",
+                    "sLengthMenu": "Results :  _MENU_",
+                },
+                lengthMenu: [
+                    [10, 50, 100, 500, 1000],
+                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
+                ],
+                pageLength: 10,
+                paging: true,
+                columns: [{
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            let text = Array.isArray(data) ? data[1] : data;
+                            return getCode(text)
+                        }
+                    }, {
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            let text = Array.isArray(data) ? data[1] : data;
+                            return getDesc(text)
+                        }
+                    }, {
+                        data: "lot_id",
+                        render: function(data, type, row) {
+                            return Array.isArray(data) ? data[1] : (row.lot_name ? row.lot_name :
+                                data);
+                        }
+                    },
+                    {
+                        data: "qty_done",
+                        className: 'text-center',
+                    }, {
+                        data: "expired_date",
+                        className: 'text-center',
+                    },
+                ],
+                buttons: [{
+                        extend: "colvis",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Column Visible'
+                        },
+                        className: 'btn btn-sm btn-primary'
+                    },
+                    {
+                        extend: "collection",
+                        text: '<i class="fas fa-download mr-1"></i>Export',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Export Data'
+                        },
+                        className: 'btn btn-sm btn-primary',
+                        buttons: [{
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }],
+                    }
+                ],
+            });
+
             $('#table tbody').on('click', 'tr td', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(this).id()
@@ -291,7 +417,15 @@
                             .rows
                             .add(res.data.move_without_package_detail)
                             .draw();
+
+                        table_product_lot
+                            .clear()
+                            .rows
+                            .add(res.data.move_line_ids_without_package_detail)
+                            .draw();
+
                         $('#modal_product').modal('show');
+                        $('#product-tab').tab('show'); // Ensure first tab is active
                     },
                     error: function(xhr) {
                         show_message(xhr.responseJSON?.message || 'Gagal memuat data RI!',
