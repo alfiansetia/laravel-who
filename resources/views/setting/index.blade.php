@@ -73,6 +73,7 @@
                                             <th>User Agent</th>
                                             <th>IP</th>
                                             <th>Token</th>
+                                            <th>Last Status</th>
                                             <th>#</th>
                                         </tr>
                                     </thead>
@@ -325,6 +326,15 @@
                                 return `<span class="badge bg-success mr-1">Device ini</span>${shortToken}`;
                             }
                             return shortToken;
+                        }
+                        return data;
+                    }
+                }, {
+                    data: "last_status",
+                    className: 'text-left',
+                    render: function(data, type, row, meta) {
+                        if (type === 'display') {
+                            return `<span title="${row.last_status_at}">${data}</span>`
                         }
                         return data;
                     }

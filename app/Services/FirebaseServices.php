@@ -140,20 +140,22 @@ class FirebaseServices
                     } else {
                         $failedCount++;
                         $errorStatus = $post->json('error.status');
+                        $errorCode = $post->json('error.details.0.errorCode');
 
                         Log::warning('Firebase: Gagal mengirim notifikasi', [
                             'token_id' => $token->id,
                             'status_code' => $post->status(),
                             'error_status' => $errorStatus,
+                            'error_code' => $errorCode,
                             'response' => $post->body()
                         ]);
 
-                        $token->last_status = $errorStatus;
+                        $token->last_status = $errorCode ?? $errorStatus;
                         $token->last_status_at = $last_status_at;
                         $token->save();
 
                         // Hanya hapus jika token memang sudah tidak terdaftar (UNREGISTERED)
-                        if ($errorStatus === 'UNREGISTERED') {
+                        if ($errorStatus === 'UNREGISTERED' || $errorCode === 'UNREGISTERED') {
                             $token->delete();
                             Log::info("Firebase: Token ID {$token->id} dihapus karena UNREGISTERED");
                         }
