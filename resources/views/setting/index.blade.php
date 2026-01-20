@@ -137,6 +137,18 @@
                             <textarea name="token" id="token" class="form-control"></textarea>
                         </div>
                     </div>
+                    <div class="form-group col-12">
+                        <label for="last_status">Last Status</label>
+                        <div class="input-group">
+                            <input name="last_status" id="last_status" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-12">
+                        <label for="last_status_at">Last Status At</label>
+                        <div class="input-group">
+                            <input name="last_status_at" id="last_status_at" class="form-control">
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -447,6 +459,8 @@
                 $('#ip').val(data.ip)
                 $('#user_agent').val(data.user_agent)
                 $('#token').val(data.token)
+                $('#last_status').val(data.last_status)
+                $('#last_status_at').val(data.last_status_at)
                 if (currentToken == data.token) {
                     $('#token_status').show()
                 } else {
