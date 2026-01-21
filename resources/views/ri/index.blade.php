@@ -84,6 +84,8 @@
                                     <tr>
                                         <th>Code</th>
                                         <th>Desc</th>
+                                        <th>Product</th>
+                                        <th>AKL</th>
                                         <th>LOT/SN</th>
                                         <th>QTY</th>
                                         <th>EXP DATE</th>
@@ -353,6 +355,17 @@
                             return getDesc(text)
                         }
                     }, {
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            let text = Array.isArray(data) ? data[1] : data;
+                            return text
+                        }
+                    }, {
+                        data: "akl_id",
+                        render: function(data, type, row) {
+                            return Array.isArray(data) ? data[1] : data;
+                        }
+                    }, {
                         data: "lot_id",
                         render: function(data, type, row) {
                             return Array.isArray(data) ? data[1] : (row.lot_name ? row.lot_name :
@@ -451,10 +464,27 @@
                     url: `${URL_INDEX_API}/${id}`,
                     type: 'GET',
                     success: function(res) {
+                        let products = res.data.move_without_package_detail;
+                        let lots = res.data.move_line_ids_without_package_detail;
+
+                        // Map akl_id from products to lots
+                        let aklMap = {};
+                        products.forEach(p => {
+                            let pid = Array.isArray(p.product_id) ? p.product_id[0] : p
+                                .product_id;
+                            aklMap[pid] = p.akl_id;
+                        });
+
+                        lots.forEach(lot => {
+                            let pid = Array.isArray(lot.product_id) ? lot.product_id[
+                                0] : lot.product_id;
+                            lot.akl_id = aklMap[pid];
+                        });
+
                         table_product
                             .clear()
                             .rows
-                            .add(res.data.move_without_package_detail)
+                            .add(products)
                             .draw();
 
                         table_product_lot
@@ -462,7 +492,7 @@
                             .search('') // Clear global search
                             .columns().search('') // Clear all column searches
                             .rows
-                            .add(res.data.move_line_ids_without_package_detail)
+                            .add(lots)
                             .draw();
 
                         // Populate Filter Select2
