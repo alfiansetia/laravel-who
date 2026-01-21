@@ -130,3 +130,12 @@ Route::get('/qc-lots/import', [QcLotController::class, 'import'])
 // Shipping Estimate Routes
 Route::resource('shipping-estimate', ShippingEstimateController::class)
     ->names('shipping_estimate');
+
+
+Route::get('/firebase-messaging-sw.js', function () {
+    $content = view('firebase-messaging-sw')->render();
+
+    return response($content, 200)
+        ->header('Content-Type', 'application/javascript')
+        ->header('Cache-Control', 'no-store, no-cache');
+});

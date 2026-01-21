@@ -3,12 +3,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-comp
 
 // Inisialisasi Firebase di Service Worker
 firebase.initializeApp({
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID",
+    apiKey: "{{ config('services.firebase.api_key') }}",
+    authDomain: "{{ config('services.firebase.auth_domain') }}",
+    projectId: "{{ config('services.firebase.project_id') }}",
+    storageBucket: "{{ config('services.firebase.storage_bucket') }}",
+    messagingSenderId: "{{ config('services.firebase.messaging_sender_id') }}",
+    appId: "{{ config('services.firebase.app_id') }}",
 });
 
 const messaging = firebase.messaging();
