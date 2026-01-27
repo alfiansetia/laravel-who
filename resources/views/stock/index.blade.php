@@ -294,7 +294,7 @@
 
                         data.forEach(item => {
                             lotParts.push(
-                                `${item.lot|| 'Tanpa Lot/Sn'}${item.expired != false ? `/${item.expired}`: ''} = ${item.quantity} Pcs`
+                                `${item.lot|| 'Tanpa Lot/Sn'}${item.expired != false ? `/${item.expired}`: ''} = ${item.quantity} ea`
                             );
                             snParts.push(item.lot || 'Tanpa Lot/Sn');
                             total += item.quantity
@@ -302,7 +302,7 @@
 
                         // gabung array jadi string, dipisah koma + spasi
                         let text_lot = lotParts.join(', ');
-                        let text_sn = `${total} Pcs, SN : ` + snParts.join(', ');
+                        let text_sn = `${total} ea, SN : ` + snParts.join(', ');
 
                         $('#detail_lot').val(text_lot);
                         $('#detail_sn').val(text_sn);
