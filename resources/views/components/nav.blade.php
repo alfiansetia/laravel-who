@@ -45,6 +45,20 @@
                     <i class="fas fa-layer-group mr-1"></i>SOP
                 </a>
             </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
+                    aria-expanded="false">
+                    Odoo
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ route('po.index') }}">PO</a>
+                    <a class="dropdown-item" href="{{ route('ri.index') }}">RI</a>
+                    <a class="dropdown-item" href="{{ route('so.index') }}">SO</a>
+                    <a class="dropdown-item" href="{{ route('do.index') }}">DO</a>
+                    <a class="dropdown-item" href="{{ route('it.index') }}">IT</a>
+                    <div class="dropdown-divider"></div>
+                </div>
+            </li>
             {{-- <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                     aria-expanded="false">
