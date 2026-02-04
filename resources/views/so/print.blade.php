@@ -242,6 +242,10 @@
 
         /* Print Styles */
         @media print {
+            .noprint {
+                display: none !important;
+            }
+
             body {
                 padding: 10mm 15mm !important;
                 /* Atur jarak halaman 1 di sini */
@@ -273,10 +277,212 @@
                 padding: 0 !important;
             }
         }
+
+        .noprint {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .noprint button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: white;
+            font-size: 10pt;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .noprint button:hover:not(:disabled) {
+            background: #e9ecef;
+        }
+
+        .noprint button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-print {
+            background: #28a745 !important;
+            color: white !important;
+            border-color: #28a745 !important;
+        }
+
+        .btn-close {
+            background: #6c757d !important;
+            color: white !important;
+            border-color: #6c757d !important;
+        }
+
+        .btn-mark {
+            background: #ffc107 !important;
+            color: #212529 !important;
+            border-color: #ffc107 !important;
+        }
+
+        .btn-unmark {
+            background: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
+    @php
+        $isprint = str_contains($data['note_to_wh'] ?? '', 'PRINT OK');
+        $base_url = config('services.odoo.base_url');
+        $so_id = $data['id'];
+        $url = $base_url . '/web?#id=' . $so_id . '&action=338&model=sale.order&view_type=form&menu_id=211';
+    @endphp
+
+    <div class="noprint">
+        <button onclick="window.print()" class="btn-print">
+            <i class="fas fa-print"></i> Print
+        </button>
+        <button onclick="window.close()" class="btn-close">
+            <i class="fas fa-times"></i> Close
+        </button>
+        @if (!$isprint)
+            <button id="btn_mark_as_print" onclick="markAsPrinted()" class="btn-mark">
+                <i class="fas fa-check"></i> Mark As Printed
+            </button>
+        @else
+            <button id="btn_mark_as_unprint" onclick="markAsNotPrinted()" class="btn-unmark">
+                <i class="fas fa-undo"></i> Mark As Not Printed
+            </button>
+        @endif
+
+        <button onclick="gotoOdoo()" class="btn-print">
+            <i class="fas fa-external-link-alt"></i> Goto Odoo
+        </button>
+        {{-- <br>{{ $url }} --}}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        function show_message(message = 'Kesalahan tidak diketahui!', type = 'error') {
+            if (type == 'success') {
+                iziToast.success({
+                    title: 'Success',
+                    message: message,
+                    position: 'topCenter',
+                });
+            } else {
+                iziToast.error({
+                    title: 'Error',
+                    message: message,
+                    position: 'topCenter',
+                });
+            }
+        }
+
+        function confirmation(message = '', callback) {
+            iziToast.question({
+                timeout: 0,
+                close: false,
+                overlay: true,
+                displayMode: 'once',
+                id: 'question',
+                zindex: 9999,
+                title: 'Konfirmasi',
+                message: message,
+                position: 'center',
+                buttons: [
+                    ['<button><b>Yes</b></button>', function(instance, toast) {
+                        instance.hide({
+                            transitionOut: 'fadeOut'
+                        }, toast, 'button');
+                        if (callback) callback(true);
+                    }, true],
+                    ['<button>Cancel</button>', function(instance, toast) {
+                        instance.hide({
+                            transitionOut: 'fadeOut'
+                        }, toast, 'button');
+                        if (callback) callback(false);
+                    }]
+                ]
+            });
+        }
+
+        const soId = "{{ $data['id'] }}";
+        const note = @json($data['note_to_wh'] ?? '');
+
+        function markAsPrinted() {
+            confirmation('Mark as print?', function(confirm) {
+                if (confirm) {
+                    $.ajax({
+                        url: "{{ route('api.so.mark_as_print', ['id' => $data['id']]) }}",
+                        type: "POST",
+                        data: {
+                            note: note
+                        },
+                        success: function(res) {
+                            show_message(res.message, 'success');
+                            $('#btn_mark_as_print').prop('disabled', true);
+                            $('#btn_mark_as_unprint').prop('disabled', false);
+                            // Optional: refresh page to see updated note if needed, 
+                            // but usually just disabling button is enough for UX
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        },
+                        error: function(xhr) {
+                            show_message(xhr.responseJSON?.message || 'Error!');
+                        }
+                    });
+                }
+            });
+        }
+
+        function markAsNotPrinted() {
+            confirmation('Mark as unprint?', function(confirm) {
+                if (confirm) {
+                    $.ajax({
+                        url: "{{ route('api.so.mark_as_unprint', ['id' => $data['id']]) }}",
+                        type: "POST",
+                        data: {
+                            note: note
+                        },
+                        success: function(res) {
+                            show_message(res.message, 'success');
+                            $('#btn_mark_as_print').prop('disabled', false);
+                            $('#btn_mark_as_unprint').prop('disabled', true);
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        },
+                        error: function(xhr) {
+                            show_message(xhr.responseJSON?.message || 'Error!');
+                        }
+                    });
+                }
+            });
+        }
+
+        function gotoOdoo() {
+            window.open("{!! $url !!}", '_blank');
+        }
+    </script>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -464,24 +670,24 @@
     </div>
 
     <script>
-        window.onload = function() {
-            window.print();
-            window.addEventListener('afterprint', function() {
-                window.close();
-            });
-            let isPrinting = true;
-            window.onbeforeprint = function() {
-                isPrinting = true;
-            };
-            window.onfocus = function() {
-                if (isPrinting) {
-                    isPrinting = false;
-                    setTimeout(function() {
-                        window.close();
-                    }, 100);
-                }
-            };
-        }
+        // window.onload = function() {
+        //     window.print();
+        //     window.addEventListener('afterprint', function() {
+        //         window.close();
+        //     });
+        //     let isPrinting = true;
+        //     window.onbeforeprint = function() {
+        //         isPrinting = true;
+        //     };
+        //     window.onfocus = function() {
+        //         if (isPrinting) {
+        //             isPrinting = false;
+        //             setTimeout(function() {
+        //                 window.close();
+        //             }, 100);
+        //         }
+        //     };
+        // }
     </script>
 </body>
 
