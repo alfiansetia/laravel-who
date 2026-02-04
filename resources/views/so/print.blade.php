@@ -335,6 +335,12 @@
             color: white !important;
             border-color: #dc3545 !important;
         }
+
+        .btn-goto-odoo {
+            background: #940994ff !important;
+            color: white !important;
+            border-color: #940994ff !important;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
@@ -366,7 +372,7 @@
             </button>
         @endif
 
-        <button onclick="gotoOdoo()" class="btn-print">
+        <button onclick="gotoOdoo()" class="btn-goto-odoo">
             <i class="fas fa-external-link-alt"></i> Goto Odoo
         </button>
         {{-- <br>{{ $url }} --}}
