@@ -36,10 +36,11 @@ return [
     ],
 
     'odoo' => [
-        'base_url'  => env('ODOO_DOMAIN'),
-        'email'     => env('ODOO_EMAIL'),
-        'password'  => env('ODOO_PASSWORD'),
-        'db'        => env('ODOO_DB'),
+        'base_url'      => env('ODOO_DOMAIN'),
+        'domain_web'    => env('ODOO_DOMAIN_WEB'),
+        'email'         => env('ODOO_EMAIL'),
+        'password'      => env('ODOO_PASSWORD'),
+        'db'            => env('ODOO_DB'),
     ],
 
     'firebase' => [

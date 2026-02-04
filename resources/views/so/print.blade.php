@@ -344,7 +344,7 @@
 <body>
     @php
         $isprint = str_contains($data['note_to_wh'] ?? '', 'PRINT OK');
-        $base_url = config('services.odoo.base_url');
+        $base_url = config('services.odoo.domain_web');
         $so_id = $data['id'];
         $url = $base_url . '/web?#id=' . $so_id . '&action=338&model=sale.order&view_type=form&menu_id=211';
     @endphp
