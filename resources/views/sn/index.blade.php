@@ -202,10 +202,11 @@
                 let count = 0;
                 if (rows.length > 0) {
                     rows.forEach((row, index) => {
-                        if (row != '' || row != null) {
+                        if (row != '' || row != null || row != '-') {
                             let cols = row.split('\t');
                             cols.forEach((col, i) => {
                                 if (col) {
+                                    if (col.trim() == '-') return;
                                     if (!skip.includes(i + 1)) {
                                         table_tool.row.add({
                                             item: col.trim(),
