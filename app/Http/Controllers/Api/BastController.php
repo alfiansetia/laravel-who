@@ -63,7 +63,13 @@ class BastController extends Controller
 
     public function show(Request $request, Bast $bast)
     {
-        return $this->sendResponse($bast->load('details.product'), 'Success!');
+        $detail = $bast->load('details.product');
+        foreach ($detail->details as $key => $item) {
+            $item->order = $key;
+            $item->save();
+        }
+
+        return $this->sendResponse($detail, 'Success!');
     }
 
     public function destroy(Bast $bast)

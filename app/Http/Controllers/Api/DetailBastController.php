@@ -41,7 +41,7 @@ class DetailBastController extends Controller
         ]);
         return $this->sendResponse($data, 'Created!');
     }
-
+          
     public function show(DetailBast $detail_bast)
     {
         $data = $detail_bast->load('product');
