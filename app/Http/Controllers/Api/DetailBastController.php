@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DetailBast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DetailBastController extends Controller
 {
@@ -41,7 +42,7 @@ class DetailBastController extends Controller
         ]);
         return $this->sendResponse($data, 'Created!');
     }
-          
+
     public function show(DetailBast $detail_bast)
     {
         $data = $detail_bast->load('product');
@@ -75,33 +76,55 @@ class DetailBastController extends Controller
             'type' => 'required|in:up,down',
         ]);
 
-        $currentOrder = $detail_bast->order;
-        $bastId = $detail_bast->bast_id;
+        try {
+            DB::beginTransaction();
 
-        if ($request->type === 'up') {
-            $swapItem = DetailBast::where('bast_id', $bastId)
-                ->where('order', '<', $currentOrder)
-                ->orderBy('order', 'desc')
-                ->first();
+            $bastId = $detail_bast->bast_id;
 
-            if ($swapItem) {
-                $tempOrder = $swapItem->order;
-                $swapItem->update(['order' => $currentOrder]);
-                $detail_bast->update(['order' => $tempOrder]);
-            }
-        } else {
-            $swapItem = DetailBast::where('bast_id', $bastId)
-                ->where('order', '>', $currentOrder)
+            // Re-index all items to ensure unique sequential orders
+            $items = DetailBast::where('bast_id', $bastId)
                 ->orderBy('order', 'asc')
-                ->first();
+                ->orderBy('id', 'asc')
+                ->lockForUpdate() // Lock rows to prevent race conditions
+                ->get();
 
-            if ($swapItem) {
-                $tempOrder = $swapItem->order;
-                $swapItem->update(['order' => $currentOrder]);
-                $detail_bast->update(['order' => $tempOrder]);
+            foreach ($items as $index => $item) {
+                $item->update(['order' => $index]);
             }
-        }
 
-        return $this->sendResponse($detail_bast, 'Order updated!');
+            // Refresh current item to get updated order
+            $detail_bast->refresh();
+            $currentOrder = $detail_bast->order;
+
+            if ($request->type === 'up') {
+                $swapItem = DetailBast::where('bast_id', $bastId)
+                    ->where('order', '<', $currentOrder)
+                    ->orderBy('order', 'desc')
+                    ->first();
+
+                if ($swapItem) {
+                    $tempOrder = $swapItem->order;
+                    $swapItem->update(['order' => $currentOrder]);
+                    $detail_bast->update(['order' => $tempOrder]);
+                }
+            } else {
+                $swapItem = DetailBast::where('bast_id', $bastId)
+                    ->where('order', '>', $currentOrder)
+                    ->orderBy('order', 'asc')
+                    ->first();
+
+                if ($swapItem) {
+                    $tempOrder = $swapItem->order;
+                    $swapItem->update(['order' => $currentOrder]);
+                    $detail_bast->update(['order' => $tempOrder]);
+                }
+            }
+
+            DB::commit();
+            return $this->sendResponse($detail_bast->load('product'), 'Order updated!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return $this->sendError($th->getMessage());
+        }
     }
 }
