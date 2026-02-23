@@ -86,11 +86,11 @@ class ProductController extends Controller
 
         $files = [];
 
-        // 1. Generate Pack (PL) files
-        foreach ($product->packs as $index => $pack) {
-            $plName = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $product->code) . "-PL-" . ($index + 1) . ".xlsx";
-            $path = $this->excelService->generatePack($pack, $product->id . '_' . time() . '/' . $plName);
-            $files[$plName] = $path;
+        // 1. Generate Combined Pack (PL) file (Multiple sheets inside service)
+        $plName = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $product->code) . "-PL.xlsx";
+        $plPath = $this->excelService->generateCombinedPack($product, $product->id . '_' . time() . '/' . $plName);
+        if ($plPath) {
+            $files[$plName] = $plPath;
         }
 
         // 2. Generate SOP file (Handle multiple sheets inside service)
