@@ -516,6 +516,12 @@
                 window.open(`{{ url('sops') }}/${id}/print`, '_blank');
             });
 
+            $('#btn-download-zip').on('click', function() {
+                const productId = id;
+                let url = "{{ route('api.products.download_zip', ':id') }}";
+                url = url.replace(':id', productId);
+                window.location.href = url;
+            });
 
         });
     </script>

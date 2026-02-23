@@ -168,6 +168,8 @@ Route::apiResource('tokens', FcmTokenController::class)
     ->only(['index', 'show', 'store', 'delete']);
 
 
+Route::get('products/{product}/download-zip', [ProductController::class, 'downloadZip'])
+    ->name('api.products.download_zip');
 Route::get('products/{product}/move', [ProductController::class, 'move'])
     ->name('api.products.move');
 Route::apiResource('products', ProductController::class)

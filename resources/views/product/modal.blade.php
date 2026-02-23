@@ -5,9 +5,14 @@
             <div class="modal-header d-block">
                 <div class="d-flex justify-content-between align-items-start">
                     <h5 class="modal-title font-weight-bold" id="detail_product_name">Product Detail</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-sm btn-success mr-2" id="btn-download-zip">
+                            <i class="fas fa-file-archive mr-1"></i> Download ZIP
+                        </button>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="detail_product_code" class="text-muted small"></div>
                 <div id="detail_product_desc" class="text-secondary small mt-1"
