@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -17,10 +18,9 @@ class AuthController extends Controller
         $configPassword = config('envauth.password');
 
         if (Hash::check($request->password, $configPassword)) {
-            $request->session()->put('env_authenticated', true);
-            $request->session()->put('env_auth_time', now());
-            $request->session()->put('env_auth_hash', $configPassword); // Simpan hash untuk validasi
-
+            Session::put('env_authenticated', true);
+            Session::put('env_auth_time', now());
+            Session::put('env_auth_hash', $configPassword);
             return $this->sendResponse([
                 'auth'          => true,
                 'expires_in'    => '24 hours'
@@ -32,7 +32,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
+        Session::forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
 
         return $this->sendResponse([
             'auth' => false
@@ -41,12 +41,11 @@ class AuthController extends Controller
 
     public function status(Request $request)
     {
-        $authenticated = $request->session()->get('env_authenticated', false);
-        $loginTime = $request->session()->get('env_auth_time');
+        $authenticated = Session::get('env_authenticated', false);
+        $loginTime = Session::get('env_auth_time');
 
-        // kalau sudah login tapi lewat 1 hari, hapus session otomatis
         if ($authenticated && $loginTime && now()->diffInHours($loginTime) >= 24) {
-            $request->session()->forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
+            Session::forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
             $authenticated = false;
         }
 

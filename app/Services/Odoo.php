@@ -127,7 +127,13 @@ class Odoo
                     'status_code' => $response->status()
                 ]);
 
-                // Throw OdooException, Laravel akan handle via render() dan report()
+                if (isset($json['error'])) {
+                    throw new OdooException(
+                        "Odoo Internal Error: " . ($json['error']['message'] ?? 'Unknown'),
+                        $response->status(),
+                        $json['error']
+                    );
+                }
                 throw new OdooException(
                     'Odoo API Error',
                     $response->status(),
@@ -141,10 +147,8 @@ class Odoo
 
             return $response->json();
         } catch (OdooException $e) {
-            // Re-throw OdooException, biarkan Laravel handle
             throw $e;
         } catch (Exception $e) {
-            // Tangkap exception lain (timeout, connection error) dan wrap ke OdooException
             Log::error('Odoo: Connection error', [
                 'error' => $e->getMessage(),
                 'url' => $url ?? 'unknown'
