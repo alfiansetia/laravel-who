@@ -3,79 +3,39 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Arr;
 
 class OdooSession
 {
-    /**
-     * Path ke file session.
-     */
-    public static function getSessionFile(): string
+    public static function getSessionFile()
     {
         return storage_path('app/session.json');
     }
 
-    /**
-     * Ambil data session saat ini.
-     */
-    public static function getCurrentSession(): array
+    public static function getCurrentSession()
     {
-        $path = static::getSessionFile();
-
-        if (!File::exists($path)) {
-            return static::setDefaultSession();
-        }
-
-        try {
-            $json = File::get($path);
+        $session_file = static::getSessionFile();
+        if (file_exists($session_file)) {
+            $json = File::get($session_file);
             $data = json_decode($json, true);
-
-            // Validasi minimal: harus ada session_id dan uid
-            if (empty(Arr::get($data, 'session_id')) || empty(Arr::get($data, 'uid'))) {
+            if (empty($data['session_id']) || empty($data['uid'])) {
                 return static::setDefaultSession();
             }
-
             return $data;
-        } catch (\Exception $e) {
+        } else {
             return static::setDefaultSession();
         }
     }
 
-    /**
-     * Simpan data session.
-     */
-    public static function saveSession(array $data): void
+    public static function saveSession($data)
     {
-        // Pastikan kita menggabungkan dengan default agar tidak ada key yang hilang
-        $mergedData = array_merge(static::getDefaultData(), $data);
-
-        File::put(
-            static::getSessionFile(),
-            json_encode($mergedData, JSON_PRETTY_PRINT)
-        );
+        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $session_file = static::getSessionFile();
+        File::put($session_file, $json);
     }
 
-    /**
-     * Reset ke session default/kosong.
-     */
-    public static function setDefaultSession(): array
+    public static function setDefaultSession()
     {
-        $data = static::getDefaultData();
-
-        File::put(
-            static::getSessionFile(),
-            json_encode($data, JSON_PRETTY_PRINT)
-        );
-
-        return $data;
-    }
-
-    /**
-     * Struktur data default.
-     */
-    protected static function getDefaultData(): array
-    {
-        return [
+        $data = [
             'session_id'            => null,
             'uid'                   => 0,
             'db'                    => null,
@@ -84,5 +44,8 @@ class OdooSession
             'partner_display_name'  => null,
             'partner_id'            => 0,
         ];
+        $session_file = static::getSessionFile();
+        File::put($session_file, json_encode($data, JSON_PRETTY_PRINT));
+        return $data;
     }
 }
