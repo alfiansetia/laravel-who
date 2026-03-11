@@ -34,6 +34,15 @@ class ToolController extends Controller
             ->with('title', 'Laporan Pengiriman');
     }
 
+    public function laporan_luarkota(Request $request)
+    {
+        $bcms = collect([
+            new Breadcrumb('Laporan Luarkota', route('tools.laporan_luarkota'), false),
+        ]);
+        return view('laporan_luarkota.index', compact('bcms'))
+            ->with('title', 'Laporan Luarkota');
+    }
+
     public function index()
     {
         $bcms = collect([

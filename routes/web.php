@@ -63,6 +63,7 @@ Route::get('it', [ItController::class, 'index'])->name('it.index');
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');
 Route::get('tools/kalkulator', [ToolController::class, 'kalkulator'])->name('tools.kalkulator');
 Route::get('tools/laporan-pengiriman', [ToolController::class, 'laporan_pengiriman'])->name('tools.laporan_pengiriman');
+Route::get('tools/laporan-luarkota', [ToolController::class, 'laporan_luarkota'])->name('tools.laporan_luarkota');
 Route::get('tools/sn', [ToolController::class, 'index'])->name('tools.sn');
 Route::get('tools/scoreboard', [ToolController::class, 'scoreboard'])->name('tools.scoreboard');
 Route::get('tools/ocr', [ToolController::class, 'ocr'])->name('tools.ocr');

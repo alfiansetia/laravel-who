@@ -171,6 +171,10 @@
             });
         }
 
+        function unbloc() {
+            $.unblockUI();
+        }
+
         $(document).ready(function() {
             let blockTimeout;
 
