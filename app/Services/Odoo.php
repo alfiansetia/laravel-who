@@ -10,124 +10,175 @@ use Exception;
 
 class Odoo
 {
-    public static array $data_param = [];
-    public static array $headers = [];
-    public static bool $state_file = false;
-    public static string $url_param = '';
-    public static string $method = 'GET';
+    protected array $data = [];
+    protected array $headers = [];
+    protected bool $asFile = false;
+    protected string $urlParam = '';
+    protected string $method = 'GET';
+    protected ?string $baseUrl;
 
-    public static function getBaseUrl()
+    public function __construct()
     {
-        return config('services.odoo.base_url');
+        $this->baseUrl = config('services.odoo.base_url');
+        $this->reset();
     }
 
-    public static function getEmail()
+    /**
+     * Reset state untuk request baru atau inisialisasi awal.
+     */
+    public function reset(): self
     {
-        return config('services.odoo.email');
-    }
-
-    public static function getPassword()
-    {
-        return config('services.odoo.password');
-    }
-
-    public static function getDB()
-    {
-        return config('services.odoo.db');
-    }
-
-    public static function getHeaders()
-    {
-        return static::$headers;
-    }
-
-    public static function getSession()
-    {
-        $data  = OdooSession::getCurrentSession();
-        return Arr::get($data, 'session_id', '');
-    }
-
-    public static function getUID()
-    {
-        $data  = OdooSession::getCurrentSession();
-        return Arr::get($data, 'uid', 0);
-    }
-
-    public static function setCookie()
-    {
-        static::$headers['Cookie'] = 'session_id=' .  static::getSession();
-        return new static;
-    }
-
-    public static function withData(array $data)
-    {
-        static::$data_param = $data;
-        return new static;
-    }
-
-    public static function withUrlParam(string $url_param)
-    {
-        static::$url_param = $url_param;
-        return new static;
-    }
-
-    public static function method(string $method)
-    {
-        static::$method = $method;
-        return new static;
-    }
-
-    public static function asJson()
-    {
-        static::$headers = [
+        $this->data = [];
+        $this->headers = [
             'accept'            => 'application/json, text/javascript, */*; q=0.01',
             'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
             'content-type'      => 'application/json',
             'x-requested-with'  => 'XMLHttpRequest',
             'Accept-Encoding'   => 'gzip, deflate',
         ];
-        static::setCookie();
-        return new static;
+        $this->asFile = false;
+        $this->urlParam = '';
+        $this->method = 'GET';
+
+        $this->setCookie();
+
+        return $this;
     }
 
-    public static function asFile()
+    /**
+     * Ambil session ID dari OdooSession dan masukkan ke Header Cookie.
+     */
+    public function setCookie(): self
     {
-        static::$state_file = true;
-        static::$headers = [];
-        static::setCookie();
-        return new static;
+        $session = OdooSession::getCurrentSession();
+        if ($sessionId = Arr::get($session, 'session_id')) {
+            $this->headers['Cookie'] = 'session_id=' . $sessionId;
+        }
+        return $this;
     }
 
-    public static function get()
+    // --- Config Getters ---
+    public function getBaseUrl()
     {
-        $url = ''; // Initialize $url to ensure it's always defined for the catch block
+        return config('services.odoo.base_url');
+    }
+    public function getEmail()
+    {
+        return config('services.odoo.email');
+    }
+    public function getPassword()
+    {
+        return config('services.odoo.password');
+    }
+    public function getDB()
+    {
+        return config('services.odoo.db');
+    }
+    public function getUID()
+    {
+        return Arr::get(OdooSession::getCurrentSession(), 'uid', 0);
+    }
+
+    // --- Fluent Setters ---
+
+    public function withData(array $data): self
+    {
+        $this->data = $data;
+        return $this;
+    }
+
+    public function withUrlParam(string $urlParam): self
+    {
+        $this->urlParam = $urlParam;
+        return $this;
+    }
+
+    public function method(string $method): self
+    {
+        $this->method = strtoupper($method);
+        return $this;
+    }
+
+    public function asJson(): self
+    {
+        $this->asFile = false;
+        return $this;
+    }
+
+    public function asFile(): self
+    {
+        $this->asFile = true;
+        // Reset headers as in original behavior for file requests
+        $this->headers = [];
+        $this->setCookie();
+        return $this;
+    }
+
+    /**
+     * Helper utama untuk JSON-RPC Odoo.
+     * Sangat memudahkan untuk memanggil method di model Odoo.
+     */
+    public function call(string $model, string $method, array $args = [], array $kwargs = []): mixed
+    {
+        $params = [
+            "jsonrpc" => "2.0",
+            "method" => "call",
+            "params" => [
+                "model" => $model,
+                "method" => $method,
+                "args" => $args,
+                "kwargs" => array_merge([
+                    "context" => [
+                        "lang" => "en_US",
+                        "tz" => "Asia/Jakarta",
+                        "uid" => $this->getUID(),
+                    ]
+                ], $kwargs)
+            ],
+        ];
+
+        return $this->asJson()
+            ->withUrlParam("/web/dataset/call_kw/{$model}/{$method}")
+            ->withData($params)
+            ->method('POST')
+            ->send();
+    }
+
+    /**
+     * Alias untuk send() demi kompatibilitas kode lama.
+     */
+    public function get()
+    {
+        return $this->send();
+    }
+
+    /**
+     * Eksekusi request HTTP.
+     */
+    public function send()
+    {
+        if (empty($this->baseUrl)) {
+            Log::warning('Odoo: Base URL tidak dikonfigurasi');
+            throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500);
+        }
+
+        $url = $this->baseUrl . $this->urlParam;
+
         try {
-            $base_url = static::getBaseUrl();
+            $http = Http::timeout(15)->withHeaders($this->headers);
 
-            if (empty($base_url)) {
-                Log::warning('Odoo: Base URL tidak dikonfigurasi');
-                throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500, []);
-            }
-
-            $url = $base_url . static::$url_param;
-
-            // HTTP request dengan timeout 15 detik
-            $http = Http::timeout(15)->withHeaders(static::$headers);
-
-            if (static::$method === 'POST') {
-                $response = $http->post($url, static::$data_param);
-            } else {
-                $response = $http->get($url);
-            }
+            $response = match ($this->method) {
+                'POST' => $http->post($url, $this->data),
+                default => $http->get($url),
+            };
 
             if (!$response->successful()) {
                 Log::warning('Odoo: API request gagal', [
                     'url' => $url,
-                    'method' => static::$method,
+                    'method' => $this->method,
                     'status_code' => $response->status()
                 ]);
 
-                // Throw OdooException, Laravel akan handle via render() dan report()
                 throw new OdooException(
                     'Odoo API Error',
                     $response->status(),
@@ -135,19 +186,28 @@ class Odoo
                 );
             }
 
-            if (static::$state_file) {
+            if ($this->asFile) {
                 return $response;
             }
 
-            return $response->json();
+            $json = $response->json();
+
+            // Cek error internal Odoo (JSON-RPC sering return 200 tapi isinya error)
+            if ($this->method === 'POST' && isset($json['error'])) {
+                throw new OdooException(
+                    "Odoo Internal Error: " . ($json['error']['message'] ?? 'Unknown'),
+                    $response->status(),
+                    $json['error']
+                );
+            }
+
+            return $json;
         } catch (OdooException $e) {
-            // Re-throw OdooException, biarkan Laravel handle
             throw $e;
         } catch (Exception $e) {
-            // Tangkap exception lain (timeout, connection error) dan wrap ke OdooException
             Log::error('Odoo: Connection error', [
                 'error' => $e->getMessage(),
-                'url' => $url ?? 'unknown'
+                'url' => $url
             ]);
 
             throw new OdooException(
@@ -158,48 +218,36 @@ class Odoo
         }
     }
 
-    public static function getProfile()
+    /**
+     * Contoh penggunaan method call() untuk mengambil profile.
+     */
+    public function getProfile()
     {
-        $param = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "args" => [
-                    [
-                        static::getUID()
-                    ],
-                    [
-                        "image",
-                        "__last_update",
-                        "name",
-                        "lang",
-                        "tz",
-                        "tz_offset",
-                        "company_id",
-                        "notification_type",
-                        "odoobot_state",
-                        "email",
-                        "signature",
-                        "display_name"
-                    ]
-                ],
-                "model" => "res.users",
-                "method" => "read",
-                "kwargs" => [
-                    "context" => [
-                        "lang" => "en_US",
-                        "tz" => "Asia/Jakarta",
-                        "uid" => 192,
-                        "bin_size" => true
-                    ]
-                ]
-            ],
-        ];
-        $res = static::asJson()
-            ->withUrlParam('/web/dataset/call_kw/res.users/read')
-            ->withData($param)
-            ->method('POST')
-            ->get();
-        return $res;
+        return $this->call('res.users', 'read', [
+            [$this->getUID()]
+        ], [
+            'fields' => [
+                "image",
+                "__last_update",
+                "name",
+                "lang",
+                "tz",
+                "tz_offset",
+                "company_id",
+                "notification_type",
+                "odoobot_state",
+                "email",
+                "signature",
+                "display_name"
+            ]
+        ]);
+    }
+
+    /**
+     * Magic method untuk mendukung pemanggilan static secara transparan.
+     */
+    public static function __callStatic($name, $arguments)
+    {
+        return (new static)->$name(...$arguments);
     }
 }
