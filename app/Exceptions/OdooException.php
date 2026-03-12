@@ -25,7 +25,11 @@ class OdooException extends Exception
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json([
                 'message' => $this->getMessage(),
-                'body' => $this->responseBody, // tampilkan isi JSON error dari Odoo
+                'body' => $this->responseBody,
+                'data' => [],
+                'draw' => 0,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
             ], $this->statusCode);
         }
 

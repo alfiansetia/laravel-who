@@ -62,7 +62,10 @@
                         dt['location[]'] = loc
                     },
                     error: function(xhr, textStatus, errorThrown) {
-                        show_message(xhr.responseJSON.message || 'Error!')
+                        let message = xhr.responseJSON?.message || 'Gagal memuat data PO!';
+                        $('.dt-empty').text(message);
+                        $('#table_processing').hide();
+                        show_message(message, 'error');
                     },
                 },
                 dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +

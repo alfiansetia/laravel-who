@@ -101,65 +101,45 @@ class Odoo
     public static function get()
     {
         $url = ''; // Initialize $url to ensure it's always defined for the catch block
-        try {
-            $base_url = static::getBaseUrl();
+        $base_url = static::getBaseUrl();
 
-            if (empty($base_url)) {
-                Log::warning('Odoo: Base URL tidak dikonfigurasi');
-                throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500, []);
-            }
+        if (empty($base_url)) {
+            Log::warning('Odoo: Base URL tidak dikonfigurasi');
+            throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500, []);
+        }
 
-            $url = $base_url . static::$url_param;
+        $url = $base_url . static::$url_param;
 
-            // HTTP request dengan timeout 15 detik
-            $http = Http::timeout(15)->withHeaders(static::$headers);
+        // HTTP request dengan timeout 15 detik
+        $http = Http::timeout(15)->withHeaders(static::$headers);
 
-            if (static::$method === 'POST') {
-                $response = $http->post($url, static::$data_param);
-            } else {
-                $response = $http->get($url);
-            }
-
-            if (!$response->successful()) {
-                Log::warning('Odoo: API request gagal', [
-                    'url' => $url,
-                    'method' => static::$method,
-                    'status_code' => $response->status()
-                ]);
-
-                if (isset($json['error'])) {
-                    throw new OdooException(
-                        "Odoo Internal Error: " . ($json['error']['message'] ?? 'Unknown'),
-                        $response->status(),
-                        $json['error']
-                    );
-                }
-                throw new OdooException(
-                    'Odoo API Error',
-                    $response->status(),
-                    $response->json() ?? $response->body()
-                );
-            }
-
-            if (static::$state_file) {
-                return $response;
-            }
-
-            return $response->json();
-        } catch (OdooException $e) {
-            throw $e;
-        } catch (Exception $e) {
-            Log::error('Odoo: Connection error', [
-                'error' => $e->getMessage(),
-                'url' => $url ?? 'unknown'
-            ]);
-
+        if (static::$method === 'POST') {
+            $response = $http->post($url, static::$data_param);
+        } else {
+            $response = $http->get($url);
+        }
+        $body = json_decode($response->body(), true);
+        $json = $response->json();
+        if (Arr::exists($body, 'error')) {
+            $message = Arr::get($body, 'error.message', 'Unknown');
             throw new OdooException(
-                'Odoo Connection Error: ' . $e->getMessage(),
+                "Odoo Internal Error: " . $message,
                 500,
-                ['original_error' => $e->getMessage()]
+                $body
             );
         }
+        if (!$response->successful()) {
+            throw new OdooException(
+                'Odoo API Error',
+                500,
+                $json ?? $body
+            );
+        }
+
+        if (static::$state_file) {
+            return $response;
+        }
+        return $json;
     }
 
     public static function getProfile()

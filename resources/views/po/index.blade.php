@@ -80,7 +80,10 @@
                 ajax: {
                     url: URL_INDEX_API,
                     error: function(xhr) {
-                        show_message(xhr.responseJSON?.message || 'Gagal memuat data SO!', 'error');
+                        let message = xhr.responseJSON?.message || 'Gagal memuat data PO!';
+                        $('.dt-empty').text(message);
+                        $('#table_processing').hide();
+                        show_message(message, 'error');
                     },
                 },
                 order: [

@@ -4,7 +4,6 @@ namespace App\Services\Import;
 
 use App\Exceptions\OdooException;
 use App\Services\Odoo;
-use Exception;
 use Illuminate\Support\Arr;
 
 class POServices extends Odoo
@@ -78,10 +77,10 @@ class POServices extends Odoo
             ->method('POST')
             ->withData($data)
             ->get();
-        if (!isset($response['result'])) {
-            throw new Exception('Odoo Error');
+        if (!Arr::exists($response, 'result')) {
+            throw new OdooException('Data Not Found!', 404, $response);
         }
-        return $response['result'];
+        return Arr::get($response, 'result');
     }
 
     public static function detail(int $id)
@@ -172,11 +171,11 @@ class POServices extends Odoo
             ->get();
         $res = Arr::get($response, 'result.0', null);
         if (!$res) {
-            throw new OdooException('Data Not Found!', 404);
+            throw new OdooException('Data Not Found!', 404, $response);
         }
         try {
             $order_line = static::getOrderLines($res['order_line']);
-            $res['order_line_detail'] = $order_line['result'] ?? [];
+            $res['order_line_detail'] = Arr::get($order_line, 'result', []);
         } catch (\Throwable $th) {
             $res['order_line_detail'] = [];
         }
