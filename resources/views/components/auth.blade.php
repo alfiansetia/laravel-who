@@ -83,10 +83,7 @@
 
              // 🚪 Logout
              $('#btnEnvLogout').on('click', function() {
-                 $.post('{{ route('auth.logout') }}', {}, function() {
-                     show_message('Anda telah keluar dari mode autentikasi.', 'info')
-                     updateAuthStatus();
-                 });
+                 window.location.href = '{{ route('settings.index') }}';
              });
 
 

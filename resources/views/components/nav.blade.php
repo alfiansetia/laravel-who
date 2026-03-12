@@ -84,7 +84,7 @@
                     <i class="fa fa-lock"></i> Login
                 </a>
                 <a href="javascript:void(0);" class="nav-link d-none" id="btnEnvLogout">
-                    <i class="fa fa-sign-out-alt"></i> Logout
+                    <i class="fa fa-cog"></i> Setting
                 </a>
             </li>
         </ul>
