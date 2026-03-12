@@ -154,6 +154,9 @@ Route::apiResource('koli-item', KoliItemController::class)
 Route::post('form-qc/', [QcController::class, 'store'])
     ->name('api.qc.store');
 
+
+Route::get('settings/cek-odoo', [SettingController::class, 'cek_odoo'])
+    ->name('api.settings.cek_odoo');
 Route::get('settings/', [SettingController::class, 'index'])
     ->name('api.settings.index');
 Route::post('settings/', [SettingController::class, 'store'])
@@ -162,6 +165,7 @@ Route::put('settings/', [SettingController::class, 'reload'])
     ->name('api.settings.reload');
 Route::delete('settings/', [SettingController::class, 'test_notif'])
     ->name('api.settings.test_notif');
+
 
 Route::apiResource('tokens', FcmTokenController::class)
     ->names('api.tokens')

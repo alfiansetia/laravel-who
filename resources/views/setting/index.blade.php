@@ -35,6 +35,9 @@
                             <button type="button" id="btn_notif" class="btn btn-info">
                                 <i class="fas fa-bell mr-1"></i>Tes Notif
                             </button>
+                            <button type="button" id="btn_cek_odoo" class="btn btn-success">
+                                <i class="fas fa-wifi mr-1"></i>Cek Odoo
+                            </button>
                             <button type="submit" id="btn_simpan" class="btn btn-primary">
                                 <i class="fab fa-telegram-plane mr-1"></i>Simpan
                             </button>
@@ -149,6 +152,32 @@
                             <input name="last_status_at" id="last_status_at" class="form-control">
                         </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_cek" data-backdrop="static" tabindex="-1" aria-labelledby="modal_cekLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_cekLabel"><i class="fas fa-info mr-1"></i>Response Odoo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body row">
+                    <pre class="bg-dark text-light p-3 rounded"
+                        style="min-height:300px; max-height:500px; 
+                        overflow-y:auto; 
+                        white-space:pre-wrap;"><code id="jsonResponse"></code>
+                    </pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -490,7 +519,24 @@
             })
 
 
-
+            $('#btn_cek_odoo').click(function() {
+                $.ajax({
+                    url: "{{ route('api.settings.cek_odoo') }}",
+                    type: "GET",
+                    success: function(res) {
+                        let formatted = JSON.stringify(res, null, 2);
+                        $('#jsonResponse').text(formatted);
+                        $('#modal_cek').modal('show')
+                        show_message(res.message, 'success')
+                    },
+                    error: function(xhr) {
+                        let formatted = JSON.stringify(xhr.responseJSON, null, 2);
+                        $('#jsonResponse').text(formatted);
+                        $('#modal_cek').modal('show')
+                        show_message(xhr.responseJSON.message || 'Error!')
+                    }
+                });
+            })
 
         });
     </script>
