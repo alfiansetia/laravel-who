@@ -38,6 +38,9 @@
                             <button type="button" id="btn_cek_odoo" class="btn btn-success">
                                 <i class="fas fa-wifi mr-1"></i>Cek Odoo
                             </button>
+                            <button type="button" id="btn_logout" class="btn btn-danger">
+                                <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                            </button>
                             <button type="submit" id="btn_simpan" class="btn btn-primary">
                                 <i class="fab fa-telegram-plane mr-1"></i>Simpan
                             </button>
@@ -536,6 +539,21 @@
                         show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });
+            })
+
+            $('#btn_logout').click(function() {
+                if (confirm('Are you sure want to logout?')) {
+                    $.ajax({
+                        url: "{{ route('auth.logout') }}",
+                        type: "POST",
+                        success: function(res) {
+                            window.location.href = "{{ route('home') }}";
+                        },
+                        error: function(xhr) {
+                            show_message(xhr.responseJSON.message || 'Error!')
+                        }
+                    });
+                }
             })
 
         });
