@@ -268,20 +268,20 @@
                         <table>
                             @if (!empty($data->up))
                                 <tr>
-                                    <td class="style18" style="width: 12%;vertical-align: baseline">UP</td>
+                                    <td class="style18" style="width: 14%;vertical-align: baseline">UP</td>
                                     <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                     <td class="style18" colspan="2">{{ $data->up }}</td>
                                 </tr>
                             @endif
                             @if (!empty($data->tlp))
                                 <tr>
-                                    <td class="style18" style="width: 12%;vertical-align: baseline">Tlp</td>
+                                    <td class="style18" style="width: 14%;vertical-align: baseline">Tlp</td>
                                     <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                     <td class="style18" colspan="2">{{ $data->tlp }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td class="style18" style="width: 12%;vertical-align: baseline">No DO</td>
+                                <td class="style18" style="width: 14%;vertical-align: baseline">No DO</td>
                                 <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                 <td class="style18" colspan="2">{{ $data->do }} @if (!empty($data->epur))
                                         (<span style="font-size: 16pt">{{ $data->epur }}</span>)
@@ -290,7 +290,7 @@
                             </tr>
                             @if (!empty($data->untuk))
                                 <tr>
-                                    <td class="style18" style="width: 12%;vertical-align: baseline">Untuk</td>
+                                    <td class="style18" style="width: 14%;vertical-align: baseline">Untuk</td>
                                     <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                     <td class="style18" colspan="2">{{ $data->untuk }}</td>
                                 </tr>
@@ -303,7 +303,7 @@
                     <td colspan="4" style="border-bottom: 4px double black"></td>
                 </tr>
                 <tr>
-                    <td class="style12" style="width: 13%">FROM :</td>
+                    <td class="style12" style="width: 14%">FROM :</td>
                     <td class="style12" colspan="3">PT MITRA ASA PRATAMA</td>
                 </tr>
                 <tr>
