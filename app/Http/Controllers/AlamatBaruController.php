@@ -42,6 +42,7 @@ class AlamatBaruController extends Controller
 
     public function show(Request $request, AlamatBaru $alamatBaru)
     {
+        $is_split = $request->boolean('split') ?? false;
         $data = $alamatBaru;
         $kolis = $alamatBaru->kolis()
             ->when($request->koli_id, function ($q) use ($request) {
@@ -49,6 +50,6 @@ class AlamatBaruController extends Controller
             })
             ->with('items.product')
             ->get();
-        return view('alamat_baru.show', compact('data', 'kolis'))->with(['title' => 'Detail Alamat Baru']);
+        return view('alamat_baru.show', compact('data', 'kolis', 'is_split'))->with(['title' => 'Detail Alamat Baru']);
     }
 }

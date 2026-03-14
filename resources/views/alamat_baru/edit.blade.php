@@ -186,6 +186,49 @@
             //     }
             // });
 
+            function wrapAddress(text, firstLimit = 45, otherLimit = 65) {
+
+                if (!text || !text.trim()) return "";
+
+                let lines = text.split("\n");
+                let result = [];
+
+                lines.forEach((line) => {
+
+                    let limit = result.length === 0 ? firstLimit : otherLimit;
+
+                    line = line.trim();
+
+                    // kalau line masih dibawah limit, biarkan
+                    if (line.length <= limit) {
+                        result.push(line);
+                        return;
+                    }
+
+                    // wrap jika melebihi limit
+                    while (line.length > limit) {
+
+                        let slice = line.slice(0, limit);
+                        let lastSpace = slice.lastIndexOf(" ");
+
+                        if (lastSpace === -1) lastSpace = limit;
+
+                        result.push(line.slice(0, lastSpace).trim());
+
+                        line = line.slice(lastSpace).trim();
+
+                        limit = otherLimit;
+                    }
+
+                    if (line.length) {
+                        result.push(line);
+                    }
+
+                });
+
+                return result.join("\n");
+            }
+
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()
                 $.get("{{ route('api.do.index') }}?search=" + param).done(function(res) {
@@ -263,7 +306,7 @@
 
                     $('#do').val(name)
                     $('#up').val(up)
-                    $('#alamat').val(alamat)
+                    $('#alamat').val(wrapAddress(alamat))
                     $('#tujuan').val(tujuan)
                     $('#ekspedisi').val(ekspedisi)
                     $('#epur').val(epur)
@@ -326,7 +369,7 @@
                                         </div>
                                     </div>
                                     <div class="card-body p-1">
-                                        <table class="table table-sm table-bordered mb-1" style="width: 100%;">
+                                        <table class="table table-responsive table-sm table-bordered mb-1" style="width: 100%;">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>

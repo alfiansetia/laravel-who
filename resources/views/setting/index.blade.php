@@ -542,18 +542,20 @@
             })
 
             $('#btn_logout').click(function() {
-                if (confirm('Are you sure want to logout?')) {
-                    $.ajax({
-                        url: "{{ route('auth.logout') }}",
-                        type: "POST",
-                        success: function(res) {
-                            window.location.href = "{{ route('home') }}";
-                        },
-                        error: function(xhr) {
-                            show_message(xhr.responseJSON.message || 'Error!')
-                        }
-                    });
-                }
+                confirmation('Are you sure want to logout?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: "{{ route('auth.logout') }}",
+                            type: "POST",
+                            success: function(res) {
+                                window.location.href = "{{ route('home') }}";
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        });
+                    }
+                })
             })
 
         });
