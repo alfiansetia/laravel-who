@@ -268,20 +268,20 @@
                         <table>
                             @if (!empty($data->up))
                                 <tr>
-                                    <td class="style18" style="width: 14%;vertical-align: baseline">UP</td>
+                                    <td class="style18" style="width: 100px;vertical-align: baseline">UP</td>
                                     <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                     <td class="style18" colspan="2">{{ $data->up }}</td>
                                 </tr>
                             @endif
                             @if (!empty($data->tlp))
                                 <tr>
-                                    <td class="style18" style="width: 14%;vertical-align: baseline">Tlp</td>
+                                    <td class="style18" style="width: 100px;vertical-align: baseline">Tlp</td>
                                     <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                     <td class="style18" colspan="2">{{ $data->tlp }}</td>
                                 </tr>
                             @endif
                             <tr>
-                                <td class="style18" style="width: 14%;vertical-align: baseline">No DO</td>
+                                <td class="style18" style="width: 100px;vertical-align: baseline">No DO</td>
                                 <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
                                 <td class="style18" colspan="2">{{ $data->do }} @if (!empty($data->epur))
                                         (<span style="font-size: 16pt">{{ $data->epur }}</span>)
@@ -333,7 +333,7 @@
                     $items = $koli->items;
                     $count1 = ceil($items->count() / 2);
                 @endphp
-                @if (!$is_split)
+                @if (!$is_split || $items->count() < 2)
                     <tr>
                         <td colspan="4" class="kiri-dua kanan-dua atas-dua bawah-dua">
                             <table style="width:100%">
