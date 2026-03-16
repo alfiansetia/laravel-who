@@ -375,6 +375,11 @@ Terima kasih.`
             document.getElementById('file').addEventListener('change', function(event) {
                 bloc()
                 let file = event.target.files[0];
+                if (!file) {
+                    // user cancel
+                    unbloc()
+                    return;
+                }
                 let reader = new FileReader();
 
                 reader.onload = function(e) {
@@ -393,7 +398,6 @@ Terima kasih.`
                     });
                     $('#sheet_section').fadeIn();
                 };
-
                 reader.readAsArrayBuffer(file);
                 unbloc()
             });
