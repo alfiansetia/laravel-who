@@ -413,52 +413,59 @@ Terima kasih.`
 
                 // Konversi ke JSON
                 let json = XLSX.utils.sheet_to_json(sheet, {
-                    defval: null
+                    header: 1,
+                    defval: null,
+                    blankrows: false
                 });
                 let result = [];
                 let id = 1;
+                console.log(json);
 
                 for (let row of json) {
-                    // ambil kolom 0-22
+
+                    // ambil kolom 0 - 22
                     let values = [];
                     for (let i = 0; i <= 22; i++) {
-                        let key = i === 0 ? "__EMPTY" : `__EMPTY_${i}`;
-                        values[i] = row[key] ?? null;
+                        values[i] = row[i] ?? null;
                     }
 
                     // validasi
                     if (!Number.isInteger(values[0])) continue;
-                    if (![0, 1, 2, 3].every(i => values[i] && String(values[i]).trim() !== '')) continue;
+                    if (![0, 1, 2, 3].every(i => values[i] && String(values[i]).trim() !== "")) continue;
 
-                    // mapping ke object
                     let obj = {
                         id: id++
                     };
+
                     columns.forEach((col, i) => {
-                        if (col === 'tgl_kirim' || col === 'tgl_do' || col === 'tgl_estimasi' ||
-                            col ===
-                            'tgl_real' || col === 'tgl_confirm') {
-                            if (values[i]) {
-                                obj[col] = excelDateToString(values[i]);
-                            } else {
-                                obj[col] = null;
-                            }
+
+                        let val = values[i];
+
+                        if (['tgl_kirim', 'tgl_do', 'tgl_estimasi', 'tgl_real', 'tgl_confirm']
+                            .includes(col)) {
+
+                            obj[col] = val ? excelDateToString(val) : null;
+
                         } else if (col === 'no_telp') {
-                            obj[col] = parsePhoneNumber(values[i]);
-                        } else if (col == 'berat_estimasi' || col == 'berat_real') {
-                            if (values[i]) {
-                                obj[col] = parseToDecimal(values[i]);
-                            } else {
-                                obj[col] = 0;
-                            }
+
+                            obj[col] = parsePhoneNumber(val);
+
+                        } else if (['berat_estimasi', 'berat_real'].includes(col)) {
+
+                            obj[col] = val ? parseToDecimal(val) : 0;
 
                         } else {
-                            obj[col] = values[i];
+
+                            obj[col] = val;
+
                         }
+
                     });
 
                     result.push(obj);
                 }
+                console.log(result);
+
                 $.fn.dataTable.ext.errMode = 'none';
 
                 table.on('error.dt', function(e, settings, techNote, message) {
