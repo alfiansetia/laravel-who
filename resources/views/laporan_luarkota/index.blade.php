@@ -184,12 +184,13 @@ Terima kasih.`
             }
 
             function excelDateToString(serial, separator = '/') {
-                const excelEpoch = new Date(1899, 11, 30);
-                const date = new Date(excelEpoch.getTime() + serial * 86400000);
 
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const year = date.getFullYear();
+                const excelEpoch = Date.UTC(1899, 11, 30); // epoch excel
+                const date = new Date(excelEpoch + serial * 86400000);
+
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const year = date.getUTCFullYear();
 
                 return `${day}${separator}${month}${separator}${year}`;
             }
