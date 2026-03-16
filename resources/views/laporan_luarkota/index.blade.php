@@ -419,7 +419,7 @@ Terima kasih.`
                 });
                 let result = [];
                 let id = 1;
-                console.log(json);
+                // console.log(json);
 
                 for (let row of json) {
 
@@ -464,7 +464,7 @@ Terima kasih.`
 
                     result.push(obj);
                 }
-                console.log(result);
+                // console.log(result);
 
                 $.fn.dataTable.ext.errMode = 'none';
 
@@ -590,7 +590,7 @@ Terima kasih.`
 
             $('#table').on('click', '.del-item', function() {
                 let row = $(this).parents('tr')[0];
-                console.log(table.row(row).data());
+                // console.log(table.row(row).data());
                 table
                     .row($(this).parents('tr'))
                     .remove()
