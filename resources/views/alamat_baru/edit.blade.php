@@ -186,6 +186,79 @@
             //     }
             // });
 
+            const tableItemDo = $('#table_do').DataTable({
+                processing: true,
+                columns: [{
+                        data: 'product'
+                    },
+                    {
+                        data: 'lot'
+                    },
+                    {
+                        data: 'qty'
+                    },
+                    {
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `<button type="button" class="btn btn-primary btn-sm btn-select-itemDo">
+                                <i class="fas fa-check mr-1"></i>Pilih
+                            </button>`
+                        }
+                    },
+                ]
+
+            })
+
+            const tableItemIt = $('#table_it').DataTable({
+                processing: true,
+                columns: [{
+                        data: 'product'
+                    },
+                    {
+                        data: 'lot'
+                    },
+                    {
+                        data: 'qty'
+                    },
+                    {
+                        data: 'id',
+                        render: function(data, type, row) {
+                            return `<button type="button" class="btn btn-primary btn-sm btn-select-itemIt">
+                                <i class="fas fa-check mr-1"></i>Pilih
+                            </button>`
+                        }
+                    },
+                ]
+
+            })
+
+            $('#table_do').on('click', '.btn-select-itemDo', function() {
+                let data = tableItemDo.row($(this).parents('tr')).data();
+                saveItemFromDoIt(data);
+            })
+
+            $('#table_it').on('click', '.btn-select-itemIt', function() {
+                let data = tableItemIt.row($(this).parents('tr')).data();
+                saveItemFromDoIt(data);
+            })
+
+            function saveItemFromDoIt(params) {
+                params.koli_id = currentKoliId;
+                $.ajax({
+                    url: "{{ route('api.koli_item.from_do_it') }}",
+                    type: "POST",
+                    data: params,
+                    success: function(res) {
+                        show_message(res.message, 'success');
+                        loadKolis();
+                    },
+                    error: function(err) {
+                        show_message(err.responseJSON.message || 'Error!');
+                    }
+                })
+
+            }
+
             function wrapAddress(text, firstLimit = 45, otherLimit = 65) {
 
                 if (!text || !text.trim()) return "";
@@ -228,6 +301,123 @@
 
                 return result.join("\n");
             }
+
+            $('#select_it_gudang_tab').select2({
+                placeholder: 'Pilih Gudang',
+                theme: 'bootstrap4',
+                dropdownParent: $("#item_modal"),
+            })
+
+            $('#select_do_tab').select2({
+                placeholder: 'Cari NO DO',
+                theme: 'bootstrap4',
+                dropdownParent: $("#item_modal"),
+                // minimumInputLength: 3,
+                ajax: {
+                    url: "{{ route('api.do.index') }}",
+                    dataType: 'json',
+                    delay: 800,
+                    data: function(params) {
+                        return {
+                            search: params.term
+                        }
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.data.map(item => ({
+                                id: item.id,
+                                text: `${item.name} - ${item.origin} - (${item.partner_id ? item.partner_id[1] : ''})`
+                            }))
+                        }
+                    },
+                    cache: true
+                }
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                if (data[0].id == '') {
+                    return;
+                }
+                let sid = data[0].id
+                $.get("{{ url('api/do') }}/" + sid).done(function(res) {
+                    let data = [];
+                    res.data.move_line_detail.forEach(item => {
+                        let ed = item.expired_date_do ? moment(item.expired_date_do).format(
+                            'DD/MM/YYYY') : '';
+                        if (ed) {
+                            ed = ` Ed. ${ed}`
+                        }
+                        data.push({
+                            product_code: getCode(item.product_id[1]),
+                            product: item.product_id ? item.product_id[1] : '',
+                            qty: `${item.qty_done} Ea`,
+                            lot: `${item.lot_id ? item.lot_id[1] : ''}${ed}`,
+                            id: item.id
+                        })
+                    })
+                    tableItemDo.clear().draw();
+                    tableItemDo.rows.add(data).draw();
+
+                }).fail(function(xhr) {
+                    show_message(xhr.responseJSON.message || 'Error!')
+                });
+
+            })
+
+            $('#select_it_tab').select2({
+                placeholder: 'Cari NO IT',
+                theme: 'bootstrap4',
+                dropdownParent: $("#item_modal"),
+                // minimumInputLength: 3,
+                ajax: {
+                    url: "{{ route('api.it.index') }}",
+                    dataType: 'json',
+                    delay: 800,
+                    data: function(params) {
+                        return {
+                            search: params.term,
+                            gudang: $('#select_it_gudang_tab').val()
+                        }
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.data.map(item => ({
+                                id: item.id,
+                                text: `${item.name} - ${item.origin} - (${item.partner_id ? item.partner_id[1] : ''})`
+                            }))
+                        }
+                    },
+                    cache: true
+                }
+            }).on('change', function() {
+                let data = $(this).select2('data');
+                if (data[0].id == '') {
+                    return;
+                }
+                let sid = data[0].id
+                $.get("{{ url('api/it') }}/" + sid).done(function(res) {
+                    let data = [];
+                    res.data.move_line_detail.forEach(item => {
+                        let ed = item.expired_date_do ? moment(item.expired_date_do).format(
+                            'DD/MM/YYYY') : '';
+                        if (ed) {
+                            ed = ` Ed. ${ed}`
+                        }
+                        data.push({
+                            product_code: getCode(item.product_id[1]),
+                            product: item.product_id ? item.product_id[1] : '',
+                            qty: `${item.qty_done} Ea`,
+                            lot: `${item.lot_id ? item.lot_id[1] : ''}${ed}`,
+                            id: item.id
+                        })
+                    })
+                    tableItemIt.clear().draw();
+                    tableItemIt.rows.add(data).draw();
+
+                }).fail(function(xhr) {
+                    show_message(xhr.responseJSON.message || 'Error!')
+                });
+
+            })
 
             $('#btn_get_do').click(function() {
                 let param = $('#input_do').val()
@@ -369,7 +559,8 @@
                                         </div>
                                     </div>
                                     <div class="card-body p-1">
-                                        <table class="table table-responsive table-sm table-bordered mb-1" style="width: 100%;">
+                                        <div class="table-responsive">
+                                        <table class="table table-sm table-bordered mb-1" style="width: 100%;">
                                             <thead>
                                                 <tr>
                                                     <th>#</th>
@@ -384,6 +575,7 @@
                                                 ${renderItems(koli.items, koli.id)}
                                             </tbody>
                                         </table>
+                                        </div>
                                         <div class="mb-2">
                                             <div class="input-group">
                                                 <div class="input-group-prepend">
@@ -493,6 +685,7 @@
                 $('.btn-add-item').click(function() {
                     currentKoliId = $(this).data('koli-id');
                     $('#item_modal').modal('show');
+                    $('#myTab button[data-target="#productTab"]').tab('show');
                 });
 
                 // Edit item
@@ -568,6 +761,18 @@
                             'error');
                     });
                 });
+            }
+
+            function getCode(str) {
+                if (!str) return '';
+                let match = str.match(/\[(.*?)\]/);
+                return match ? match[1] : '';
+            }
+
+            function getDesc(str) {
+                if (!str) return '';
+                let match = str.match(/\]\s*(.*)/);
+                return match ? match[1] : str;
             }
 
             // Add koli

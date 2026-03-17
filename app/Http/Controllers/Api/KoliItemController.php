@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\KoliItem;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class KoliItemController extends Controller
@@ -103,5 +104,25 @@ class KoliItemController extends Controller
     {
         $koliItem->update(['lot' => null]);
         return $this->sendResponse($koliItem, 'Lot cleared!');
+    }
+
+    public function fromDoIt(Request $request)
+    {
+        $this->validate($request, [
+            'koli_id'    => 'required|exists:kolis,id',
+            'product_code' => 'required|exists:products,code',
+            'lot'        => 'nullable|string',
+            'qty'        => 'required|string',
+        ]);
+
+        $prod = Product::where('code', $request->product_code)->firstOrFail();
+
+        $item = KoliItem::create([
+            'koli_id'    => $request->koli_id,
+            'product_id' => $prod->id,
+            'lot'        => $request->lot,
+            'qty'        => $request->qty,
+        ]);
+        return $this->sendResponse($item, 'Item Added!');
     }
 }

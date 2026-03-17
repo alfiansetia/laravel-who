@@ -111,50 +111,128 @@
 
 {{-- Modal Add Item --}}
 <div class="modal fade" id="item_modal" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-xl modal-dialog-centered" data-backdrop="static" data-keyboard="false"
+        tabindex="-1" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="itemModalLabel">Tambah Item</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="product-tab" data-toggle="tab" data-target="#productTab"
+                            type="button" role="tab" aria-controls="productTab"
+                            aria-selected="true">Product</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="do-tab" data-toggle="tab" data-target="#doTab"
+                            type="button" role="tab" aria-controls="doTab" aria-selected="false">From
+                            DO</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="it-tab" data-toggle="tab" data-target="#itTab"
+                            type="button" role="tab" aria-controls="itTab" aria-selected="false">From
+                            IT</button>
+                    </li>
+                </ul>
             </div>
-            <form id="form_add_item">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="select_product">Product</label>
-                        <select class="form-control select2" id="select_product" style="width: 100%" required>
-                            <option value="">Pilih Product</option>
-                            @foreach ($products as $product)
-                                <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}
-                                </option>
-                            @endforeach
+            <div class="modal-body">
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="productTab" role="tabpanel"
+                        aria-labelledby="product-tab">
+                        <form id="form_add_item">
+                            <div class="form-group">
+                                <label for="select_product">Product</label>
+                                <select class="form-control select2" id="select_product" style="width: 100%"
+                                    required>
+                                    <option value="">Pilih Product</option>
+                                    @foreach ($products as $product)
+                                        <option value="{{ $product->id }}">[{{ $product->code }}] {{ $product->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="qty_item">Qty</label>
+                                <input type="text" class="form-control" id="qty_item" name="qty"
+                                    placeholder="Qty" value="Ea">
+                            </div>
+                            <div class="form-group">
+                                <label for="desc_item">Desc</label>
+                                <input type="text" class="form-control" id="desc_item" name="desc"
+                                    placeholder="Description">
+                            </div>
+                            <div class="form-group">
+                                <label for="lot_item">Lot</label>
+                                <textarea class="form-control" id="lot_item" name="lot" placeholder="Lot"></textarea>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                    <i class="fas fa-times mr-1"></i>Close
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save mr-1"></i>Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="doTab" role="tabpanel" aria-labelledby="do-tab">
+                        <select name="" id="select_do_tab" class="form-control col-md-6 select2 mb-2"
+                            style="width: 100%">
                         </select>
+                        <br>
+                        <table class="table table-bordered mt-2" id="table_do">
+                            <thead>
+                                <tr>
+                                    <td>Product</td>
+                                    <td>Lot/Ed</td>
+                                    <td>Qty</td>
+                                    <td>#</td>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times mr-1"></i>Close
+                            </button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="qty_item">Qty</label>
-                        <input type="text" class="form-control" id="qty_item" name="qty" placeholder="Qty"
-                            value="Ea">
-                    </div>
-                    <div class="form-group">
-                        <label for="desc_item">Desc</label>
-                        <input type="text" class="form-control" id="desc_item" name="desc"
-                            placeholder="Description">
-                    </div>
-                    <div class="form-group">
-                        <label for="lot_item">Lot</label>
-                        <textarea class="form-control" id="lot_item" name="lot" placeholder="Lot"></textarea>
+                    <div class="tab-pane fade" id="itTab" role="tabpanel" aria-labelledby="it-tab">
+                        <div class="row">
+                            <div class="col-4">
+                                <select name="" id="select_it_gudang_tab" class="form-control select2 mb-2"
+                                    style="width: 100%">
+                                    <option value="5">CENTER</option>
+                                    <option value="760">BADSTOCK</option>
+                                    <option value="990">KARANTINA</option>
+                                    <option value="1310">CIBUBUR</option>
+                                </select>
+                            </div>
+                            <div class="col-8">
+                                <select name="" id="select_it_tab" class="form-control select2 mb-2"
+                                    style="width: 100%">
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <table class="table table-bordered" id="table_it">
+                            <thead>
+                                <tr>
+                                    <td>Product</td>
+                                    <td>Qty</td>
+                                    <td>Desc</td>
+                                    <td>#</td>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times mr-1"></i>Close
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        <i class="fas fa-times mr-1"></i>Close
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save mr-1"></i>Save
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

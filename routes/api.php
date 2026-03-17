@@ -151,6 +151,9 @@ Route::post('koli-item/{koliItem}/clear-lot', [KoliItemController::class, 'clear
 Route::apiResource('koli-item', KoliItemController::class)
     ->names('api.koli_item');
 
+Route::post('koli-item/from-do-it', [KoliItemController::class, 'fromDoIt'])
+    ->name('api.koli_item.from_do_it');
+
 Route::post('form-qc/', [QcController::class, 'store'])
     ->name('api.qc.store');
 
