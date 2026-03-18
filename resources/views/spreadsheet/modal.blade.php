@@ -1,29 +1,37 @@
-<div class="modal fade" id="modal_lot" data-backdrop="static" tabindex="-1" aria-labelledby="modal_lotLabel"
+<div class="modal fade" id="modal_compare" data-backdrop="static" tabindex="-1" aria-labelledby="modal_compareLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modal_lotLabel">Modal title</h5>
+                <h5 class="modal-title" id="modal_compareLabel">Modal title</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <table class="table table-hover" id="table_lot" style="width: 100%;cursor: pointer;">
-                    <thead>
-                        <tr>
-                            <th>LOCATION</th>
-                            <th>Lot/SN</th>
-                            <th>ED</th>
-                            <th style="width: 30px">QTY</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <br>
-                <textarea name="" id="detail_lot" class="form-control mb-2"></textarea>
-                <textarea name="" id="detail_sn" class="form-control"></textarea>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>PLTB</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">P: <span id="pltbb_p"></span></li>
+                            <li class="list-group-item">L: <span id="pltbb_l"></span></li>
+                            <li class="list-group-item">T: <span id="pltbb_t"></span></li>
+                            <li class="list-group-item">B: <span id="pltbb_b"></span></li>
+                            <li class="list-group-item">Note: <span id="pltbb_note"></span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Product</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">P: <span id="product_p"></span></li>
+                            <li class="list-group-item">L: <span id="product_l"></span></li>
+                            <li class="list-group-item">T: <span id="product_t"></span></li>
+                            <li class="list-group-item">B: <span id="product_b"></span></li>
+                            <li class="list-group-item">Note: <span id="product_note"></span></li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">

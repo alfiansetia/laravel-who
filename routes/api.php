@@ -189,6 +189,9 @@ Route::apiResource('products', ProductController::class)
     ->names('api.products')
     ->only(['index', 'show']);
 
+Route::get('products/{product:code}/compare', [ProductController::class, 'compare'])
+    ->name('api.products.compare');
+
 Route::post('product-sync', [ProductController::class, 'sync'])
     ->name('api.products.sync');
 

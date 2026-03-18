@@ -29,7 +29,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $data = Product::query()->with(['packs.items', 'sop.items', 'images'])->find($id);
+        $data = Product::query()->with(['packs.items', 'sop.items', 'images', 'pltbb'])->find($id);
         if (!$data) {
             return $this->sendNotFound();
         }
@@ -120,5 +120,16 @@ class ProductController extends Controller
         File::deleteDirectory($tempDir);
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
+
+    public function compare($product)
+    {
+        $product = Product::with(['packs.vendor', 'sop.items', 'pltbb'])
+            ->where('code', $product)
+            ->first();
+        if (!$product) {
+            return $this->sendNotFound();
+        }
+        return $this->sendResponse($product, 'Success!');
     }
 }

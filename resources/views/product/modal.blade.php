@@ -91,6 +91,29 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card">
+                        <div class="card-header" id="headingFour">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed pl-0" type="button"
+                                    data-toggle="collapse" data-target="#collapseFour" aria-expanded="false"
+                                    aria-controls="collapseFour">
+                                    PLTBB
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapseFour" class="collapse" aria-labelledby="headingFour"
+                            data-parent="#accordionExample">
+                            <div class="card-body" id="table_pltbb_container">
+                                <ul class="list-group">
+                                    <li class="list-group-item">P: <span id="pltbb_p"></span></li>
+                                    <li class="list-group-item">L: <span id="pltbb_l"></span></li>
+                                    <li class="list-group-item">T: <span id="pltbb_t"></span></li>
+                                    <li class="list-group-item">B: <span id="pltbb_b"></span></li>
+                                    <li class="list-group-item">Note: <span id="pltbb_note"></span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>

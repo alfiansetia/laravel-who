@@ -419,6 +419,20 @@
                         html = '<p class="text-muted">Tidak ada gambar.</p>';
                     }
                     $('#detail_images').html(html);
+
+                    if (res.data.pltbb != null) {
+                        $('#pltbb_p').html(res.data.pltbb.p)
+                        $('#pltbb_l').html(res.data.pltbb.l)
+                        $('#pltbb_t').html(res.data.pltbb.t)
+                        $('#pltbb_b').html(res.data.pltbb.b)
+                        $('#pltbb_note').html(res.data.pltbb.note)
+                    } else {
+                        $('#pltbb_p').html('-')
+                        $('#pltbb_l').html('-')
+                        $('#pltbb_t').html('-')
+                        $('#pltbb_b').html('-')
+                        $('#pltbb_note').html('-')
+                    }
                     $('#modal_pl').modal('show')
 
                 }).fail(function(xhr) {

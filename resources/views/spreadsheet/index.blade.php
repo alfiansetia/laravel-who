@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    @include('stock.modal')
+    @include('spreadsheet.modal')
 @endsection
 
 @push('js')
@@ -36,6 +36,7 @@
         $(document).ready(function() {
             const URL_INDEX_API = "{{ route('api.spreadsheet.index') }}"
             const URL_SYNC_PRODUCT_API = "{{ route('api.spreadsheet.sync_product') }}"
+            const URL_COMPARE_PRODUCT_API = "{{ route('api.products.compare', ':product') }}"
 
             function parseDecimal(value, decimals = 2) {
                 if (!value) return (0).toFixed(decimals);
@@ -162,7 +163,12 @@
                         className: 'text-center',
                         title: "#",
                         render: function(data, type, row) {
-                            return `<button type="button" class="btn btn-sm btn-warning btn-sync"><i class="fas fa-sync"></i></button>`
+                            return `
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-warning btn-sync"><i class="fas fa-sync"></i></button>
+                                <button type="button" class="btn btn-sm btn-info btn-compare"><i class="fas fa-balance-scale"></i></button>
+                            </div>
+                            `
                         }
                     }
                 ],
@@ -269,6 +275,44 @@
                                 show_message(xhr.responseJSON.message || 'Error!')
                             }
                         })
+                    }
+                })
+            });
+
+            $(document).on('click', '.btn-compare', function() {
+                var row = table.row($(this).parents('tr')).data();
+                let code = row[3];
+                if (!code) {
+                    show_message('Data tidak valid!', 'error');
+                    return;
+                }
+                $.ajax({
+                    url: URL_COMPARE_PRODUCT_API.replace(':product', code),
+                    type: 'GET',
+                    success: function(result) {
+                        console.log(result);
+                        $('#pltbb_p').text(row[8]);
+                        $('#pltbb_l').text(row[9]);
+                        $('#pltbb_t').text(row[10]);
+                        $('#pltbb_b').text(row[11]);
+                        $('#pltbb_note').text(row[12]);
+                        if (result.data.pltbb) {
+                            $('#product_p').text(result.data.pltbb.p);
+                            $('#product_l').text(result.data.pltbb.l);
+                            $('#product_t').text(result.data.pltbb.t);
+                            $('#product_b').text(result.data.pltbb.b);
+                            $('#product_note').text(result.data.pltbb.note);
+                        } else {
+                            $('#product_p').text('-');
+                            $('#product_l').text('-');
+                            $('#product_t').text('-');
+                            $('#product_b').text('-');
+                            $('#product_note').text('-');
+                        }
+                        $('#modal_compare').modal('show');
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON.message || 'Error!')
                     }
                 })
             });
