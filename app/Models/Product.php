@@ -30,4 +30,9 @@ class Product extends Model
     {
         return $this->hasmany(ProductImage::class);
     }
+
+    public function pltbb()
+    {
+        return $this->hasOne(ProductPltbb::class);
+    }
 }

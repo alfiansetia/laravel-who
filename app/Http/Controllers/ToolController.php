@@ -62,4 +62,10 @@ class ToolController extends Controller
         $title = 'OCR Tool';
         return view('ocr.index', compact('title'));
     }
+
+    public function spreadsheet()
+    {
+        $title = 'Spreadsheet Tool';
+        return view('spreadsheet.index', compact('title'));
+    }
 }

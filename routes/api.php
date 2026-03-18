@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\SoController;
 use App\Http\Controllers\Api\SopController;
+use App\Http\Controllers\Api\SpreadsheetController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\VendorController;
 use Illuminate\Http\Request;
@@ -168,6 +169,11 @@ Route::put('settings/', [SettingController::class, 'reload'])
     ->name('api.settings.reload');
 Route::delete('settings/', [SettingController::class, 'test_notif'])
     ->name('api.settings.test_notif');
+
+Route::get('spreadsheet', [SpreadsheetController::class, 'index'])
+    ->name('api.spreadsheet.index');
+Route::post('spreadsheet', [SpreadsheetController::class, 'sync_product'])
+    ->name('api.spreadsheet.sync_product');
 
 
 Route::apiResource('tokens', FcmTokenController::class)
