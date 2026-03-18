@@ -9,8 +9,10 @@ use App\Models\Product;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\File;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Str;
+use ZipArchive;
 
 
 class BastController extends Controller
@@ -152,12 +154,52 @@ class BastController extends Controller
     public function download(Request $request, Bast $bast)
     {
         if ($request->type == 'training') {
-            return $this->training($bast);
+            $path = $this->training($bast);
         } elseif ($request->type == 'bast') {
-            return $this->bast($bast);
+            $path = $this->bast($bast);
         } else {
-            return $this->tanda_terima($bast);
+            $path = $this->tanda_terima($bast);
         }
+
+        return response()->download($path)->deleteFileAfterSend();
+    }
+
+    public function downloadZip(Request $request, Bast $bast)
+    {
+        $bast->load('details.product');
+
+        // Format nama file: $bast->do ($bast->name) dengan karakter yang dilarang diubah jadi _
+        $filename = "{$bast->do} ({$bast->name})";
+        $safeFilename = preg_replace('/[\/\\\\\:\*\?"<>\|]/', '_', $filename);
+        $zipName = $safeFilename . '.zip';
+        $zipPath = storage_path('app/' . $zipName);
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            $files = [
+                $this->tanda_terima($bast),
+                $this->training($bast),
+                $this->bast($bast),
+            ];
+
+            foreach ($files as $file) {
+                if (File::exists($file)) {
+                    $zip->addFile($file, basename($file));
+                }
+            }
+            $zip->close();
+
+            // Hapus file docx sementara setelah dimasukkan ke ZIP
+            foreach ($files as $file) {
+                if (File::exists($file)) {
+                    File::delete($file);
+                }
+            }
+
+            return response()->download($zipPath)->deleteFileAfterSend();
+        }
+
+        return $this->sendResponse(null, 'Gagal membuat file ZIP');
     }
 
     private function tanda_terima(Bast $bast)
@@ -173,10 +215,12 @@ class BastController extends Controller
         $template->setValue('name', htmlspecialchars($bast->name));
         $template->setValue('city', htmlspecialchars($bast->city));
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('tanda_terima_' . $bast->do . '_' . $bast->name, '_');
-        $path = storage_path('app/' . $name . '.docx');
+        $filename = "Tanda_Terima_{$bast->do}_{$bast->name}";
+        $safeFilename = preg_replace('/[\/\\\\\:\*\?"<>\|]/', '_', $filename);
+        $path = storage_path('app/' . $safeFilename . '.docx');
         $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
+
+        return $path;
     }
 
     private function training(Bast $bast)
@@ -192,10 +236,12 @@ class BastController extends Controller
         $template->setValue('name', htmlspecialchars($bast->name));
         $template->setValue('city', htmlspecialchars($bast->city));
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('training_' . $bast->do . '_' . $bast->name, '_');
-        $path = storage_path('app/' . $name . '.docx');
+        $filename = "Training_{$bast->do}_{$bast->name}";
+        $safeFilename = preg_replace('/[\/\\\:\*\?"<>\|]/', '_', $filename);
+        $path = storage_path('app/' . $safeFilename . '.docx');
         $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
+
+        return $path;
     }
 
     private function bast(Bast $bast)
@@ -212,9 +258,11 @@ class BastController extends Controller
         $template->setValue('city', htmlspecialchars($bast->city));
         $template->setValue('address', htmlspecialchars($bast->address));
         $template->cloneBlock('item_block', 0, true, false, $items);
-        $name = Str::slug('bast_' . $bast->do . '_' . $bast->name, '_');
-        $path = storage_path('app/' . $name . '.docx');
+        $filename = "BAST_{$bast->do}_{$bast->name}";
+        $safeFilename = preg_replace('/[\/\\\:\*\?"<>\|]/', '_', $filename);
+        $path = storage_path('app/' . $safeFilename . '.docx');
         $template->saveAs($path);
-        return response()->download($path)->deleteFileAfterSend();
+
+        return $path;
     }
 }

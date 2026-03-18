@@ -86,6 +86,8 @@
                                 Training</a>
                             <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=bast"
                                 target="_blank">BAST</a>
+                            <a class="dropdown-item" href="{{ route('api.basts.download_zip', $data->id) }}"
+                                target="_blank">ZIP</a>
                         </div>
                     </div>
                 </div>

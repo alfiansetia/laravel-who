@@ -205,6 +205,8 @@ Route::get('basts/{bast}/sync', [BastController::class, 'sync'])
     ->name('api.basts.sync');
 Route::get('basts/{bast}/download', [BastController::class, 'download'])
     ->name('api.basts.download');
+Route::get('basts/{bast}/download-zip', [BastController::class, 'downloadZip'])
+    ->name('api.basts.download_zip');
 Route::apiResource('basts', BastController::class)
     ->names('api.basts');
 
