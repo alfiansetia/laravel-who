@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Koli;
 use App\Models\KoliItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -116,12 +117,14 @@ class KoliItemController extends Controller
         ]);
 
         $prod = Product::where('code', $request->product_code)->firstOrFail();
+        $lastOrder = KoliItem::where('koli_id', $request->koli_id)->max('order') ?? -1;
 
         $item = KoliItem::create([
             'koli_id'    => $request->koli_id,
             'product_id' => $prod->id,
             'lot'        => $request->lot,
             'qty'        => $request->qty,
+            'order'      => $lastOrder + 1,
         ]);
         return $this->sendResponse($item, 'Item Added!');
     }
