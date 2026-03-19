@@ -420,12 +420,22 @@
                     }
                     $('#detail_images').html(html);
 
+
+                    $('#pltbb_is_complete').html('Not Complete')
+                    $('#pltbb_is_complete').addClass('badge-danger')
+                    $('#pltbb_is_complete').removeClass('badge-success')
+
                     if (res.data.pltbb != null) {
                         $('#pltbb_p').html(res.data.pltbb.p)
                         $('#pltbb_l').html(res.data.pltbb.l)
                         $('#pltbb_t').html(res.data.pltbb.t)
                         $('#pltbb_b').html(res.data.pltbb.b)
                         $('#pltbb_note').html(res.data.pltbb.note)
+                        if (res.data.pltbb.is_complete) {
+                            $('#pltbb_is_complete').html('Complete')
+                            $('#pltbb_is_complete').addClass('badge-success')
+                            $('#pltbb_is_complete').removeClass('badge-danger')
+                        }
                     } else {
                         $('#pltbb_p').html('-')
                         $('#pltbb_l').html('-')

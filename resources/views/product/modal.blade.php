@@ -97,7 +97,7 @@
                                 <button class="btn btn-link btn-block text-left collapsed pl-0" type="button"
                                     data-toggle="collapse" data-target="#collapseFour" aria-expanded="false"
                                     aria-controls="collapseFour">
-                                    PLTBB
+                                    PLTBB <span id="pltbb_is_complete" class="badge badge-success">Complete</span>
                                 </button>
                             </h2>
                         </div>

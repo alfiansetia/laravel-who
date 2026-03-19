@@ -9,6 +9,13 @@ class ProductPltbb extends Model
 
     protected $guarded = [];
 
+    protected $appends = ['is_complete'];
+
+    public function getIsCompleteAttribute()
+    {
+        return $this->p > 0 && $this->l > 0 && $this->t > 0 && $this->b > 0;
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
