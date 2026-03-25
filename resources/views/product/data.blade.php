@@ -115,7 +115,7 @@
                     },
                 ],
                 buttons: [{
-                        text: '<i class="fas fa-sync mr-1"></i>Sync from Odoo',
+                        text: '<i class="fas fa-sync mr-1"></i>Sync',
                         className: 'btn btn-sm btn-danger',
                         attr: {
                             'data-toggle': 'tooltip',
