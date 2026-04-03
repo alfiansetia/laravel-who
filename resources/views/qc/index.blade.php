@@ -557,9 +557,9 @@
                 let text = `${code}\t${name}`
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(text);
-                    show_message('Copied!');
+                    show_message('Copied!', 'success');
                 } else {
-                    show_message('Clipboard not supported!');
+                    show_message('Clipboard not supported!', 'error');
                 }
             })
 
