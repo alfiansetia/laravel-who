@@ -327,6 +327,32 @@
                 table.ajax.reload()
             });
 
+            $('#btn_copy_lot').click(function() {
+                let text = $('#detail_lot').val();
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        show_message('Lot/SN berhasil disalin!', 'success');
+                    }).catch(() => {
+                        show_message('Gagal menyalin Lot/SN!', 'error');
+                    });
+                } else {
+                    show_message('Browser tidak mendukung!', 'error');
+                }
+            });
+
+            $('#btn_copy_sn').click(function() {
+                let text = $('#detail_sn').val();
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        show_message('Serial Number berhasil disalin!', 'success');
+                    }).catch(() => {
+                        show_message('Gagal menyalin Serial Number!', 'error');
+                    });
+                } else {
+                    show_message('Browser tidak mendukung!', 'error');
+                }
+            });
+
             function reload_table() {
                 table.ajax.reload()
             }

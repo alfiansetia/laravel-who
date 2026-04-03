@@ -21,9 +21,28 @@
                     <tbody>
                     </tbody>
                 </table>
-                <br>
-                <textarea name="" id="detail_lot" class="form-control mb-2"></textarea>
-                <textarea name="" id="detail_sn" class="form-control"></textarea>
+                <div class="form-group">
+                    <label for="">Lot/SN</label>
+                    <div class="input-group">
+                        <textarea name="" id="detail_lot" class="form-control"></textarea>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="btn_copy_lot">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="">Serial Number</label>
+                    <div class="input-group">
+                        <textarea name="" id="detail_sn" class="form-control"></textarea>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="btn_copy_sn">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
