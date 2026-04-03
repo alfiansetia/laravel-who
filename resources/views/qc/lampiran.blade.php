@@ -1,19 +1,20 @@
 <table class="table table-sm table-bordered">
     <thead>
         <tr>
+            <td></td>
             <td>Code</td>
             <td>Name</td>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td id="a_code"></td>
-            <td id="a_name"></td>
-            <td>
+            <td style="width: 5%">
                 <button class="btn btn-sm btn-info" id="a_copy">
                     <i class="fas fa-copy"></i>
                 </button>
             </td>
+            <td id="a_code"></td>
+            <td id="a_name"></td>
         </tr>
     </tbody>
 </table>
@@ -25,6 +26,13 @@
         </tr>
         <tr>
             <td colspan="5" id="l_name">Nama Barang : </td>
+        </tr>
+        <tr>
+            <td colspan="5">
+                <button class="btn btn-sm btn-info" id="l_copy">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </td>
         </tr>
         <tr>
             <td></td>

@@ -563,6 +563,18 @@
                 }
             })
 
+            $('#l_copy').click(function() {
+                let code = $('#tipe').val();
+                let name = $('#nama_alat').val();
+                let text = `Kode Barang : ${code}\nNama Barang : ${name}`
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                    show_message('Copied!', 'success');
+                } else {
+                    show_message('Clipboard not supported!', 'error');
+                }
+            })
+
             $('#btn_get_pl').click(function() {
                 let prod = $('#select_product').val();
                 if (!prod) {
