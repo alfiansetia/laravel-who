@@ -541,12 +541,27 @@
             }
 
             function generate_lampiran() {
+                $('#a_code').html($('#tipe').val())
+                $('#a_name').html($('#nama_alat').val())
+
                 $('#l_code').html('Kode Barang : ' + $('#tipe').val())
                 $('#l_name').html('Nama Barang : ' + $('#nama_alat').val())
                 $('#l_sn').html($('#sn_lot').val())
                 $('#l_y').html('V')
                 $('#l_desc').html($('#jenis_qc').val())
             }
+
+            $('#a_copy').click(function() {
+                let code = $('#tipe').val();
+                let name = $('#nama_alat').val();
+                let text = `${code}\t${name}`
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+                    show_message('Copied!');
+                } else {
+                    show_message('Clipboard not supported!');
+                }
+            })
 
             $('#btn_get_pl').click(function() {
                 let prod = $('#select_product').val();

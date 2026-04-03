@@ -1,6 +1,26 @@
 <table class="table table-sm table-bordered">
     <thead>
         <tr>
+            <td>Code</td>
+            <td>Name</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td id="a_code"></td>
+            <td id="a_name"></td>
+            <td>
+                <button class="btn btn-sm btn-info" id="a_copy">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
             <td colspan="5" id="l_code">Kode Barang : </td>
         </tr>
         <tr>
