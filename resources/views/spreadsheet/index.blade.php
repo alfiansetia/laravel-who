@@ -331,7 +331,6 @@
                             type: 'POST',
                             success: function(result) {
                                 show_message(result.message, 'success');
-                                table.ajax.reload();
                             },
                             error: function(xhr) {
                                 show_message(xhr.responseJSON.message || 'Error!')
