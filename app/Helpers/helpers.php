@@ -128,3 +128,24 @@ function parseNumberList($str)
 
     return $result;
 }
+
+function parseDecimal($value, $decimals = 2)
+{
+    if (empty($value)) {
+        return number_format(0, $decimals, '.', '');
+    }
+
+    // ubah ke string & ganti koma jadi titik
+    $num = str_replace(',', '.', (string) $value);
+
+    // parse ke float
+    $num = floatval($num);
+
+    // handle NaN (floatval udah aman, tapi jaga-jaga)
+    if (!is_numeric($num)) {
+        $num = 0;
+    }
+
+    // format decimal
+    return number_format($num, $decimals, '.', '');
+}

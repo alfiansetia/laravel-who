@@ -34,15 +34,15 @@ class SpreadsheetController extends Controller
         try {
             $data = PltbbServices::get();
             $updatedCount = 0;
+            $updatedData = [];
             foreach ($data as $item) {
                 $code = $item[3] ?? null;
-                $p = (float) ($item[8] ?? 0);
-                $l = (float) ($item[9] ?? 0);
-                $t = (float) ($item[10] ?? 0);
-                $b = (float) ($item[11] ?? 0);
+                $p = parseDecimal($item[8] ?? 0);
+                $l = parseDecimal($item[9] ?? 0);
+                $t = parseDecimal($item[10] ?? 0);
+                $b = parseDecimal($item[11] ?? 0);
                 $note = $item[12] ?? null;
                 if (empty($code)) continue;
-                if ($p <= 0 || $l <= 0 || $t <= 0 || $b <= 0) continue;
                 $product = Product::where('code', $code)->first();
                 if ($product) {
                     $product->pltbb()->updateOrCreate([
@@ -60,7 +60,7 @@ class SpreadsheetController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Data berhasil sinkronisasi ' . $updatedCount . ' data!',
-                'data'    => $data,
+                'data'    => $updatedData,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
