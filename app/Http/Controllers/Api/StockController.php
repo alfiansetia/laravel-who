@@ -121,9 +121,9 @@ class StockController extends Controller
         }
 
         // Hapus sheet template asli jika ada setidaknya satu sheet baru yang ditambahkan
-        // if ($spreadsheet->getSheetCount() > 1) {
-        //     $spreadsheet->removeSheetByIndex(0);
-        // }
+        if ($spreadsheet->getSheetCount() > 1) {
+            $spreadsheet->removeSheetByIndex(0);
+        }
 
 
         $filename = "Stock Opname {$currentDate} {$currentTime}.xlsx";
