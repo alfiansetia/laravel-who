@@ -170,6 +170,8 @@ Route::put('settings/', [SettingController::class, 'reload'])
 Route::delete('settings/', [SettingController::class, 'test_notif'])
     ->name('api.settings.test_notif');
 
+Route::post('spreadsheet/sync-all', [SpreadsheetController::class, 'sync_all'])
+    ->name('api.spreadsheet.sync_all');
 Route::get('spreadsheet', [SpreadsheetController::class, 'index'])
     ->name('api.spreadsheet.index');
 Route::post('spreadsheet', [SpreadsheetController::class, 'sync_product'])

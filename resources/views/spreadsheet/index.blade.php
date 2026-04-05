@@ -229,6 +229,12 @@
                         action: function(e, dt, node, config) {
                             table.ajax.reload();
                         }
+                    }, {
+                        text: '<i class="fas fa-sync mr-1"></i>Sync',
+                        className: 'btn btn-sm btn-danger',
+                        action: function(e, dt, node, config) {
+                            syncAll();
+                        }
                     }
                 ],
             });
@@ -316,6 +322,25 @@
                     }
                 })
             });
+
+            function syncAll() {
+                confirmation(`Sync All Data dengan Data Produk?`, function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: "{{ route('api.spreadsheet.sync_all') }}",
+                            type: 'POST',
+                            success: function(result) {
+                                show_message(result.message, 'success');
+                                table.ajax.reload();
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        })
+                    }
+                })
+            }
+
         });
     </script>
 @endpush
