@@ -12,12 +12,12 @@ class ProductPltbb extends Model
     protected $appends = ['is_complete'];
 
     protected $casts = [
-        'id' => 'integer',
-        'product_id' => 'integer',
-        'p' => 'decimal:2',
-        'l' => 'decimal:2',
-        't' => 'decimal:2',
-        'b' => 'decimal:2',
+        'id'            => 'integer',
+        'product_id'    => 'integer',
+        'p'             => 'float',
+        'l'             => 'float',
+        't'             => 'float',
+        'b'             => 'float',
     ];
 
     public function getIsCompleteAttribute()
