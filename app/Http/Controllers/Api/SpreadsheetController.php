@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\PltbbServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SpreadsheetController extends Controller
 {
@@ -29,15 +30,16 @@ class SpreadsheetController extends Controller
 
     public function sync_all(Request $request)
     {
+        DB::beginTransaction();
         try {
             $data = PltbbServices::get();
             $updatedCount = 0;
             foreach ($data as $item) {
                 $code = $item[3] ?? null;
-                $p = $item[8] ?? null;
-                $l = $item[9] ?? null;
-                $t = $item[10] ?? null;
-                $b = $item[11] ?? null;
+                $p = (float) ($item[8] ?? 0);
+                $l = (float) ($item[9] ?? 0);
+                $t = (float) ($item[10] ?? 0);
+                $b = (float) ($item[11] ?? 0);
                 $note = $item[12] ?? null;
                 if (empty($code)) continue;
                 if (empty($p) || empty($l) || empty($t) || empty($b)) continue;
@@ -55,11 +57,13 @@ class SpreadsheetController extends Controller
                     $updatedCount++;
                 }
             }
+            DB::commit();
             return response()->json([
                 'message' => 'Data berhasil sinkronisasi ' . $updatedCount . ' data!',
                 'data'    => $data,
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'Error get data',
                 'error'   => $e->getMessage(),
