@@ -52,6 +52,7 @@ Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
+Route::get('stock-opname', [StockController::class, 'opname'])->name('api.stock.opname');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 

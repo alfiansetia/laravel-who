@@ -153,6 +153,12 @@
                                 columns: ':visible'
                             }
                         }],
+                    }, {
+                        text: '<i class="fas fa-download mr-1"></i>Opname',
+                        className: 'btn btn-sm btn-danger',
+                        action: function(e, dt, node, config) {
+                            getOpname();
+                        }
                     }
                 ],
             });
@@ -352,6 +358,15 @@
                     show_message('Browser tidak mendukung!', 'error');
                 }
             });
+
+            function getOpname() {
+                let locations = $('#location').val();
+                if (!locations || locations.length == 0) {
+                    show_message('Pilih lokasi terlebih dahulu!', 'error');
+                    return;
+                }
+                window.location.href = "{{ route('api.stock.opname') }}" + "?location=" + locations.join(',');
+            }
 
             function reload_table() {
                 table.ajax.reload()

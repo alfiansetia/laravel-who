@@ -31,7 +31,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
 
 Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
