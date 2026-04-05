@@ -42,7 +42,7 @@ class SpreadsheetController extends Controller
                 $b = (float) ($item[11] ?? 0);
                 $note = $item[12] ?? null;
                 if (empty($code)) continue;
-                if (empty($p) || empty($l) || empty($t) || empty($b)) continue;
+                if ($p <= 0 || $l <= 0 || $t <= 0 || $b <= 0) continue;
                 $product = Product::where('code', $code)->first();
                 if ($product) {
                     $product->pltbb()->updateOrCreate([
