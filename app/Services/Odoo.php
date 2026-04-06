@@ -121,12 +121,10 @@ class Odoo
             }
         } catch (Exception $e) {
             throw new OdooException(
-                "Odoo Connection Error: " . $e->getMessage(),
+                "Koneksi ke Odoo Gagal: Odoo Error!",
                 500,
                 [
-                    'url'       => $url,
-                    'method'    => static::$method,
-                    'data'      => static::$data_param
+                    'detail'    => $e->getMessage(),
                 ]
             );
         }
