@@ -113,10 +113,22 @@ class Odoo
         // HTTP request dengan timeout 15 detik
         $http = Http::timeout(15)->withHeaders(static::$headers);
 
-        if (static::$method === 'POST') {
-            $response = $http->post($url, static::$data_param);
-        } else {
-            $response = $http->get($url);
+        try {
+            if (static::$method === 'POST') {
+                $response = $http->post($url, static::$data_param);
+            } else {
+                $response = $http->get($url);
+            }
+        } catch (Exception $e) {
+            throw new OdooException(
+                "Odoo Connection Error: " . $e->getMessage(),
+                500,
+                [
+                    'url'       => $url,
+                    'method'    => static::$method,
+                    'data'      => static::$data_param
+                ]
+            );
         }
         $body = json_decode($response->body(), true);
         $json = $response->json();
