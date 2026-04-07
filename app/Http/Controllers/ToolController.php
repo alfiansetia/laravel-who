@@ -68,4 +68,13 @@ class ToolController extends Controller
         $title = 'Spreadsheet Tool';
         return view('spreadsheet.index', compact('title'));
     }
+
+    public function print_resi()
+    {
+        $bcms = collect([
+            new Breadcrumb('Print Resi', route('tools.print_resi'), false),
+        ]);
+        return view('print_resi.index', compact('bcms'))
+            ->with(['title' => 'Print Resi']);
+    }
 }

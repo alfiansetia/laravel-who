@@ -68,6 +68,8 @@ Route::get('tools/scoreboard', [ToolController::class, 'scoreboard'])->name('too
 Route::get('tools/ocr', [ToolController::class, 'ocr'])->name('tools.ocr');
 Route::get('tools/spreadsheet', [ToolController::class, 'spreadsheet'])->name('tools.spreadsheet');
 
+Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('tools.print_resi');
+
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
 
