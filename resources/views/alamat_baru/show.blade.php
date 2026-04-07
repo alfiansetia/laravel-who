@@ -342,14 +342,18 @@
                                         <td colspan="1" style="width: 2px;vertical-align: baseline">~
                                         </td>
                                         <td class="style14" colspan="4" style="text-align: left">
-                                            <b>{{ $item->product->code }}</b>
-                                            @if (!empty($item->product->name))
-                                                ({{ $item->product->name }})
+                                            @if ($item->product->code == 0)
+                                                {{ $item->desc }} = {{ $item->qty }}
+                                            @else
+                                                <b>{{ $item->product->code }}</b>
+                                                @if (!empty($item->product->name))
+                                                    ({{ $item->product->name }})
+                                                @endif
+                                                @if (!empty($item->desc))
+                                                    ({{ $item->desc }})
+                                                @endif
+                                                = {{ $item->qty }}
                                             @endif
-                                            @if (!empty($item->desc))
-                                                ({{ $item->desc }})
-                                            @endif
-                                            = {{ $item->qty }}
                                         </td>
                                     </tr>
                                     @if (!empty($item->lot))
