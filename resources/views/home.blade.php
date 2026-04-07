@@ -323,6 +323,18 @@
             </div>
 
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.print_resi') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-print menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">Print Resi</h6>
+                            <small class="text-muted">Print Resi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('tools.scoreboard') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-basketball-ball menu-icon mr-3"></i>
