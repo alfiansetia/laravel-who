@@ -383,7 +383,7 @@
                         <i class="fas fa-basketball-ball menu-icon mr-3"></i>
                         <div>
                             <h6 class="mb-0 font-weight-semibold">Scoreboard</h6>
-                            <small class="text-muted">Papan Skor</small>
+                            <small class="text-muted">Papan Skorr</small>
                         </div>
                     </div>
                 </div>
