@@ -145,7 +145,7 @@
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-white py-3">
                         <h5 class="mb-0 font-weight-bold text-primary">
-                            <i class="fas fa-file-excel mr-2"></i>Import Data Resi
+                            <i class="fas fa-file-excel mr-2"></i>Import File Resi
                         </h5>
                     </div>
                     <div class="card-body py-4">
