@@ -127,6 +127,14 @@
         #cropperImage {
             max-width: 100%;
         }
+
+        /* Input Print Options Style */
+        .print-opt-input {
+            width: 60px;
+            display: inline-block;
+            margin: 0 5px;
+            text-align: center;
+        }
     </style>
 @endpush
 
@@ -149,13 +157,24 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <div>
-                                <a href="{{ route('qc_lots.index') }}" class="btn btn-light px-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mt-4">
+                            <div class="mb-2">
+                                <a href="{{ route('home') }}" class="btn btn-light px-4">
                                     <i class="fas fa-arrow-left mr-1"></i> Kembali
                                 </a>
                             </div>
-                            <div id="action_buttons" style="display: none;">
+                            <div id="action_buttons" style="display: none;" class="mb-2">
+                                <div class="d-inline-flex align-items-center mr-3 p-2 bg-light rounded border">
+                                    <span class="small font-weight-bold mr-2"><i class="fas fa-cog mr-1"></i> Layout
+                                        Cetak:</span>
+                                    <input type="number" id="print_cols"
+                                        class="form-control form-control-sm print-opt-input" value="2" min="1"
+                                        title="Jumlah Kolom">
+                                    <span class="small font-weight-bold px-1">x</span>
+                                    <input type="number" id="print_rows"
+                                        class="form-control form-control-sm print-opt-input" value="3" min="1"
+                                        title="Jumlah Baris">
+                                </div>
                                 <button type="button" id="btn-reset" class="btn btn-outline-danger mr-2">
                                     <i class="fas fa-trash-alt mr-1"></i> Reset
                                 </button>
@@ -254,19 +273,17 @@
 
             async function handleFileExtraction(file) {
                 $('#imageContainer').html(
-                    '<div class="empty-state text-primary"><i class="fas fa-spinner fa-spin fa-3x mb-3"></i><p>Membaca seluruh lembar kerja...</p></div>'
-                    );
+                    '<div class="empty-state text-primary"><i class="fas fa-spinner fa-spin fa-3x mb-3"></i><p>Sedang mengekstrak resi...</p></div>'
+                );
                 try {
                     const zip = await JSZip.loadAsync(file);
                     extractedImages = [];
                     const drawings = [];
 
-                    // 1. Dapatkan daftar file drawing
                     const drawingFiles = Object.keys(zip.files).filter(name => name.startsWith(
                         'xl/drawings/drawing') && name.endsWith('.xml'));
 
                     for (const dFile of drawingFiles) {
-                        // 2. Dapatkan file relasi (.rels) untuk drawing ini secara spesifik
                         const dNum = dFile.match(/drawing(\d+)\.xml/)[1];
                         const relFile = `xl/drawings/_rels/drawing${dNum}.xml.rels`;
 
@@ -281,7 +298,6 @@
                             }
                         }
 
-                        // 3. Baca konten drawing
                         const dContent = await zip.files[dFile].async('string');
                         const dXml = new DOMParser().parseFromString(dContent, 'application/xml');
                         const pics = dXml.getElementsByTagNameNS('*', 'pic');
@@ -315,9 +331,7 @@
                         }
                     }
 
-                    // 4. Proses Ekstraksi Akhir
                     if (drawings.length === 0) {
-                        // Fallback jika tidak ada drawing metadata (ambil semua gambar folder media)
                         const mediaFiles = Object.keys(zip.files).filter(name => name.startsWith('xl/media/'));
                         for (const mPath of mediaFiles) {
                             const blob = await zip.files[mPath].async('blob');
@@ -328,7 +342,6 @@
                         for (const draw of drawings) {
                             const blob = await zip.files[draw.mediaPath].async('blob');
                             const originalUrl = URL.createObjectURL(blob);
-
                             if (draw.crop.l > 0 || draw.crop.t > 0 || draw.crop.r > 0 || draw.crop.b > 0) {
                                 const croppedBlob = await applyExcelCrop(originalUrl, draw.crop);
                                 const finalUrl = URL.createObjectURL(croppedBlob);
@@ -339,12 +352,10 @@
                             }
                         }
                     }
-
                     renderGallery();
                 } catch (e) {
-                    console.error(e);
                     $('#imageContainer').html(
-                        '<div class="empty-state text-danger"><p>Gagal memproses file Excel.</p></div>');
+                        '<div class="empty-state text-danger"><p>Ekstraksi gagal.</p></div>');
                 }
             }
 
@@ -362,7 +373,7 @@
                 let html = '';
                 if (extractedImages.length === 0) {
                     $('#imageContainer').html(
-                        '<div class="empty-state text-warning"><p>Tidak ada gambar ditemukan.</p></div>');
+                        '<div class="empty-state text-warning"><p>Tidak ada resi ditemukan.</p></div>');
                     $('#action_buttons, #image-count').hide();
                 } else {
                     extractedImages.forEach(img => {
@@ -386,27 +397,19 @@
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-
-                        const cropLeft = img.width * crop.l;
-                        const cropTop = img.height * crop.t;
-                        const cropRight = img.width * crop.r;
-                        const cropBottom = img.height * crop.b;
-
-                        const targetWidth = Math.max(1, img.width - cropLeft - cropRight);
-                        const targetHeight = Math.max(1, img.height - cropTop - cropBottom);
-
+                        const targetWidth = Math.max(1, img.width * (1 - crop.l - crop.r));
+                        const targetHeight = Math.max(1, img.height * (1 - crop.t - crop.b));
                         canvas.width = targetWidth;
                         canvas.height = targetHeight;
-
-                        ctx.drawImage(img, cropLeft, cropTop, targetWidth, targetHeight, 0, 0,
-                            targetWidth, targetHeight);
+                        ctx.drawImage(img, img.width * crop.l, img.height * crop.t, targetWidth,
+                            targetHeight, 0, 0, targetWidth, targetHeight);
                         canvas.toBlob(blob => resolve(blob), 'image/png');
                     };
                     img.src = url;
                 });
             }
 
-            // Modal Cropper Initialization Logic
+            // --- CROPPER LOGIC ---
             $(document).on('click', '.crop-btn', function(e) {
                 e.preventDefault();
                 currentCropId = $(this).data('id');
@@ -455,7 +458,7 @@
                 }, 'image/png');
             });
 
-            // Action Print & Delete
+            // --- ACTIONS ---
             $(document).on('click', '.delete-btn', function() {
                 const id = $(this).data('id');
                 const idx = extractedImages.findIndex(i => i.id === id);
@@ -477,16 +480,74 @@
                 $('#action_buttons, #image-count').hide();
             });
 
+            // --- ADVANCED PRINT LOGIC ---
             $('.btn-print-all').on('click', function() {
                 if (extractedImages.length === 0) return;
+
+                const cols = parseInt($('#print_cols').val()) || 2;
+                const rows = parseInt($('#print_rows').val()) || 4;
+                const itemsPerPage = cols * rows;
+
                 const win = window.open('', '_blank');
-                win.document.write(
-                    '<html><head><title>Print</title><style>img{max-width:100%;margin-bottom:20px;display:block;page-break-after:always;}</style></head><body>'
-                    );
-                extractedImages.forEach(i => win.document.write(`<img src="${i.url}">`));
+                win.document.write('<html><head><title>Print Resi - Layout Grid</title>');
+                win.document.write(`
+                    <style>
+                        @page { margin: 4mm; size: A4; }
+                        body { margin: 0; padding: 0; font-family: sans-serif; }
+                        .page {
+                            display: grid;
+                            grid-template-columns: repeat(${cols}, 1fr);
+                            grid-template-rows: repeat(${rows}, 1fr);
+                            width: 210mm;
+                            height: 297mm;
+                            box-sizing: border-box;
+                            page-break-after: always;
+                        }
+                        .print-item {
+                            border: 0.5px dashed #ccc; /* Garis bantuan pemotongan */
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 1mm; /* Margin agar tidak mepet */
+                            box-sizing: border-box;
+                            overflow: hidden;
+                        }
+                        .print-item img {
+                            max-width: 100%;
+                            max-height: 100%;
+                            object-fit: contain;
+                        }
+                        @media print {
+                            .page { border: none; }
+                            body { background: none; }
+                        }
+                    </style>
+                `);
+                win.document.write('</head><body>');
+
+                // Chunk images per page
+                for (let i = 0; i < extractedImages.length; i += itemsPerPage) {
+                    win.document.write('<div class="page">');
+                    for (let j = 0; j < itemsPerPage; j++) {
+                        const img = extractedImages[i + j];
+                        if (img) {
+                            win.document.write(`<div class="print-item"><img src="${img.url}"></div>`);
+                        } else {
+                            // Empty cell to keep grid layout
+                            win.document.write('<div class="print-item"></div>');
+                        }
+                    }
+                    win.document.write('</div>');
+                }
+
                 win.document.write('</body></html>');
                 win.document.close();
-                win.print();
+
+                // Wait for images to load before printing and then close
+                win.onload = function() {
+                    win.print();
+                    win.close();
+                };
             });
         });
     </script>

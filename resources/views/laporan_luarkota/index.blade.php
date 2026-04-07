@@ -25,7 +25,7 @@
                                     <div id="sheet_buttons" class="d-flex flex-wrap" style="gap: 5px;"></div>
                                 </div>
                             </div>
-                            <a href="{{ route('qc_lots.index') }}" class="btn btn-secondary mt-2">
+                            <a href="{{ route('home') }}" class="btn btn-secondary mt-2">
                                 <i class="fas fa-arrow-left mr-1"></i>Kembali
                             </a>
                             <button type="reset" class="btn btn-info mt-2">
