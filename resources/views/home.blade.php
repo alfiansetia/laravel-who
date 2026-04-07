@@ -264,17 +264,6 @@
                 </div>
             </div>
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
-                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.stt') }}'">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="fas fa-microphone menu-icon mr-3"></i>
-                        <div>
-                            <h6 class="mb-0 font-weight-semibold">STT</h6>
-                            <small class="text-muted">Speech To Text</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('qc.index') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-clipboard-check menu-icon mr-3"></i>
@@ -335,30 +324,6 @@
             </div>
 
             <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
-                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.scoreboard') }}'">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="fas fa-basketball-ball menu-icon mr-3"></i>
-                        <div>
-                            <h6 class="mb-0 font-weight-semibold">Scoreboard</h6>
-                            <small class="text-muted">Papan Skor</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
-                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.ocr') }}'">
-                    <div class="card-body d-flex align-items-center">
-                        <i class="fas fa-text-width menu-icon mr-3"></i>
-                        <div>
-                            <h6 class="mb-0 font-weight-semibold">OCR</h6>
-                            <small class="text-muted">Text Recognition</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
                 <div class="card menu-card h-100" onclick="window.location='{{ route('tools.spreadsheet') }}'">
                     <div class="card-body d-flex align-items-center">
                         <i class="fas fa-file-excel menu-icon mr-3"></i>
@@ -377,6 +342,48 @@
                         <div>
                             <h6 class="mb-0 font-weight-semibold">SETTING</h6>
                             <small class="text-muted">App Setting</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mb-4 font-weight-bold"><i class="fas fa-tools mr-1"></i> Other</h3>
+        <div class="row">
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.stt') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-microphone menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">STT</h6>
+                            <small class="text-muted">Speech To Text</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.ocr') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-text-width menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">OCR</h6>
+                            <small class="text-muted">Text Recognition</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-3 col-sm-6 col-xl-2 mb-3">
+                <div class="card menu-card h-100" onclick="window.location='{{ route('tools.scoreboard') }}'">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="fas fa-basketball-ball menu-icon mr-3"></i>
+                        <div>
+                            <h6 class="mb-0 font-weight-semibold">Scoreboard</h6>
+                            <small class="text-muted">Papan Skor</small>
                         </div>
                     </div>
                 </div>
