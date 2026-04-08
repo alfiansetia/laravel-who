@@ -9,36 +9,92 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
     <style>
+        /* Modern UI Design Tokens */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            --secondary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger-gradient: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+
         .input-group>.select2-container--bootstrap {
             width: auto;
             flex: 1 1 auto;
         }
 
         .input-group>.select2-container--bootstrap .select2-selection--single {
-            height: 100%;
-            line-height: inherit;
-            padding: 0.5rem 1rem;
+            height: 100% !important;
+            border-radius: 10px !important;
+            border: 1px solid #e0e6ed !important;
         }
 
-        /* Product Image Gallery Styles */
+        /* Glassmorphism Filter Bar */
+        .filter-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .filter-bar:hover {
+            box-shadow: var(--hover-shadow);
+        }
+
+        #searchInput {
+            border-radius: 10px;
+            border: 1px solid #e0e6ed;
+            padding: 10px 15px;
+            transition: all 0.2s;
+        }
+
+        #searchInput:focus {
+            box-shadow: 0 0 0 3px rgba(75, 108, 183, 0.2);
+            border-color: #4b6cb7;
+        }
+
+        /* Product Card - Premium Look */
         .product-card {
             background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
             overflow: hidden;
-            transition: box-shadow 0.2s ease;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .product-card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
         }
 
         .product-card-header {
-            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-            background: #7e8f9cff;
-            color: #fff;
-            padding: 12px 16px;
+            background: #fcfcfd;
+            border-bottom: 1px solid #f1f3f5;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -46,211 +102,162 @@
 
         .product-card-header h6 {
             margin: 0;
+            font-weight: 700;
+            color: #2d3436;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-card-header h6 i {
+            color: #4b6cb7;
+            font-size: 1.2rem;
+        }
+
+        .product-card-header .badge-count {
+            background: #f1f3f5;
+            color: #4b6cb7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
-        .product-card-header .badge {
-            background: rgba(255, 255, 255, 0.2);
-            font-size: 0.75rem;
-        }
-
+        /* Modern Gallery Grid */
         .product-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px;
-            background: #f8f9fa;
-            min-height: 100px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+            padding: 20px;
+            background: #fff;
         }
 
         .gallery-item {
             position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 6px;
+            aspect-ratio: 1/1;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: #f8f9fa;
+            border: 1px solid #edf2f7;
+            transition: all 0.3s ease;
         }
 
         .gallery-item:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 2;
         }
 
         .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
         }
 
         .gallery-item .delete-overlay {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(220, 53, 69, 0.9);
+            top: 8px;
+            right: 8px;
+            background: var(--danger-gradient);
             color: #fff;
             border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
+            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
             cursor: pointer;
             opacity: 0;
-            transition: opacity 0.2s ease;
+            transform: scale(0.8);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 10px rgba(231, 56, 39, 0.3);
         }
 
         .gallery-item:hover .delete-overlay {
             opacity: 1;
+            transform: scale(1);
         }
 
-        .no-images {
-            color: #6c757d;
-            font-style: italic;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* Search & Filter Bar */
-        .filter-bar {
-            background: #fff;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .product-count {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        /* Pagination Styles */
+        /* Custom Pagination */
         .gallery-pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-top: 1rem;
-            padding: 16px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            flex-wrap: wrap;
+            gap: 12px;
+            margin: 2rem 0;
+            padding: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
         }
 
-        .gallery-pagination .btn {
-            min-width: 40px;
+        .page-info {
+            font-weight: 600;
+            color: #2d3436;
         }
 
-        .gallery-pagination .page-info {
-            padding: 8px 16px;
-            background: #f8f9fa;
+        .product-count-badge {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 6px 15px;
             border-radius: 20px;
-            font-weight: 500;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(75, 108, 183, 0.3);
         }
 
-        .gallery-pagination select {
-            width: auto;
-            display: inline-block;
-        }
-
-        /* Mobile Responsive Styles */
-        @media (max-width: 767.98px) {
-            .filter-bar .row>div {
-                margin-bottom: 10px;
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .filter-bar {
+                top: 0;
+                border-radius: 0 0 15px 15px;
+                margin-bottom: 1.5rem;
             }
 
-            .filter-bar .row>div:last-child {
-                margin-bottom: 0;
-                text-align: center !important;
+            .product-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+                padding: 15px;
             }
 
-            .filter-bar .btn {
-                width: 48%;
-                margin-bottom: 8px;
-            }
-
-            .product-count {
-                display: block;
-                width: 100%;
-                text-align: center;
-                margin-top: 8px;
-                margin-left: 0 !important;
+            .gallery-item .delete-overlay {
+                opacity: 0.9;
+                transform: scale(1);
             }
 
             .product-card-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 8px;
+                gap: 10px;
             }
 
-            .product-card-header h6 {
-                font-size: 0.9rem;
-                word-break: break-word;
-            }
-
-            .product-card-header .badge {
-                align-self: flex-end;
-            }
-
-            .gallery-item {
-                width: 80px;
-                height: 80px;
-            }
-
-            .gallery-item .delete-overlay {
-                opacity: 1;
-                /* Always show on mobile since no hover */
-            }
-
-            .product-gallery {
-                gap: 6px;
-                padding: 10px;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 575.98px) {
-            .filter-bar {
-                padding: 12px;
-            }
-
-            .filter-bar .btn {
+            .product-card-header .btn-print-product {
+                order: 3;
                 width: 100%;
-                margin-bottom: 8px;
-            }
-
-            .gallery-item {
-                width: 70px;
-                height: 70px;
-            }
-
-            .product-card-header h6 {
-                font-size: 0.85rem;
             }
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-4">
         <!-- Filter Bar -->
         <div class="filter-bar">
             <div class="row align-items-center">
                 <div class="col-12 col-md-4 mb-2 mb-md-0">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <span class="input-group-text bg-transparent border-right-0"><i
+                                    class="fas fa-search text-muted"></i></span>
                         </div>
-                        <input type="search" id="searchInput" class="form-control" placeholder="Cari produk...">
+                        <input type="search" id="searchInput" class="form-control border-left-0"
+                            placeholder="Cari nama atau kode produk...">
                     </div>
                 </div>
                 <div class="col-12 col-md-4 mb-2 mb-md-0">
@@ -261,15 +268,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-4 text-center text-md-right">
-                    <div class="d-flex flex-wrap justify-content-center justify-content-md-end align-items-center">
-                        <button type="button" class="btn btn-secondary btn-sm mr-1 mb-1" id="btnResetFilter">
-                            <i class="fas fa-undo mr-1"></i> Reset
+                <div class="col-12 col-md-4">
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-end align-items-center"
+                        style="gap: 10px;">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetFilter">
+                            <i class="fas fa-sync-alt mr-1"></i> Reset
                         </button>
-                        <button type="button" class="btn btn-info btn-sm mr-2 mb-1" id="btnAddImage">
-                            <i class="fas fa-plus mr-1"></i> Tambah Gambar
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btnAddImage">
+                            <i class="fas fa-upload mr-1"></i> Upload Gambar
                         </button>
-                        <span class="badge badge-info mb-1" id="productCount">0 Produk</span>
+                        <span class="product-count-badge" id="productCount">0 Produk</span>
                     </div>
                 </div>
             </div>
@@ -278,8 +286,10 @@
         <!-- Product Gallery Container -->
         <div id="productGalleryContainer">
             <div class="text-center py-5">
-                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                <p class="mt-2">Memuat data...</p>
+                <div class="spinner-grow text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted font-weight-bold">Mempersiapkan galeri produk...</p>
             </div>
         </div>
     </div>
@@ -497,14 +507,17 @@
                 const totalProducts = productIds.length;
                 const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-                // Update product count
-                $('#productCount').text(`${totalProducts} Produk`);
+                // Update product count with animation
+                $('#productCount').fadeOut(200, function() {
+                    $(this).text(`${totalProducts} Produk`).fadeIn(200);
+                });
 
                 if (totalProducts === 0) {
                     container.html(`
                         <div class="text-center py-5">
-                            <i class="fas fa-images fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">Tidak ada data gambar produk.</p>
+                            <i class="fas fa-images fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                            <h5 class="text-muted">Tidak ada data ditemukan</h5>
+                            <p class="text-muted">Coba gunakan kata kunci pencarian lain.</p>
                         </div>
                     `);
                     return;
@@ -517,20 +530,23 @@
 
                 // Build gallery HTML
                 let html = '';
-                paginatedProductIds.forEach(productId => {
+                paginatedProductIds.forEach((productId, idx) => {
                     const group = groups[productId];
                     const product = group.product;
                     const images = group.images;
 
+                    // Small delay for stagger animation
+                    const delay = idx * 0.1;
+
                     html += `
-                        <div class="product-card" data-product-id="${productId}">
+                        <div class="product-card" data-product-id="${productId}" style="animation-delay: ${delay}s">
                             <div class="product-card-header">
-                                <h6><i class="fas fa-box mr-2"></i>[${product.code || '-'}] ${product.name}</h6>
+                                <h6><i class="fas fa-box-open mr-2"></i>[${product.code || '-'}] ${product.name}</h6>
                                 <div class="d-flex align-items-center">
-                                    <button type="button" class="btn btn-xs btn-sm btn-light mr-2 btn-print-product" data-product-id="${productId}" title="Cetak Kolase">
+                                    <button type="button" class="btn btn-xs btn-outline-primary btn-sm mr-2 btn-print-product" data-product-id="${productId}" title="Cetak Kolase">
                                         <i class="fas fa-print mr-1"></i> Cetak
                                     </button>
-                                    <span class="badge">${images.length} gambar</span>
+                                    <span class="badge-count">${images.length} Gambar</span>
                                 </div>
                             </div>
                             <div class="product-gallery">
@@ -547,7 +563,7 @@
                                 <button type="button" class="delete-overlay btn-delete-image" 
                                         data-id="${img.id}" 
                                         title="Hapus gambar">
-                                    <i class="fas fa-times"></i>
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
                         `;
@@ -561,40 +577,35 @@
 
                 // Add pagination controls
                 html += `
-                    <div class="gallery-pagination">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnFirstPage" ${currentPage === 1 ? 'disabled' : ''}>
-                            <i class="fas fa-angle-double-left"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnPrevPage" ${currentPage === 1 ? 'disabled' : ''}>
-                            <i class="fas fa-angle-left"></i> Prev
-                        </button>
-                        <span class="page-info">
-                            Halaman <strong>${currentPage}</strong> dari <strong>${totalPages}</strong>
-                            <small class="text-muted ml-2">(${startIndex + 1}-${endIndex} dari ${totalProducts})</small>
-                        </span>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnNextPage" ${currentPage >= totalPages ? 'disabled' : ''}>
-                            Next <i class="fas fa-angle-right"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnLastPage" ${currentPage >= totalPages ? 'disabled' : ''}>
-                            <i class="fas fa-angle-double-right"></i>
-                        </button>
-                        <select class="form-control form-control-sm" id="pageSizeSelect" style="width: 100px;">
-                            <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5 / hal</option>
-                            <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10 / hal</option>
-                            <option value="20" ${itemsPerPage === 20 ? 'selected' : ''}>20 / hal</option>
-                            <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50 / hal</option>
-                        </select>
+                    <div class="gallery-pagination mt-4">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" id="btnPrevPage" ${currentPage === 1 ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="page-info mx-2">
+                                Halaman <strong>${currentPage}</strong> dari <strong>${totalPages}</strong>
+                                <small class="text-muted d-block d-md-inline ml-md-2">(${startIndex + 1}-${endIndex} dari ${totalProducts})</small>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" id="btnNextPage" ${currentPage >= totalPages ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <div class="ml-auto d-flex align-items-center">
+                                <span class="text-muted small mr-2">Tampilkan:</span>
+                                <select class="form-control form-control-sm border-0 bg-light shadow-none" id="pageSizeSelect" style="width: 80px; border-radius: 10px;">
+                                    <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5</option>
+                                    <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10</option>
+                                    <option value="20" ${itemsPerPage === 20 ? 'selected' : ''}>20</option>
+                                    <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 `;
 
                 container.html(html);
 
-                // Bind pagination events
-                $('#btnFirstPage').off('click').on('click', function() {
-                    currentPage = 1;
-                    renderGallery(currentFilteredGroups);
-                    scrollToTop();
-                });
+                // Bind pagination events (First/Last removed for cleaner UI, can be added back if needed)
                 $('#btnPrevPage').off('click').on('click', function() {
                     if (currentPage > 1) {
                         currentPage--;
@@ -608,11 +619,6 @@
                         renderGallery(currentFilteredGroups);
                         scrollToTop();
                     }
-                });
-                $('#btnLastPage').off('click').on('click', function() {
-                    currentPage = totalPages;
-                    renderGallery(currentFilteredGroups);
-                    scrollToTop();
                 });
                 $('#pageSizeSelect').off('change').on('change', function() {
                     itemsPerPage = parseInt($(this).val());
