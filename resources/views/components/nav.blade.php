@@ -1,12 +1,10 @@
 <style>
     .navbar-modern {
-        background: rgba(255, 255, 255, 0.8) !important;
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 0.8rem 1.5rem;
+        background: #e3f2fd !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 0.5rem 1.5rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     .navbar-modern .navbar-brand b {
