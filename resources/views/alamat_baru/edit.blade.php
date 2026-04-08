@@ -4,39 +4,54 @@
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
     <style>
         .koli-card {
-            border: 2px solid #007bff;
-            margin-bottom: 0px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background: #fff;
         }
 
         .koli-header {
-            background-color: #90c0f3ff;
-            color: white;
-            padding: 2px 10px !important;
-            font-weight: bold;
+            background-color: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            padding: 8px 12px !important;
+            font-weight: 700;
+        }
+
+        .table-item-koli {
+            font-size: 0.8rem;
+        }
+
+        .table-item-koli thead th {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            color: #64748b;
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-3">
 
-        <div class="card card-primary mt-3 mb-3">
-            <div class="card-header">
-                <div class="row">
-                    <div class="form-group col-md-6 mb-0">
+        <div class="card card-sn mt-2 mb-4">
+            <div class="card-header bg-white">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
                         <div class="input-group">
-                            <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                value="{{ $data->do ?? 'CENT/OUT/' }}" autofocus>
+                            <input type="text" class="form-control form-control-sn" id="input_do"
+                                placeholder="CARI No DO..." value="{{ $data->do ?? 'CENT/OUT/' }}" autofocus>
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" id="btn_get_do">
-                                    <i class="fas fa-search mr-1"></i>GET
+                                <button type="button" class="btn btn-primary btn-sn" id="btn_get_do">
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group col-md-6 mb-0">
-                        <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
-                            <option value="">Pilih</option>
+                    <div class="col-md-7">
+                        <select id="select_do" class="form-control select2" style="width: 100%">
+                            <option value="">Pilih Hasil Pencarian DO</option>
                         </select>
                     </div>
                 </div>
@@ -48,99 +63,116 @@
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="tujuan">Tujuan</label>
-                            <textarea name="tujuan" id="tujuan" class="form-control" placeholder="Tujuan" rows="4" required>{{ $data->tujuan }}</textarea>
+                            <label for="tujuan"><i class="fas fa-building mr-1"></i> Tujuan</label>
+                            <textarea name="tujuan" id="tujuan" class="form-control form-control-sn" placeholder="Tujuan" rows="4"
+                                required>{{ $data->tujuan }}</textarea>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="alamat">Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control" placeholder="Alamat" rows="4" required>{{ $data->alamat }}</textarea>
+                            <label for="alamat"><i class="fas fa-map-marker-alt mr-1"></i> Alamat</label>
+                            <textarea name="alamat" id="alamat" class="form-control form-control-sn" placeholder="Alamat" rows="4"
+                                required>{{ $data->alamat }}</textarea>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="ekspedisi">Ekspedisi</label>
-                            <input type="text" name="ekspedisi" id="ekspedisi" class="form-control"
+                            <label for="ekspedisi"><i class="fas fa-truck mr-1"></i> Ekspedisi</label>
+                            <input type="text" name="ekspedisi" id="ekspedisi" class="form-control form-control-sn"
                                 placeholder="Ekspedisi" value="{{ $data->ekspedisi }}">
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="total_koli">Total Koli (Manual)</label>
-                            <input type="number" name="total_koli" id="total_koli" class="form-control"
+                            <label for="total_koli"><i class="fas fa-boxes mr-1"></i> Total Koli (Manual)</label>
+                            <input type="number" name="total_koli" id="total_koli" class="form-control form-control-sn"
                                 placeholder="Total Koli" value="{{ $data->total_koli ?? 1 }}" min="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="up">UP</label>
-                            <input type="text" name="up" id="up" class="form-control" placeholder="UP"
-                                value="{{ $data->up }}">
+                            <label for="up"><i class="fas fa-user-tag mr-1"></i> UP</label>
+                            <input type="text" name="up" id="up" class="form-control form-control-sn"
+                                placeholder="UP" value="{{ $data->up }}">
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="tlp">Tlp</label>
-                            <input type="text" name="tlp" id="tlp" class="form-control" placeholder="Tlp"
-                                value="{{ $data->tlp }}">
+                            <label for="tlp"><i class="fas fa-phone mr-1"></i> Tlp</label>
+                            <input type="text" name="tlp" id="tlp" class="form-control form-control-sn"
+                                placeholder="Tlp" value="{{ $data->tlp }}">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="do">No DO</label>
-                            <input type="text" name="do" id="do" class="form-control" placeholder="No DO"
+                            <label for="do"><i class="fas fa-file-invoice mr-1"></i> No DO</label>
+                            <input type="text" name="do" id="do"
+                                class="form-control form-control-sn font-weight-bold text-primary" placeholder="No DO"
                                 value="{{ $data->do }}" required>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="epur">Epurchasing</label>
-                            <input type="radio" name="ep" onclick="setEpur('Pembelian Offline')"> PO
-                            <input type="radio" name="ep" onclick="setEpur('Pembelian Reguler')"> REG
-                            <input type="radio" name="ep" checked onclick="setEpur('')"> NULL
-                            <input type="text" name="epur" id="epur" class="form-control"
+                            <div class="d-flex justify-content-between align-items-end mb-1">
+                                <label for="epur" class="mb-0"><i class="fas fa-shopping-basket mr-1"></i> Epurchasing</label>
+                                <div class="small text-muted">
+                                    <input type="radio" name="ep" id="ep_po" onclick="setEpur('Pembelian Offline')"> <label for="ep_po" class="mb-0 mr-2">PO</label>
+                                    <input type="radio" name="ep" id="ep_reg" onclick="setEpur('Pembelian Reguler')"> <label for="ep_reg" class="mb-0 mr-2">REG</label>
+                                    <input type="radio" name="ep" id="ep_null" checked onclick="setEpur('')"> <label for="ep_null" class="mb-0">NULL</label>
+                                </div>
+                            </div>
+                            <input type="text" name="epur" id="epur" class="form-control form-control-sn"
                                 placeholder="Epurchasing" value="{{ $data->epur }}">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="untuk">Untuk</label>
-                            <input type="text" name="untuk" id="untuk" class="form-control"
+                            <label for="untuk"><i class="fas fa-info-circle mr-1"></i> Untuk</label>
+                            <input type="text" name="untuk" id="untuk" class="form-control form-control-sn"
                                 placeholder="Untuk" value="{{ $data->untuk }}">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label for="note">NOTE</label>
-                            <textarea name="note" id="note" class="form-control" placeholder="note" rows="4" maxlength="250">{{ $data->note }}</textarea>
+                            <label for="note"><i class="fas fa-comment-dots mr-1"></i> NOTE</label>
+                            <textarea name="note" id="note" class="form-control form-control-sn" placeholder="note" rows="4"
+                                maxlength="250">{{ $data->note }}</textarea>
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="note">NOTE WH</label>
-                            <div class="text-danger font-weight-bold" id="n_t_wh"></div>
+                            <label for="note"><i class="fas fa-warehouse mr-1"></i> NOTE WH</label>
+                            <div class="p-2 border rounded bg-light text-danger font-weight-bold" id="n_t_wh"
+                                style="min-height: 100px;"></div>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <button type="button" onclick="window.close()" class="btn btn-secondary">
-                        <i class="fas fa-times mr-1"></i>Tutup Tab
-                    </button>
-                    <a href="{{ route('alamat_baru.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
-                    </a>
-                    <button type="button" id="add_koli" class="btn btn-info">
-                        <i class="fas fa-plus mr-1"></i>Tambah Koli
-                    </button>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fas fa-save mr-1"></i>Simpan
-                    </button>
-                    <a href="{{ route('alamat_baru.show', $data->id) }}" target="_blank" class="btn btn-primary">
-                        <i class="fas fa-print mr-1"></i>Print All
-                    </a>
-                    <button type="button" id="btn_duplicate" class="btn btn-warning">
-                        <i class="fas fa-clone mr-1"></i>Duplicate
-                    </button>
+                <div class="card-footer bg-white border-top-0 pb-4 text-center">
+                    <div class="btn-group shadow-sm">
+                        <a href="{{ route('alamat_baru.index') }}" class="btn btn-secondary btn-sn">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
+                        <button type="button" id="add_koli" class="btn btn-info btn-sn">
+                            <i class="fas fa-plus"></i> Tambah Koli
+                        </button>
+                        <button type="submit" id="btn_simpan" class="btn btn-primary btn-sn">
+                            <i class="fas fa-save"></i> Simpan
+                        </button>
+                        <a href="{{ route('alamat_baru.show', $data->id) }}" target="_blank"
+                            class="btn btn-dark btn-sn">
+                            <i class="fas fa-print"></i> Print All
+                        </a>
+                        <button type="button" id="btn_duplicate" class="btn btn-warning btn-sn text-white">
+                            <i class="fas fa-clone"></i> Duplicate
+                            </a>
+                            <button type="button" onclick="window.close()" class="btn btn-danger btn-sn">
+                                <i class="fas fa-times"></i> Tutup
+                            </button>
+                    </div>
                 </div>
             </form>
         </div>
 
-        {{-- Koli List --}}
+        {{-- Section Divider --}}
+        <div class="form-section-title mb-3">
+            <i class="fas fa-box-open"></i> DAFTAR KOLI & PACKING LIST
+        </div>
+
         <div class="row" id="koli_container">
             <div class="col-12 col-xl-6" id="koli_left"></div>
             <div class="col-12 col-xl-6" id="koli_right"></div>
         </div>
+    </div>
     </div>
     @include('alamat_baru.modal')
 @endsection
@@ -533,73 +565,72 @@
 
                 kolis.forEach((koli, index) => {
                     let koliHtml = `
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <form class="form-koli-inline" data-koli-id="${koli.id}">
                                 <div class="koli-card" data-koli-id="${koli.id}">
-                                    <div class="koli-header card-header">
+                                    <div class="koli-header">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="input-group input-group-sm mr-2" style="width: auto;">
-                                                        <div class="input-group-prepend">
-                                                            <span class="input-group-text"><strong>Koli</strong></span>
-                                                        </div>
-                                                        <input type="text" class="form-control" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 80px;" placeholder="1-7" required>
+                                            <div class="d-flex align-items-center">
+                                                <div class="input-group input-group-sm mr-2" style="width: auto;">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text bg-white border-right-0"><strong>Koli</strong></span>
                                                     </div>
-                                                    ${koli.nilai ? `<span class="badge badge-light" id="badge_nilai_${koli.id}">Rp. ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
+                                                    <input type="text" class="form-control font-weight-bold" name="urutan" id="urutan_${koli.id}" value="${koli.urutan}" style="width: 70px;" placeholder="1-1">
                                                 </div>
-                                            </span>
-                                            <div>
-                                                <button type="button" class="btn btn-sm btn-danger btn-delete-koli" data-koli-id="${koli.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                                                <button type="button" class="btn btn-sm btn-warning btn-sync-koli" data-koli-id="${koli.id}" title="Sync"><i class="fas fa-sync"></i></button>
-                                                <button type="button" class="btn btn-sm btn-warning btn-duplicate-koli" data-koli-id="${koli.id}" title="Duplicate"><i class="fas fa-copy"></i></button>
-                                                <button type="button" class="btn btn-sm btn-info btn-add-item" data-koli-id="${koli.id}" title="Add Item"><i class="fas fa-plus"></i></button>
-                                                <button type="button" class="btn btn-sm btn-primary btn-print-koli" data-koli-id="${koli.id}" title="Print"><i class="fas fa-print"></i></button>
+                                                ${koli.nilai ? `<span class="badge badge-primary py-1 px-2" id="badge_nilai_${koli.id}">IDR ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
+                                            </div>
+                                            <div class="btn-group shadow-xs">
+                                                <button type="button" class="btn btn-xs btn-outline-danger btn-delete-koli border-0" data-koli-id="${koli.id}" title="Hapus"><i class="fas fa-trash"></i></button>
+                                                <button type="button" class="btn btn-xs btn-outline-secondary btn-sync-koli border-0" data-koli-id="${koli.id}" title="Sync Odoo"><i class="fas fa-sync"></i></button>
+                                                <button type="button" class="btn btn-xs btn-outline-primary btn-duplicate-koli border-0" data-koli-id="${koli.id}" title="Duplikat"><i class="fas fa-copy"></i></button>
+                                                <button type="button" class="btn btn-xs btn-outline-info btn-add-item border-0" data-koli-id="${koli.id}" title="Tambah Barang"><i class="fas fa-plus"></i></button>
+                                                <button type="button" class="btn btn-xs btn-primary btn-print-koli ml-1" data-koli-id="${koli.id}" title="Cetak Label"><i class="fas fa-print"></i></button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="card-body p-1">
+                                    <div class="card-body p-0">
                                         <div class="table-responsive">
-                                        <table class="table table-sm table-bordered mb-1" style="width: 100%;">
-                                            <thead>
-                                                <tr>
-                                                    <th>#</th>
-                                                    <th>Product</th>
-                                                    <th>Desc</th>
-                                                    <th>Qty</th>
-                                                    <th>Lot</th>
-                                                    <th>Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="items_${koli.id}">
-                                                ${renderItems(koli.items, koli.id)}
-                                            </tbody>
-                                        </table>
+                                            <table class="table table-sm table-sn mb-0" style="width: 100%;">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 40px;">#</th>
+                                                        <th>Produk</th>
+                                                        <th>Deskripsi</th>
+                                                        <th class="text-center" style="width: 80px;">Qty</th>
+                                                        <th>Lot/Batch</th>
+                                                        <th class="text-center" style="width: 150px;">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="items_${koli.id}" class="table-item-koli">
+                                                    ${renderItems(koli.items, koli.id)}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div class="mb-2">
-                                            <div class="input-group">
+                                        <div class="p-2 border-top bg-light">
+                                            <div class="input-group input-group-sm mb-2 shadow-xs">
                                                 <div class="input-group-prepend">
-                                                    <span class="input-group-text" id="basic-addon1">Rp.</span>
+                                                    <span class="input-group-text bg-white border-right-0">Nilai Rp.</span>
                                                 </div>
-                                                <input type="text" class="form-control mask_angka" name="nilai" id="nilai_${koli.id}" value="${koli.nilai || ''}" placeholder="Nilai Koli ${koli.urutan || ''}">
+                                                <input type="text" class="form-control mask_angka border-left-0" name="nilai" id="nilai_${koli.id}" value="${koli.nilai || ''}" placeholder="0">
                                             </div>
-                                        </div>
-                                        <div class="form-group mb-0 d-flex flex-wrap justify-content-center">
-                                            <div class="custom-control custom-checkbox mr-3">
-                                                <input type="checkbox" class="custom-control-input" name="is_do" id="is_do_koli_${koli.id}" ${koli.is_do == 'yes' ? 'checked' : ''}>
-                                                <label class="custom-control-label" for="is_do_koli_${koli.id}">SURAT JALAN/DO</label>
-                                            </div>
-                                            <div class="custom-control custom-checkbox mr-3">
-                                                <input type="checkbox" class="custom-control-input" name="is_pk" id="is_pk_koli_${koli.id}" ${koli.is_pk == 'yes' ? 'checked' : ''}>
-                                                <label class="custom-control-label" for="is_pk_koli_${koli.id}">PACKING KAYU</label>
-                                            </div>
-                                            <div class="custom-control custom-checkbox mr-3">
-                                                <input type="checkbox" class="custom-control-input" name="is_asuransi" id="is_asuransi_koli_${koli.id}" ${koli.is_asuransi == 'yes' ? 'checked' : ''}>
-                                                <label class="custom-control-label" for="is_asuransi_koli_${koli.id}">ASURANSI</label>
-                                            </div>
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" name="is_banting" id="is_banting_koli_${koli.id}" ${koli.is_banting == 'yes' ? 'checked' : ''}>
-                                                <label class="custom-control-label" for="is_banting_koli_${koli.id}">JANGAN DIBANTING</label>
+                                            
+                                            <div class="d-flex flex-wrap justify-content-center px-1">
+                                                <div class="custom-control custom-checkbox custom-control-inline mx-2">
+                                                    <input type="checkbox" class="custom-control-input" name="is_do" id="is_do_koli_${koli.id}" ${koli.is_do == 'yes' ? 'checked' : ''}>
+                                                    <label class="custom-control-label font-weight-normal text-muted" for="is_do_koli_${koli.id}" style="font-size: 0.75rem;">SURAT JALAN/DO</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox custom-control-inline mx-2">
+                                                    <input type="checkbox" class="custom-control-input" name="is_pk" id="is_pk_koli_${koli.id}" ${koli.is_pk == 'yes' ? 'checked' : ''}>
+                                                    <label class="custom-control-label font-weight-normal text-muted" for="is_pk_koli_${koli.id}" style="font-size: 0.75rem;">P. KAYU</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox custom-control-inline mx-2">
+                                                    <input type="checkbox" class="custom-control-input" name="is_asuransi" id="is_asuransi_koli_${koli.id}" ${koli.is_asuransi == 'yes' ? 'checked' : ''}>
+                                                    <label class="custom-control-label font-weight-normal text-muted" for="is_asuransi_koli_${koli.id}" style="font-size: 0.75rem;">ASURANSI</label>
+                                                </div>
+                                                <div class="custom-control custom-checkbox custom-control-inline mx-2">
+                                                    <input type="checkbox" class="custom-control-input" name="is_banting" id="is_banting_koli_${koli.id}" ${koli.is_banting == 'yes' ? 'checked' : ''}>
+                                                    <label class="custom-control-label font-weight-normal text-muted" for="is_banting_koli_${koli.id}" style="font-size: 0.75rem;">FRAGILE</label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
