@@ -128,7 +128,8 @@
         @media print {
             @page {
                 size: A4;
-                margin: 0;
+                margin: 7mm;
+                /* Margin standar untuk semua halaman */
             }
 
             body {
@@ -139,11 +140,12 @@
 
             .page {
                 margin: 0;
-                padding: 5mm;
-                padding-right: 8mm;
+                padding: 0;
+                /* Padding dihilangkan karena sudah ada margin @page */
                 box-shadow: none;
                 width: 100%;
-                height: auto;
+                height: auto !important;
+                min-height: 0 !important;
             }
 
             .no-print {
@@ -152,14 +154,14 @@
 
             .page-break-active {
                 page-break-before: always;
-                margin-top: 0;
             }
         }
 
         .section-spacer {
-            height: 40px;
+            height: 30px;
         }
 
+        /* Sembunyikan spacer jika pecah halaman agar tidak ada gap kosong di awal halaman baru */
         #pack-section.page-break-active .section-spacer {
             display: none;
         }
@@ -260,6 +262,31 @@
                         @endif
                     </tbody>
                 </table>
+
+
+                <div style="margin-top: 20px;">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th colspan="4">Info Dimensi Barang</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 30px;">Panjang (cm)</th>
+                                <th style="width: 30px;">Lebar (cm)</th>
+                                <th style="width: 80px;">Tinggi (cm)</th>
+                                <th style="width: 80px;">Berat (kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-center">{{ $pack->product->pltbb->p ?? '' }}</td>
+                                <td class="text-center">{{ $pack->product->pltbb->l ?? '' }}</td>
+                                <td class="text-center">{{ $pack->product->pltbb->t ?? '' }}</td>
+                                <td class="text-center">{{ $pack->product->pltbb->b ?? '' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- PACK SECTION -->
