@@ -20,15 +20,21 @@
     <div class="container-fluid">
 
         <form method="POST" action="{{ route('api.qc.store') }}" id="form">
-            <div class="card card-primary mt-3">
-                <div class="card-header pb-0">
-                    <h3 class="card-title">{{ $title }} <button class="btn btn-sm btn-primary" type="button"
-                            data-toggle="collapse" data-target="#collapse_form" aria-expanded="false"
-                            aria-controls="collapse_form">
-                            <i class="fas fa-eye"></i> Show
-                        </button></h3>
+            <div class="card card-sm mt-3">
+                <div class="card-header pb-2 bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="font-weight-bold mb-0 text-primary"><i
+                                class="fas fa-check-double mr-2"></i>{{ $title }}</h5>
+                        <button class="btn btn-sm btn-outline-primary btn-sm" type="button" data-toggle="collapse"
+                            data-target="#collapse_form" aria-expanded="false" aria-controls="collapse_form">
+                            <i class="fas fa-eye mr-1"></i> Detail Form
+                        </button>
+                    </div>
+                    <hr class="my-2">
                     <div class="row">
                         <div class="form-group col-md-6 mb-0">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-search mr-1"></i> CARI
+                                PRODUK</label>
                             <div class="input-group">
                                 <select name="" id="select_product" class="custom-select select2" style="width: 75%">
                                     <option value="">Terlampir</option>
@@ -39,74 +45,76 @@
                                     @endforeach
                                 </select>
                                 <div class="input-group-append">
-                                    <button type="button" class="btn btn-primary" id="btn_get_product">
+                                    <button type="button" class="btn btn-primary btn-sm" id="btn_get_product">
                                         <i class="fas fa-mouse-pointer mr-1"></i>PILIH
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group col-md-6 mb-0">
-                            <div class="form-group row">
-                                <label for="pic" class="col-sm-2 col-form-label">PIC</label>
-                                <div class="col-sm-10">
-                                    <select name="pic" id="pic" class="form-control">
-                                        <option value="Karim A S">Karim</option>
-                                        <option value="Sofyan S">Sofyan</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-user-check mr-1"></i> PIC QC</label>
+                            <select name="pic" id="pic" class="form-control">
+                                <option value="Karim A S">Karim</option>
+                                <option value="Sofyan S">Sofyan</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body pt-3">
                     <div class="row collapse" id="collapse_form">
                         <div class="col-6">
                             <div class="form-group row">
-                                <label for="no" class="col-sm-2 col-form-label">NO</label>
-                                <div class="col-sm-10">
-                                    <div class="input-group mb-3">
+                                <label for="no" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-hashtag mr-1"></i> NO</label>
+                                <div class="col-sm-9">
+                                    <div class="input-group">
                                         <div class="input-group-prepend">
-                                            <button type="button" class="btn btn-sm btn-danger" onclick="no_min()"><i
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="no_min()"><i
                                                     class="fas fa-minus"></i></button>
                                         </div>
-                                        <input name="no" type="number" class="form-control" id="no"
+                                        <input name="no" type="number" class="form-control text-center" id="no"
                                             value="1" min="1" required>
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-sm btn-success" onclick="no_plus()"><i
+                                            <button type="button" class="btn btn-success btn-sm" onclick="no_plus()"><i
                                                     class="fas fa-plus"></i></button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="tgl" class="col-sm-2 col-form-label">Tgl</label>
-                                <div class="col-sm-10">
+                                <label for="tgl" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-calendar-alt mr-1"></i> Tgl</label>
+                                <div class="col-sm-9">
                                     <input name="tgl" type="date" class="form-control" id="tgl"
                                         value="{{ $date }}" required>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="nama_alat" class="col-sm-2 col-form-label">Nama Alat</label>
-                                <div class="col-sm-10">
+                                <label for="nama_alat" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-microscope mr-1"></i> Nama Alat</label>
+                                <div class="col-sm-9">
                                     <input name="name" type="text" class="form-control" id="nama_alat" required>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="merk" class="col-sm-2 col-form-label">Merk</label>
-                                <div class="col-sm-10">
+                                <label for="merk" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-tag mr-1"></i> Merk</label>
+                                <div class="col-sm-9">
                                     <input name="merk" type="text" class="form-control" id="merk" required>
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="tipe" class="col-sm-2 col-form-label">Tipe</label>
-                                <div class="col-sm-10">
+                                <label for="tipe" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-barcode mr-1"></i> Tipe</label>
+                                <div class="col-sm-9">
                                     <div class="input-group">
                                         <input name="type" type="text" class="form-control" id="tipe"
                                             required>
                                         <div class="input-group-append">
-                                            <button type="button" onclick="set_terlampir('tipe')" class="btn btn-info">
-                                                <i class="fas fa-list"></i>
+                                            <button type="button" onclick="set_terlampir('tipe')"
+                                                class="btn btn-info btn-sm">
+                                                TERLAMPIR
                                             </button>
                                         </div>
                                     </div>
@@ -115,60 +123,59 @@
                         </div>
                         <div class="col-6">
                             <div class="form-group row">
-                                <label for="sn_lot" class="col-sm-2 col-form-label">SN/Lot</label>
-                                <div class="col-sm-10">
+                                <label for="sn_lot" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-list-ol mr-1"></i> SN/Lot</label>
+                                <div class="col-sm-9">
                                     <div class="input-group">
                                         <input name="sn_lot" type="text" class="form-control" id="sn_lot"
                                             value="Tanpa Lot/Sn">
                                         <div class="input-group-append">
-                                            <div class="btn-group" role="group" aria-label="Basic example">
-                                                <button type="button" onclick="set_terlampir('sn_lot')"
-                                                    class="btn btn-info">
-                                                    <i class="fas fa-list"></i>
-                                                </button>
-                                                <button type="button" onclick="set_no_sn('sn_lot')"
-                                                    class="btn btn-secondary">
-                                                    <i class="fas fa-times-circle"></i>
-                                                </button>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="qty" class="col-sm-2 col-form-label">QTY</label>
-                                <div class="col-sm-10">
-                                    <div class="input-group">
-                                        <input name="qty" type="text" class="form-control" id="qty"
-                                            value="1 Unit" required>
-                                        <div class="input-group-append">
-                                            <button type="button" onclick="set_terlampir('qty')" class="btn btn-info">
-                                                <i class="fas fa-list"></i>
+                                            <button type="button" onclick="set_terlampir('sn_lot')"
+                                                class="btn btn-info btn-sm">
+                                                <i class="fas fa-file-alt"></i>
+                                            </button>
+                                            <button type="button" onclick="set_no_sn('sn_lot')"
+                                                class="btn btn-secondary btn-sm">
+                                                <i class="fas fa-times-circle"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label for="jenis" class="col-sm-2 col-form-label">Jenis</label>
-                                <div class="col-sm-10">
+                            <div class="form-row">
+                                <div class="form-group col-sm-6">
+                                    <label for="qty" class="small font-weight-bold"><i
+                                            class="fas fa-sort-amount-up mr-1"></i> QTY</label>
+                                    <div class="input-group">
+                                        <input name="qty" type="text" class="form-control" id="qty"
+                                            value="1 Unit" required>
+                                        <div class="input-group-append">
+                                            <button type="button" onclick="set_terlampir('qty')"
+                                                class="btn btn-info btn-sm">
+                                                TL
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-sm-6">
+                                    <label for="jenis" class="small font-weight-bold"><i
+                                            class="fas fa-filter mr-1"></i> Jenis</label>
                                     <select name="jenis" id="jenis" class="form-control">
                                         <option value="QC Import">QC Import</option>
                                         <option value="QC Ulang">QC Ulang</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label for="qc_sebelumnya" class="col-sm-2 col-form-label">Qc Sblmny</label>
-                                <div class="col-sm-10">
+                            <div class="form-row">
+                                <div class="form-group col-sm-6">
+                                    <label for="qc_sebelumnya" class="small font-weight-bold"><i
+                                            class="fas fa-history mr-1"></i> Qc Sblmny</label>
                                     <input name="qc_sebelumnya" type="text" class="form-control" id="qc_sebelumnya"
                                         value="2025" required>
                                 </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="jenis_qc" class="col-sm-2 col-form-label">Jenis QC</label>
-                                <div class="col-sm-10">
+                                <div class="form-group col-sm-6">
+                                    <label for="jenis_qc" class="small font-weight-bold"><i
+                                            class="fas fa-tasks mr-1"></i> Jenis QC</label>
                                     <select name="jenis_qc" id="jenis_qc" class="form-control">
                                         <option value="Uji Fungsi & Check kelengkapan alat">Uji Fungsi</option>
                                         <option value="Cek Fisik">Fisik</option>
@@ -176,55 +183,75 @@
                                 </div>
                             </div>
                         </div>
-                        <h3>
-                            FISIK
-                            <button id="btn_reset_fisik" type="button" class="btn btn-sm btn-warning">
-                                <i class="fas fa-redo mr-1"></i>Reset
-                            </button>
-                            <button id="btn_all_fisik" type="button" class="btn btn-sm btn-success">
-                                <i class="fas fa-check-double mr-1"></i>All
-                            </button>
-                        </h3>
-                        <div class="col-12" id="fisik">
+
+                        <div class="col-12 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary"><i
+                                        class="fas fa-shield-alt mr-2"></i>PEMERIKSAAN FISIK</h6>
+                                <div>
+                                    <button id="btn_reset_fisik" type="button"
+                                        class="btn btn-xs btn-outline-warning btn-sm">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                    <button id="btn_all_fisik" type="button"
+                                        class="btn btn-xs btn-outline-success btn-sm">
+                                        <i class="fas fa-check-double"></i> All Baik
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="fisik" class="px-2"></div>
                         </div>
-                        <h3>
-                            REAGEN
-                            <button id="btn_reset_reagen" type="button" class="btn btn-sm btn-warning">
-                                <i class="fas fa-redo mr-1"></i>Reset
-                            </button>
-                        </h3>
-                        <div class="col-12" id="reagen">
+
+                        <div class="col-12 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary"><i class="fas fa-vial mr-2"></i>FUNGSI
+                                    DAN SISTEM</h6>
+                                <button id="btn_reset_reagen" type="button"
+                                    class="btn btn-xs btn-outline-warning btn-sm">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                            </div>
+                            <div id="reagen" class="px-2"></div>
                         </div>
-                        <h3>
-                            KELENGKAPAN <button type="button" class="btn btn-sm btn-info"
-                                onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus mr-1"></i>add
-                            </button>
-                            <button id="btn_get_pl" type="button" class="btn btn-sm btn-info">
-                                <i class="fas fa-list mr-1"></i>Get PL
-                            </button>
-                            <button id="btn_reset_pl" type="button" class="btn btn-sm btn-warning">
-                                <i class="fas fa-redo mr-1"></i>Reset
-                            </button>
-                        </h3>
-                        <div class="col-12" id="kelengkapan">
+
+                        <div class="col-12 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary"><i
+                                        class="fas fa-box-open mr-2"></i>KELENGKAPAN AKSESORIS</h6>
+                                <div>
+                                    <button type="button" class="btn btn-xs btn-outline-info btn-sm"
+                                        onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> Add
+                                    </button>
+                                    <button id="btn_get_pl" type="button" class="btn btn-xs btn-outline-primary btn-sm">
+                                        <i class="fas fa-list"></i> Get PL
+                                    </button>
+                                    <button id="btn_reset_pl" type="button"
+                                        class="btn btn-xs btn-outline-warning btn-sm">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="kelengkapan" class="px-2"></div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card-footer text-center">
-                <a href="{{ route('products.index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left mr-1"></i>Kembali
-                </a>
-                <button type="button" id="btn_refresh_input" class="btn btn-warning">
-                    <i class="fas fa-redo mr-1"></i>Refresh
-                </button>
-                <button type="button" id="btn_get_table" class="btn btn-info">
-                    <i class="fas fa-table mr-1"></i>Buat Tabel
-                </button>
-                <button type="submit" id="btn_simpan" class="btn btn-primary">
-                    <i class="fas fa-download mr-1"></i>Simpan Download
-                </button>
+                <div class="card-footer bg-light text-center">
+                    <div class="btn-group">
+                        <a href="{{ route('products.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left mr-1"></i>Kembali
+                        </a>
+                        <button type="button" id="btn_refresh_input" class="btn btn-warning btn-sm">
+                            <i class="fas fa-redo mr-1"></i>Refresh
+                        </button>
+                        <button type="button" id="btn_get_table" class="btn btn-info btn-sm">
+                            <i class="fas fa-table mr-1"></i>Preview Tabel
+                        </button>
+                        <button type="submit" id="btn_simpan" class="btn btn-primary btn-sm px-4">
+                            <i class="fas fa-save mr-1"></i>SIMPAN & DOWNLOAD
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
 
@@ -233,12 +260,16 @@
 
         <div class="modal fade" id="modalPilihPack" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Pilih Packing List</h5>
-                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                    <div class="modal-header bg-light border-0 py-3">
+                        <h5 class="modal-title font-weight-bold text-primary">
+                            <i class="fas fa-boxes mr-2"></i>PILIH PACKING LIST
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                    <div class="modal-body" id="list_pack_modal"></div>
+                    <div class="modal-body p-4" id="list_pack_modal"></div>
                 </div>
             </div>
         </div>
@@ -329,30 +360,30 @@
         function generate_form_fisik(text, checked = false) {
             number = FISIK
             FISIK = FISIK + 1
-            let html = `<div class="form-group row mb-2">
+            let html = `<div class="form-group row mb-2 align-items-center">
                                 <div class="col-sm-4">
-                                    <input type="text" name="fisik[${number}]" class="form-control form-control-sm" value="${text}"
+                                    <input type="text" name="fisik[${number}]" class="form-control form-control-sm bg-light" value="${text}"
                                         required>
                                 </div>
                                 <div class="col-sm-4 text-center">
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="fisik_radio[${number}]" id="f${number}1"
                                             class="custom-control-input" value="yes" ${checked ? 'checked' : ''}>
-                                        <label class="custom-control-label" for="f${number}1">Baik</label>
+                                        <label class="custom-control-label small font-weight-bold" for="f${number}1">Baik</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="fisik_radio[${number}]" id="f${number}2"
                                             class="custom-control-input" value="no">
-                                        <label class="custom-control-label" for="f${number}2">Tidak</label>
+                                        <label class="custom-control-label small font-weight-bold" for="f${number}2">Tidak</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="fisik_radio[${number}]" id="f${number}3"
                                             class="custom-control-input" value="other" ${checked ? '' : 'checked'}>
-                                        <label class="custom-control-label" for="f${number}3">Kosong</label>
+                                        <label class="custom-control-label small text-muted" for="f${number}3">N/A</label>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input type="text" name="fisik_desc[${number}]" class="form-control form-control-sm" placeholder="Keterangan">
+                                    <input type="text" name="fisik_desc[${number}]" class="form-control form-control-sm" placeholder="Catatan/Keterangan">
                                 </div>
                             </div>`
             $('#fisik').append(html)
@@ -361,30 +392,30 @@
         function generate_form_reagen(text) {
             number = REAGEN
             REAGEN = REAGEN + 1
-            let html = `<div class="form-group row mb-2">
+            let html = `<div class="form-group row mb-2 align-items-center">
                                 <div class="col-sm-4">
-                                    <input type="text" name="reagen[${number}]" class="form-control form-control-sm" value="${text}"
+                                    <input type="text" name="reagen[${number}]" class="form-control form-control-sm bg-light" value="${text}"
                                         required>
                                 </div>
                                 <div class="col-sm-4 text-center">
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="reagen_radio[${number}]" id="r${number}1"
                                             class="custom-control-input" value="yes">
-                                        <label class="custom-control-label" for="r${number}1">Baik</label>
+                                        <label class="custom-control-label small font-weight-bold" for="r${number}1">Baik</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="reagen_radio[${number}]" id="r${number}2"
                                             class="custom-control-input" value="no">
-                                        <label class="custom-control-label" for="r${number}2">Tidak</label>
+                                        <label class="custom-control-label small font-weight-bold" for="r${number}2">Tidak</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="reagen_radio[${number}]" id="r${number}3"
                                             class="custom-control-input" value="other" checked>
-                                        <label class="custom-control-label" for="r${number}3">Kosong</label>
+                                        <label class="custom-control-label small text-muted" for="r${number}3">N/A</label>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <input type="text" name="reagen_desc[${number}]" class="form-control form-control-sm" placeholder="Keterangan">
+                                    <input type="text" name="reagen_desc[${number}]" class="form-control form-control-sm" placeholder="Catatan/Keterangan">
                                 </div>
                             </div>`
             $('#reagen').append(html)
@@ -394,30 +425,30 @@
             number = KEL
             KEL = KEL + 1
 
-            let html = `<div class="form-group row mb-1" id="kel${number}">
+            let html = `<div class="form-group row mb-2 align-items-center" id="kel${number}">
                                 <div class="col-sm-4">
-                                    <div class="input-group mb-1">
+                                    <div class="input-group">
                                         <div class="input-group-prepend">
-                                            <button type="button" class="btn btn-sm btn-danger" onclick="del_kel(kel${number})">-</button>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="del_kel(kel${number})"><i class="fas fa-trash-alt"></i></button>
                                         </div>
-                                            <input type="text" name="kelengkapan[${number}]" class="form-control form-control-sm" value="${text}" required>
+                                        <input type="text" name="kelengkapan[${number}]" class="form-control form-control-sm bg-light" value="${text}" required>
                                     </div>
                                 </div>
                                 <div class="col-sm-4 text-center">
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}1"
                                             class="custom-control-input" value="yes" ${checked ? 'checked' : ''}>
-                                        <label class="custom-control-label" for="k${number}1">Ada</label>
+                                        <label class="custom-control-label small font-weight-bold" for="k${number}1">Ada</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}2"
                                             class="custom-control-input" value="no">
-                                        <label class="custom-control-label" for="k${number}2">Tidak</label>
+                                        <label class="custom-control-label small font-weight-bold" for="k${number}2">Tidak</label>
                                     </div>
-                                    <div class="custom-control custom-radio custom-control-inline">
+                                    <div class="custom-control custom-radio custom-control-inline mx-2">
                                         <input type="radio" name="kelengkapan_radio[${number}]" id="k${number}3"
                                             class="custom-control-input" value="other" ${checked ? '' : 'checked'}>
-                                        <label class="custom-control-label" for="k${number}3">Kosong</label>
+                                        <label class="custom-control-label small text-muted" for="k${number}3">N/A</label>
                                     </div>
                                 </div>
                                 <div class="col-sm-4">

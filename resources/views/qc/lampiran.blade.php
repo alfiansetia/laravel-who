@@ -1,67 +1,55 @@
-<table class="table table-sm table-bordered">
-    <thead>
-        <tr>
-            <td></td>
-            <td>Code</td>
-            <td>Name</td>
+<table class="table table-sm table-bordered mb-4">
+    <thead class="bg-light">
+        <tr class="small font-weight-bold text-center">
+            <th style="width: 50px;"><i class="fas fa-cog"></i></th>
+            <th>KODE PRODUK</th>
+            <th>NAMA PRODUK</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="small text-center">
         <tr>
-            <td style="width: 5%">
-                <button class="btn btn-sm btn-info" id="a_copy">
+            <td>
+                <button class="btn btn-xs btn-outline-info btn-sm" id="a_copy" title="Copy Row">
                     <i class="fas fa-copy"></i>
                 </button>
             </td>
-            <td id="a_code"></td>
+            <td id="a_code" class="font-weight-bold"></td>
             <td id="a_name"></td>
         </tr>
     </tbody>
 </table>
 
 <table class="table table-sm table-bordered">
-    <thead>
+    <thead class="bg-light">
         <tr>
-            <td colspan="5" id="l_code">Kode Barang : </td>
+            <th colspan="5" class="py-2 px-3">
+                <div class="row small font-weight-bold">
+                    <div class="col-md-6" id="l_code"><i class="fas fa-barcode mr-1"></i> Kode Barang : </div>
+                    <div class="col-md-6 text-right">
+                        <button class="btn btn-xs btn-info btn-sm" id="l_copy">
+                            <i class="fas fa-copy mr-1"></i>Copy Header & Data
+                        </button>
+                    </div>
+                    <div class="col-md-12 mt-1" id="l_name"><i class="fas fa-microscope mr-1"></i> Nama Barang :
+                    </div>
+                </div>
+            </th>
         </tr>
-        <tr>
-            <td colspan="5" id="l_name">Nama Barang : </td>
-        </tr>
-        <tr>
-            <td colspan="5">
-                <button class="btn btn-sm btn-info" id="l_copy">
-                    <i class="fas fa-copy"></i>
-                </button>
-            </td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>Tgl</td>
-        </tr>
-        <tr>
-            <th>No</th>
-            <th>No Serial Number</th>
-            <th colspan="2">Hasil QC</th>
-            <th>Keterangan</th>
-        </tr>
-        <tr>
-            <th></th>
-            <th></th>
-            <th>OK</th>
-            <th>ERROR</th>
-            <th></th>
+        <tr class="text-center small font-weight-bold">
+            <th style="width: 50px;">NO</th>
+            <th>SERIAL NUMBER / LOT</th>
+            <th style="width: 80px;">OK</th>
+            <th style="width: 80px;">ERROR</th>
+            <th>KETERANGAN</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody class="small text-center">
         <tr>
-            <td class="text-center" id="l_no">1</td>
-            <td class="text-center" id="l_sn"></td>
-            <td class="text-center" id="l_y"></td>
-            <td class="text-center" id="l_n"></td>
-            <td class="text-center" id="l_desc"></td>
+            <td id="l_no">1</td>
+            <td id="l_sn" class="font-weight-bold text-primary"></td>
+            <td id="l_y"></td>
+            <td id="l_n"></td>
+            <td id="l_desc" class="text-left"></td>
         </tr>
     </tbody>
 </table>
