@@ -65,9 +65,6 @@
         src="https://cdn.datatables.net/v/bs4-4.6.0/jq-3.7.0/moment-2.29.4/jszip-3.10.1/dt-2.3.4/b-3.2.5/b-colvis-3.2.5/b-html5-3.2.5/b-print-3.2.5/r-3.0.7/sl-3.1.3/datatables.min.js"
         integrity="sha384-LPjI9U3tjuqNOSXdATtz6hGmWt/t5IQZqRbSvJbghCAadWjkd5PBBtUsBfT+nPXK" crossorigin="anonymous">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"
-        integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous">
-    </script>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js">
     </script>
