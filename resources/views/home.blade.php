@@ -11,8 +11,8 @@
 
         body {
             background: radial-gradient(circle at top right, #e0e7ff, transparent),
-                        radial-gradient(circle at bottom left, #f5f3ff, transparent),
-                        #f8fafc;
+                radial-gradient(circle at bottom left, #f5f3ff, transparent),
+                #f8fafc;
             font-family: 'Outfit', sans-serif;
             color: #1e293b;
             min-height: 100vh;
@@ -36,7 +36,7 @@
             border: 2px solid var(--glass-border);
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             font-size: 1.1rem;
         }
@@ -107,7 +107,7 @@
 
         .menu-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
             border-color: rgba(99, 102, 241, 0.3);
             background: #fff;
         }
@@ -141,18 +141,40 @@
         }
 
         /* Category Specific Styles */
-        .cat-common .icon-wrapper { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
-        .cat-odoo .icon-wrapper { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
-        .cat-tools .icon-wrapper { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-        .cat-other .icon-wrapper { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .cat-common .icon-wrapper {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+        }
+
+        .cat-odoo .icon-wrapper {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .cat-tools .icon-wrapper {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .cat-other .icon-wrapper {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
 
         .menu-card:hover .icon-wrapper {
             transform: scale(1.1) rotate(5deg);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .animate-fade {
@@ -163,7 +185,7 @@
         .menu-card.hidden {
             display: none;
         }
-        
+
         .section-wrapper.hidden {
             display: none;
         }
@@ -176,10 +198,11 @@
         <div class="page-header text-center animate-fade">
             <h1 class="font-weight-bold mb-2" style="letter-spacing: -1px; color: #1e293b;">Selamat Datang Kembali</h1>
             <p class="text-muted mb-4 text-center">Akses cepat ke modul dan peralatan kerja Anda</p>
-            
+
             <div class="search-container">
                 <i data-lucide="search" class="search-icon" width="20"></i>
-                <input type="text" id="menuSearch" class="search-input" placeholder="Cari menu atau aplikasi (misal: Stock, PO, STT)...">
+                <input type="search" id="menuSearch" class="search-input"
+                    placeholder="Cari menu atau aplikasi (misal: Stock, PO, STT)...">
             </div>
         </div>
 
@@ -191,28 +214,83 @@
             <div class="menu-grid">
                 @php
                     $mainMenus = [
-                        ['route' => 'products.index', 'icon' => 'box', 'title' => 'Product', 'desc' => 'Daftar master produk'],
-                        ['route' => 'alamats.index', 'icon' => 'map-pin', 'title' => 'Alamat', 'desc' => 'Master data alamat'],
-                        ['route' => 'alamat_baru.index', 'icon' => 'navigation', 'title' => 'Alamat Baru', 'desc' => 'Input alamat baru'],
-                        ['route' => 'basts.index', 'icon' => 'file-text', 'title' => 'BASTUF', 'desc' => 'Berita acara serah terima'],
-                        ['route' => 'kontaks.index', 'icon' => 'user-plus', 'title' => 'Kontak', 'desc' => 'Manajemen data kontak'],
-                        ['route' => 'packs.index', 'icon' => 'list-checks', 'title' => 'Packing List', 'desc' => 'Daftar packing list'],
-                        ['route' => 'sops.index', 'icon' => 'shield-check', 'title' => 'SOP QC', 'desc' => 'Standard prosedur QC'],
-                        ['route' => 'kargans.index', 'icon' => 'truck', 'title' => 'Kargan', 'desc' => 'Manajemen logistik kargan'],
-                        ['route' => 'atk.index', 'icon' => 'pen-tool', 'title' => 'ATK', 'desc' => 'Inventaris alat tulis kantor'],
-                        ['route' => 'product_images.index', 'icon' => 'image', 'title' => 'Images', 'desc' => 'Gallery foto produk'],
-                        ['route' => 'qc_lots.index', 'icon' => 'package-search', 'title' => 'QC Lot', 'desc' => 'Pengecekan lot QC'],
+                        [
+                            'route' => 'products.index',
+                            'icon' => 'box',
+                            'title' => 'Product',
+                            'desc' => 'Daftar master produk',
+                        ],
+                        [
+                            'route' => 'alamats.index',
+                            'icon' => 'map-pin',
+                            'title' => 'Alamat',
+                            'desc' => 'Master data alamat',
+                        ],
+                        [
+                            'route' => 'alamat_baru.index',
+                            'icon' => 'navigation',
+                            'title' => 'Alamat Baru',
+                            'desc' => 'Input alamat baru',
+                        ],
+                        [
+                            'route' => 'basts.index',
+                            'icon' => 'file-text',
+                            'title' => 'BASTUF',
+                            'desc' => 'Berita acara serah terima',
+                        ],
+                        [
+                            'route' => 'kontaks.index',
+                            'icon' => 'user-plus',
+                            'title' => 'Kontak',
+                            'desc' => 'Manajemen data kontak',
+                        ],
+                        [
+                            'route' => 'packs.index',
+                            'icon' => 'list-checks',
+                            'title' => 'Packing List',
+                            'desc' => 'Daftar packing list',
+                        ],
+                        [
+                            'route' => 'sops.index',
+                            'icon' => 'shield-check',
+                            'title' => 'SOP QC',
+                            'desc' => 'Standard prosedur QC',
+                        ],
+                        [
+                            'route' => 'kargans.index',
+                            'icon' => 'truck',
+                            'title' => 'Kargan',
+                            'desc' => 'Manajemen logistik kargan',
+                        ],
+                        [
+                            'route' => 'atk.index',
+                            'icon' => 'pen-tool',
+                            'title' => 'ATK',
+                            'desc' => 'Inventaris alat tulis kantor',
+                        ],
+                        [
+                            'route' => 'product_images.index',
+                            'icon' => 'image',
+                            'title' => 'Images',
+                            'desc' => 'Gallery foto produk',
+                        ],
+                        [
+                            'route' => 'qc_lots.index',
+                            'icon' => 'package-search',
+                            'title' => 'QC Lot',
+                            'desc' => 'Pengecekan lot QC',
+                        ],
                     ];
                 @endphp
 
-                @foreach($mainMenus as $menu)
-                <div class="menu-card cat-common" onclick="window.location='{{ route($menu['route']) }}'">
-                    <div class="icon-wrapper">
-                        <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                @foreach ($mainMenus as $menu)
+                    <div class="menu-card cat-common" onclick="window.location='{{ route($menu['route']) }}'">
+                        <div class="icon-wrapper">
+                            <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                        </div>
+                        <div class="card-title">{{ $menu['title'] }}</div>
+                        <div class="card-desc">{{ $menu['desc'] }}</div>
                     </div>
-                    <div class="card-title">{{ $menu['title'] }}</div>
-                    <div class="card-desc">{{ $menu['desc'] }}</div>
-                </div>
                 @endforeach
             </div>
         </div>
@@ -225,24 +303,44 @@
             <div class="menu-grid">
                 @php
                     $odooMenus = [
-                        ['route' => 'stock.index', 'icon' => 'boxes', 'title' => 'Stock', 'desc' => 'Pantau stok barang'],
+                        [
+                            'route' => 'stock.index',
+                            'icon' => 'boxes',
+                            'title' => 'Stock',
+                            'desc' => 'Pantau stok barang',
+                        ],
                         ['route' => 'po.index', 'icon' => 'shopping-cart', 'title' => 'PO', 'desc' => 'Purchase order'],
-                        ['route' => 'ri.index', 'icon' => 'arrow-down-to-line', 'title' => 'RI', 'desc' => 'Receiving inventory'],
-                        ['route' => 'it.index', 'icon' => 'refresh-cw', 'title' => 'IT', 'desc' => 'Inventory transfer'],
+                        [
+                            'route' => 'ri.index',
+                            'icon' => 'arrow-down-to-line',
+                            'title' => 'RI',
+                            'desc' => 'Receiving inventory',
+                        ],
+                        [
+                            'route' => 'it.index',
+                            'icon' => 'refresh-cw',
+                            'title' => 'IT',
+                            'desc' => 'Inventory transfer',
+                        ],
                         ['route' => 'so.index', 'icon' => 'shopping-bag', 'title' => 'SO', 'desc' => 'Sales order'],
                         ['route' => 'do.index', 'icon' => 'package-open', 'title' => 'DO', 'desc' => 'Delivery order'],
-                        ['route' => 'vendors.index', 'icon' => 'store', 'title' => 'Vendor', 'desc' => 'Daftar vendor aktif'],
+                        [
+                            'route' => 'vendors.index',
+                            'icon' => 'store',
+                            'title' => 'Vendor',
+                            'desc' => 'Daftar vendor aktif',
+                        ],
                     ];
                 @endphp
 
-                @foreach($odooMenus as $menu)
-                <div class="menu-card cat-odoo" onclick="window.location='{{ route($menu['route']) }}'">
-                    <div class="icon-wrapper">
-                        <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                @foreach ($odooMenus as $menu)
+                    <div class="menu-card cat-odoo" onclick="window.location='{{ route($menu['route']) }}'">
+                        <div class="icon-wrapper">
+                            <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                        </div>
+                        <div class="card-title">{{ $menu['title'] }}</div>
+                        <div class="card-desc">{{ $menu['desc'] }}</div>
                     </div>
-                    <div class="card-title">{{ $menu['title'] }}</div>
-                    <div class="card-desc">{{ $menu['desc'] }}</div>
-                </div>
                 @endforeach
             </div>
         </div>
@@ -255,25 +353,65 @@
             <div class="menu-grid">
                 @php
                     $toolMenus = [
-                        ['route' => 'tools.kalkulator', 'icon' => 'calculator', 'title' => 'Kalkulator', 'desc' => 'Hitung nilai barang'],
-                        ['route' => 'qc.index', 'icon' => 'file-check', 'title' => 'Form QC', 'desc' => 'Generate form pengecekan'],
-                        ['route' => 'tools.sn', 'icon' => 'barcode', 'title' => 'SN', 'desc' => 'Generate serial number'],
-                        ['route' => 'tools.laporan_pengiriman', 'icon' => 'file-spreadsheet', 'title' => 'Kiriman', 'desc' => 'Laporan kiriman harian'],
-                        ['route' => 'tools.laporan_luarkota', 'icon' => 'map', 'title' => 'Luarkota', 'desc' => 'Laporan kiriman luar kota'],
-                        ['route' => 'tools.print_resi', 'icon' => 'printer', 'title' => 'Print Resi', 'desc' => 'Cetak resi pengiriman'],
-                        ['route' => 'tools.spreadsheet', 'icon' => 'table-2', 'title' => 'PLTBB', 'desc' => 'Spreadsheet PLTBB'],
-                        ['route' => 'settings.index', 'icon' => 'settings', 'title' => 'Setting', 'desc' => 'Pengaturan aplikasi'],
+                        [
+                            'route' => 'tools.kalkulator',
+                            'icon' => 'calculator',
+                            'title' => 'Kalkulator',
+                            'desc' => 'Hitung nilai barang',
+                        ],
+                        [
+                            'route' => 'qc.index',
+                            'icon' => 'file-check',
+                            'title' => 'Form QC',
+                            'desc' => 'Generate form pengecekan',
+                        ],
+                        [
+                            'route' => 'tools.sn',
+                            'icon' => 'barcode',
+                            'title' => 'SN',
+                            'desc' => 'Generate serial number',
+                        ],
+                        [
+                            'route' => 'tools.laporan_pengiriman',
+                            'icon' => 'file-spreadsheet',
+                            'title' => 'Kiriman',
+                            'desc' => 'Laporan kiriman harian',
+                        ],
+                        [
+                            'route' => 'tools.laporan_luarkota',
+                            'icon' => 'map',
+                            'title' => 'Luarkota',
+                            'desc' => 'Laporan kiriman luar kota',
+                        ],
+                        [
+                            'route' => 'tools.print_resi',
+                            'icon' => 'printer',
+                            'title' => 'Print Resi',
+                            'desc' => 'Cetak resi pengiriman',
+                        ],
+                        [
+                            'route' => 'tools.spreadsheet',
+                            'icon' => 'table-2',
+                            'title' => 'PLTBB',
+                            'desc' => 'Spreadsheet PLTBB',
+                        ],
+                        [
+                            'route' => 'settings.index',
+                            'icon' => 'settings',
+                            'title' => 'Setting',
+                            'desc' => 'Pengaturan aplikasi',
+                        ],
                     ];
                 @endphp
 
-                @foreach($toolMenus as $menu)
-                <div class="menu-card cat-tools" onclick="window.location='{{ route($menu['route']) }}'">
-                    <div class="icon-wrapper">
-                        <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                @foreach ($toolMenus as $menu)
+                    <div class="menu-card cat-tools" onclick="window.location='{{ route($menu['route']) }}'">
+                        <div class="icon-wrapper">
+                            <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                        </div>
+                        <div class="card-title">{{ $menu['title'] }}</div>
+                        <div class="card-desc">{{ $menu['desc'] }}</div>
                     </div>
-                    <div class="card-title">{{ $menu['title'] }}</div>
-                    <div class="card-desc">{{ $menu['desc'] }}</div>
-                </div>
                 @endforeach
             </div>
         </div>
@@ -287,19 +425,29 @@
                 @php
                     $otherMenus = [
                         ['route' => 'tools.stt', 'icon' => 'mic', 'title' => 'STT', 'desc' => 'Ucapan ke teks'],
-                        ['route' => 'tools.ocr', 'icon' => 'scan-text', 'title' => 'OCR', 'desc' => 'Ekstrak teks gambar'],
-                        ['route' => 'tools.scoreboard', 'icon' => 'trophy', 'title' => 'Scoreboard', 'desc' => 'Papan skor digital'],
+                        [
+                            'route' => 'tools.ocr',
+                            'icon' => 'scan-text',
+                            'title' => 'OCR',
+                            'desc' => 'Ekstrak teks gambar',
+                        ],
+                        [
+                            'route' => 'tools.scoreboard',
+                            'icon' => 'trophy',
+                            'title' => 'Scoreboard',
+                            'desc' => 'Papan skor digital',
+                        ],
                     ];
                 @endphp
 
-                @foreach($otherMenus as $menu)
-                <div class="menu-card cat-other" onclick="window.location='{{ route($menu['route']) }}'">
-                    <div class="icon-wrapper">
-                        <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                @foreach ($otherMenus as $menu)
+                    <div class="menu-card cat-other" onclick="window.location='{{ route($menu['route']) }}'">
+                        <div class="icon-wrapper">
+                            <i data-lucide="{{ $menu['icon'] }}" width="28"></i>
+                        </div>
+                        <div class="card-title">{{ $menu['title'] }}</div>
+                        <div class="card-desc">{{ $menu['desc'] }}</div>
                     </div>
-                    <div class="card-title">{{ $menu['title'] }}</div>
-                    <div class="card-desc">{{ $menu['desc'] }}</div>
-                </div>
                 @endforeach
             </div>
         </div>
@@ -317,12 +465,12 @@
         $(document).ready(function() {
             $('#menuSearch').on('keyup', function() {
                 var value = $(this).val().toLowerCase();
-                
+
                 $('.menu-card').each(function() {
                     var title = $(this).find('.card-title').text().toLowerCase();
                     var desc = $(this).find('.card-desc').text().toLowerCase();
                     var match = title.indexOf(value) > -1 || desc.indexOf(value) > -1;
-                    
+
                     $(this).toggleClass('hidden', !match);
                 });
 
