@@ -22,8 +22,8 @@
         <form method="POST" action="{{ route('api.qc.store') }}" id="form">
             <div class="card card-sm mt-3">
                 <div class="card-header pb-2 bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="font-weight-bold mb-0 text-primary"><i
+                    <div class="d-flex align-items-center">
+                        <h5 class="font-weight-bold mb-0 text-primary mr-3"><i
                                 class="fas fa-check-double mr-2"></i>{{ $title }}</h5>
                         <button class="btn btn-sm btn-outline-primary btn-sm" type="button" data-toggle="collapse"
                             data-target="#collapse_form" aria-expanded="false" aria-controls="collapse_form">
@@ -114,7 +114,7 @@
                                         <div class="input-group-append">
                                             <button type="button" onclick="set_terlampir('tipe')"
                                                 class="btn btn-info btn-sm">
-                                                TERLAMPIR
+                                                <i class="fas fa-file-alt"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -142,40 +142,44 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group col-sm-6">
-                                    <label for="qty" class="small font-weight-bold"><i
-                                            class="fas fa-sort-amount-up mr-1"></i> QTY</label>
+                            <div class="form-group row">
+                                <label for="qty" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-sort-amount-up mr-1"></i> QTY</label>
+                                <div class="col-sm-9">
                                     <div class="input-group">
                                         <input name="qty" type="text" class="form-control" id="qty"
                                             value="1 Unit" required>
                                         <div class="input-group-append">
                                             <button type="button" onclick="set_terlampir('qty')"
                                                 class="btn btn-info btn-sm">
-                                                TL
+                                                <i class="fas fa-file-alt"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-sm-6">
-                                    <label for="jenis" class="small font-weight-bold"><i
-                                            class="fas fa-filter mr-1"></i> Jenis</label>
+                            </div>
+                            <div class="form-group row">
+                                <label for="jenis" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-filter mr-1"></i> Jenis</label>
+                                <div class="col-sm-9">
                                     <select name="jenis" id="jenis" class="form-control">
                                         <option value="QC Import">QC Import</option>
                                         <option value="QC Ulang">QC Ulang</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group col-sm-6">
-                                    <label for="qc_sebelumnya" class="small font-weight-bold"><i
-                                            class="fas fa-history mr-1"></i> Qc Sblmny</label>
+                            <div class="form-group row">
+                                <label for="qc_sebelumnya" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-history mr-1"></i> QC Sblm</label>
+                                <div class="col-sm-9">
                                     <input name="qc_sebelumnya" type="text" class="form-control" id="qc_sebelumnya"
                                         value="2025" required>
                                 </div>
-                                <div class="form-group col-sm-6">
-                                    <label for="jenis_qc" class="small font-weight-bold"><i
-                                            class="fas fa-tasks mr-1"></i> Jenis QC</label>
+                            </div>
+                            <div class="form-group row">
+                                <label for="jenis_qc" class="col-sm-3 col-form-label font-weight-normal"><i
+                                        class="fas fa-tasks mr-1"></i> Jenis QC</label>
+                                <div class="col-sm-9">
                                     <select name="jenis_qc" id="jenis_qc" class="form-control">
                                         <option value="Uji Fungsi & Check kelengkapan alat">Uji Fungsi</option>
                                         <option value="Cek Fisik">Fisik</option>
@@ -185,12 +189,12 @@
                         </div>
 
                         <div class="col-12 mt-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                                <h6 class="font-weight-bold mb-0 text-secondary"><i
+                            <div class="d-flex align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary mr-3"><i
                                         class="fas fa-shield-alt mr-2"></i>PEMERIKSAAN FISIK</h6>
-                                <div>
+                                <div class="btn-group">
                                     <button id="btn_reset_fisik" type="button"
-                                        class="btn btn-xs btn-outline-warning btn-sm">
+                                        class="btn btn-xs btn-outline-warning btn-sm mr-1">
                                         <i class="fas fa-redo"></i> Reset
                                     </button>
                                     <button id="btn_all_fisik" type="button"
@@ -203,8 +207,9 @@
                         </div>
 
                         <div class="col-12 mt-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                                <h6 class="font-weight-bold mb-0 text-secondary"><i class="fas fa-vial mr-2"></i>FUNGSI
+                            <div class="d-flex align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary mr-3"><i
+                                        class="fas fa-vial mr-2"></i>FUNGSI
                                     DAN SISTEM</h6>
                                 <button id="btn_reset_reagen" type="button"
                                     class="btn btn-xs btn-outline-warning btn-sm">
@@ -215,21 +220,20 @@
                         </div>
 
                         <div class="col-12 mt-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                                <h6 class="font-weight-bold mb-0 text-secondary"><i
+                            <div class="d-flex align-items-center mb-2 border-bottom pb-1">
+                                <h6 class="font-weight-bold mb-0 text-secondary mr-3"><i
                                         class="fas fa-box-open mr-2"></i>KELENGKAPAN AKSESORIS</h6>
-                                <div>
-                                    <button type="button" class="btn btn-xs btn-outline-info btn-sm"
-                                        onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> Add
-                                    </button>
-                                    <button id="btn_get_pl" type="button" class="btn btn-xs btn-outline-primary btn-sm">
-                                        <i class="fas fa-list"></i> Get PL
-                                    </button>
-                                    <button id="btn_reset_pl" type="button"
-                                        class="btn btn-xs btn-outline-warning btn-sm">
-                                        <i class="fas fa-redo"></i> Reset
-                                    </button>
-                                </div>
+                                <button type="button" class="btn btn-xs btn-outline-info btn-sm mr-1"
+                                    onclick="generate_form_kelengkapan('', true)"><i class="fas fa-plus"></i> Add
+                                </button>
+                                <button id="btn_get_pl" type="button"
+                                    class="btn btn-xs btn-outline-primary btn-sm mr-1">
+                                    <i class="fas fa-list"></i> Get PL
+                                </button>
+                                <button id="btn_reset_pl" type="button"
+                                    class="btn btn-xs btn-outline-warning btn-sm mr-1">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
                             </div>
                             <div id="kelengkapan" class="px-2"></div>
                         </div>

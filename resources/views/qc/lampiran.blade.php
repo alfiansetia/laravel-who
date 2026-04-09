@@ -23,15 +23,12 @@
     <thead class="bg-light">
         <tr>
             <th colspan="5" class="py-2 px-3">
-                <div class="row small font-weight-bold">
-                    <div class="col-md-6" id="l_code"><i class="fas fa-barcode mr-1"></i> Kode Barang : </div>
-                    <div class="col-md-6 text-right">
-                        <button class="btn btn-xs btn-info btn-sm" id="l_copy">
-                            <i class="fas fa-copy mr-1"></i>Copy Header & Data
-                        </button>
-                    </div>
-                    <div class="col-md-12 mt-1" id="l_name"><i class="fas fa-microscope mr-1"></i> Nama Barang :
-                    </div>
+                <div class="d-flex align-items-center small font-weight-bold">
+                    <button class="btn btn-xs btn-info btn-sm mr-3" id="l_copy">
+                        <i class="fas fa-copy mr-1"></i>Copy Header & Data
+                    </button>
+                    <div id="l_code" class="mr-4"><i class="fas fa-barcode mr-1"></i> Kode Barang : </div>
+                    <div id="l_name"><i class="fas fa-microscope mr-1"></i> Nama Barang : </div>
                 </div>
             </th>
         </tr>
