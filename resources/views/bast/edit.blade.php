@@ -5,28 +5,27 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
-
+    <div class="container-fluid py-3">
         <form method="POST" action="{{ route('api.basts.update', $data->id) }}" id="form">
             @csrf
             @method('PUT')
-            <div class="card card-primary mt-3">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="form-group col-md-6">
+            <div class="card card-sn mt-2">
+                <div class="card-header bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
+                                <input type="text" class="form-control" id="input_do" placeholder="CARI No DO..."
                                     value="{{ $data->do ?? 'CENT/OUT/' }}">
                                 <div class="input-group-append">
                                     <button type="button" class="btn btn-primary" id="btn_get_do">
-                                        <i class="fas fa-search mr-1"></i>GET
+                                        <i class="fas fa-search mr-1"></i>GET DO
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group col-md-6">
-                            <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
-                                <option value="">Pilih</option>
+                        <div class="col-md-7">
+                            <select name="" id="select_do" class="form-control select2" style="width: 100%">
+                                <option value="">--- Pilih Hasil Pencarian ---</option>
                             </select>
                         </div>
                     </div>
@@ -34,78 +33,83 @@
 
                 <div class="card-body">
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="name">Kepada</label>
-                            <textarea name="name" id="name" class="form-control" placeholder="Kepada" rows="4" required>{{ $data->name }}</textarea>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-user-tie mr-1"></i> KEPADA</label>
+                            <textarea name="name" id="name" class="form-control" placeholder="Nama Penerima" rows="4" required>{{ $data->name }}</textarea>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="address">Alamat</label>
-                            <textarea name="address" id="address" class="form-control" placeholder="Alamat" rows="4" required>{{ $data->address }}</textarea>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT LENGKAP</label>
+                            <textarea name="address" id="address" class="form-control" placeholder="Alamat Pengiriman" rows="4" required>{{ $data->address }}</textarea>
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="city">Kota</label>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-city mr-1"></i> KOTA</label>
                             <input type="text" name="city" id="city" class="form-control" placeholder="Kota"
                                 value="{{ $data->city }}">
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="do">No DO</label>
-                            <input type="text" name="do" id="do" class="form-control" placeholder="No DO"
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT JALAN / DO</label>
+                            <input type="text" name="do" id="do" class="form-control font-weight-bold text-primary" placeholder="Nomor DO"
                                 value="{{ $data->do }}">
                         </div>
                     </div>
                 </div>
 
-                <div class="card-footer text-center">
-                    <button type="button" onclick="window.close()" class="btn btn-secondary">
-                        <i class="fas fa-times mr-1"></i>Tutup Tab
+                <div class="card-footer bg-light text-center">
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-3 mr-1">
+                        <i class="fas fa-save mr-1"></i> Simpan
                     </button>
-                    <a href="{{ route('basts.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
-                    </a>
-                    <button type="button" id="add" class="btn btn-info">
-                        <i class="fas fa-plus mr-1"></i>Tambah Product
+                    <button type="button" id="add" class="btn btn-info px-3 mr-1">
+                        <i class="fas fa-plus mr-1"></i> Tambah Item
                     </button>
-                    <button type="button" id="btn_sync" class="btn btn-danger">
-                        <i class="fas fa-sync mr-1"></i>Sync Product
+                    <button type="button" id="btn_sync" class="btn btn-danger px-3 mr-1">
+                        <i class="fas fa-sync mr-1"></i> Sync Odoo
                     </button>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
-                    </button>
-                    <div class="btn-group" role="group">
+
+                    <div class="btn-group mr-1" role="group">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
                             aria-expanded="false">
-                            <i class="fas fa-download mr-1"></i>Download
+                            <i class="fas fa-print mr-1"></i> Cetak
                         </button>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=tanda_terima"
-                                target="_blank">Tanda Terima</a>
+                                target="_blank"><i class="fas fa-file-alt mr-2 text-info"></i> Tanda Terima</a>
                             <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=training"
-                                target="_blank">Daftar
-                                Training</a>
+                                target="_blank"><i class="fas fa-vial mr-2 text-warning"></i> Daftar Training</a>
                             <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=bast"
-                                target="_blank">BAST</a>
+                                target="_blank"><i class="fas fa-file-contract mr-2 text-success"></i> BAST</a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="{{ route('api.basts.download_zip', $data->id) }}"
-                                target="_blank">ZIP</a>
+                                target="_blank"><i class="fas fa-file-archive mr-2 text-danger"></i> Format ZIP</a>
                         </div>
                     </div>
+
+                    <a href="{{ route('basts.index') }}" class="btn btn-outline-secondary px-3 mr-1">
+                        <i class="fas fa-arrow-left mr-1"></i> Kembali
+                    </a>
+                    <button type="button" onclick="window.close()" class="btn btn-dark px-3 mt-1 mt-md-0">
+                        <i class="fas fa-times mr-1"></i> Tutup
+                    </button>
                 </div>
             </div>
         </form>
 
-        <div class="card card-primary mt-3">
+        <div class="card card-sn mt-3 overflow-hidden">
+            <div class="card-header bg-white py-2">
+                <h6 class="font-weight-bold mb-0 text-secondary"><i class="fas fa-box mr-2"></i>ITEM BARANG</h6>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table" id="table" style="width: 100%">
-                        <thead>
+                    <table class="table table-sm table-hover mb-0" id="table" style="width: 100%">
+                        <thead class="bg-light">
                             <tr>
-                                <th>#</th>
+                                <th class="pl-3">#</th>
                                 <th>Product</th>
-                                <th>Qty</th>
-                                <th>Satuan</th>
-                                <th>Lot</th>
-                                <th>Aksi</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-center">Satuan</th>
+                                <th>Lot / Serial Number</th>
+                                <th class="text-center pr-3">Aksi</th>
                             </tr>
                         </thead>
                     </table>

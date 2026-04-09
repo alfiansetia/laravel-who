@@ -5,26 +5,26 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-3">
         <form method="POST" action="{{ route('api.basts.store') }}" id="form">
             @csrf
-            <div class="card card-primary mt-3">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="form-group col-md-6">
+            <div class="card card-sn mt-2">
+                <div class="card-header bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="input_do" placeholder="CARI No DO"
-                                    value="CENT/OUT/">
+                                <input type="text" class="form-control" id="input_do" placeholder="CARI No DO..."
+                                    value="CENT/OUT/" autofocus>
                                 <div class="input-group-append">
                                     <button type="button" class="btn btn-primary" id="btn_get_do">
-                                        <i class="fas fa-search mr-1"></i>GET
+                                        <i class="fas fa-search mr-1"></i>GET DO
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group col-md-6">
-                            <select name="" id="select_do" class="form-control col-md-6 select2" style="width: 100%">
-                                <option value="">Pilih</option>
+                        <div class="col-md-7">
+                            <select name="" id="select_do" class="form-control select2" style="width: 100%">
+                                <option value="">--- Pilih Hasil Pencarian ---</option>
                             </select>
                         </div>
                     </div>
@@ -33,34 +33,34 @@
                 @method('PUT')
                 <div class="card-body">
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="name">Kepada</label>
-                            <textarea name="name" id="name" class="form-control" placeholder="Kepada" rows="4" required></textarea>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-user-tie mr-1"></i> KEPADA</label>
+                            <textarea name="name" id="name" class="form-control" placeholder="Nama Penerima" rows="4" required></textarea>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="address">Alamat</label>
-                            <textarea name="address" id="address" class="form-control" placeholder="Alamat" rows="4" required></textarea>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT LENGKAP</label>
+                            <textarea name="address" id="address" class="form-control" placeholder="Alamat Pengiriman" rows="4" required></textarea>
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="city">Kota</label>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-city mr-1"></i> KOTA</label>
                             <input type="text" name="city" id="city" class="form-control" placeholder="Kota"
                                 value="">
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="do">No DO</label>
-                            <input type="text" name="do" id="do" class="form-control" placeholder="No DO"
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT JALAN / DO</label>
+                            <input type="text" name="do" id="do" class="form-control font-weight-bold text-primary" placeholder="Nomor DO"
                                 value="">
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{{ route('basts.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                <div class="card-footer bg-light text-center">
+                    <a href="{{ route('basts.index') }}" class="btn btn-secondary px-4">
+                        <i class="fas fa-arrow-left mr-1"></i> Kembali
                     </a>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-4">
+                        <i class="fab fa-telegram-plane mr-1 text-white"></i> Simpan & Lanjut ke Item
                     </button>
                 </div>
             </div>
