@@ -175,7 +175,12 @@
         $(document).ready(function() {
             let blockTimeout;
 
-            $(document).ajaxSend(function() {
+            $(document).ajaxSend(function(event, jqXHR, settings) {
+                console.log(settings);
+
+                if (settings.isBlocking == false) {
+                    return
+                }
                 // Clear timeout lama jika masih ada (mencegah bentrok antar request)
                 if (blockTimeout) clearTimeout(blockTimeout);
 
@@ -193,7 +198,10 @@
                 }, 10000);
             });
 
-            $(document).ajaxComplete(function() {
+            $(document).ajaxComplete(function(event, jqXHR, settings) {
+                if (settings.isBlocking == false) {
+                    return
+                }
                 if (blockTimeout) clearTimeout(blockTimeout);
                 $.unblockUI();
             });

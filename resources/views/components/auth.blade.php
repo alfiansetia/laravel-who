@@ -38,22 +38,29 @@
          $(document).ready(function() {
 
              function updateAuthStatus() {
-                 $.get('{{ route('auth.status') }}', function(res) {
-                     let statusArea = $('#authStatusArea');
-                     let btnLogin = $('#btnEnvLogin');
-                     let btnLogout = $('#btnEnvLogout');
-                     let menuSetting = $('#menuSetting');
 
-                     if (res.data.auth) {
-                         statusArea.html('<span class="badge badge-success">Authenticated</span>');
-                         btnLogin.addClass('d-none');
-                         btnLogout.removeClass('d-none');
-                         menuSetting.removeClass('d-none'); // Show menu setting
-                     } else {
-                         statusArea.html('<span class="badge badge-danger">Not Authenticated</span>');
-                         btnLogin.removeClass('d-none');
-                         btnLogout.addClass('d-none');
-                         menuSetting.addClass('d-none'); // Hide menu setting
+                 $.ajax({
+                     isBlocking: false,
+                     url: '{{ route('auth.status') }}',
+                     type: 'GET',
+                     success: function(res) {
+                         let statusArea = $('#authStatusArea');
+                         let btnLogin = $('#btnEnvLogin');
+                         let btnLogout = $('#btnEnvLogout');
+                         let menuSetting = $('#menuSetting');
+
+                         if (res.data.auth) {
+                             statusArea.html('<span class="badge badge-success">Authenticated</span>');
+                             btnLogin.addClass('d-none');
+                             btnLogout.removeClass('d-none');
+                             menuSetting.removeClass('d-none'); // Show menu setting
+                         } else {
+                             statusArea.html(
+                                 '<span class="badge badge-danger">Not Authenticated</span>');
+                             btnLogin.removeClass('d-none');
+                             btnLogout.addClass('d-none');
+                             menuSetting.addClass('d-none'); // Hide menu setting
+                         }
                      }
                  });
              }
