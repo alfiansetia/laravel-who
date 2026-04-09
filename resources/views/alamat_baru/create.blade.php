@@ -6,15 +6,15 @@
 
 @section('content')
     <div class="container-fluid py-3">
-        <div class="card card-sn mt-2">
+        <div class="card mt-2">
             <div class="card-header bg-white">
                 <div class="row align-items-center">
                     <div class="col-md-5">
                         <div class="input-group">
-                            <input type="text" class="form-control form-control-sn" id="input_do" placeholder="CARI No DO..."
+                            <input type="text" class="form-control " id="input_do" placeholder="CARI No DO..."
                                 value="CENT/OUT/" autofocus>
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary btn-sn" id="btn_get_do">
+                                <button type="button" class="btn btn-primary " id="btn_get_do">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
@@ -34,80 +34,87 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="tujuan"><i class="fas fa-building mr-1"></i> Tujuan</label>
-                            <textarea name="tujuan" id="tujuan" class="form-control form-control-sn" placeholder="Tujuan" rows="4" required></textarea>
+                            <textarea name="tujuan" id="tujuan" class="form-control " placeholder="Tujuan" rows="4" required></textarea>
                         </div>
                         <div class="form-group col-md-6">
                             <label for="alamat"><i class="fas fa-map-marker-alt mr-1"></i> Alamat</label>
-                            <textarea name="alamat" id="alamat" class="form-control form-control-sn" placeholder="Alamat" rows="4" required></textarea>
+                            <textarea name="alamat" id="alamat" class="form-control " placeholder="Alamat" rows="4" required></textarea>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="ekspedisi"><i class="fas fa-truck mr-1"></i> Ekspedisi</label>
-                            <input type="text" name="ekspedisi" id="ekspedisi" class="form-control form-control-sn"
+                            <input type="text" name="ekspedisi" id="ekspedisi" class="form-control "
                                 placeholder="Ekspedisi" value="">
                         </div>
                         <div class="form-group col-md-6">
                             <label for="total_koli"><i class="fas fa-boxes mr-1"></i> Total Koli (Manual)</label>
-                            <input type="number" name="total_koli" id="total_koli" class="form-control form-control-sn"
+                            <input type="number" name="total_koli" id="total_koli" class="form-control "
                                 placeholder="Total Koli" value="1" min="0">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="up"><i class="fas fa-user-tag mr-1"></i> UP</label>
-                            <input type="text" name="up" id="up" class="form-control form-control-sn" placeholder="UP"
+                            <input type="text" name="up" id="up" class="form-control " placeholder="UP"
                                 value="">
                         </div>
                         <div class="form-group col-md-6">
                             <label for="tlp"><i class="fas fa-phone mr-1"></i> Tlp</label>
-                            <input type="text" name="tlp" id="tlp" class="form-control form-control-sn" placeholder="Tlp"
+                            <input type="text" name="tlp" id="tlp" class="form-control " placeholder="Tlp"
                                 value="">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="do"><i class="fas fa-file-invoice mr-1"></i> No DO</label>
-                            <input type="text" name="do" id="do" class="form-control form-control-sn" placeholder="No DO"
+                            <input type="text" name="do" id="do" class="form-control " placeholder="No DO"
                                 value="" required>
                         </div>
                         <div class="form-group col-md-6">
                             <div class="d-flex justify-content-between align-items-end mb-1">
-                                <label for="epur" class="mb-0"><i class="fas fa-shopping-basket mr-1"></i> Epurchasing</label>
+                                <label for="epur" class="mb-0"><i class="fas fa-shopping-basket mr-1"></i>
+                                    Epurchasing</label>
                                 <div class="small text-muted">
-                                    <input type="radio" name="ep" id="ep_po" onclick="setEpur('Pembelian Offline')"> <label for="ep_po" class="mb-0 mr-2">PO</label>
-                                    <input type="radio" name="ep" id="ep_reg" onclick="setEpur('Pembelian Reguler')"> <label for="ep_reg" class="mb-0 mr-2">REG</label>
-                                    <input type="radio" name="ep" id="ep_null" checked onclick="setEpur('')"> <label for="ep_null" class="mb-0">NULL</label>
+                                    <input type="radio" name="ep" id="ep_po"
+                                        onclick="setEpur('Pembelian Offline')"> <label for="ep_po"
+                                        class="mb-0 mr-2">PO</label>
+                                    <input type="radio" name="ep" id="ep_reg"
+                                        onclick="setEpur('Pembelian Reguler')"> <label for="ep_reg"
+                                        class="mb-0 mr-2">REG</label>
+                                    <input type="radio" name="ep" id="ep_null" checked onclick="setEpur('')">
+                                    <label for="ep_null" class="mb-0">NULL</label>
                                 </div>
                             </div>
-                            <input type="text" name="epur" id="epur" class="form-control form-control-sn"
+                            <input type="text" name="epur" id="epur" class="form-control "
                                 placeholder="Epurchasing" value="">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="untuk"><i class="fas fa-info-circle mr-1"></i> Untuk</label>
-                            <input type="text" name="untuk" id="untuk" class="form-control form-control-sn"
+                            <input type="text" name="untuk" id="untuk" class="form-control "
                                 placeholder="Untuk" value="">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="note"><i class="fas fa-comment-dots mr-1"></i> NOTE</label>
-                            <textarea name="note" id="note" class="form-control form-control-sn" placeholder="note" rows="4" maxlength="250"></textarea>
+                            <textarea name="note" id="note" class="form-control " placeholder="note" rows="4" maxlength="250"></textarea>
                         </div>
                         <div class="form-group col-md-6">
                             <label for="note"><i class="fas fa-warehouse mr-1"></i> NOTE WH</label>
-                            <div class="p-2 border rounded bg-light text-danger font-weight-bold" id="n_t_wh" style="min-height: 100px;"></div>
+                            <div class="p-2 border rounded bg-light text-danger font-weight-bold" id="n_t_wh"
+                                style="min-height: 100px;"></div>
                         </div>
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 pb-4">
                     <div class="d-flex justify-content-center gap-2">
-                        <a href="{{ route('alamat_baru.index') }}" class="btn btn-secondary btn-sn mx-1">
+                        <a href="{{ route('alamat_baru.index') }}" class="btn btn-secondary  mx-1">
                             <i class="fas fa-arrow-left mr-1"></i> Kembali
                         </a>
-                        <button type="submit" id="btn_simpan" class="btn btn-primary btn-sn mx-1">
+                        <button type="submit" id="btn_simpan" class="btn btn-primary  mx-1">
                             <i class="fab fa-telegram-plane mr-1 text-white"></i> Simpan Data
                         </button>
                     </div>
