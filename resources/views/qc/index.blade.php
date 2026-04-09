@@ -237,20 +237,18 @@
                 </div>
 
                 <div class="card-footer bg-light text-center">
-                    <div class="btn-group">
-                        <a href="{{ route('products.index') }}" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-arrow-left mr-1"></i>Kembali
-                        </a>
-                        <button type="button" id="btn_refresh_input" class="btn btn-warning btn-sm">
-                            <i class="fas fa-redo mr-1"></i>Refresh
-                        </button>
-                        <button type="button" id="btn_get_table" class="btn btn-info btn-sm">
-                            <i class="fas fa-table mr-1"></i>Preview Tabel
-                        </button>
-                        <button type="submit" id="btn_simpan" class="btn btn-primary btn-sm px-4">
-                            <i class="fas fa-save mr-1"></i>SIMPAN & DOWNLOAD
-                        </button>
-                    </div>
+                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </a>
+                    <button type="button" id="btn_refresh_input" class="btn btn-warning">
+                        <i class="fas fa-redo mr-1"></i>Refresh
+                    </button>
+                    <button type="button" id="btn_get_table" class="btn btn-info">
+                        <i class="fas fa-table mr-1"></i>Preview Tabel
+                    </button>
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-4">
+                        <i class="fas fa-save mr-1"></i>SIMPAN & DOWNLOAD
+                    </button>
                 </div>
             </div>
         </form>
