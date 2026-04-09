@@ -5,37 +5,40 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
+    <div class="container-fluid py-3">
         <form method="POST" action="" id="form">
             @csrf
-            <div class="card card-primary mt-3">
+            <div class="card card-sn mt-2">
+                <div class="card-header bg-light py-2">
+                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-file-signature mr-2"></i>BUAT KARGAN BARU</h5>
+                </div>
                 <div class="card-body">
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="number">No Kargan</label>
+                        <div class="form-group col-md-6 text-dark">
+                            <label class="small font-weight-bold"><i class="fas fa-id-card mr-1"></i> NO KARGAN</label>
                             <input type="text" name="number" id="number" class="form-control" placeholder="No Kargan"
                                 value="SUPP-GAR/V/2025/" required>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="date">Tanggal</label>
+                        <div class="form-group col-md-6 text-dark">
+                            <label class="small font-weight-bold"><i class="fas fa-calendar-alt mr-1"></i> TANGGAL</label>
                             <input type="date" name="date" id="date" class="form-control" placeholder="Tanggal"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="product">Product</label>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold"><i class="fas fa-box mr-1"></i> PRODUCT</label>
                             <select name="product" id="product" class="form-control select2" style="width: 100%" required>
-                                <option value="">Pilih</option>
+                                <option value="">--- Pilih Produk ---</option>
                                 @foreach ($products as $item)
                                     <option value="{{ $item->id }}">{{ $item->code }} {{ $item->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="sn">SN</label>
-                            <input type="text" name="sn" id="sn" class="form-control" placeholder="SN">
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold"><i class="fas fa-barcode mr-1"></i> SERIAL NUMBER (SN)</label>
+                            <input type="text" name="sn" id="sn" class="form-control font-weight-bold text-primary" placeholder="Masukkan SN Produk">
                         </div>
-                        <div class="form-group col-md-6">
-                            <label for="pic">PIC QC</label>
+                        <div class="form-group col-md-6 text-dark font-weight-normal">
+                            <label class="small font-weight-bold"><i class="fas fa-user-check mr-1"></i> PIC QC</label>
                             <select name="pic" id="pic" class="form-control select2" style="width: 100%" required>
                                 <option value="Karim Ash Shidik">Karim</option>
                                 <option value="Sofyan Saputra">Sofyan</option>
@@ -43,12 +46,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{{ route('kargans.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                <div class="card-footer bg-light text-center">
+                    <a href="{{ route('kargans.index') }}" class="btn btn-secondary px-4 mr-1">
+                        <i class="fas fa-arrow-left mr-1"></i> Kembali
                     </a>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-4">
+                        <i class="fab fa-telegram-plane mr-1"></i> Simpan & Lanjut ke Detail
                     </button>
                 </div>
             </div>
