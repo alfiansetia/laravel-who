@@ -9,7 +9,7 @@
         <form method="POST" action="{{ route('api.basts.update', $data->id) }}" id="form">
             @csrf
             @method('PUT')
-            <div class="card card-sn mt-2">
+            <div class="card card-sm mt-2">
                 <div class="card-header bg-light">
                     <div class="row align-items-center">
                         <div class="col-md-5">
@@ -95,7 +95,7 @@
             </div>
         </form>
 
-        <div class="card card-sn mt-3 overflow-hidden">
+        <div class="card card-sm mt-3 overflow-hidden">
             <div class="card-header bg-white py-2">
                 <h6 class="font-weight-bold mb-0 text-secondary"><i class="fas fa-box mr-2"></i>ITEM BARANG</h6>
             </div>

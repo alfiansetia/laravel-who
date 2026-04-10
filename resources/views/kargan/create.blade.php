@@ -8,7 +8,7 @@
     <div class="container-fluid py-3">
         <form method="POST" action="" id="form">
             @csrf
-            <div class="card card-sn mt-2">
+            <div class="card card-sm mt-2">
                 <div class="card-header bg-light py-2">
                     <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-file-signature mr-2"></i>BUAT KARGAN BARU</h5>
                 </div>

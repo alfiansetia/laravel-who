@@ -17,118 +17,117 @@
 @endpush
 
 @section('content')
-    <div class="container-fluid">
-
+    <div class="container-fluid py-3">
         <form method="POST" action="{{ route('api.packs.store') }}" id="form">
             @csrf
-            <div class="card card-primary mt-3">
+            <div class="card card-sm">
+                <div class="card-header bg-light py-2">
+                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-plus-circle mr-2"></i>BUAT PACKING LIST BARU</h5>
+                </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="form-group col-6">
-                            <label for="vendor_id">VENDOR</label>
-                            <div class="input-group">
-                                <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%"
-                                    required>
-                                    <option value="">Select Vendor</option>
-                                    @foreach ($vendors as $item)
-                                        <option data-id="{{ $item->id }}" value="{{ $item->id }}">
-                                            {{ $item->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-building mr-1"></i> VENDOR</label>
+                            <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%"
+                                required>
+                                <option value="">--- Pilih Vendor ---</option>
+                                @foreach ($vendors as $item)
+                                    <option data-id="{{ $item->id }}" value="{{ $item->id }}">
+                                        {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        <div class="form-group col-6">
-                            <label for="product_id">PRODUCT</label>
-                            <div class="input-group">
-                                <select name="product_id" id="product_id" class="custom-select select2" style="width: 100%"
-                                    required>
-                                    <option value="">Select Product</option>
-                                    @foreach ($products as $item)
-                                        <option data-id="{{ $item->id }}" data-code="{{ $item->code }}"
-                                            data-name="{{ $item->name }}" value="{{ $item->id }}">
-                                            [{{ $item->code }}] {{ $item->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-box mr-1"></i> PRODUCT</label>
+                            <select name="product_id" id="product_id" class="custom-select select2" style="width: 100%"
+                                required>
+                                <option value="">--- Pilih Produk ---</option>
+                                @foreach ($products as $item)
+                                    <option data-id="{{ $item->id }}" data-code="{{ $item->code }}"
+                                        data-name="{{ $item->name }}" value="{{ $item->id }}">
+                                        [{{ $item->code }}] {{ $item->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-6">
-                            <label for="name">PACKING LIST NAME</label>
-                            <div class="input-group">
-                                <textarea name="name" id="name" class="form-control" maxlength="200" required>Default</textarea>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-tag mr-1"></i> PACKING LIST NAME</label>
+                            <textarea name="name" id="name" class="form-control" rows="1" maxlength="200" required>Default</textarea>
                         </div>
-                        <div class="form-group col-6">
-                            <label for="name">PRODUCT NAME</label>
-                            <div class="input-group">
-                                <textarea id="p_name" class="form-control" maxlength="200" required></textarea>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-info-circle mr-1"></i> PRODUCT NAME</label>
+                            <textarea id="p_name" class="form-control text-primary font-weight-bold" rows="1" maxlength="200" readonly></textarea>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="form-group col-6">
-                            <label for="vendor_desc">VENDOR DESC</label>
-                            <div class="input-group">
-                                <textarea name="vendor_desc" id="vendor_desc" class="form-control" maxlength="200"></textarea>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-comment-dots mr-1"></i> VENDOR DESC</label>
+                            <textarea name="vendor_desc" id="vendor_desc" class="form-control" rows="1" maxlength="200" placeholder="Keterangan Vendor..."></textarea>
                         </div>
-                        <div class="form-group col-6">
-                            <label for="desc">PACKING LIST DESC</label>
-                            <div class="input-group">
-                                <textarea name="desc" id="desc" class="form-control" maxlength="200"></textarea>
-                            </div>
+                        <div class="form-group col-md-6">
+                            <label class="small font-weight-bold"><i class="fas fa-align-left mr-1"></i> PACKING LIST DESC</label>
+                            <textarea name="desc" id="desc" class="form-control" rows="1" maxlength="200" placeholder="Keterangan Packing List..."></textarea>
                         </div>
                     </div>
                     <div class="row">
                         <div class="form-group col-lg-6">
-                            <label for="import">IMPORT FROM TEXT</label>
+                            <label class="small font-weight-bold"><i class="fas fa-file-import mr-1"></i> IMPORT FROM TEXT (EXCEL TAB)</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <button type="button" id="btn_import_clear" class="input-group-text">X</button>
+                                    <button type="button" id="btn_import_clear" class="btn btn-outline-danger" title="Bersihkan">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
-                                <textarea name="import" id="import" class="form-control"></textarea>
+                                <textarea name="import" id="import" class="form-control" placeholder="Paste data dari Excel di sini..." rows="1"></textarea>
                                 <div class="input-group-append">
-                                    <button type="button" id="btn_import" class="input-group-text">IMPORT</button>
+                                    <button type="button" id="btn_import" class="btn btn-info font-weight-bold">
+                                        <i class="fas fa-download mr-1"></i> IMPORT
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group col-lg-6">
-                            <label>Current Packs</label>
-                            <div id="current_pack"></div>
+                            <label class="small font-weight-bold text-secondary">TEMPLATE PACKS TERSEDIA</label>
+                            <div id="current_pack" class="p-2 border rounded bg-light" style="min-height: 45px;">
+                                <span class="text-muted small">Pilih produk untuk melihat template...</span>
+                            </div>
                         </div>
 
                     </div>
                 </div>
 
-                <div class="card-footer text-center">
-                    <a href="{{ route('packs.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-1"></i>Kembali
-                    </a>
-                    <a href="{{ route('packs.create') }}" class="btn btn-warning">
-                        <i class="fas fa-sync mr-1"></i>Refresh
-                    </a>
-                    <button id="btn_download" type="button" class="btn btn-info" disabled>
-                        <i class="fas fa-download mr-1"></i>Download
+                <div class="card-footer bg-light text-center">
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-4 mr-1">
+                        <i class="fas fa-save mr-1"></i> Simpan Packing List
                     </button>
-                    <button type="submit" id="btn_simpan" class="btn btn-primary">
-                        <i class="fab fa-telegram-plane mr-1"></i>Simpan
+                    <button id="btn_download" type="button" class="btn btn-success px-4 mr-1" disabled>
+                        <i class="fas fa-file-excel mr-1"></i> Download Excel
                     </button>
+                    <a href="{{ route('packs.create') }}" class="btn btn-outline-warning px-3 mr-1">
+                        <i class="fas fa-sync mr-1"></i> Reset Form
+                    </a>
+                    <a href="{{ route('packs.index') }}" class="btn btn-outline-secondary px-3">
+                        <i class="fas fa-arrow-left mr-1"></i> Kembali
+                    </a>
                 </div>
             </div>
         </form>
 
-        <div class="card card-primary mt-3">
+        <div class="card card-sm mt-3 shadow-sm">
+            <div class="card-header bg-light py-2">
+                <h6 class="font-weight-bold mb-0 text-dark"><i class="fas fa-clipboard-list mr-2"></i>DATA ITEM PACKING LIST</h6>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table id="table" class="table table-sm table-hover" style="width: 100%;cursor: pointer;">
-                        <thead class="thead-dark">
+                    <table id="table" class="table table-sm table-hover mb-0" style="width: 100%;">
+                        <thead class="bg-dark text-white">
                             <tr>
-                                <th style="width: 30px">#</th>
-                                <th>ITEM</th>
-                                <th>QTY</th>
+                                <th style="width: 80px" class="text-center">AKSI</th>
+                                <th>NAMA ITEM / DESKRIPSI</th>
+                                <th style="width: 150px">QUANTITY</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -370,17 +369,25 @@
                 let desc = $('#desc').val()
                 let data = table.rows().data().toArray();
                 if (product == '' || product == null) {
-                    show_message('select Product!')
+                    show_message('Pilih Produk!', 'warning')
                     return
                 }
                 if (vendor == '' || vendor == null) {
-                    show_message('select Product!')
+                    show_message('Pilih Vendor!', 'warning')
                     return
                 }
                 if (data.length < 1) {
-                    show_message('Item Empty!')
+                    show_message('Item minimal harus ada 1!', 'warning')
                     return
                 }
+
+                // Validasi tiap item tidak boleh kosong
+                let emptyItem = data.find(i => !i.item || i.item.trim() === '');
+                if (emptyItem) {
+                    show_message('Nama Item tidak boleh ada yang kosong!', 'warning');
+                    return;
+                }
+
                 $.ajax({
                     url: $('#form').attr('action'),
                     type: 'POST',
@@ -392,8 +399,11 @@
                         desc: desc,
                         items: data
                     },
-                    beforeSend: function() {},
+                    beforeSend: function() {
+                        bloc(); // Tambahkan loading
+                    },
                     success: function(res) {
+                        unbloc();
                         $('#product_id').val('').change()
                         $('#vendor_id').val('').change()
                         $('#name').val('Default')
@@ -408,6 +418,7 @@
                         show_message(res.message, 'success')
                     },
                     error: function(xhr, status, error) {
+                        unbloc();
                         show_message(xhr.responseJSON.message || 'Error!')
                     }
                 });

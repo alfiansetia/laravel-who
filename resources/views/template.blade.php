@@ -23,6 +23,66 @@
         integrity="sha512-O03ntXoVqaGUTAeAmvQ2YSzkCvclZEcPQu1eqloPaHfJ5RuNGiS4l+3duaidD801P50J28EHyonCV06CUlTSag=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     @stack('css')
+    <style>
+        /* Modernized Snap-Design System */
+        .card-sm {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-sm .card-header {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            padding: 0.6rem 1.25rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-sm .card-body {
+            padding: 1.25rem;
+        }
+
+        .card-sm .card-footer {
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            padding: 0.75rem 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.85rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem 0.75rem;
+            height: auto;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        label {
+            color: #4a5568;
+            margin-bottom: 0.35rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .select2-container--bootstrap4 .select2-selection {
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+    </style>
     <title>{{ $title }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
     @include('pwa.head')
@@ -176,7 +236,7 @@
             let blockTimeout;
 
             $(document).ajaxSend(function(event, jqXHR, settings) {
-                console.log(settings);
+                // console.log(settings);
 
                 if (settings.isBlocking == false) {
                     return

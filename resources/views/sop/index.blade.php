@@ -159,14 +159,8 @@
                         '<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">'
                 },
             });
-
-            var id;
-
+            
             multiCheck(table);
-
-            function deleteData() {
-
-            }
 
             function selected() {
                 let id = $('input[name="id[]"]:checked').length;
@@ -178,28 +172,128 @@
                 }
             }
 
-            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
-                id = table.row(this).data().id
+            var id = 0;
+            var currentSopData = {};
 
-                $.get(URL_INDEX_API + '/' + id).done(function(res) {
-                    $('#modal_pl').modal('show')
-                    $('#table_target tbody').empty();
-                    $('#target_value').html('');
+            window.addSopRow = function(content = '') {
+                let rowCount = $('#table_sop_edit tbody tr').length + 1;
+                $('#table_sop_edit tbody').append(`
+                    <tr>
+                        <td class="text-center align-middle font-weight-bold">${rowCount}</td>
+                        <td>
+                            <textarea class="form-control form-control-sm sop-item-text" rows="1" required placeholder="Instruksi pemeriksaan...">${content}</textarea>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-xs btn-outline-danger" onclick="$(this).closest('tr').remove()">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            }
 
-                    $('#title_detail_product').html(
-                        `[${res.data.product.code}] ${res.data.product.name}`);
-                    $('#target_value').html(res.data.target);
+            function fetchSopDetail(sopId) {
+                $.get(URL_INDEX_API + '/' + sopId).done(function(res) {
+                    let sop = res.data;
+                    currentSopData = {
+                        product_id: sop.product_id,
+                        target: sop.target
+                    };
+
+                    // Header Info
+                    $('#title_detail_product').html(`[${sop.product.code}] ${sop.product.name}`);
+                    $('#target_value_display').html(sop.target || '-');
+                    
+                    // Input Target di tab edit
+                    $('#input_target_sop').val(sop.target);
+
+                    // Bersihkan tabel
+                    $('#table_sop_view tbody').empty();
+                    $('#table_sop_edit tbody').empty();
+
                     res.data.items.forEach((item, index) => {
-                        $('#table_target tbody').append(`
+                        // View Table
+                        $('#table_sop_view tbody').append(`
                             <tr>
-                                <td>${index + 1}</td>
-                                <td>${item.item}</td>
+                                <td class="text-center text-muted">${index + 1}</td>
+                                <td class="font-weight-bold">${item.item}</td>
                             </tr>
                         `);
+                        // Edit Table
+                        addSopRow(item.item);
                     });
+
                 }).fail(function(xhr) {
-                    show_message('Data Tidak ada!')
-                })
+                    show_message('Gagal mengambil data!', 'error')
+                });
+            }
+
+            // Handle Tab Switching
+            $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+                let target = $(e.target).attr("href");
+                if (id) fetchSopDetail(id);
+
+                if (target === '#tab-edit') {
+                    $('#btn_save_sop').removeClass('d-none');
+                } else {
+                    $('#btn_save_sop').addClass('d-none');
+                }
+            });
+
+            // Handle Simpan SOP
+            $('#btn_save_sop').click(function() {
+                let items = [];
+                let isValid = true;
+                let target_val = $('#input_target_sop').val().trim();
+
+                $('#table_sop_edit tbody tr').each(function() {
+                    let text = $(this).find('.sop-item-text').val().trim();
+                    if (!text) {
+                        isValid = false;
+                        $(this).find('.sop-item-text').addClass('is-invalid');
+                    } else {
+                        $(this).find('.sop-item-text').removeClass('is-invalid');
+                        items.push({ item: text });
+                    }
+                });
+
+                if (!isValid) {
+                    show_message('Ada instruksi SOP yang kosong!', 'warning');
+                    return;
+                }
+
+                $.ajax({
+                    url: URL_INDEX_API,
+                    type: "POST",
+                    data: {
+                        product_id: currentSopData.product_id,
+                        target: target_val,
+                        items: items
+                    },
+                    beforeSend: function() { bloc(); },
+                    success: function(res) {
+                        unbloc();
+                        show_message(res.message, 'success');
+                        $('#detail-tab').tab('show');
+                        table.ajax.reload(null, false);
+                    },
+                    error: function(xhr) {
+                        unbloc();
+                        show_message(xhr.responseJSON.message || 'Gagal menyimpan!');
+                    }
+                });
+            });
+
+            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
+                id = table.row(this).data().id
+                
+                // Reset State
+                $('#detail-tab').tab('show');
+                $('#btn_save_sop').addClass('d-none');
+                $('#table_sop_view tbody').html('<tr><td colspan="2" class="text-center">Loading...</td></tr>');
+
+                fetchSopDetail(id);
+                $('#modal_pl').modal('show')
 
             });
 

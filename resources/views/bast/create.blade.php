@@ -8,7 +8,7 @@
     <div class="container-fluid py-3">
         <form method="POST" action="{{ route('api.basts.store') }}" id="form">
             @csrf
-            <div class="card card-sn mt-2">
+            <div class="card card-sm mt-2">
                 <div class="card-header bg-light">
                     <div class="row align-items-center">
                         <div class="col-md-5">

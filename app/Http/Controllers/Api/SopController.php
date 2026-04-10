@@ -40,11 +40,13 @@ class SopController extends Controller
             'items'         => 'array|min:1',
             'items.*.item'  => 'required_with:items|string|max:65535',
         ]);
-        Sop::query()->filter($request->only(['product_id']))->delete();
-        $sop = Sop::create([
-            'product_id'    => $request->product_id,
-            'target'        => $request->target,
-        ]);
+        $sop = Sop::updateOrCreate(
+            ['product_id' => $request->product_id],
+            ['target' => $request->target]
+        );
+
+        $sop->items()->delete();
+
         if ($request->has('items')) {
             $sop->items()->createMany(
                 collect($request->items)->map(fn($i) => ['item' => $i['item']])->toArray()
