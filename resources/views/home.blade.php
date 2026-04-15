@@ -202,7 +202,7 @@
             <div class="search-container">
                 <i data-lucide="search" class="search-icon" width="20"></i>
                 <input type="search" id="menuSearch" class="search-input"
-                    placeholder="Cari menu atau aplikasi (misal: Stock, PO, STT)...">
+                    placeholder="Cari menu atau aplikasi (misal: Stock, PO, STT)..." autofocus>
             </div>
         </div>
 
