@@ -530,16 +530,7 @@
                 let row = $(this).parents('tr')[0];
                 data = table.row(row).data()
                 let text = `${data.code}\t${data.name}`
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        show_message('Berhasil disalin!', 'success')
-                    }).catch(() => {
-                        show_message('Gagal menyalin!', 'error')
-                    })
-                } else {
-                    show_message('Browser tidak mendukung!', 'error')
-                }
-
+                copyToClipboard(text)
             });
 
             $(document).on('click', '.btn-print-pl', function() {

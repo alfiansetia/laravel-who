@@ -171,11 +171,8 @@
             }
 
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showCopySuccess();
-                }).catch(err => {
-                    fallbackCopyText(text);
-                });
+                copyToClipboard(text)
+                copyToClipboard(text)
             } else {
                 fallbackCopyText(text);
             }

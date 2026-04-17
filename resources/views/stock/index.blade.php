@@ -27,6 +27,7 @@
                 <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                     <thead class="thead-dark">
                         <tr>
+                            <th>#</th>
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>QTY</th>
@@ -79,9 +80,19 @@
                     [10, 50, 100, 500, 1000],
                     ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
                 ],
+                order: [
+                    [1, 'asc']
+                ],
                 pageLength: 10,
                 lengthChange: false,
                 columns: [{
+                        data: "id",
+                        orderable: false,
+                        searchable: false,
+                        render: function(data, type, row) {
+                            return `<button type="button" class="btn btn-sm btn-primary btn-copy"><i class="fas fa-copy"></i></button>`
+                        }
+                    }, {
                         data: "code",
                         className: "text-left",
                     }, {
@@ -163,7 +174,7 @@
                 ],
             });
 
-            $('#table tbody').on('click', 'tr td', function() {
+            $('#table tbody').on('click', 'tr td:not(:first-child)', function() {
                 row = $(this).parents('tr')[0];
                 id = table.row(this).id()
                 let code = table.row(row).data().code
@@ -323,6 +334,14 @@
 
             });
 
+            $('#table tbody').on('click', '.btn-copy', function() {
+                let row = $(this).parents('tr')[0];
+                let id = table.row(this).id()
+                let code = table.row(row).data().code
+                let name = table.row(row).data().name
+                copyToClipboard(`${code}\t${name}`)
+            });
+
             $('#refresh').click(function() {
                 table.ajax.reload()
             })
@@ -335,28 +354,12 @@
 
             $('#btn_copy_lot').click(function() {
                 let text = $('#detail_lot').val();
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        show_message('Lot/SN berhasil disalin!', 'success');
-                    }).catch(() => {
-                        show_message('Gagal menyalin Lot/SN!', 'error');
-                    });
-                } else {
-                    show_message('Browser tidak mendukung!', 'error');
-                }
+                copyToClipboard(text)
             });
 
             $('#btn_copy_sn').click(function() {
                 let text = $('#detail_sn').val();
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        show_message('Serial Number berhasil disalin!', 'success');
-                    }).catch(() => {
-                        show_message('Gagal menyalin Serial Number!', 'error');
-                    });
-                } else {
-                    show_message('Browser tidak mendukung!', 'error');
-                }
+                copyToClipboard(text)
             });
 
             function getOpname() {

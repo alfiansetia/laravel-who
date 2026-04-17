@@ -291,6 +291,35 @@
                     $(this).parents("tr").toggleClass("active")
                 })
         }
+
+        function copyToClipboard(text) {
+            if (!text) {
+                return
+            }
+            if (!navigator.clipboard) {
+                show_message('Gagal, browser tidak mendukung untuk copy text!', 'error')
+                return
+            }
+            navigator.clipboard.writeText(text).then(function() {
+                show_message('Text berhasil disalin!', 'success')
+            }).catch(function() {
+                show_message('Gagal menyalin text!', 'error')
+            })
+        }
+
+        function copytext(tb_var) {
+            tb_var.on("change", ".chk-parent", function() {
+                    var e = $(this).closest("table").find("td:first-child .child-chk"),
+                        a = $(this).is(":checked");
+                    $(e).each(function() {
+                        a ? ($(this).prop("checked", !0), $(this).closest("tr").addClass("active")) : ($(this)
+                            .prop("checked", !1), $(this).closest("tr").removeClass("active"))
+                    })
+                }),
+                tb_var.on("change", "tbody tr .new-control", function() {
+                    $(this).parents("tr").toggleClass("active")
+                })
+        }
     </script>
 
     @if (session()->has('message'))
