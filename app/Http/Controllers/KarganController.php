@@ -5,10 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Kargan;
 use App\Models\Product;
 use App\Services\Breadcrumb;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use PhpOffice\PhpWord\TemplateProcessor;
-use Illuminate\Support\Str;
 
 class KarganController extends Controller
 {
@@ -32,7 +28,10 @@ class KarganController extends Controller
             new Breadcrumb('Create Kargan', route('kargans.create'), false),
         ]);
         $products = Product::all();
-        return view('kargan.create', compact('products', 'bcms'))->with(['title' => 'Create Kargan']);
+        $last = Kargan::latest()->first();
+        $new_number = Kargan::generateNumber();
+        $last_number = $last ? $last->number : '-';
+        return view('kargan.create', compact('products', 'bcms', 'new_number', 'last_number'))->with(['title' => 'Create Kargan']);
     }
 
     public function edit(Kargan $kargan)
@@ -43,6 +42,8 @@ class KarganController extends Controller
             new Breadcrumb('List Kargan', route('kargans.index'), true),
             new Breadcrumb($data->number, route('kargans.edit', $data->id), false),
         ]);
-        return view('kargan.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Kargan']);
+        $last = Kargan::whereNot('id', $kargan->id)->latest()->first();
+        $last_number = $last ? $last->number : '-';
+        return view('kargan.edit', compact(['data', 'products', 'bcms', 'last_number']))->with(['title' => 'Edit Kargan']);
     }
 }

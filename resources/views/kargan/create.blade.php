@@ -10,14 +10,17 @@
             @csrf
             <div class="card card-sm mt-2">
                 <div class="card-header bg-light py-2">
-                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-file-signature mr-2"></i>BUAT KARGAN BARU</h5>
+                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-file-signature mr-2"></i>BUAT
+                        KARGAN BARU</h5>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-md-6 text-dark">
                             <label class="small font-weight-bold"><i class="fas fa-id-card mr-1"></i> NO KARGAN</label>
                             <input type="text" name="number" id="number" class="form-control" placeholder="No Kargan"
-                                value="SUPP-GAR/V/2025/" required>
+                                value="{{ $new_number }}" required>
+                            <small class="text-muted">Terakhir: <span
+                                    class="font-weight-bold text-danger">{{ $last_number }}</span></small>
                         </div>
                         <div class="form-group col-md-6 text-dark">
                             <label class="small font-weight-bold"><i class="fas fa-calendar-alt mr-1"></i> TANGGAL</label>
@@ -34,8 +37,10 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold"><i class="fas fa-barcode mr-1"></i> SERIAL NUMBER (SN)</label>
-                            <input type="text" name="sn" id="sn" class="form-control font-weight-bold text-primary" placeholder="Masukkan SN Produk">
+                            <label class="small font-weight-bold"><i class="fas fa-barcode mr-1"></i> SERIAL NUMBER
+                                (SN)</label>
+                            <input type="text" name="sn" id="sn"
+                                class="form-control font-weight-bold text-primary" placeholder="Masukkan SN Produk">
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
                             <label class="small font-weight-bold"><i class="fas fa-user-check mr-1"></i> PIC QC</label>
@@ -85,6 +90,7 @@
         }
 
         $(document).ready(function() {
+
             get_number()
 
             $('.select2').select2({

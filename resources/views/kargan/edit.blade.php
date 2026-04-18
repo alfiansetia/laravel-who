@@ -10,7 +10,8 @@
             @csrf
             <div class="card card-sm mt-2">
                 <div class="card-header bg-light py-2">
-                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-edit mr-2"></i>EDIT DATA KARGAN</h5>
+                    <h5 class="card-title font-weight-bold mb-0 text-primary"><i class="fas fa-edit mr-2"></i>EDIT DATA
+                        KARGAN</h5>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
@@ -18,6 +19,8 @@
                             <label class="small font-weight-bold"><i class="fas fa-id-card mr-1"></i> NO KARGAN</label>
                             <input type="text" name="number" id="number" class="form-control" placeholder="No Kargan"
                                 value="{{ $data->number }}" required>
+                            <small class="text-muted">Terakhir: <span
+                                    class="font-weight-bold text-danger">{{ $last_number }}</span></small>
                         </div>
                         <div class="form-group col-md-6 text-dark">
                             <label class="small font-weight-bold"><i class="fas fa-calendar-alt mr-1"></i> TANGGAL</label>
@@ -35,8 +38,10 @@
                             </select>
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold"><i class="fas fa-barcode mr-1"></i> SERIAL NUMBER (SN)</label>
-                            <input type="text" name="sn" id="sn" class="form-control font-weight-bold text-primary" placeholder="SN"
+                            <label class="small font-weight-bold"><i class="fas fa-barcode mr-1"></i> SERIAL NUMBER
+                                (SN)</label>
+                            <input type="text" name="sn" id="sn"
+                                class="form-control font-weight-bold text-primary" placeholder="SN"
                                 value="{{ $data->sn }}">
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
@@ -55,11 +60,11 @@
                     <button type="button" id="btn_duplicate" class="btn btn-warning px-3 mr-1">
                         <i class="fas fa-clone mr-1"></i> Duplicate
                     </button>
-                    <a href="{{ route('api.kargans.download', $data->id) }}" id="btn_download" class="btn btn-info px-3 mr-1"
-                        target="_blank">
+                    <a href="{{ route('api.kargans.download', $data->id) }}" id="btn_download"
+                        class="btn btn-info px-3 mr-1" target="_blank">
                         <i class="fas fa-file-download mr-1"></i> Download
                     </a>
-                    
+
                     <a href="{{ route('kargans.index') }}" class="btn btn-outline-secondary px-3 mr-1">
                         <i class="fas fa-arrow-left mr-1"></i> Kembali
                     </a>
