@@ -24,23 +24,23 @@
                 <div class="form-group">
                     <label for="">Lot/SN</label>
                     <div class="input-group">
-                        <textarea name="" id="detail_lot" class="form-control"></textarea>
-                        <div class="input-group-append">
+                        <div class="input-group-prepend">
                             <button class="btn btn-primary" id="btn_copy_lot">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
+                        <textarea name="" id="detail_lot" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="">Serial Number</label>
                     <div class="input-group">
-                        <textarea name="" id="detail_sn" class="form-control"></textarea>
-                        <div class="input-group-append">
+                        <div class="input-group-prepend">
                             <button class="btn btn-primary" id="btn_copy_sn">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
+                        <textarea name="" id="detail_sn" class="form-control"></textarea>
                     </div>
                 </div>
             </div>
