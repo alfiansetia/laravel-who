@@ -58,6 +58,9 @@ class ProblemController extends Controller
             'items'  => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.qty'        => 'required|integer|min:1',
+            'logs'               => 'nullable|array',
+            'logs.*.date'        => 'required|date',
+            'logs.*.desc'        => 'required|string',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -79,6 +82,15 @@ class ProblemController extends Controller
                     'lot'        => $item['lot'] ?? null,
                     'desc'       => $item['desc'] ?? null,
                 ]);
+            }
+
+            if ($request->has('logs')) {
+                foreach ($request->logs as $log) {
+                    $problem->logs()->create([
+                        'date' => $log['date'],
+                        'desc' => $log['desc'],
+                    ]);
+                }
             }
 
             return response()->json(['message' => 'Data Problem berhasil disimpan.', 'data' => $problem]);
@@ -110,6 +122,9 @@ class ProblemController extends Controller
             'items'    => 'sometimes|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.qty'        => 'required|integer|min:1',
+            'logs'               => 'nullable|array',
+            'logs.*.date'        => 'required|date',
+            'logs.*.desc'        => 'required|string',
         ]);
 
         return DB::transaction(function () use ($request, $problem) {
@@ -132,6 +147,16 @@ class ProblemController extends Controller
                         'qty'        => $item['qty'],
                         'lot'        => $item['lot'] ?? null,
                         'desc'       => $item['desc'] ?? null,
+                    ]);
+                }
+            }
+
+            if ($request->has('logs')) {
+                $problem->logs()->delete();
+                foreach ($request->logs as $log) {
+                    $problem->logs()->create([
+                        'date' => $log['date'],
+                        'desc' => $log['desc'],
                     ]);
                 }
             }

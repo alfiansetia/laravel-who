@@ -422,18 +422,10 @@
                     "sLengthMenu": "Hasil: _MENU_",
                 },
                 buttons: [{
-                        text: '<i class="fa fa-plus mr-1"></i>Tambah Baru',
-                        className: 'btn btn-primary',
-                        action: function(e, dt, node, config) {
-                            window.location.href = "{{ route('problems.create') }}"
-                        }
-                    },
-                    {
-                        extend: "colvis",
-                        text: '<i class="fas fa-columns mr-1"></i>Columns',
-                        className: 'btn buttons-colvis'
-                    }
-                ],
+                    extend: "colvis",
+                    text: '<i class="fas fa-columns mr-1"></i>Columns',
+                    className: 'btn buttons-colvis'
+                }],
                 order: [
                     [2, "desc"]
                 ],
@@ -604,8 +596,7 @@
                         });
 
                         // Set edit link
-                        $('#detail-edit-link').attr('href',
-                            `{{ url('problems') }}/${id}/edit`);
+                        $('#detail-edit-link').attr('data-id', id);
 
                         $('#modalDetail').modal('show');
                     },
@@ -617,6 +608,9 @@
 
             // --- PROBLEM FORM MODAL LOGIC ---
             var modalItems = [];
+            var originalModalItems = [];
+            var modalLogs = [];
+            var originalModalLogs = [];
             var productMap = {};
             @foreach ($products as $p)
                 productMap['{{ strtoupper($p->code) }}'] = {
@@ -645,7 +639,11 @@
             // OPEN CREATE MODAL
             $('#btn_add_problem').click(function() {
                 modalItems = [];
+                originalModalItems = [];
+                modalLogs = [];
+                originalModalLogs = [];
                 renderModalItems();
+                renderModalLogs();
                 $('#form_problem')[0].reset();
                 $('#form_method').val('POST');
                 $('#problem_id').val('');
@@ -662,11 +660,7 @@
                 });
             });
 
-            // OPEN EDIT MODAL
-            $('#table tbody').on('click', '.btn-edit-problem', function(e) {
-                e.stopPropagation();
-                let id = table.row($(this).closest('tr')).id();
-
+            function openEditModal(id) {
                 $.get(`{{ url('api/problem') }}/${id}`, function(res) {
                     let d = res.data;
                     $('#modalProblemTitle').html(
@@ -690,30 +684,92 @@
                         displayCode: i.product.code,
                         displayName: i.product.name
                     }));
+                    originalModalItems = JSON.parse(JSON.stringify(modalItems));
+
+                    modalLogs = d.logs.map(l => ({
+                        date: l.date,
+                        desc: l.desc
+                    }));
+                    originalModalLogs = JSON.parse(JSON.stringify(modalLogs));
+
                     renderModalItems();
+                    renderModalLogs();
                     $('#modalProblem').modal('show');
                 });
+            }
+
+            // OPEN EDIT MODAL CLICK
+            $('#table tbody').on('click', '.btn-edit-problem', function(e) {
+                e.stopPropagation();
+                let id = table.row($(this).closest('tr')).id();
+                openEditModal(id);
+            });
+
+            // EDIT FROM DETAIL MODAL
+            $('#detail-edit-link').click(function(e) {
+                e.preventDefault();
+                let id = $(this).attr('data-id');
+                $('#modalDetail').modal('hide');
+                openEditModal(id);
             });
 
             // ITEM LOGIC
-            $('#btn_modal_add_item').click(() => $('#modal_inner_item').modal('show'));
+            var editingItemIndex = -1;
+
+            $('#btn_modal_refresh_items').click(function() {
+                modalItems = JSON.parse(JSON.stringify(originalModalItems));
+                renderModalItems();
+                show_message('Daftar item dikembalikan ke data awal', 'info');
+            });
+
+            $('#btn_modal_add_item').click(function() {
+                editingItemIndex = -1;
+                $('#modal_inner_item .modal-title').html('<i class="fas fa-plus mr-2"></i>Tambah Produk');
+                $('#btn_modal_save_inner_item').text('Tambahkan');
+                $('#modal_select_product').val('').trigger('change');
+                $('#modal_item_qty').val(1);
+                $('#modal_item_lot').val('');
+                $('#modal_item_desc').val('');
+                $('#modal_inner_item').modal('show');
+            });
 
             $('#btn_modal_save_inner_item').click(function() {
                 let pid = $('#modal_select_product').val();
                 let sel = $('#modal_select_product').select2('data')[0];
                 if (!pid) return show_message('Pilih produk!');
 
-                modalItems.push({
+                let itemData = {
                     product_id: pid,
                     qty: $('#modal_item_qty').val(),
                     lot: $('#modal_item_lot').val(),
                     desc: $('#modal_item_desc').val(),
                     displayCode: sel.element.dataset.code,
                     displayName: sel.element.dataset.name
-                });
+                };
+
+                if (editingItemIndex > -1) {
+                    modalItems[editingItemIndex] = itemData;
+                } else {
+                    modalItems.push(itemData);
+                }
+
                 renderModalItems();
                 $('#modal_inner_item').modal('hide');
-                $('#modal_select_product').val('').trigger('change');
+            });
+
+            $(document).on('click', '.btn-modal-edit-item', function() {
+                editingItemIndex = $(this).data('index');
+                let item = modalItems[editingItemIndex];
+
+                $('#modal_inner_item .modal-title').html('<i class="fas fa-edit mr-2"></i>Edit Produk');
+                $('#btn_modal_save_inner_item').text('Simpan Perubahan');
+
+                $('#modal_select_product').val(item.product_id).trigger('change');
+                $('#modal_item_qty').val(item.qty);
+                $('#modal_item_lot').val(item.lot);
+                $('#modal_item_desc').val(item.desc);
+
+                $('#modal_inner_item').modal('show');
             });
 
             $(document).on('click', '.btn-modal-remove-item', function() {
@@ -724,7 +780,7 @@
             function renderModalItems() {
                 let html = '';
                 if (modalItems.length === 0) {
-                    html = `<tr><td colspan="6" class="text-center py-4 text-muted small">Belum ada item</td></tr>`;
+                    html = `<tr><td colspan="6" class="text-center py-4 text-muted small">Belum ada item ditambahkan</td></tr>`;
                 } else {
                     modalItems.forEach((it, idx) => {
                         html += `<tr>
@@ -735,11 +791,99 @@
                             <td class="text-center">${it.qty}<input type="hidden" name="items[${idx}][qty]" value="${it.qty}"></td>
                             <td class="small">${it.lot || '-'}<input type="hidden" name="items[${idx}][lot]" value="${it.lot || ''}"></td>
                             <td class="small text-muted">${it.desc || '-'}<input type="hidden" name="items[${idx}][desc]" value="${it.desc || ''}"></td>
-                            <td class="text-center"><button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-item" data-index="${idx}"><i class="fas fa-times"></i></button></td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center">
+                                    <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-item mr-1" data-index="${idx}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-item" data-index="${idx}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>`;
                     });
                 }
                 $('#modal_items_body').html(html);
+            }
+
+            // LOG LOGIC
+            var editingLogIndex = -1;
+
+            $('#btn_modal_refresh_logs').click(function() {
+                modalLogs = JSON.parse(JSON.stringify(originalModalLogs));
+                renderModalLogs();
+                show_message('Daftar log dikembalikan', 'info');
+            });
+
+            $('#btn_modal_add_log').click(function() {
+                editingLogIndex = -1;
+                $('#modal_inner_log .modal-title').html('<i class="fas fa-history mr-2"></i>Tambah Log');
+                $('#btn_modal_save_inner_log').text('Tambahkan');
+                $('#modal_log_date').val(new Date().toISOString().split('T')[0]);
+                $('#modal_log_desc').val('');
+                $('#modal_inner_log').modal('show');
+            });
+
+            $('#btn_modal_save_inner_log').click(function() {
+                let date = $('#modal_log_date').val();
+                let desc = $('#modal_log_desc').val();
+                if (!date || !desc) return show_message('Tanggal dan Keterangan wajib diisi!');
+
+                let logData = {
+                    date,
+                    desc
+                };
+
+                if (editingLogIndex > -1) {
+                    modalLogs[editingLogIndex] = logData;
+                } else {
+                    modalLogs.push(logData);
+                }
+
+                renderModalLogs();
+                $('#modal_inner_log').modal('hide');
+            });
+
+            $(document).on('click', '.btn-modal-edit-log', function() {
+                editingLogIndex = $(this).data('index');
+                let log = modalLogs[editingLogIndex];
+                $('#modal_inner_log .modal-title').html('<i class="fas fa-history mr-2"></i>Edit Log');
+                $('#btn_modal_save_inner_log').text('Simpan Perubahan');
+                $('#modal_log_date').val(log.date);
+                $('#modal_log_desc').val(log.desc);
+                $('#modal_inner_log').modal('show');
+            });
+
+            $(document).on('click', '.btn-modal-remove-log', function() {
+                modalLogs.splice($(this).data('index'), 1);
+                renderModalLogs();
+            });
+
+            function renderModalLogs() {
+                let html = '';
+                if (modalLogs.length === 0) {
+                    html = `<tr><td colspan="4" class="text-center py-4 text-muted small">Belum ada log aktivitas</td></tr>`;
+                } else {
+                    modalLogs.forEach((it, idx) => {
+                        html += `<tr>
+                            <td class="text-center small">${idx+1}</td>
+                            <td class="small font-weight-bold">${it.date}<input type="hidden" name="logs[${idx}][date]" value="${it.date}"></td>
+                            <td class="small text-muted">${it.desc}<input type="hidden" name="logs[${idx}][desc]" value="${it.desc}"></td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center">
+                                    <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-log mr-1" data-index="${idx}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-log" data-index="${idx}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                }
+                $('#modal_logs_body').html(html);
             }
 
             // PASTE EXCEL LOGIC
