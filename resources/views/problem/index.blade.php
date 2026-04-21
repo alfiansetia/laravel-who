@@ -615,6 +615,9 @@
                         $.ajax({
                             url: `{{ url('problems') }}/${id}`,
                             type: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
                             success: function(result) {
                                 show_message(result.message || 'Berhasil dihapus',
                                     'success');
