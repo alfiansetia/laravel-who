@@ -278,6 +278,12 @@
                             'title' => 'QC Lot',
                             'desc' => 'Pengecekan lot QC',
                         ],
+                        [
+                            'route' => 'problems.index',
+                            'icon' => 'alert-circle',
+                            'title' => 'Problem',
+                            'desc' => 'Manajemen masalah produk',
+                        ],
                     ];
                 @endphp
 
