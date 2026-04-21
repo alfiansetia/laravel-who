@@ -214,7 +214,7 @@
             </div>
             <div class="modal-body">
                 <div class="alert alert-info py-2 small mb-3">
-                    Format: <strong>Item No (TAB) Description (TAB) Serial (TAB) QC Result (TAB) QTY</strong>
+                    Format: <strong>Tgl (TAB) No Problem (TAB) Code (TAB) Item (TAB) Lot/SN (TAB) Defect</strong>
                 </div>
                 <textarea id="modal_paste_area" class="form-control" rows="6" placeholder="Paste baris Excel di sini..."
                     style="background: #f8fafc; font-size: 0.8rem;"></textarea>
@@ -225,9 +225,9 @@
                         <table class="table table-sm table-bordered" style="font-size: 0.75rem;">
                             <thead class="bg-light">
                                 <tr>
+                                    <th>No Problem</th>
                                     <th>Code</th>
                                     <th>SN</th>
-                                    <th class="text-center">Qty</th>
                                     <th class="text-center">Status</th>
                                 </tr>
                             </thead>

@@ -913,29 +913,63 @@
             });
 
             var parsedModalItems = [];
+            var parsedGeneralInfo = { date: '', number: '' };
+
             $('#modal_paste_area').on('input', function() {
                 let lines = $(this).val().trim().split('\n');
                 let html = '';
                 parsedModalItems = [];
+                parsedGeneralInfo = { date: '', number: '' };
+
                 lines.forEach((line, idx) => {
                     if (!line.trim()) return;
                     let cols = line.split('\t');
-                    let p = productMap[(cols[0] || '').trim().toUpperCase()] || null;
+                    
+                    // Capture general info from the first valid line
+                    if (parsedGeneralInfo.date === '' && cols[0] && cols[1]) {
+                        parsedGeneralInfo.date = cols[0].trim();
+                        parsedGeneralInfo.number = cols[1].trim();
+                    }
+
+                    let code = (cols[2] || '').trim().toUpperCase();
+                    let p = productMap[code] || null;
+                    
                     parsedModalItems.push({
                         p,
-                        lot: (cols[2] || '').trim(),
-                        desc: (cols[3] || '').trim(),
-                        qty: parseInt(cols[4]) || 1
+                        lot: (cols[4] || '').trim(),
+                        desc: (cols[5] || '').trim(),
+                        qty: 1 // Default to 1 as per user's example looks like individual logs or bulk
                     });
-                    html +=
-                        `<tr><td>${cols[0]}</td><td>${cols[2]}</td><td class="text-center">${cols[4]||1}</td><td class="text-center">${p?'✅':'❌'}</td></tr>`;
+                    
+                    html += `<tr>
+                        <td class="small text-muted">${cols[1] || '-'}</td>
+                        <td><span class="font-weight-bold">${cols[2] || '-'}</span></td>
+                        <td class="small">${cols[4] || '-'}</td>
+                        <td class="text-center">${p ? '✅' : '❌'}</td>
+                    </tr>`;
                 });
+                
                 $('#modal_preview_body').html(html);
                 $('#modal_preview_container').show();
                 $('#btn_modal_do_import').prop('disabled', parsedModalItems.filter(i => i.p).length === 0);
             });
 
             $('#btn_modal_do_import').click(function() {
+                // Update general info from Excel if available
+                if (parsedGeneralInfo.date) {
+                    // Try to convert date if in DD/MM/YYYY format to YYYY-MM-DD for flatpickr
+                    let parts = parsedGeneralInfo.date.split('/');
+                    if (parts.length === 3) {
+                        let isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        $('#prob_date').val(isoDate).trigger('change');
+                    } else {
+                        $('#prob_date').val(parsedGeneralInfo.date).trigger('change');
+                    }
+                }
+                if (parsedGeneralInfo.number) {
+                    $('#prob_number').val(parsedGeneralInfo.number);
+                }
+
                 parsedModalItems.filter(i => i.p).forEach(i => {
                     modalItems.push({
                         product_id: i.p.id,
@@ -948,6 +982,7 @@
                 });
                 renderModalItems();
                 $('#modal_inner_paste').modal('hide');
+                show_message('Data berhasil diimpor & info diperbarui', 'info');
             });
 
             // SUBMIT LOGIC
