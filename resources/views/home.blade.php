@@ -10,9 +10,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top right, #e0e7ff, transparent),
-                radial-gradient(circle at bottom left, #f5f3ff, transparent),
-                #f8fafc;
+
             font-family: 'Outfit', sans-serif;
             color: #1e293b;
             min-height: 100vh;

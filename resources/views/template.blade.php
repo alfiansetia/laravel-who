@@ -25,6 +25,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     @stack('css')
     <style>
+        body {
+            background: radial-gradient(circle at top right, #e0e7ff, transparent),
+                radial-gradient(circle at bottom left, #f5f3ff, transparent),
+                #f8fafc;
+        }
+
         /* Modernized Snap-Design System */
         .card-sm {
             border-radius: 12px;
