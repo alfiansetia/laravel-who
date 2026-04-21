@@ -932,7 +932,8 @@
                 date: '',
                 number: '',
                 ri_po: '',
-                stock: ''
+                stock: '',
+                email_on: ''
             };
 
             $('#modal_paste_area').on('input', function() {
@@ -943,7 +944,8 @@
                     date: '',
                     number: '',
                     ri_po: '',
-                    stock: ''
+                    stock: '',
+                    email_on: ''
                 };
 
                 lines.forEach((line, idx) => {
@@ -951,10 +953,11 @@
                     let cols = line.split('\t');
 
                     // Capture general info from the first valid line
-                    if (parsedGeneralInfo.date === '' && (cols[0] || cols[1] || cols[9])) {
+                    if (parsedGeneralInfo.date === '' && (cols[0] || cols[1] || cols[9] || cols[10])) {
                         if (cols[0]) parsedGeneralInfo.date = cols[0].trim();
                         if (cols[1]) parsedGeneralInfo.number = cols[1].trim();
                         if (cols[9]) parsedGeneralInfo.ri_po = cols[9].trim();
+                        if (cols[10]) parsedGeneralInfo.email_on = cols[10].trim();
                         
                         // v di cols[6] = stock, v di cols[7] = import
                         if ((cols[6] || '').toLowerCase() === 'v') parsedGeneralInfo.stock = 'stock';
@@ -1012,6 +1015,16 @@
                 }
                 if (parsedGeneralInfo.stock) {
                     $('#prob_stock').val(parsedGeneralInfo.stock).trigger('change');
+                }
+                if (parsedGeneralInfo.email_on) {
+                    let dEmail = parsedGeneralInfo.email_on;
+                    let partsE = dEmail.split('/');
+                    if (partsE.length === 3) {
+                        let isoDateE = `${partsE[2]}-${partsE[1]}-${partsE[0]}`;
+                        $('#prob_email_on').val(isoDateE).trigger('change');
+                    } else {
+                        $('#prob_email_on').val(dEmail).trigger('change');
+                    }
                 }
 
                 parsedModalItems.filter(i => i.p).forEach(i => {
