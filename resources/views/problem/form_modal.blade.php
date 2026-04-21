@@ -228,7 +228,9 @@
                                     <th>No Problem</th>
                                     <th>Code</th>
                                     <th>SN</th>
-                                    <th class="text-center">Status</th>
+                                    <th>RI/PO</th>
+                                    <th class="text-center">Stock</th>
+                                    <th class="text-center">Detection</th>
                                 </tr>
                             </thead>
                             <tbody id="modal_preview_body"></tbody>

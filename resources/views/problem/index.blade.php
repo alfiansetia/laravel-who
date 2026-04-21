@@ -930,7 +930,9 @@
             var parsedModalItems = [];
             var parsedGeneralInfo = {
                 date: '',
-                number: ''
+                number: '',
+                ri_po: '',
+                stock: ''
             };
 
             $('#modal_paste_area').on('input', function() {
@@ -939,7 +941,9 @@
                 parsedModalItems = [];
                 parsedGeneralInfo = {
                     date: '',
-                    number: ''
+                    number: '',
+                    ri_po: '',
+                    stock: ''
                 };
 
                 lines.forEach((line, idx) => {
@@ -947,25 +951,39 @@
                     let cols = line.split('\t');
 
                     // Capture general info from the first valid line
-                    if (parsedGeneralInfo.date === '' && cols[0] && cols[1]) {
-                        parsedGeneralInfo.date = cols[0].trim();
-                        parsedGeneralInfo.number = cols[1].trim();
+                    if (parsedGeneralInfo.date === '' && (cols[0] || cols[1] || cols[9])) {
+                        if (cols[0]) parsedGeneralInfo.date = cols[0].trim();
+                        if (cols[1]) parsedGeneralInfo.number = cols[1].trim();
+                        if (cols[9]) parsedGeneralInfo.ri_po = cols[9].trim();
+                        
+                        // v di cols[6] = stock, v di cols[7] = import
+                        if ((cols[6] || '').toLowerCase() === 'v') parsedGeneralInfo.stock = 'stock';
+                        if ((cols[7] || '').toLowerCase() === 'v') parsedGeneralInfo.stock = 'import';
                     }
 
                     let code = (cols[2] || '').trim().toUpperCase();
                     let p = productMap[code] || null;
+                    
+                    // Qty is in cols[8]
+                    let qty = parseInt(cols[8]) || 1;
 
                     parsedModalItems.push({
                         p,
                         lot: (cols[4] || '').trim(),
                         desc: (cols[5] || '').trim(),
-                        qty: 1 // Default to 1 as per user's example looks like individual logs or bulk
+                        qty: qty
                     });
+
+                    let rowStock = '-';
+                    if ((cols[6] || '').toLowerCase() === 'v') rowStock = 'Stock';
+                    if ((cols[7] || '').toLowerCase() === 'v') rowStock = 'Import';
 
                     html += `<tr>
                         <td class="small text-muted">${cols[1] || '-'}</td>
-                        <td><span class="font-weight-bold">${cols[2] || '-'}</span></td>
+                        <td><span class="font-weight-bold text-primary">${cols[2] || '-'}</span></td>
                         <td class="small">${cols[4] || '-'}</td>
+                        <td class="small">${cols[9] || '-'}</td>
+                        <td class="text-center font-weight-bold" style="color: #6366f1;">${rowStock}</td>
                         <td class="text-center">${p ? '✅' : '❌'}</td>
                     </tr>`;
                 });
@@ -978,7 +996,6 @@
             $('#btn_modal_do_import').click(function() {
                 // Update general info from Excel if available
                 if (parsedGeneralInfo.date) {
-                    // Try to convert date if in DD/MM/YYYY format to YYYY-MM-DD for flatpickr
                     let parts = parsedGeneralInfo.date.split('/');
                     if (parts.length === 3) {
                         let isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -989,6 +1006,12 @@
                 }
                 if (parsedGeneralInfo.number) {
                     $('#prob_number').val(parsedGeneralInfo.number);
+                }
+                if (parsedGeneralInfo.ri_po) {
+                    $('#prob_ri_po').val(parsedGeneralInfo.ri_po);
+                }
+                if (parsedGeneralInfo.stock) {
+                    $('#prob_stock').val(parsedGeneralInfo.stock).trigger('change');
                 }
 
                 parsedModalItems.filter(i => i.p).forEach(i => {
