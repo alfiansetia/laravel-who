@@ -505,17 +505,20 @@
             });
 
             // Filter triggers
+            let isBatchUpdating = false;
             $('.select2').on('change', function() {
-                table.ajax.reload();
+                if (!isBatchUpdating) {
+                    table.ajax.reload();
+                }
             });
 
             // Reset button
             $('#btn_reset').click(function(e) {
-                e.stopPropagation(); // Prevent card collapse when clicking reset
-                $('#filter_type').val('').trigger('change');
-                $('#filter_year').val('').trigger('change');
-                $('#filter_product').val('').trigger('change');
-                $('#filter_status').val('').trigger('change');
+                e.stopPropagation();
+                isBatchUpdating = true;
+                $('#filter_type, #filter_year, #filter_product, #filter_status').val('').trigger('change');
+                isBatchUpdating = false;
+                table.ajax.reload();
             });
 
             // Toggle icon rotation on collapse
