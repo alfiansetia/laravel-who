@@ -58,6 +58,7 @@ Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 
+Route::get('problem/next-number', [\App\Http\Controllers\ProblemController::class, 'nextNumber'])->name('api.problem.next_number');
 Route::post('problem/{problem}/duplicate', [\App\Http\Controllers\ProblemController::class, 'duplicate'])->name('api.problem.duplicate');
 Route::apiResource('problem', ProblemController::class)->names('api.problem');
 

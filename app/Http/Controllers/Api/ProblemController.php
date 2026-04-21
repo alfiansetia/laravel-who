@@ -45,6 +45,47 @@ class ProblemController extends Controller
     }
 
     /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'date'   => 'required|date',
+            'number' => 'required|string|unique:problems,number',
+            'type'   => 'required|in:dus,unit',
+            'stock'  => 'required|in:stock,import',
+            'pic'    => 'required|string|max:100',
+            'items'  => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty'        => 'required|integer|min:1',
+        ]);
+
+        return DB::transaction(function () use ($request) {
+            $problem = Problem::create($request->only([
+                'date',
+                'number',
+                'type',
+                'stock',
+                'ri_po',
+                'status',
+                'email_on',
+                'pic'
+            ]));
+
+            foreach ($request->items as $item) {
+                $problem->items()->create([
+                    'product_id' => $item['product_id'],
+                    'qty'        => $item['qty'],
+                    'lot'        => $item['lot'] ?? null,
+                    'desc'       => $item['desc'] ?? null,
+                ]);
+            }
+
+            return response()->json(['message' => 'Data Problem berhasil disimpan.', 'data' => $problem]);
+        });
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Problem $problem)
@@ -53,61 +94,121 @@ class ProblemController extends Controller
     }
 
     /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Problem $problem)
+    {
+        $request->validate([
+            'date'     => 'required|date',
+            'number'   => 'required|string|unique:problems,number,' . $problem->id,
+            'type'     => 'required|in:dus,unit',
+            'stock'    => 'required|in:stock,import',
+            'pic'      => 'required|string|max:100',
+            'email_on' => 'nullable|date',
+            'ri_po'    => 'nullable|string|max:100',
+            'status'   => 'nullable|in:done,pending',
+            'items'    => 'sometimes|array',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty'        => 'required|integer|min:1',
+        ]);
+
+        return DB::transaction(function () use ($request, $problem) {
+            $problem->update($request->only([
+                'date',
+                'number',
+                'type',
+                'stock',
+                'email_on',
+                'ri_po',
+                'status',
+                'pic'
+            ]));
+
+            if ($request->has('items')) {
+                $problem->items()->delete();
+                foreach ($request->items as $item) {
+                    $problem->items()->create([
+                        'product_id' => $item['product_id'],
+                        'qty'        => $item['qty'],
+                        'lot'        => $item['lot'] ?? null,
+                        'desc'       => $item['desc'] ?? null,
+                    ]);
+                }
+            }
+
+            return response()->json(['message' => 'Data Problem berhasil diperbarui.']);
+        });
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Problem $problem)
     {
         $problem->delete();
-        return response()->json(['message' => 'Problem deleted successfully']);
+        return response()->json(['message' => 'Data Problem berhasil dihapus.']);
+    }
+
+    /**
+     * Duplicate a problem.
+     */
+    public function duplicate(Problem $problem)
+    {
+        return DB::transaction(function () use ($problem) {
+            $newProblem = $problem->replicate();
+
+            $prefix = strtoupper(date('Y-M-'));
+            $latest = Problem::where('number', 'like', $prefix . '%')->orderBy('number', 'desc')->first();
+
+            if ($latest) {
+                $parts = explode('-', $latest->number);
+                $serial = intval(end($parts)) + 1;
+                $newNumber = $prefix . str_pad($serial, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = $prefix . '001';
+            }
+
+            $newProblem->number = $newNumber;
+            $newProblem->date = date('Y-m-d');
+            $newProblem->status = 'pending';
+            $newProblem->save();
+
+            foreach ($problem->items as $item) {
+                $newItem = $item->replicate();
+                $newItem->problem_id = $newProblem->id;
+                $newItem->save();
+            }
+
+            return response()->json(['message' => 'Data Problem berhasil diduplikasi.', 'data' => $newProblem]);
+        });
+    }
+
+    /**
+     * Get next sequence number.
+     */
+    public function nextNumber()
+    {
+        $prefix = strtoupper(date('Y-M-'));
+        $latest = Problem::where('number', 'like', $prefix . '%')->orderBy('number', 'desc')->first();
+
+        if ($latest) {
+            $parts = explode('-', $latest->number);
+            $serial = intval(end($parts)) + 1;
+            $newNumber = $prefix . str_pad($serial, 3, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = $prefix . '001';
+        }
+
+        return response()->json(['number' => $newNumber]);
     }
 
     public function destroy_batch(Request $request)
     {
-        $this->validate($request, [
+        $request->validate([
             'ids'       => 'required|array',
             'ids.*'     => 'integer|exists:problems,id',
         ]);
         $deleted = Problem::whereIn('id', $request->ids)->delete();
-        return $this->sendResponse([
-            'deleted_count' => $deleted
-        ], 'Problem deleted successfully.');
-    }
-
-
-    public function import(Request $request)
-    {
-        $this->validate($request, [
-            'data'              => 'required|array',
-            'data.*'            => 'array',
-            'data.*.product'    => 'required',
-            'data.*.lot'        => 'required|max:200',
-            'data.*.ed'         => 'nullable|max:200',
-            'data.*.date'       => 'required|date_format:Y-m-d',
-            'data.*.qc_by'      => 'nullable|max:200',
-            'data.*.qc_note'    => 'nullable|max:200',
-        ]);
-        try {
-            DB::beginTransaction();
-            $problems = [];
-            foreach ($request->data ?? [] as $key => $item) {
-                $product = Product::query()->where('code', $item['product'])->first();
-                if (!$product) {
-                    throw new Exception('Product not found: ' . $item['product']);
-                }
-                $problems[] = Problem::create([
-                    'product_id' => $product->id,
-                    'lot_number' => $item['lot'],
-                    'lot_expiry' => $item['ed'],
-                    'qc_date'    => $item['date'],
-                    'qc_by'      => $item['qc_by'] ?? null,
-                    'qc_note'    => $item['qc_note'] ?? null,
-                ]);
-            }
-            DB::commit();
-            return $this->sendResponse($problems, 'Problem created successfully');
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return $this->sendError($th->getMessage());
-        }
+        return response()->json(['message' => $deleted . ' data berhasil dihapus.']);
     }
 }

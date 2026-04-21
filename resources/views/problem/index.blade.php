@@ -191,6 +191,8 @@
 
 @section('content')
     <div class="container-fluid py-4">
+        @include('problem.form_modal')
+        @include('problem.modal')
         <!-- Statistics -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4 mb-xl-0">
@@ -295,6 +297,11 @@
         <div class="card table-card">
             <div class="py-3 px-4 d-flex justify-content-between align-items-center border-bottom bg-light">
                 <h6 class="m-0 font-weight-bold text-dark">Daftar Problem</h6>
+                <div class="d-flex align-items-center">
+                    <button type="button" id="btn_add_problem" class="btn btn-primary px-3">
+                        <i class="fas fa-plus mr-1"></i>Tambah Problem
+                    </button>
+                </div>
             </div>
             <table class="table table-hover mb-0" id="table" style="width: 100%; cursor: pointer;">
                 <thead>
@@ -493,11 +500,11 @@
                                     <button type="button" class="btn btn-action btn-outline-info btn-duplicate" title="Duplikasi">
                                         <i class="far fa-copy"></i>
                                     </button>
-                                    <a href="{{ url('problems') }}/${data}/edit" class="btn btn-action btn-outline-primary" title="Edit">
+                                    <button type="button" class="btn btn-action btn-outline-primary btn-edit-problem" title="Edit">
                                         <i class="fas fa-edit"></i>
-                                    </a>
+                                    </button>
                                     <button type="button" class="btn btn-action btn-delete" title="Hapus">
-                                        <i class="fas fa-trash-alt"></i>
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>`;
                         }
@@ -608,6 +615,208 @@
                 });
             });
 
+            // --- PROBLEM FORM MODAL LOGIC ---
+            var modalItems = [];
+            var productMap = {};
+            @foreach ($products as $p)
+                productMap['{{ strtoupper($p->code) }}'] = {
+                    id: '{{ $p->id }}',
+                    code: '{{ $p->code }}',
+                    name: '{{ addslashes($p->name) }}'
+                };
+            @endforeach
+
+            $('.select2-modal').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                dropdownParent: $('#modalProblem')
+            });
+            $('.select2-inner').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                dropdownParent: $('#modal_inner_item')
+            });
+
+            $(".datepicker").flatpickr({
+                dateFormat: "Y-m-d",
+                allowInput: true,
+            });
+
+            // OPEN CREATE MODAL
+            $('#btn_add_problem').click(function() {
+                modalItems = [];
+                renderModalItems();
+                $('#form_problem')[0].reset();
+                $('#form_method').val('POST');
+                $('#problem_id').val('');
+                $('#modalProblemTitle').html(
+                    '<i class="fas fa-plus-circle mr-2 text-primary"></i>Tambah Problem Baru');
+
+                // Set default date
+                $('#prob_date').val(new Date().toISOString().split('T')[0]);
+
+                // Fetch next number
+                $.get("{{ route('api.problem.next_number') }}", function(res) {
+                    $('#prob_number').val(res.number);
+                    $('#modalProblem').modal('show');
+                });
+            });
+
+            // OPEN EDIT MODAL
+            $('#table tbody').on('click', '.btn-edit-problem', function(e) {
+                e.stopPropagation();
+                let id = table.row($(this).closest('tr')).id();
+
+                $.get(`{{ url('api/problem') }}/${id}`, function(res) {
+                    let d = res.data;
+                    $('#modalProblemTitle').html(
+                        '<i class="fas fa-edit mr-2 text-primary"></i>Edit Problem');
+                    $('#form_method').val('PUT');
+                    $('#problem_id').val(d.id);
+                    $('#prob_number').val(d.number);
+                    $('#prob_date').val(d.date);
+                    $('#prob_pic').val(d.pic).trigger('change');
+                    $('#prob_ri_po').val(d.ri_po);
+                    $('#prob_type').val(d.type).trigger('change');
+                    $('#prob_stock').val(d.stock).trigger('change');
+                    $('#prob_status').val(d.status).trigger('change');
+                    $('#prob_email_on').val(d.email_on);
+
+                    modalItems = d.items.map(i => ({
+                        product_id: i.product_id,
+                        qty: i.qty,
+                        lot: i.lot,
+                        desc: i.desc,
+                        displayCode: i.product.code,
+                        displayName: i.product.name
+                    }));
+                    renderModalItems();
+                    $('#modalProblem').modal('show');
+                });
+            });
+
+            // ITEM LOGIC
+            $('#btn_modal_add_item').click(() => $('#modal_inner_item').modal('show'));
+
+            $('#btn_modal_save_inner_item').click(function() {
+                let pid = $('#modal_select_product').val();
+                let sel = $('#modal_select_product').select2('data')[0];
+                if (!pid) return show_message('Pilih produk!');
+
+                modalItems.push({
+                    product_id: pid,
+                    qty: $('#modal_item_qty').val(),
+                    lot: $('#modal_item_lot').val(),
+                    desc: $('#modal_item_desc').val(),
+                    displayCode: sel.element.dataset.code,
+                    displayName: sel.element.dataset.name
+                });
+                renderModalItems();
+                $('#modal_inner_item').modal('hide');
+                $('#modal_select_product').val('').trigger('change');
+            });
+
+            $(document).on('click', '.btn-modal-remove-item', function() {
+                modalItems.splice($(this).data('index'), 1);
+                renderModalItems();
+            });
+
+            function renderModalItems() {
+                let html = '';
+                if (modalItems.length === 0) {
+                    html = `<tr><td colspan="6" class="text-center py-4 text-muted small">Belum ada item</td></tr>`;
+                } else {
+                    modalItems.forEach((it, idx) => {
+                        html += `<tr>
+                            <td class="text-center small">${idx+1}</td>
+                            <td><div class="font-weight-bold tiny">${it.displayCode}</div><div class="small text-muted" style="font-size:0.7rem">${it.displayName}</div>
+                                <input type="hidden" name="items[${idx}][product_id]" value="${it.product_id}">
+                            </td>
+                            <td class="text-center">${it.qty}<input type="hidden" name="items[${idx}][qty]" value="${it.qty}"></td>
+                            <td class="small">${it.lot || '-'}<input type="hidden" name="items[${idx}][lot]" value="${it.lot || ''}"></td>
+                            <td class="small text-muted">${it.desc || '-'}<input type="hidden" name="items[${idx}][desc]" value="${it.desc || ''}"></td>
+                            <td class="text-center"><button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-item" data-index="${idx}"><i class="fas fa-times"></i></button></td>
+                        </tr>`;
+                    });
+                }
+                $('#modal_items_body').html(html);
+            }
+
+            // PASTE EXCEL LOGIC
+            $('#btn_modal_paste_excel').click(() => {
+                $('#modal_paste_area').val('');
+                $('#modal_preview_container').hide();
+                $('#modal_inner_paste').modal('show');
+            });
+
+            var parsedModalItems = [];
+            $('#modal_paste_area').on('input', function() {
+                let lines = $(this).val().trim().split('\n');
+                let html = '';
+                parsedModalItems = [];
+                lines.forEach((line, idx) => {
+                    if (!line.trim()) return;
+                    let cols = line.split('\t');
+                    let p = productMap[(cols[0] || '').trim().toUpperCase()] || null;
+                    parsedModalItems.push({
+                        p,
+                        lot: (cols[2] || '').trim(),
+                        desc: (cols[3] || '').trim(),
+                        qty: parseInt(cols[4]) || 1
+                    });
+                    html +=
+                        `<tr><td>${cols[0]}</td><td>${cols[2]}</td><td class="text-center">${cols[4]||1}</td><td class="text-center">${p?'✅':'❌'}</td></tr>`;
+                });
+                $('#modal_preview_body').html(html);
+                $('#modal_preview_container').show();
+                $('#btn_modal_do_import').prop('disabled', parsedModalItems.filter(i => i.p).length === 0);
+            });
+
+            $('#btn_modal_do_import').click(function() {
+                parsedModalItems.filter(i => i.p).forEach(i => {
+                    modalItems.push({
+                        product_id: i.p.id,
+                        qty: i.qty,
+                        lot: i.lot,
+                        desc: i.desc,
+                        displayCode: i.p.code,
+                        displayName: i.p.name
+                    });
+                });
+                renderModalItems();
+                $('#modal_inner_paste').modal('hide');
+            });
+
+            // SUBMIT LOGIC
+            $('#form_problem').submit(function(e) {
+                e.preventDefault();
+                if (modalItems.length === 0) return show_message('Tambah minimal 1 item!', 'error');
+
+                let id = $('#problem_id').val();
+                let method = $('#form_method').val();
+                let url = method === 'POST' ? "{{ route('api.problem.store') }}" :
+                    `{{ url('api/problem') }}/${id}`;
+
+                let formData = $(this).serialize();
+                $('#btn_submit_problem').prop('disabled', true).html(
+                    '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...');
+
+                $.ajax({
+                    url,
+                    type: 'POST',
+                    data: formData
+                }).done(res => {
+                    show_message('Berhasil disimpan', 'success');
+                    $('#modalProblem').modal('hide');
+                    table.ajax.reload();
+                }).fail(xhr => {
+                    show_message(xhr.responseJSON.message || 'Error!', 'error');
+                }).always(() => {
+                    $('#btn_submit_problem').prop('disabled', false).html(
+                        '<i class="fas fa-save mr-2"></i>Simpan Problem');
+                });
+            });
+
             // DUPLICATE DATA
             $('#table tbody').on('click', '.btn-duplicate', function(e) {
                 e.stopPropagation();
@@ -626,7 +835,8 @@
                                 table.ajax.reload(null, false);
                             },
                             error: function(xhr) {
-                                show_message(xhr.responseJSON.message || 'Gagal menduplikasi',
+                                show_message(xhr.responseJSON.message ||
+                                    'Gagal menduplikasi',
                                     'error');
                             }
                         });
@@ -642,7 +852,7 @@
                 confirmation('Yakin ingin menghapus data ini?', function(confirmed) {
                     if (confirmed) {
                         $.ajax({
-                            url: `{{ url('problems') }}/${id}`,
+                            url: `{{ url('api/problem') }}/${id}`,
                             type: 'DELETE',
                             data: {
                                 _token: '{{ csrf_token() }}'
