@@ -60,7 +60,8 @@ Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do
 
 Route::get('problem/next-number', [ProblemController::class, 'nextNumber'])->name('api.problem.next_number');
 Route::post('problem/{problem}/duplicate', [ProblemController::class, 'duplicate'])->name('api.problem.duplicate');
-Route::apiResource('problem', ProblemController::class)->names('api.problem');
+Route::apiResource('problem', ProblemController::class)->names('api.problem')->only(['index', 'store', 'show', 'update', 'destroy']);
+Route::post('problem/{problem}/status', [ProblemController::class, 'updateStatus']);
 
 // Problem Item Routes
 Route::apiResource('problem-item', \App\Http\Controllers\Api\ProblemItemController::class)

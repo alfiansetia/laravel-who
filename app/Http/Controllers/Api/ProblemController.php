@@ -165,6 +165,20 @@ class ProblemController extends Controller
         });
     }
 
+    public function updateStatus(Request $request, Problem $problem)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,done'
+        ]);
+
+        $problem->update(['status' => $request->status]);
+
+        return response()->json([
+            'message' => 'Status berhasil diperbarui.',
+            'status' => $problem->status
+        ]);
+    }
+
     /**
      * Remove the specified resource from storage.
      */

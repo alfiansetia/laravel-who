@@ -11,8 +11,10 @@
             <form id="form_item" action="store">
                 <div class="modal-body pt-3">
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-secondary">Pilih Product <span class="text-danger">*</span></label>
-                        <select name="product_id" id="select_product" class="form-control select2" style="width: 100%" required>
+                        <label class="small font-weight-bold text-secondary">Pilih Product <span
+                                class="text-danger">*</span></label>
+                        <select name="product_id" id="select_product" class="form-control select2" style="width: 100%"
+                            required>
                             <option value="">-- Pilih Product --</option>
                             @foreach ($products as $item)
                                 <option value="{{ $item->id }}">[{{ $item->code }}] {{ $item->name }}</option>
@@ -20,8 +22,10 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-secondary">Qty <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="item_qty" name="qty" placeholder="Qty" min="1" value="1" required>
+                        <label class="small font-weight-bold text-secondary">Qty <span
+                                class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="item_qty" name="qty" placeholder="Qty"
+                            min="1" value="1" required>
                     </div>
                     <div class="form-group mb-3">
                         <label class="small font-weight-bold text-secondary">Lot / Serial Number</label>
@@ -54,12 +58,14 @@
             <form id="form_log" action="store">
                 <div class="modal-body pt-3">
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-secondary">Tanggal <span class="text-danger">*</span></label>
+                        <label class="small font-weight-bold text-secondary">Tanggal <span
+                                class="text-danger">*</span></label>
                         <input type="text" class="form-control datepicker" id="log_date" name="date" required>
                     </div>
                     <div class="form-group mb-0">
                         <label class="small font-weight-bold text-secondary">Keterangan / Progress</label>
-                        <textarea class="form-control" id="log_desc" name="desc" placeholder="Tulis progress atau catatan di sini..." rows="5"></textarea>
+                        <textarea class="form-control" id="log_desc" name="desc" placeholder="Tulis progress atau catatan di sini..."
+                            rows="5"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer border-0">

@@ -185,6 +185,15 @@
         .dataTables_wrapper .dt--bottom-section {
             padding: 1.25rem;
         }
+
+        /* Fix dropdown hidden in responsive table */
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        .table-card {
+            overflow: visible !important;
+        }
     </style>
 @endpush
 
@@ -485,18 +494,24 @@
                         data: "id",
                         className: 'text-center',
                         orderable: false,
-                        render: function(data) {
+                        render: function(data, type, row) {
+                            let statusBtn = row.status === 'done' ?
+                                `<a class="dropdown-item btn-update-status" href="javascript:void(0)" data-id="${data}" data-status="pending"><i class="fas fa-clock mr-2 text-warning"></i>Mark as Pending</a>` :
+                                `<a class="dropdown-item btn-update-status" href="javascript:void(0)" data-id="${data}" data-status="done"><i class="fas fa-check mr-2 text-success"></i>Mark as Done</a>`;
+
                             return `
-                                <div class="d-flex justify-content-center">
-                                    <button type="button" class="btn btn-action btn-outline-info btn-duplicate" title="Duplikasi">
-                                        <i class="far fa-copy"></i>
+                                <div class="dropdown text-center">
+                                    <button class="btn btn-sm btn-light btn-round shadow-none" type="button" data-toggle="dropdown" data-boundary="viewport">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <button type="button" class="btn btn-action btn-outline-primary btn-edit-problem" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-action btn-delete" title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right shadow border-0" style="border-radius: 10px;">
+                                        ${statusBtn}
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item btn-duplicate" href="javascript:void(0)" data-id="${data}"><i class="far fa-copy mr-2 text-info"></i>Duplikasi</a>
+                                        <a class="dropdown-item btn-edit-problem" href="javascript:void(0)" data-id="${data}"><i class="fas fa-edit mr-2 text-primary"></i>Edit</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item btn-delete text-danger" href="javascript:void(0)" data-id="${data}"><i class="fas fa-trash mr-2"></i>Hapus</a>
+                                    </div>
                                 </div>`;
                         }
                     },
@@ -913,18 +928,24 @@
             });
 
             var parsedModalItems = [];
-            var parsedGeneralInfo = { date: '', number: '' };
+            var parsedGeneralInfo = {
+                date: '',
+                number: ''
+            };
 
             $('#modal_paste_area').on('input', function() {
                 let lines = $(this).val().trim().split('\n');
                 let html = '';
                 parsedModalItems = [];
-                parsedGeneralInfo = { date: '', number: '' };
+                parsedGeneralInfo = {
+                    date: '',
+                    number: ''
+                };
 
                 lines.forEach((line, idx) => {
                     if (!line.trim()) return;
                     let cols = line.split('\t');
-                    
+
                     // Capture general info from the first valid line
                     if (parsedGeneralInfo.date === '' && cols[0] && cols[1]) {
                         parsedGeneralInfo.date = cols[0].trim();
@@ -933,14 +954,14 @@
 
                     let code = (cols[2] || '').trim().toUpperCase();
                     let p = productMap[code] || null;
-                    
+
                     parsedModalItems.push({
                         p,
                         lot: (cols[4] || '').trim(),
                         desc: (cols[5] || '').trim(),
                         qty: 1 // Default to 1 as per user's example looks like individual logs or bulk
                     });
-                    
+
                     html += `<tr>
                         <td class="small text-muted">${cols[1] || '-'}</td>
                         <td><span class="font-weight-bold">${cols[2] || '-'}</span></td>
@@ -948,7 +969,7 @@
                         <td class="text-center">${p ? '✅' : '❌'}</td>
                     </tr>`;
                 });
-                
+
                 $('#modal_preview_body').html(html);
                 $('#modal_preview_container').show();
                 $('#btn_modal_do_import').prop('disabled', parsedModalItems.filter(i => i.p).length === 0);
@@ -1015,7 +1036,27 @@
                 });
             });
 
-            // DUPLICATE DATA
+            // Status Update Logic
+            $(document).on('click', '.btn-update-status', function() {
+                let id = $(this).data('id');
+                let status = $(this).data('status');
+                let self = $(this);
+
+                $.ajax({
+                    url: `{{ url('api/problem') }}/${id}/status`,
+                    type: 'POST',
+                    data: {
+                        status: status
+                    }
+                }).done(res => {
+                    show_message(res.message, 'success');
+                    table.ajax.reload(null, false); // Reload without resetting page
+                }).fail(xhr => {
+                    show_message(xhr.responseJSON.message || 'Error!', 'error');
+                });
+            });
+
+            // DUPLICATE LOGIC
             $('#table tbody').on('click', '.btn-duplicate', function(e) {
                 e.stopPropagation();
                 let id = table.row($(this).closest('tr')).id();
