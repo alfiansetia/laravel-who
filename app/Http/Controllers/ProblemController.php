@@ -6,6 +6,7 @@ use App\Models\Problem;
 use App\Models\Product;
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProblemController extends Controller
 {
@@ -32,32 +33,44 @@ class ProblemController extends Controller
      */
     public function store(Request $request)
     {
-        $problem = Problem::create($request->only([
-            'date',
-            'number',
-            'type',
-            'stock',
-            'ri_po',
-            'status',
-            'email_on',
-            'pic',
-        ]));
+        $request->validate([
+            'date'   => 'required|date',
+            'number' => 'required|string|unique:problems,number',
+            'type'   => 'required|in:dus,unit',
+            'stock'  => 'required|in:stock,import',
+            'pic'    => 'required|string|max:100',
+            'items'  => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.qty'        => 'required|integer|min:1',
+            'email_on' => 'nullable|date',
+            'ri_po'    => 'nullable|string|max:100',
+            'status'   => 'nullable|in:done,pending',
+        ]);
 
-        // Create items if provided
-        if ($request->has('items') && is_array($request->items)) {
+        return DB::transaction(function () use ($request) {
+            $problem = Problem::create($request->only([
+                'date',
+                'number',
+                'type',
+                'stock',
+                'email_on',
+                'ri_po',
+                'status',
+                'pic'
+            ]));
+
             foreach ($request->items as $item) {
-                if (!empty($item['product_id']) && !empty($item['qty'])) {
-                    $problem->items()->create([
-                        'product_id' => $item['product_id'],
-                        'qty' => $item['qty'],
-                        'lot' => $item['lot'] ?? null,
-                        'desc' => $item['desc'] ?? null,
-                    ]);
-                }
+                $problem->items()->create([
+                    'product_id' => $item['product_id'],
+                    'qty'        => $item['qty'],
+                    'lot'        => $item['lot'] ?? null,
+                    'desc'       => $item['desc'] ?? null,
+                ]);
             }
-        }
 
-        return redirect()->route('problems.edit', $problem->id);
+            return redirect()->route('problems.edit', $problem->id)
+                ->with('success', 'Data Problem berhasil disimpan.');
+        });
     }
 
     /**
@@ -65,7 +78,7 @@ class ProblemController extends Controller
      */
     public function show(Problem $problem)
     {
-        //
+        return response()->json(['data' => $problem->load(['items.product', 'logs'])]);
     }
 
     /**
@@ -75,7 +88,7 @@ class ProblemController extends Controller
     {
         $data = $problem->load(['items.product', 'logs']);
         $products = Product::orderBy('code')->get();
-        return view('problem.edit', compact('data', 'products'))->with('title', 'Data Problem');
+        return view('problem.edit', compact('data', 'products'))->with('title', 'Edit Problem');
     }
 
     /**
@@ -83,17 +96,34 @@ class ProblemController extends Controller
      */
     public function update(Request $request, Problem $problem)
     {
+        $request->validate([
+            'date'     => 'required|date',
+            'number'   => 'required|string|unique:problems,number,' . $problem->id,
+            'type'     => 'required|in:dus,unit',
+            'stock'    => 'required|in:stock,import',
+            'pic'      => 'required|string|max:100',
+            'email_on' => 'nullable|date',
+            'ri_po'    => 'nullable|string|max:100',
+            'status'   => 'nullable|in:done,pending',
+        ]);
+
         $problem->update($request->only([
             'date',
             'number',
             'type',
             'stock',
+            'email_on',
             'ri_po',
             'status',
-            'email_on',
-            'pic',
+            'pic'
         ]));
-        return redirect()->route('problems.edit', $problem->id);
+
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Informasi Problem berhasil diperbarui.']);
+        }
+
+        return redirect()->route('problems.edit', $problem->id)
+            ->with('success', 'Informasi Problem berhasil diperbarui.');
     }
 
     /**
@@ -101,7 +131,12 @@ class ProblemController extends Controller
      */
     public function destroy(Problem $problem)
     {
-        //
+        $problem->delete();
+        if (request()->ajax()) {
+            return response()->json(['message' => 'Data Problem berhasil dihapus.']);
+        }
+        return redirect()->route('problems.index')
+            ->with('success', 'Data Problem berhasil dihapus.');
     }
 
 
