@@ -611,6 +611,7 @@
             var originalModalItems = [];
             var modalLogs = [];
             var originalModalLogs = [];
+            var tableItems, tableLogs;
             var productMap = {};
             @foreach ($products as $p)
                 productMap['{{ strtoupper($p->code) }}'] = {
@@ -630,6 +631,35 @@
                 width: '100%',
                 dropdownParent: $('#modal_inner_item')
             });
+
+            // Initialize Modal DataTables
+            tableItems = $('#table_modal_items').DataTable({
+                paging: false,
+                searching: true,
+                info: false,
+                ordering: false,
+                retrieve: true,
+                dom: 'ft',
+                language: {
+                    search: ""
+                },
+            });
+            $('#table_modal_items_filter input').addClass('form-control form-control-sm mb-2').attr('placeholder',
+                'Cari item...');
+
+            tableLogs = $('#table_modal_logs').DataTable({
+                paging: false,
+                searching: true,
+                info: false,
+                ordering: false,
+                retrieve: true,
+                dom: 'ft',
+                language: {
+                    search: ""
+                },
+            });
+            $('#table_modal_logs_filter input').addClass('form-control form-control-sm mb-2').attr('placeholder',
+                'Cari log...');
 
             $(".datepicker").flatpickr({
                 dateFormat: "Y-m-d",
@@ -778,33 +808,26 @@
             });
 
             function renderModalItems() {
-                let html = '';
-                if (modalItems.length === 0) {
-                    html = `<tr><td colspan="6" class="text-center py-4 text-muted small">Belum ada item ditambahkan</td></tr>`;
-                } else {
-                    modalItems.forEach((it, idx) => {
-                        html += `<tr>
-                            <td class="text-center small">${idx+1}</td>
-                            <td><div class="font-weight-bold tiny">${it.displayCode}</div><div class="small text-muted" style="font-size:0.7rem">${it.displayName}</div>
-                                <input type="hidden" name="items[${idx}][product_id]" value="${it.product_id}">
-                            </td>
-                            <td class="text-center">${it.qty}<input type="hidden" name="items[${idx}][qty]" value="${it.qty}"></td>
-                            <td class="small">${it.lot || '-'}<input type="hidden" name="items[${idx}][lot]" value="${it.lot || ''}"></td>
-                            <td class="small text-muted">${it.desc || '-'}<input type="hidden" name="items[${idx}][desc]" value="${it.desc || ''}"></td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center">
-                                    <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-item mr-1" data-index="${idx}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-item" data-index="${idx}">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    });
-                }
-                $('#modal_items_body').html(html);
+                tableItems.clear();
+                modalItems.forEach((it, idx) => {
+                    tableItems.row.add([
+                        `<div class="text-center small">${idx+1}</div>`,
+                        `<div><div class="font-weight-bold tiny">${it.displayCode}</div><div class="small text-muted" style="font-size:0.7rem">${it.displayName}</div>
+                            <input type="hidden" name="items[${idx}][product_id]" value="${it.product_id}"></div>`,
+                        `<div class="text-center">${it.qty}<input type="hidden" name="items[${idx}][qty]" value="${it.qty}"></div>`,
+                        `<div class="small">${it.lot || '-'}<input type="hidden" name="items[${idx}][lot]" value="${it.lot || ''}"></div>`,
+                        `<div class="small text-muted">${it.desc || '-'}<input type="hidden" name="items[${idx}][desc]" value="${it.desc || ''}"></div>`,
+                        `<div class="d-flex justify-content-center">
+                            <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-item mr-1" data-index="${idx}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-item" data-index="${idx}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>`
+                    ]);
+                });
+                tableItems.draw();
             }
 
             // LOG LOGIC
@@ -861,29 +884,23 @@
             });
 
             function renderModalLogs() {
-                let html = '';
-                if (modalLogs.length === 0) {
-                    html = `<tr><td colspan="4" class="text-center py-4 text-muted small">Belum ada log aktivitas</td></tr>`;
-                } else {
-                    modalLogs.forEach((it, idx) => {
-                        html += `<tr>
-                            <td class="text-center small">${idx+1}</td>
-                            <td class="small font-weight-bold">${it.date}<input type="hidden" name="logs[${idx}][date]" value="${it.date}"></td>
-                            <td class="small text-muted">${it.desc}<input type="hidden" name="logs[${idx}][desc]" value="${it.desc}"></td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center">
-                                    <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-log mr-1" data-index="${idx}">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-log" data-index="${idx}">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    });
-                }
-                $('#modal_logs_body').html(html);
+                tableLogs.clear();
+                modalLogs.forEach((it, idx) => {
+                    tableLogs.row.add([
+                        `<div class="text-center small">${idx+1}</div>`,
+                        `<div class="small font-weight-bold">${it.date}<input type="hidden" name="logs[${idx}][date]" value="${it.date}"></div>`,
+                        `<div class="small text-muted">${it.desc}<input type="hidden" name="logs[${idx}][desc]" value="${it.desc}"></div>`,
+                        `<div class="d-flex justify-content-center">
+                            <button type="button" class="btn btn-xs btn-outline-warning btn-modal-edit-log mr-1" data-index="${idx}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-xs btn-outline-danger btn-modal-remove-log" data-index="${idx}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>`
+                    ]);
+                });
+                tableLogs.draw();
             }
 
             // PASTE EXCEL LOGIC

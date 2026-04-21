@@ -81,7 +81,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="section-title m-0">
                             Produk Bermasalah
-                            <button type="button" class="btn btn-link btn-sm text-muted p-0 ml-2" id="btn_modal_refresh_items" title="Reset/Sinkron Ulang">
+                            <button type="button" class="btn btn-link btn-sm text-muted p-0 ml-2"
+                                id="btn_modal_refresh_items" title="Reset/Sinkron Ulang">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
@@ -95,7 +96,7 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive bg-white rounded border mb-4" style="max-height: 250px;">
+                    <div class="table-responsive bg-white rounded border mb-4" style="max-height: 350px;">
                         <table class="table table-hover table-items mb-0" id="table_modal_items">
                             <thead class="bg-light sticky-top">
                                 <tr>
@@ -108,11 +109,6 @@
                                 </tr>
                             </thead>
                             <tbody id="modal_items_body">
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        Belum ada item ditambahkan
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -121,7 +117,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
                         <div class="section-title m-0">
                             Log Aktivitas
-                            <button type="button" class="btn btn-link btn-sm text-muted p-0 ml-2" id="btn_modal_refresh_logs" title="Reset Log">
+                            <button type="button" class="btn btn-link btn-sm text-muted p-0 ml-2"
+                                id="btn_modal_refresh_logs" title="Reset Log">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
@@ -129,8 +126,8 @@
                             <i class="fas fa-plus mr-1"></i>Tambah Log
                         </button>
                     </div>
-                    <div class="table-responsive bg-white rounded border" style="max-height: 200px;">
-                        <table class="table table-sm table-hover mb-0">
+                    <div class="table-responsive bg-white rounded border" style="max-height: 250px;">
+                        <table class="table table-sm table-hover mb-0" id="table_modal_logs">
                             <thead class="bg-light sticky-top">
                                 <tr>
                                     <th class="text-center" style="width: 50px;">#</th>
@@ -140,7 +137,6 @@
                                 </tr>
                             </thead>
                             <tbody id="modal_logs_body">
-                                <tr><td colspan="4" class="text-center py-4 text-muted small">Belum ada log aktivitas</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -253,7 +249,8 @@
     style="background: rgba(0,0,0,0.2); z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-            <div class="modal-header border-0 bg-info text-white" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+            <div class="modal-header border-0 bg-info text-white"
+                style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
                 <h6 class="modal-title font-weight-bold"><i class="fas fa-history mr-2"></i>Tambah Log Aktivitas</h6>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -265,13 +262,16 @@
                     <input type="text" id="modal_log_date" class="form-control datepicker" required>
                 </div>
                 <div class="form-group">
-                    <label class="small font-weight-bold">Keterangan / Progress <span class="text-danger">*</span></label>
+                    <label class="small font-weight-bold">Keterangan / Progress <span
+                            class="text-danger">*</span></label>
                     <textarea id="modal_log_desc" class="form-control" rows="4" placeholder="Tulis progress di sini..."></textarea>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+            <div class="modal-footer border-0 bg-light"
+                style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                 <button type="button" class="btn btn-light" data-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-info text-white px-4" id="btn_modal_save_inner_log">Tambahkan</button>
+                <button type="button" class="btn btn-info text-white px-4"
+                    id="btn_modal_save_inner_log">Tambahkan</button>
             </div>
         </div>
     </div>
