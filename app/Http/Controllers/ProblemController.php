@@ -139,6 +139,47 @@ class ProblemController extends Controller
             ->with('success', 'Data Problem berhasil dihapus.');
     }
 
+    /**
+     * Duplicate a problem with a new number and today's date.
+     */
+    public function duplicate(Problem $problem)
+    {
+        return DB::transaction(function () use ($problem) {
+            $newProblem = $problem->replicate();
+
+            // Generate New Number (Format: YYYY-MMM-SERIAL)
+            $prefix = strtoupper(date('Y-M-'));
+            $latest = Problem::where('number', 'like', $prefix . '%')
+                ->orderBy('number', 'desc')
+                ->first();
+
+            if ($latest) {
+                $parts = explode('-', $latest->number);
+                $serial = intval(end($parts)) + 1;
+                $newNumber = $prefix . str_pad($serial, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newNumber = $prefix . '001';
+            }
+
+            $newProblem->number = $newNumber;
+            $newProblem->date = date('Y-m-d');
+            $newProblem->status = 'pending'; // Reset status to pending for new duplicate
+            $newProblem->save();
+
+            // Duplicate related items
+            foreach ($problem->items as $item) {
+                $newItem = $item->replicate();
+                $newItem->problem_id = $newProblem->id;
+                $newItem->save();
+            }
+
+            return response()->json([
+                'message' => 'Data Problem berhasil diduplikasi dengan nomor: ' . $newNumber,
+                'data' => $newProblem
+            ]);
+        });
+    }
+
 
     public function import()
     {

@@ -490,7 +490,10 @@
                         render: function(data) {
                             return `
                                 <div class="d-flex justify-content-center">
-                                    <a href="{{ url('problems') }}/${data}/edit" class="btn btn-action btn-edit" title="Edit">
+                                    <button type="button" class="btn btn-action btn-outline-info btn-duplicate" title="Duplikasi">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                    <a href="{{ url('problems') }}/${data}/edit" class="btn btn-action btn-outline-primary" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-action btn-delete" title="Hapus">
@@ -601,6 +604,32 @@
                     },
                     error: function() {
                         show_message('Failed to load details', 'error');
+                    }
+                });
+            });
+
+            // DUPLICATE DATA
+            $('#table tbody').on('click', '.btn-duplicate', function(e) {
+                e.stopPropagation();
+                let id = table.row($(this).closest('tr')).id();
+
+                confirmation('Duplikasi data problem ini?', function(confirmed) {
+                    if (confirmed) {
+                        $.ajax({
+                            url: `{{ url('api/problem') }}/${id}/duplicate`,
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(result) {
+                                show_message(result.message, 'success');
+                                table.ajax.reload(null, false);
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Gagal menduplikasi',
+                                    'error');
+                            }
+                        });
                     }
                 });
             });
