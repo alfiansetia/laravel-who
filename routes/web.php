@@ -7,6 +7,7 @@ use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\DoController;
 use App\Http\Controllers\FileDownloaderController;
+use App\Http\Controllers\FileSearchController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
@@ -65,6 +66,11 @@ Route::get('tools/sn', [ToolController::class, 'index'])->name('tools.sn');
 Route::get('tools/scoreboard', [ToolController::class, 'scoreboard'])->name('tools.scoreboard');
 Route::get('tools/ocr', [ToolController::class, 'ocr'])->name('tools.ocr');
 Route::get('tools/spreadsheet', [ToolController::class, 'spreadsheet'])->name('tools.spreadsheet');
+
+Route::get('tools/file-search', [FileSearchController::class, 'index'])->name('tools.file_search');
+Route::get('tools/file-search/data', [FileSearchController::class, 'getData'])->name('tools.file_search.data');
+Route::get('tools/file-search/download-script', [FileSearchController::class, 'downloadScript'])->name('tools.file_search.download_script');
+Route::post('tools/file-search/upload', [FileSearchController::class, 'upload'])->name('tools.file_search.upload');
 
 Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('tools.print_resi');
 

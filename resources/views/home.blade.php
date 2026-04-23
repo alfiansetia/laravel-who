@@ -441,6 +441,12 @@
                             'title' => 'Scoreboard',
                             'desc' => 'Papan skor digital',
                         ],
+                        [
+                            'route' => 'tools.file_search',
+                            'icon' => 'search',
+                            'title' => 'File Search',
+                            'desc' => 'Cari file di server',
+                        ],
                     ];
                 @endphp
 
