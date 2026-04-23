@@ -67,19 +67,32 @@
                             <div class="d-flex align-items-center">
                                 <span class="small text-muted mr-2 font-weight-bold">Type:</span>
                                 <div class="btn-group btn-group-sm shadow-sm rounded overflow-hidden" role="group">
-                                    <button type="button" class="btn btn-light border filter-type px-3 active" data-type="all">All</button>
-                                    <button type="button" class="btn btn-light border filter-type px-3" data-type="folder">Folders</button>
-                                    <button type="button" class="btn btn-light border filter-type px-3" data-type="file">Files</button>
+                                    <button type="button" class="btn btn-light border filter-type px-3 active"
+                                        data-type="all">All</button>
+                                    <button type="button" class="btn btn-light border filter-type px-3"
+                                        data-type="folder">Folders</button>
+                                    <button type="button" class="btn btn-light border filter-type px-3"
+                                        data-type="file">Files</button>
                                 </div>
                             </div>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="caseSensitiveSwitch">
-                                <label class="custom-control-label small text-muted cursor-pointer font-weight-bold" for="caseSensitiveSwitch">Case Sensitive</label>
+                                <label class="custom-control-label small text-muted cursor-pointer font-weight-bold"
+                                    for="caseSensitiveSwitch">Case Sensitive</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="card-body p-0">
+                        <div class="px-4 py-3 bg-light border-bottom d-flex align-items-center justify-content-between"
+                            id="navigationHeader">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb bg-transparent p-0 m-0" id="breadcrumbList">
+                                    <li class="breadcrumb-item active"><i class="fas fa-home"></i> Root</li>
+                                </ol>
+                            </nav>
+                            <small class="text-muted" id="viewModeBadge">Browse Mode</small>
+                        </div>
                         <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
                             <table class="table table-hover mb-0" id="fileTable">
                                 <thead class="bg-light text-muted sticky-top" style="top: 0; z-index: 10;">
@@ -229,6 +242,30 @@
                 transition: all 0.3s;
             }
 
+            .file-item[data-type="folder"] {
+                cursor: pointer !important;
+            }
+
+            .file-item[data-type="folder"]:hover .file-name {
+                color: #6366f1;
+                text-decoration: underline;
+            }
+
+            .breadcrumb-item+.breadcrumb-item::before {
+                content: "›";
+                color: #cbd5e1;
+            }
+
+            .breadcrumb-item a {
+                color: #6366f1;
+                font-weight: 500;
+                text-decoration: none;
+            }
+
+            .breadcrumb-item a:hover {
+                text-decoration: underline;
+            }
+
             .filter-type.active {
                 background-color: #6366f1 !important;
                 color: white !important;
@@ -244,12 +281,15 @@
     @push('js')
         <script>
             let allFileData = [];
+            let currentPath = ''; // Root is empty string
 
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchInput');
                 const fileListBody = document.getElementById('fileListBody');
                 const resultsCountStr = document.getElementById('resultsCount');
                 const footerTotalCount = document.getElementById('footerTotalCount');
+                const breadcrumbList = document.getElementById('breadcrumbList');
+                const viewModeBadge = document.getElementById('viewModeBadge');
 
                 // Initial fetch
                 fetchData();
@@ -257,7 +297,7 @@
                 function fetchData() {
                     $.get('{{ route('tools.file_search.data') }}', function(data) {
                         allFileData = data;
-                        renderTable(allFileData);
+                        renderUI(); // Initial render
 
                         const foldersTotal = allFileData.filter(f => f.type === 'folder').length;
                         const filesTotal = allFileData.filter(f => f.type === 'file').length;
@@ -284,27 +324,85 @@
                     });
                 }
 
-                function renderTable(data) {
+                function renderUI() {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        performGlobalSearch(query);
+                    } else {
+                        renderBrowseFolder(currentPath);
+                    }
+                }
+
+                function renderBrowseFolder(path) {
+                    currentPath = path;
+                    updateBreadcrumbs(path);
+                    viewModeBadge.innerHTML = '<span class="badge badge-info">Browse Mode</span>';
+
+                    const children = getDirectChildren(allFileData, path);
+                    displayData(children);
+                }
+
+                function performGlobalSearch(query) {
+                    viewModeBadge.innerHTML = '<span class="badge badge-warning">Global Search</span>';
+                    updateBreadcrumbs(null); // Clear breadcrumbs or show "Search Results"
+
+                    const typeFilter = $('.filter-type.active').data('type');
+                    const isCaseSensitive = document.getElementById('caseSensitiveSwitch').checked;
+
+                    const normalizedQuery = isCaseSensitive ? query : query.toLowerCase();
+                    const keywords = normalizedQuery.split(' ').filter(k => k.length > 0);
+
+                    const filtered = allFileData.filter(file => {
+                        const typeMatch = typeFilter === 'all' || file.type === typeFilter;
+
+                        const nameToSearch = isCaseSensitive ? file.name : file.name.toLowerCase();
+                        const pathToSearch = isCaseSensitive ? file.path : file.path.toLowerCase();
+
+                        const textMatch = keywords.every(kw => nameToSearch.includes(kw) || pathToSearch
+                            .includes(kw));
+
+                        return typeMatch && textMatch;
+                    });
+
+                    displayData(filtered);
+                }
+
+                function getDirectChildren(data, path) {
+                    if (!path) {
+                        return data.filter(item => !item.path.includes('/'));
+                    }
+                    const prefix = path + '/';
+                    return data.filter(item => {
+                        if (item.path === path) return false; // Don't show self
+                        if (!item.path.startsWith(prefix)) return false;
+                        const relativePart = item.path.substring(prefix.length);
+                        return !relativePart.includes('/');
+                    });
+                }
+
+                function displayData(data) {
                     if (data.length === 0) {
-                        fileListBody.innerHTML = `
-                            <tr>
-                                <td colspan="3" class="text-center py-5">Index kosong atau belum diupload.</td>
-                            </tr>`;
-                        resultsCountStr.textContent = '0 items found';
+                        fileListBody.innerHTML =
+                            '<tr><td colspan="3" class="text-center py-5">Empty folder or no results found.</td></tr>';
+                        const foldersCount = 0;
+                        const filesCount = 0;
+                        resultsCountStr.textContent = `0 items found (0 folders, 0 files)`;
                         return;
                     }
 
                     let html = '';
+                    data.sort((a, b) => (b.type === 'folder') - (a.type === 'folder')); // Folders first
+
                     data.forEach(file => {
                         const icon = file.type === 'folder' ?
                             '<i class="fas fa-folder fa-lg text-warning mr-3"></i>' :
                             '<i class="far fa-file-alt fa-lg text-info mr-3"></i>';
 
                         const badgeClass = file.type === 'folder' ? 'badge-soft-warning' : 'badge-soft-info';
-                        const weightClass = file.type === 'folder' ? 'font-weight-bold' : '';
+                        const weightClass = file.type === 'folder' ? 'font-weight-bold font-italic' : '';
 
                         html += `
-                            <tr class="file-item ${weightClass}" data-name="${file.name.toLowerCase()}" data-path="${file.path.toLowerCase()}" data-type="${file.type}">
+                            <tr class="file-item ${weightClass}" data-path="${file.path}" data-type="${file.type}" ${file.type === 'folder' ? 'onclick="goToPath(\'' + file.path + '\')"' : ''}>
                                 <td class="px-4 align-middle">
                                     <div class="d-flex align-items-center">
                                         ${icon}
@@ -329,58 +427,48 @@
                         `${data.length} items found (${foldersCount} folders, ${filesCount} files)`;
                 }
 
-                function performFilter() {
-                    const rawQuery = searchInput.value.trim();
-                    const typeFilter = $('.filter-type.active').data('type');
-                    const isCaseSensitive = document.getElementById('caseSensitiveSwitch').checked;
-
-                    if (!rawQuery && typeFilter === 'all') {
-                        $('.file-item').show();
-                        const foldersTotal = allFileData.filter(f => f.type === 'folder').length;
-                        const filesTotal = allFileData.filter(f => f.type === 'file').length;
-                        resultsCountStr.textContent = `${allFileData.length} items found (${foldersTotal} folders, ${filesTotal} files)`;
+                function updateBreadcrumbs(path) {
+                    if (path === null) {
+                        breadcrumbList.innerHTML =
+                            '<li class="breadcrumb-item"><a href="#" onclick="goToPath(\'\')"><i class="fas fa-home"></i> Root</a></li><li class="breadcrumb-item active">Search Results</li>';
                         return;
                     }
 
-                    const query = isCaseSensitive ? rawQuery : rawQuery.toLowerCase();
-                    const keywords = query.split(' ').filter(k => k.length > 0);
-                    
-                    let visibleCount = 0;
-                    let visibleFolders = 0;
-                    let visibleFiles = 0;
+                    let html = '<li class="breadcrumb-item ' + (path === '' ? 'active' : '') + '">';
+                    if (path === '') {
+                        html += '<i class="fas fa-home"></i> Root</li>';
+                    } else {
+                        html += '<a href="#" onclick="goToPath(\'\')"><i class="fas fa-home"></i> Root</a></li>';
 
-                    $('.file-item').each(function() {
-                        const name = isCaseSensitive ? $(this).find('.file-name').text() : $(this).attr('data-name');
-                        const path = isCaseSensitive ? $(this).find('small').text() : $(this).attr('data-path');
-                        const type = $(this).attr('data-type');
-                        
-                        // Type Filter check
-                        const typeMatch = typeFilter === 'all' || type === typeFilter;
-                        
-                        // Text logic check
-                        const textMatch = keywords.length === 0 || keywords.every(kw => name.includes(kw) || path.includes(kw));
-                        
-                        if (typeMatch && textMatch) {
-                            $(this).show();
-                            visibleCount++;
-                            if (type === 'folder') visibleFolders++;
-                            else visibleFiles++;
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-
-                    resultsCountStr.textContent = `${visibleCount} items found (${visibleFolders} folders, ${visibleFiles} files)`;
+                        const parts = path.split('/');
+                        let currentAcc = '';
+                        parts.forEach((part, index) => {
+                            currentAcc += (index > 0 ? '/' : '') + part;
+                            if (index === parts.length - 1) {
+                                html +=
+                                    `<li class="breadcrumb-item active text-truncate" style="max-width: 150px;">${part}</li>`;
+                            } else {
+                                html +=
+                                    `<li class="breadcrumb-item"><a href="#" onclick="goToPath('${currentAcc}')">${part}</a></li>`;
+                            }
+                        });
+                    }
+                    breadcrumbList.innerHTML = html;
                 }
 
-                searchInput.addEventListener('input', performFilter);
-                
-                document.getElementById('caseSensitiveSwitch').addEventListener('change', performFilter);
+                window.goToPath = function(path) {
+                    searchInput.value = ''; // Clear search when navigating
+                    renderBrowseFolder(path);
+                };
+
+                searchInput.addEventListener('input', renderUI);
+
+                document.getElementById('caseSensitiveSwitch').addEventListener('change', renderUI);
 
                 $('.filter-type').on('click', function() {
                     $('.filter-type').removeClass('active');
                     $(this).addClass('active');
-                    performFilter();
+                    renderUI();
                 });
 
                 // Update custom file label
