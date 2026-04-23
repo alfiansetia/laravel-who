@@ -8,8 +8,10 @@
                 <div class="d-flex align-items-center justify-content-between p-4 rounded-lg shadow-sm border-0"
                     style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white;">
                     <div>
-                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-magic mr-2 text-warning"></i> OCR Logic Workbench</h2>
-                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Ekstraksi teks dari gambar & PDF harian dengan cerdas.</p>
+                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-magic mr-2 text-warning"></i> OCR Logic
+                            Workbench</h2>
+                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Ekstraksi teks dari gambar & PDF harian dengan
+                            cerdas.</p>
                     </div>
                     <div class="d-none d-md-block mr-3">
                         <i class="fas fa-brain fa-3x opacity-50"></i>
@@ -18,25 +20,37 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row d-flex align-items-stretch">
             <!-- Left Panel: Input & Preview -->
             <div class="col-xl-7">
                 <div class="card card-sm border-0 shadow-lg overflow-hidden h-100 mb-4">
                     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                         <h6 class="font-weight-bold m-0 text-primary"><i class="fas fa-file-image mr-2"></i>SOURCE DOCUMENT
                         </h6>
-                        <div class="d-flex align-items-center" style="gap: 10px;">
-                            <div id="pdfControls" style="display: none;" class="btn-group">
+                        <div class="d-flex align-items-center">
+                            <div class="btn-group mr-2" id="pdfControls" style="display: none;">
                                 <button class="btn btn-xs btn-outline-primary" onclick="changePage(-1)"><i
                                         class="fas fa-chevron-left"></i></button>
-                                <span class="btn btn-xs btn-light disabled px-3">Page <span id="currentPage">1</span>/<span
-                                        id="totalPages">1</span></span>
+                                <span class="btn btn-xs btn-light disabled border-left-0 border-right-0 px-2"
+                                    style="font-size: 0.7rem; line-height: 1.5;">
+                                    <span id="currentPage">1</span>/<span id="totalPages">1</span>
+                                </span>
                                 <button class="btn btn-xs btn-outline-primary" onclick="changePage(1)"><i
                                         class="fas fa-chevron-right"></i></button>
                             </div>
-                            <button id="resetSourceBtn" class="btn btn-xs btn-outline-danger d-none" onclick="resetSource()"
-                                title="Clear Image">
-                                <i class="fas fa-sync-alt mr-1"></i> New Scan
+
+                            <button class="btn btn-xs btn-outline-info d-none mr-2" id="processAllBtn"
+                                onclick="processAllPages()" title="Process All Pages">
+                                <i class="fas fa-layer-group mr-1"></i> All
+                            </button>
+
+                            <button class="btn btn-xs btn-success text-white mr-1 px-2" onclick="startCamera()">
+                                <i class="fas fa-camera mr-1"></i> Camera
+                            </button>
+
+                            <button id="resetSourceBtn" class="btn btn-xs btn-outline-danger d-none px-2"
+                                onclick="resetSource()" title="Reset Scan">
+                                <i class="fas fa-undo"></i>
                             </button>
                         </div>
                     </div>
@@ -57,7 +71,6 @@
                                 onclick="document.getElementById('imageUpload').click()">
                                 <i class="fas fa-search mr-2"></i> Browse Files
                             </button>
-                            <div class="mt-3 text-muted small">Or capture using camera below</div>
                         </div>
 
                         <!-- Image Display with Scanner Effect -->
@@ -65,23 +78,6 @@
                             <div id="scannerLine" class="scan-line" style="display: none;"></div>
                             <img id="previewImg" class="img-fluid rounded shadow-sm border border-white"
                                 style="max-height: 550px; background: white;">
-                        </div>
-
-                        <!-- Camera Actions -->
-                        <div class="p-3 bg-white border-top mt-auto">
-                            <div class="row no-gutters">
-                                <div class="col-6 pr-2">
-                                    <button class="btn btn-outline-success btn-block" onclick="startCamera()">
-                                        <i class="fas fa-camera mr-2"></i> Use Camera
-                                    </button>
-                                </div>
-                                <div class="col-6 pl-2">
-                                    <button class="btn btn-outline-info btn-block d-none" id="processAllBtn"
-                                        onclick="processAllPages()">
-                                        <i class="fas fa-layer-group mr-2"></i> Process All Pages
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -91,7 +87,8 @@
             <div class="col-xl-5">
                 <div class="card card-sm border-0 shadow-lg h-100 mb-4 overflow-hidden">
                     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                        <h6 class="font-weight-bold m-0 text-success"><i class="fas fa-file-alt mr-2"></i>EXTRACTED CONTENT
+                        <h6 class="font-weight-bold m-0 text-success"><i class="fas fa-file-alt mr-2"></i>EXTRACTED
+                            CONTENT
                         </h6>
                         <div class="btn-group">
                             <button class="btn btn-xs btn-light" id="copyBtn" title="Copy Text">
@@ -152,27 +149,49 @@
     <!-- Camera Modal (Glassmorphism) -->
     <div class="modal fade" id="cameraModal" tabindex="-1" role="dialog" data-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content border-0 shadow-2xl"
-                style="background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title font-weight-bold"><i class="fas fa-camera mr-2"></i> Live Camera Scan</h5>
-                    <button type="button" class="close" onclick="stopCamera()"><span>&times;</span></button>
+            <div class="modal-content border-0 shadow-2xl overflow-hidden"
+                style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(15px); border-radius: 24px;">
+
+                <div class="modal-header border-0 pb-0 position-absolute w-100" style="z-index: 100; top: 0;">
+                    <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-camera mr-2 text-info"></i>
+                        Live Scan</h5>
+                    <button type="button" class="close text-white opacity-100" onclick="stopCamera()">
+                        <span style="font-size: 1.5rem;">&times;</span>
+                    </button>
                 </div>
-                <div class="modal-body text-center p-4">
-                    <div
-                        class="position-relative d-inline-block rounded-lg shadow border-white border-4 overflow-hidden mb-3">
-                        <video id="video" autoplay playsinline
-                            style="width: 100%; max-height: 50vh; display: block;"></video>
-                        <div class="camera-grid"></div>
+
+                <div class="modal-body p-0 position-relative bg-black" style="min-height: 400px;">
+                    <video id="video" autoplay playsinline class="w-100 h-100"
+                        style="object-fit: contain; max-height: 70vh;"></video>
+
+                    <!-- Camera HUD -->
+                    <div class="camera-hud position-absolute w-100 h-100"
+                        style="top:0; pointer-events: none; border: 2px solid rgba(255,255,255,0.1);">
+                        <div class="scanner-frame"></div>
                     </div>
-                    <div>
-                        <button class="btn btn-primary btn-lg rounded-pill px-5 shadow-lg" id="captureBtn"
-                            onclick="captureImage()">
-                            <i class="fas fa-camera mr-2"></i> CAPTURE
+
+                    <!-- Bottom Controls Bar -->
+                    <div class="position-absolute w-100 py-4 px-5 d-flex justify-content-between align-items-center"
+                        style="bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); z-index: 50;">
+
+                        <div class="flex-1"></div>
+
+                        <div class="capture-trigger mr-3">
+                            <button
+                                class="btn btn-light rounded-circle shadow-lg p-0 d-flex align-items-center justify-content-center"
+                                id="captureBtn" onclick="captureImage()"
+                                style="width: 70px; height: 70px; border: 5px solid rgba(255,255,255,0.3);">
+                                <div class="bg-white rounded-circle" style="width: 50px; height: 50px;"></div>
+                            </button>
+                        </div>
+
+                        <button class="btn btn-outline-light rounded-circle p-0" id="switchCameraBtn"
+                            onclick="switchCamera()" style="width: 45px; height: 45px; border-width: 1px; display: none;">
+                            <i class="fas fa-sync-alt"></i>
                         </button>
                     </div>
-                    <canvas id="canvas" style="display: none;"></canvas>
                 </div>
+                <canvas id="canvas" style="display: none;"></canvas>
             </div>
         </div>
     </div>
@@ -410,17 +429,60 @@
             }
         }
 
+        let currentFacingMode = 'environment';
+        let videoDevices = [];
+        let currentDeviceIndex = 0;
+
         async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({
+                // Get all video devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length > 1) {
+                    document.getElementById('switchCameraBtn').style.display = 'block';
+                }
+
+                const constraints = {
                     video: {
-                        facingMode: 'environment'
+                        facingMode: currentFacingMode
                     }
-                });
+                };
+
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
                 document.getElementById('video').srcObject = stream;
                 $('#cameraModal').modal('show');
             } catch (err) {
                 show_message('Camera error: ' + err.message, 'error');
+            }
+        }
+
+        async function switchCamera() {
+            if (videoDevices.length < 2) return;
+
+            // Stop current stream
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            // Toggle facing mode
+            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+
+            // Alternatively use specific device ID if available (optional enhancement)
+            // But facingMode is usually better for mobile
+
+            const constraints = {
+                video: {
+                    facingMode: currentFacingMode
+                }
+            };
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById('video').srcObject = stream;
+                show_message('Camera switched', 'success');
+            } catch (err) {
+                show_message('Switch failed: ' + err.message, 'error');
             }
         }
 
@@ -517,15 +579,53 @@
             color: #1d4ed8;
         }
 
-        .camera-grid {
+        .camera-hud {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-frame {
+            width: 80%;
+            height: 60%;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.5);
+        }
+
+        .scanner-frame::before {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.1) 20%);
-            background-size: 20px 20px;
-            pointer-events: none;
+            top: -2px;
+            left: -2px;
+            width: 40px;
+            height: 40px;
+            border-top: 4px solid #3b82f6;
+            border-left: 4px solid #3b82f6;
+            border-top-left-radius: 15px;
+        }
+
+        .scanner-frame::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 40px;
+            height: 40px;
+            border-top: 4px solid #3b82f6;
+            border-right: 4px solid #3b82f6;
+            border-top-right-radius: 15px;
+        }
+
+        #switchCameraBtn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(180deg);
+            transition: all 0.4s ease;
+        }
+
+        .bg-black {
+            background-color: #000 !important;
         }
 
         .btn-xs {
