@@ -8,13 +8,12 @@
                 <div class="d-flex align-items-center justify-content-between p-4 rounded-lg shadow-sm border-0"
                     style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: white;">
                     <div>
-                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-folder-open mr-2 text-warning"></i> File
+                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-search-location mr-2 text-warning"></i> File
                             Search Manager</h2>
-                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Cari dan jelajahi struktur data file secara
-                            internal.</p>
+                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Pencarian file terpusat menggunakan index JSON.</p>
                         <div class="d-flex flex-wrap mt-3 ml-2" style="gap: 10px;">
                             <span class="badge btn-white-soft px-3 py-2 font-weight-light">
-                                <i class="fas fa-clock mr-1 opacity-75"></i> Update: <span
+                                <i class="fas fa-clock mr-1 opacity-75"></i> Last Updated: <span
                                     id="headerLastUpdated">{{ $lastUpdated ?? 'Never' }}</span>
                             </span>
                             <span class="badge btn-white-soft px-3 py-2 font-weight-light">
@@ -45,7 +44,6 @@
         @endif
 
         <div class="row">
-            <!-- Main Search Card -->
             <div class="col-12">
                 <div class="card border-0 shadow-lg overflow-hidden">
                     <div class="card-header bg-white py-4 border-bottom">
@@ -56,7 +54,7 @@
                                 </span>
                             </div>
                             <input type="search" id="searchInput" class="form-control border-0 px-2"
-                                placeholder="Ketik nama file atau folder untuk mencari..." autofocus>
+                                placeholder="Cari file atau folder dalam index..." autofocus>
                             <div class="input-group-append">
                                 <span class="input-group-text bg-light border-0 px-3 text-muted" id="resultsCount">
                                     0 items found
@@ -65,7 +63,7 @@
                         </div>
                         <div class="mt-3 px-2 d-flex align-items-center flex-wrap" style="gap: 20px;">
                             <div class="d-flex align-items-center">
-                                <span class="small text-muted mr-2 font-weight-bold">Type:</span>
+                                <span class="small text-muted mr-2 font-weight-bold">Filter Type:</span>
                                 <div class="btn-group btn-group-sm shadow-sm rounded overflow-hidden" role="group">
                                     <button type="button" class="btn btn-light border filter-type px-3 active"
                                         data-type="all">All</button>
@@ -78,14 +76,13 @@
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="caseSensitiveSwitch">
                                 <label class="custom-control-label small text-muted cursor-pointer font-weight-bold"
-                                    for="caseSensitiveSwitch">Case Sensitive</label>
+                                    for="caseSensitiveSwitch">Case Sensitive Search</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="card-body p-0">
-                        <div class="px-4 py-3 bg-light border-bottom d-flex align-items-center justify-content-between"
-                            id="navigationHeader">
+                        <div class="px-4 py-3 bg-light border-bottom d-flex align-items-center justify-content-between">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb bg-transparent p-0 m-0" id="breadcrumbList">
                                     <li class="breadcrumb-item active"><i class="fas fa-home"></i> Root</li>
@@ -108,7 +105,7 @@
                                             <div class="spinner-border text-primary speed-slow" role="status">
                                                 <span class="sr-only">Loading content...</span>
                                             </div>
-                                            <div class="mt-2 text-muted">Memuat data file...</div>
+                                            <div class="mt-2 text-muted">Memuat data index...</div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -118,7 +115,8 @@
 
                     <div class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
                         <small class="text-muted">
-                            <i class="fas fa-clock mr-1"></i> Last updated: {{ $lastUpdated ?? 'Never' }}
+                            <i class="fas fa-clock mr-1"></i> Index source:
+                            {{ $lastUpdated ? 'file-index.json' : 'Not Uploaded' }}
                         </small>
                         <div class="text-muted small" id="footerTotalInfo">
                             Total: <span class="font-weight-bold" id="footerTotalCount">0</span> items in index
@@ -147,8 +145,7 @@
                                 <small>
                                     <i class="fas fa-info-circle mr-1"></i> Gunakan script
                                     <code>deployment/generate-index.bat</code> untuk menghasilkan file JSON terbaru, lalu
-                                    upload
-                                    di sini.
+                                    upload di sini.
                                 </small>
                             </div>
                             <div class="form-group mb-0 text-left">
@@ -205,7 +202,6 @@
             .btn-white-soft:hover {
                 background-color: rgba(255, 255, 255, 0.25);
                 color: white;
-                color: white;
                 transform: translateY(-1px);
             }
 
@@ -223,23 +219,6 @@
 
             .file-item:hover {
                 background-color: #f8fafc;
-            }
-
-            .file-name {
-                font-size: 0.95rem;
-                color: #334155;
-            }
-
-            .form-control:focus {
-                box-shadow: none;
-            }
-
-            .rounded-lg {
-                border-radius: 12px;
-            }
-
-            .sticky-top {
-                transition: all 0.3s;
             }
 
             .file-item[data-type="folder"] {
@@ -266,6 +245,15 @@
                 text-decoration: underline;
             }
 
+            .file-name {
+                font-size: 0.95rem;
+                color: #334155;
+            }
+
+            .rounded-lg {
+                border-radius: 12px;
+            }
+
             .filter-type.active {
                 background-color: #6366f1 !important;
                 color: white !important;
@@ -281,46 +269,25 @@
     @push('js')
         <script>
             let allFileData = [];
-            let currentPath = ''; // Root is empty string
+            let currentPath = '';
 
             document.addEventListener('DOMContentLoaded', function() {
                 const searchInput = document.getElementById('searchInput');
                 const fileListBody = document.getElementById('fileListBody');
                 const resultsCountStr = document.getElementById('resultsCount');
-                const footerTotalCount = document.getElementById('footerTotalCount');
                 const breadcrumbList = document.getElementById('breadcrumbList');
                 const viewModeBadge = document.getElementById('viewModeBadge');
 
-                // Initial fetch
                 fetchData();
 
                 function fetchData() {
                     $.get('{{ route('tools.file_search.data') }}', function(data) {
                         allFileData = data;
-                        renderUI(); // Initial render
-
-                        const foldersTotal = allFileData.filter(f => f.type === 'folder').length;
-                        const filesTotal = allFileData.filter(f => f.type === 'file').length;
-
-                        // Update Header Stats
-                        document.getElementById('headerTotalStats').textContent =
-                            `${foldersTotal} folders, ${filesTotal} files`;
-
-                        // Update Footer Stats
-                        document.getElementById('footerTotalInfo').innerHTML = `
-                            Total: <span class="font-weight-bold">${allFileData.length}</span> items 
-                            <small>(${foldersTotal} folders, ${filesTotal} files)</small>`;
+                        renderUI();
+                        updateStats();
                     }).fail(function() {
-                        fileListBody.innerHTML = `
-                            <tr>
-                                <td colspan="3" class="text-center py-5">
-                                    <div class="text-muted">
-                                        <i class="fas fa-database fa-3x mb-3 opacity-25"></i>
-                                        <h5>Gagal memuat data</h5>
-                                        <p>Silakan upload file <code>file-index.json</code> atau periksa koneksi.</p>
-                                    </div>
-                                </td>
-                            </tr>`;
+                        fileListBody.innerHTML =
+                            '<tr><td colspan="3" class="text-center py-5">Index not found. Please upload index JSON.</td></tr>';
                     });
                 }
 
@@ -337,185 +304,159 @@
                     currentPath = path;
                     updateBreadcrumbs(path);
                     viewModeBadge.innerHTML = '<span class="badge badge-info">Browse Mode</span>';
-
                     const children = getDirectChildren(allFileData, path);
                     displayData(children);
                 }
 
                 function performGlobalSearch(query) {
                     viewModeBadge.innerHTML = '<span class="badge badge-warning">Global Search</span>';
-                    updateBreadcrumbs(null); // Clear breadcrumbs or show "Search Results"
-
+                    updateBreadcrumbs(null);
                     const typeFilter = $('.filter-type.active').data('type');
                     const isCaseSensitive = document.getElementById('caseSensitiveSwitch').checked;
-
                     const normalizedQuery = isCaseSensitive ? query : query.toLowerCase();
                     const keywords = normalizedQuery.split(' ').filter(k => k.length > 0);
 
                     const filtered = allFileData.filter(file => {
                         const typeMatch = typeFilter === 'all' || file.type === typeFilter;
-
                         const nameToSearch = isCaseSensitive ? file.name : file.name.toLowerCase();
                         const pathToSearch = isCaseSensitive ? file.path : file.path.toLowerCase();
-
-                        const textMatch = keywords.every(kw => nameToSearch.includes(kw) || pathToSearch
+                        return typeMatch && keywords.every(kw => nameToSearch.includes(kw) || pathToSearch
                             .includes(kw));
-
-                        return typeMatch && textMatch;
                     });
-
-                    displayData(filtered);
+                    displayData(filtered, query);
                 }
 
                 function getDirectChildren(data, path) {
-                    if (!path) {
-                        return data.filter(item => !item.path.includes('/'));
-                    }
+                    if (!path) return data.filter(item => !item.path.includes('/'));
                     const prefix = path + '/';
                     return data.filter(item => {
-                        if (item.path === path) return false; // Don't show self
+                        if (item.path === path) return false;
                         if (!item.path.startsWith(prefix)) return false;
-                        const relativePart = item.path.substring(prefix.length);
-                        return !relativePart.includes('/');
+                        return !item.path.substring(prefix.length).includes('/');
                     });
                 }
 
-                function displayData(data) {
+                function highlightText(text, query, isCaseSensitive) {
+                    if (!query) return text;
+                    const keywords = query.split(' ').filter(k => k.length > 0);
+                    if (keywords.length === 0) return text;
+
+                    const pattern = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+                    const regex = new RegExp(`(${pattern})`, isCaseSensitive ? 'g' : 'gi');
+                    return text.replace(regex, '<b class="text-primary">$1</b>');
+                }
+
+                function displayData(data, query = '') {
                     if (data.length === 0) {
                         fileListBody.innerHTML =
-                            '<tr><td colspan="3" class="text-center py-5">Empty folder or no results found.</td></tr>';
-                        const foldersCount = 0;
-                        const filesCount = 0;
-                        resultsCountStr.textContent = `0 items found (0 folders, 0 files)`;
+                            '<tr><td colspan="3" class="text-center py-5">No results found.</td></tr>';
+                        resultsCountStr.textContent = '0 items found';
                         return;
                     }
 
+                    const isCaseSensitive = document.getElementById('caseSensitiveSwitch').checked;
+                    data.sort((a, b) => (b.type === 'folder') - (a.type === 'folder'));
                     let html = '';
-                    data.sort((a, b) => (b.type === 'folder') - (a.type === 'folder')); // Folders first
-
                     data.forEach(file => {
                         const icon = file.type === 'folder' ?
                             '<i class="fas fa-folder fa-lg text-warning mr-3"></i>' :
                             '<i class="far fa-file-alt fa-lg text-info mr-3"></i>';
 
-                        const badgeClass = file.type === 'folder' ? 'badge-soft-warning' : 'badge-soft-info';
-                        const weightClass = file.type === 'folder' ? 'font-weight-bold font-italic' : '';
+                        const isFolder = file.type === 'folder';
+                        const highlightedName = highlightText(file.name, query, isCaseSensitive);
+                        const highlightedPath = highlightText(file.path, query, isCaseSensitive);
 
                         html += `
-                            <tr class="file-item ${weightClass}" data-path="${file.path}" data-type="${file.type}" ${file.type === 'folder' ? 'onclick="goToPath(\'' + file.path + '\')"' : ''}>
+                            <tr class="file-item" data-type="${file.type}" onclick="${isFolder ? 'goToPath(\'' + file.path + '\')' : ''}">
                                 <td class="px-4 align-middle">
                                     <div class="d-flex align-items-center">
                                         ${icon}
                                         <div>
-                                            <div class="file-name">${file.name}</div>
-                                            <small class="text-muted d-block text-break">${file.path}</small>
+                                            <div class="file-name font-weight-bold">${highlightedName}</div>
+                                            <small class="text-dark d-block text-break opacity-75">${highlightedPath}</small>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle">
-                                    <span class="badge ${badgeClass} px-2 py-1">${file.type.charAt(0).toUpperCase() + file.type.slice(1)}</span>
+                                    <span class="badge ${isFolder ? 'badge-soft-warning' : 'badge-soft-info'} px-2 py-1">${file.type.charAt(0).toUpperCase() + file.type.slice(1)}</span>
                                 </td>
                                 <td class="align-middle text-right text-muted pr-4">${file.last_modified || '-'}</td>
                             </tr>`;
                     });
-
                     fileListBody.innerHTML = html;
-
-                    const foldersCount = data.filter(f => f.type === 'folder').length;
-                    const filesCount = data.filter(f => f.type === 'file').length;
-                    resultsCountStr.textContent =
-                        `${data.length} items found (${foldersCount} folders, ${filesCount} files)`;
+                    const fCount = data.filter(f => f.type === 'folder').length;
+                    const fiCount = data.filter(f => f.type === 'file').length;
+                    resultsCountStr.textContent = `${data.length} items (${fCount} folders, ${fiCount} files)`;
                 }
 
                 function updateBreadcrumbs(path) {
                     if (path === null) {
                         breadcrumbList.innerHTML =
-                            '<li class="breadcrumb-item"><a href="#" onclick="goToPath(\'\')"><i class="fas fa-home"></i> Root</a></li><li class="breadcrumb-item active">Search Results</li>';
+                            '<li class="breadcrumb-item"><a href="#" onclick="goToPath(\'\')">Root</a></li><li class="breadcrumb-item active">Search</li>';
                         return;
                     }
-
-                    let html = '<li class="breadcrumb-item ' + (path === '' ? 'active' : '') + '">';
-                    if (path === '') {
-                        html += '<i class="fas fa-home"></i> Root</li>';
-                    } else {
-                        html += '<a href="#" onclick="goToPath(\'\')"><i class="fas fa-home"></i> Root</a></li>';
-
+                    let html =
+                        `<li class="breadcrumb-item ${path === '' ? 'active' : ''}"><a href="#" onclick="goToPath('')">Root</a></li>`;
+                    if (path) {
                         const parts = path.split('/');
-                        let currentAcc = '';
-                        parts.forEach((part, index) => {
-                            currentAcc += (index > 0 ? '/' : '') + part;
-                            if (index === parts.length - 1) {
-                                html +=
-                                    `<li class="breadcrumb-item active text-truncate" style="max-width: 150px;">${part}</li>`;
-                            } else {
-                                html +=
-                                    `<li class="breadcrumb-item"><a href="#" onclick="goToPath('${currentAcc}')">${part}</a></li>`;
-                            }
+                        let acc = '';
+                        parts.forEach((p, i) => {
+                            acc += (i > 0 ? '/' : '') + p;
+                            html +=
+                                `<li class="breadcrumb-item ${i === parts.length - 1 ? 'active' : ''}"><a href="#" onclick="goToPath('${acc}')">${p}</a></li>`;
                         });
                     }
                     breadcrumbList.innerHTML = html;
                 }
 
-                window.goToPath = function(path) {
-                    searchInput.value = ''; // Clear search when navigating
-                    renderBrowseFolder(path);
+                function updateStats() {
+                    const fo = allFileData.filter(f => f.type === 'folder').length;
+                    const fi = allFileData.filter(f => f.type === 'file').length;
+                    document.getElementById('headerTotalStats').textContent = `${fo} folders, ${fi} files`;
+                    document.getElementById('footerTotalCount').textContent = allFileData.length;
+                }
+
+                window.goToPath = function(p) {
+                    searchInput.value = '';
+                    renderBrowseFolder(p);
                 };
-
                 searchInput.addEventListener('input', renderUI);
-
                 document.getElementById('caseSensitiveSwitch').addEventListener('change', renderUI);
-
                 $('.filter-type').on('click', function() {
                     $('.filter-type').removeClass('active');
                     $(this).addClass('active');
                     renderUI();
                 });
 
-                // Update custom file label
-                $('.custom-file-input').on('change', function() {
-                    let fileName = $(this).val().split('\\').pop();
-                    $(this).next('.custom-file-label').addClass("selected").html(fileName);
-                });
-
                 // AJAX Upload Logic
+                $('.custom-file-input').on('change', function() {
+                    $(this).next('.custom-file-label').html($(this).val().split('\\').pop());
+                });
                 $('#uploadForm').on('submit', function(e) {
                     e.preventDefault();
-
                     const formData = new FormData(this);
-                    const $form = $(this);
-                    const $submitBtn = $('#submitBtn');
-                    const $uploadStatusUI = $('#uploadStatusUI');
-                    const $loadingUI = $('#loadingUI');
-
-                    // Show Loading
-                    $uploadStatusUI.fadeOut(200, function() {
-                        $loadingUI.fadeIn(200);
-                        $submitBtn.prop('disabled', true);
+                    $('#uploadStatusUI').fadeOut(200, () => {
+                        $('#loadingUI').fadeIn(200);
+                        $('#submitBtn').prop('disabled', true);
                     });
-
                     $.ajax({
-                        url: $form.attr('action'),
+                        url: $(this).attr('action'),
                         type: 'POST',
                         data: formData,
                         processData: false,
                         contentType: false,
-                        success: function(response) {
-                            if (response.success) {
-                                show_message(response.message, 'success');
-                                setTimeout(() => {
-                                    location.reload(); // Refresh to update list
-                                }, 1000);
+                        success: (res) => {
+                            if (res.success) {
+                                show_message(res.message, 'success');
+                                setTimeout(() => location.reload(), 800);
                             }
                         },
-                        error: function(xhr) {
-                            $loadingUI.fadeOut(200, function() {
-                                $uploadStatusUI.fadeIn(200);
-                                $submitBtn.prop('disabled', false);
+                        error: (xhr) => {
+                            $('#loadingUI').fadeOut(200, () => {
+                                $('#uploadStatusUI').fadeIn(200);
+                                $('#submitBtn').prop('disabled', false);
                             });
-
-                            const error = xhr.responseJSON ? xhr.responseJSON.message :
-                                'Terjadi kesalahan sistem.';
-                            show_message(error, 'error');
+                            show_message(xhr.responseJSON?.message || 'Error uploading.', 'error');
                         }
                     });
                 });
