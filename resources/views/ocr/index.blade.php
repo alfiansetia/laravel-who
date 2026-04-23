@@ -8,10 +8,8 @@
                 <div class="d-flex align-items-center justify-content-between p-4 rounded-lg shadow-sm border-0"
                     style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white;">
                     <div>
-                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-sparkles mr-2 text-warning"></i> OCR Logic
-                            Workbench</h2>
-                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Ekstraksi teks dari gambar & PDF dengan presisi
-                            tinggi.</p>
+                        <h2 class="font-weight-bold mb-1 ml-2"><i class="fas fa-magic mr-2 text-warning"></i> OCR Logic Workbench</h2>
+                        <p class="mb-0 opacity-75 ml-2 font-weight-light">Ekstraksi teks dari gambar & PDF harian dengan cerdas.</p>
                     </div>
                     <div class="d-none d-md-block mr-3">
                         <i class="fas fa-brain fa-3x opacity-50"></i>
