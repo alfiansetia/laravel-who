@@ -229,7 +229,15 @@
                                 columns: ':visible'
                             }
                         }],
+                    },
+                    {
+                        text: '<i class="fas fa-sync mr-1"></i>Refresh',
+                        className: 'btn btn-sm btn-info',
+                        action: function(e, dt, node, config) {
+                            table.ajax.reload();
+                        }
                     }
+
                 ],
             });
 
