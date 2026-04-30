@@ -199,7 +199,7 @@
                     "sLengthMenu": "Results :  _MENU_",
                 },
                 order: [
-                    [2, "desc"]
+                    [3, "desc"]
                 ],
                 lengthMenu: [
                     [10, 50, 100, 500, 1000],
@@ -210,6 +210,16 @@
                 columns: [{
                         data: "reference",
                         className: "text-left",
+                    }, {
+                        data: "id",
+                        className: 'text-left',
+                        render: function(data, type, row, meta) {
+                            if (row.location_id != false) {
+                                return row.location_id[1]
+                            } else {
+                                return ''
+                            }
+                        }
                     }, {
                         data: "id",
                         className: 'text-left',
@@ -463,7 +473,6 @@
                 let row = $(this).parents('tr')[0];
                 data = table.row(row).data()
                 id = data.id
-
                 $.ajax({
                     url: `${URL_INDEX_API}/${id}/move`,
                     type: "GET",

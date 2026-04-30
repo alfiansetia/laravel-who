@@ -141,6 +141,7 @@
                     <thead>
                         <tr>
                             <th>No DO</th>
+                            <th>From</th>
                             <th>Destination</th>
                             <th>Date</th>
                             <th>Lot/SN</th>
