@@ -66,6 +66,7 @@
                                     <tr>
                                         <th>Code</th>
                                         <th>Desc</th>
+                                        <th>Product</th>
                                         <th>AKL</th>
                                         <th style="width: 30px">QTY</th>
                                         <th style="width: 30px">QTY DONE</th>
@@ -294,6 +295,16 @@
                                 return getDesc(data[1]);
                             }
                             return data;
+                        }
+                    },
+                    {
+                        data: "product_id",
+                        className: 'text-left',
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1];
+                            }
+                            return '';
                         }
                     },
                     {
