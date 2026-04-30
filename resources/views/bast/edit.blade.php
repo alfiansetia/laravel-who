@@ -91,7 +91,7 @@
                     <div class="btn-group mr-1 mb-1" role="group">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
                             aria-expanded="false">
-                            <i class="fas fa-print mr-1"></i> Cetak File
+                            <i class="fas fa-print mr-1"></i> Cetak
                         </button>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="{{ route('basts.print', $data->id) }}?type=tanda_terima"

@@ -60,6 +60,8 @@ class BastController extends Controller
         $data = $bast->load('details');
         if ($type == 'tanda_terima') {
             return view('bast.print.tanda_terima', compact(['data', 'type']));
+        } elseif ($type == 'training') {
+            return view('bast.print.training', compact(['data', 'type']));
         } else {
             return view('bast.print.bast', compact(['data', 'type']));
         }
