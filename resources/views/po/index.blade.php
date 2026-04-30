@@ -41,6 +41,7 @@
                             <tr>
                                 <th>Code</th>
                                 <th>Desc</th>
+                                <th>Origin</th>
                                 <th>AKL</th>
                                 <th style="width: 30px">QTY</th>
                                 <th style="width: 30px">QTY RI</th>
@@ -229,6 +230,14 @@
                         render: function(data, type, row) {
                             let text = Array.isArray(data) ? data[1] : data;
                             return getDesc(text)
+                        }
+                    }, {
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data || '';
                         }
                     },
                     {

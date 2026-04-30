@@ -50,6 +50,7 @@
                             <tr>
                                 <th>Code</th>
                                 <th>Desc</th>
+                                <th>Origin</th>
                                 <th>Price</th>
                                 <th style="width: 30px">QTY Order</th>
                                 <th style="width: 30px">QTY Delivered</th>
@@ -233,6 +234,15 @@
                     },
                     {
                         data: "name"
+                    },
+                    {
+                        data: "product_id",
+                        render: function(data, type, row, meta) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return '';
+                        }
                     },
                     {
                         data: "unit_price1",
