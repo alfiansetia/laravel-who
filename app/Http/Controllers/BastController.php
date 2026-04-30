@@ -53,4 +53,12 @@ class BastController extends Controller
         $data = $bast->load('details');
         return view('bast.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit BAST']);
     }
+
+    public function print(Request $request, Bast $bast)
+    {
+        $type = $request->input('type', 'tanda_terima');
+        $data = $bast->load('details');
+        return view('bast.print.tanda_terima', compact(['data', 'type']))
+            ->with(['title' => 'Print BAST']);
+    }
 }

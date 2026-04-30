@@ -60,20 +60,20 @@
                 </div>
 
                 <div class="card-footer bg-light text-center">
-                    <button type="submit" id="btn_simpan" class="btn btn-primary px-3 mr-1">
+                    <button type="submit" id="btn_simpan" class="btn btn-primary px-3 mr-1 mb-1">
                         <i class="fas fa-save mr-1"></i> Simpan
                     </button>
-                    <button type="button" id="add" class="btn btn-info px-3 mr-1">
+                    <button type="button" id="add" class="btn btn-info px-3 mr-1 mb-1">
                         <i class="fas fa-plus mr-1"></i> Tambah Item
                     </button>
-                    <button type="button" id="btn_sync" class="btn btn-danger px-3 mr-1">
+                    <button type="button" id="btn_sync" class="btn btn-danger px-3 mr-1 mb-1">
                         <i class="fas fa-sync mr-1"></i> Sync Odoo
                     </button>
 
-                    <div class="btn-group mr-1" role="group">
+                    <div class="btn-group mr-1 mb-1" role="group">
                         <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
                             aria-expanded="false">
-                            <i class="fas fa-print mr-1"></i> Cetak
+                            <i class="fas fa-download mr-1"></i> Download File
                         </button>
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="{{ route('api.basts.download', $data->id) }}?type=tanda_terima"
@@ -88,10 +88,25 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('basts.index') }}" class="btn btn-outline-secondary px-3 mr-1">
+                    <div class="btn-group mr-1 mb-1" role="group">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="fas fa-print mr-1"></i> Cetak File
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{{ route('basts.print', $data->id) }}?type=tanda_terima"
+                                target="_blank"><i class="fas fa-file-alt mr-2 text-info"></i> Tanda Terima</a>
+                            <a class="dropdown-item" href="{{ route('basts.print', $data->id) }}?type=training"
+                                target="_blank"><i class="fas fa-vial mr-2 text-warning"></i> Daftar Training</a>
+                            <a class="dropdown-item" href="{{ route('basts.print', $data->id) }}?type=bast"
+                                target="_blank"><i class="fas fa-file-contract mr-2 text-success"></i> BAST</a>
+                        </div>
+                    </div>
+
+                    <a href="{{ route('basts.index') }}" class="btn btn-outline-secondary px-3 mr-1 mb-1">
                         <i class="fas fa-arrow-left mr-1"></i> Kembali
                     </a>
-                    <button type="button" onclick="window.close()" class="btn btn-dark px-3 mt-1 mt-md-0">
+                    <button type="button" onclick="window.close()" class="btn btn-dark px-3 mr-1 mb-1">
                         <i class="fas fa-times mr-1"></i> Tutup
                     </button>
                 </div>
