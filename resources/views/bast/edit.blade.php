@@ -38,7 +38,8 @@
                             <textarea name="name" id="name" class="form-control" placeholder="Nama Penerima" rows="4" required>{{ $data->name }}</textarea>
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT LENGKAP</label>
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT
+                                LENGKAP</label>
                             <textarea name="address" id="address" class="form-control" placeholder="Alamat Pengiriman" rows="4" required>{{ $data->address }}</textarea>
                         </div>
                     </div>
@@ -49,8 +50,10 @@
                                 value="{{ $data->city }}">
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT JALAN / DO</label>
-                            <input type="text" name="do" id="do" class="form-control font-weight-bold text-primary" placeholder="Nomor DO"
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT
+                                JALAN / DO</label>
+                            <input type="text" name="do" id="do"
+                                class="form-control font-weight-bold text-primary" placeholder="Nomor DO"
                                 value="{{ $data->do }}">
                         </div>
                     </div>
@@ -258,8 +261,9 @@
                             <div class="btn-group" role="group" aria-label="Basic example">
                                 <button type="button" class="btn btn-sm btn-secondary order-up" title="Naikkan" ${upDisabled}><i class="fas fa-arrow-up"></i></button>
                                 <button type="button" class="btn btn-sm btn-secondary order-down" title="Turunkan" ${downDisabled}><i class="fas fa-arrow-down"></i></button>
-                                <button type="button" class="btn btn-sm btn-primary edit"><i class="fas fa-edit"></i></button>
-                                <button type="button" class="btn btn-sm btn-danger hapus"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="btn btn-sm btn-primary edit" title="Edit" ><i class="fas fa-edit"></i></button>
+                                <button type="button" class="btn btn-sm btn-success kargan" title="Buat Kargan"><i class="fas fa-stamp"></i></button>
+                                <button type="button" class="btn btn-sm btn-danger hapus" title="Hapus"><i class="fas fa-trash"></i></button>
                             </div>
                             `
                     }
@@ -380,6 +384,29 @@
                 }).fail(function(xhr) {
                     show_message(xhr.responseJSON.message || 'Error!');
                 });
+            });
+
+            $('#table tbody').on('click', '.kargan', function() {
+                let row = table.row($(this).closest('tr'));
+                id = row.id();
+                confirmation('Buat Kargan?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            url: `${URL_INDEX_DETAIL_API}/${id}/kargan`,
+                            type: 'POST',
+                            success: function(result) {
+                                show_message(result.message, 'success')
+                                window.open(
+                                    `{{ route('kargans.index') }}/${result.data.id}/edit`,
+                                    '_blank');
+                            },
+                            error: function(xhr) {
+                                show_message(xhr.responseJSON.message || 'Error!')
+                            }
+                        })
+                    }
+                })
+
             });
 
             $('#form').submit(function(e) {

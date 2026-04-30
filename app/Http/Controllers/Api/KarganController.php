@@ -32,7 +32,7 @@ class KarganController extends Controller
             'sn'            => 'nullable|string|max:200',
             'pic'           => 'required|string|max:200',
         ]);
-        $masa = '1 Tahun ( Unit Utama )';
+        $masa = Kargan::getDefaultMasaAttribute();
         $kargan = Kargan::create([
             'product_id'    => $request->product_id,
             'date'          => $request->date,
@@ -53,7 +53,7 @@ class KarganController extends Controller
             'sn'            => 'nullable|string|max:200',
             'pic'           => 'required|string|max:200',
         ]);
-        $masa = '1 Tahun ( Unit Utama )';
+        $masa = Kargan::getDefaultMasaAttribute();
         $kargan->update([
             'product_id'    => $request->product_id,
             'date'          => $request->date,

@@ -16,6 +16,16 @@ class Kargan extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public static function getDefaultPicAttribute()
+    {
+        return 'Karim Ash Shidik';
+    }
+
+    public static function getDefaultMasaAttribute()
+    {
+        return '1 Tahun ( Unit Utama )';
+    }
+
     public static function generateNumber()
     {
         $last = self::latest()->first();

@@ -225,6 +225,8 @@ Route::get('basts/{bast}/download-zip', [BastController::class, 'downloadZip'])
 Route::apiResource('basts', BastController::class)
     ->names('api.basts');
 
+Route::post('detail-basts/{detail_bast}/kargan', [DetailBastController::class, 'kargan'])
+    ->name('api.detail_basts.kargan');
 Route::post('detail-basts/{detail_bast}/order', [DetailBastController::class, 'order'])
     ->name('api.detail_basts.order');
 Route::apiResource('detail-basts', DetailBastController::class)

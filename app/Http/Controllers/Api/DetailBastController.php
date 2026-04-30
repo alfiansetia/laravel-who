@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DetailBast;
+use App\Models\Kargan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -126,5 +127,21 @@ class DetailBastController extends Controller
             DB::rollBack();
             return $this->sendError($th->getMessage());
         }
+    }
+
+    public function kargan(Request $request, DetailBast $detail_bast)
+    {
+        $last = Kargan::generateNumber();
+        $product = $detail_bast->product;
+        $newkargan = Kargan::create([
+            'product_id'    => $product->id,
+            'date'          => date('Y-m-d'),
+            'number'        => $last,
+            'sn'            => $detail_bast->lot,
+            'masa'          => Kargan::getDefaultMasaAttribute(),
+            'pic'           => Kargan::getDefaultPicAttribute(),
+        ]);
+
+        return $this->sendResponse($newkargan, 'Kargan created!');
     }
 }
