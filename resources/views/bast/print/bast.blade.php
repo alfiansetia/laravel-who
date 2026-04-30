@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
-    <title>Tanda Terima - {{ $data->do ?? '-' }}</title>
+    <title>BAST - {{ $data->do ?? '-' }}</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -111,7 +111,7 @@
             float: right;
             margin-top: 20px;
             font-size: 14px;
-            /* font-weight: bold; */
+            font-weight: bold;
         }
 
         @media print {
@@ -151,43 +151,85 @@
             </div>
             <div class="info-section">
                 <div class="header">
-                    <h1>Tanda Terima Alat</h1>
+                    <h1>BERITA ACARA SERAH TERIMA DAN UJI FUNGSI</h1>
                 </div>
             </div>
 
-            <div class="item-list-container">
-                <ol class="item-list">
-                    @foreach ($data->details as $item)
-                        <li>
-                            <span class="item-text">
-                                {{ (int) $item->qty }} ({{ ucwords(trim(terbilang($item->qty))) }}) {{ $item->satuan }}
-                                {{ $item->product->name }} ({{ $item->product->code }})
-                                @if ($item->lot)
-                                    SN/Lot : {{ $item->lot }}
-                                @endif
-                            </span>
-                        </li>
-                    @endforeach
-                </ol>
-                {{-- Baris kosong tanpa nomor untuk mendorong footer ke bawah --}}
-                @for ($i = count($data->details); $i < 25; $i++)
-                    <div style="height: 1.4em;">&nbsp;</div>
-                @endfor
-            </div>
+            <div class="bast-content" style="font-size: 14.5px; line-height: 1.5; margin-top: 15px; color: #000;">
+                <ol style="list-style-type: decimal; padding-left: 25px; margin: 0;">
+                    <li style="margin-bottom: 12px;">
+                        Pada hari ini telah dilakukan pekerjaan instalasi/perbaikan dan uji fungsi alat di :
+                        <div style="margin-left: 0; margin-top: 8px;">
+                            <div style="display: flex; margin-bottom: 4px;">
+                                <span style="width: 140px;">Nama Pelanggan</span>
+                                <span style="flex: 1;">: {{ $data->name }}</span>
+                            </div>
+                            <div style="display: flex; align-items: flex-start;">
+                                <span style="width: 140px;">Alamat</span>
+                                <span style="flex: 1;">: {{ $data->address }} {{ $data->city }}</span>
+                            </div>
+                        </div>
+                        <p style="margin: 8px 0 0 0;">Yang selanjutnya disebut <b>PIHAK PERTAMA</b></p>
+                    </li>
 
-            <div class="signature-section">
-                <table style="width: 100%; border: none; border-collapse: collapse;">
+                    <li style="margin-bottom: 12px;">
+                        Alat yang di instalasi/perbaiki dan uji fungsi adalah sebagai berikut :
+                        <div style="margin-top: 5px;">
+                            <p style="margin: 0;">Type :</p>
+                            <ul style="list-style-type: disc; padding-left: 20px; margin: 5px 0 0 0;">
+                                @foreach ($data->details as $item)
+                                    <li>
+                                        {{ (int) $item->qty }} ({{ ucwords(trim(terbilang($item->qty))) }})
+                                        {{ $item->satuan }} {{ $item->product->name }} ({{ $item->product->code }})
+                                        @if ($item->lot)
+                                            SN/Lot : {{ $item->lot }}
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li style="margin-bottom: 12px;">
+                        Pekerjaan instalasi/perbaikan dan uji fungsi dilakukan oleh teknisi PT. Mitra Asa Pratama<br>
+                        Yang selanjutnya disebut <b>PIHAK KEDUA</b>
+                    </li>
+
+                    <li style="margin-bottom: 12px;">
+                        <b>Pihak Kedua</b> memberikan garansi kepada <b>Pihak Pertama</b> yang tertera dalam Kartu
+                        Garansi
+                        dan Pihak Kedua bertanggung jawab terhadap after sales service
+                    </li>
+
+                    <li style="margin-bottom: 12px;">
+                        <b>Pihak Pertama</b> menyatakan dengan ini telah menerima pekerjaan <b>Pihak Kedua</b> yang
+                        tertulis pada point 2 (dua) dengan baik
+                    </li>
+
+                    <li style="margin-bottom: 12px;">
+                        Berita acara ini disetujui oleh <b>Pihak Pertama</b> dan <b>Pihak Kedua</b>
+                    </li>
+                </ol>
+            </div>
+            @for ($i = count($data->details); $i < 8; $i++)
+                <div style="height: 1.4em;">&nbsp;</div>
+            @endfor
+
+            <div class="signature-section" style="margin-top: 30px;">
+                <p style="margin-bottom: 5px; font-size: 14.5px;">Tanggal Pekerjaan : _________________</p>
+                <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 10px;">
                     <tr>
                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                            <p style="margin: 0; font-size: 14px;">{{ $data->city ?? 'Semarang' }}, _________________
-                            </p>
-                            <p style="margin: 0; font-size: 14px;">Yang Menyerahkan</p>
-                            <p style="margin: 0; font-size: 14px;">PT. Mitra Asa Pratama</p>
+                            <p style="margin: 0; font-size: 14.5px; text-decoration: underline;">
+                                Pihak Pertama,</p>
+                            <p style="margin: 2px 0 0 0; font-size: 14.5px; line-height: 1.2;">
+                                {{ $data->name }}</p>
                         </td>
                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                            <p style="margin: 0; font-size: 14px;">&nbsp;</p>
-                            <p style="margin: 0; font-size: 14px;">Yang Menerima</p>
-                            <p style="margin: 2px 0 0 0; font-size: 14px; line-height: 1.2;">{{ $data->name }}</p>
+                            <p style="margin: 0; font-size: 14.5px; text-decoration: underline;">
+                                Pihak Kedua,</p>
+                            <p style="margin: 2px 0 0 0; font-size: 14.5px; line-height: 1.2;">PT.
+                                Mitra Asa Pratama</p>
                         </td>
                     </tr>
                     <tr>
@@ -205,7 +247,7 @@
                 </table>
             </div>
 
-            <div class="form-footer-code">
+            <div class="form-footer-code" style="margin-top: 40px;">
                 FORM/WH/049/20.1
             </div>
         </div>

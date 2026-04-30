@@ -58,7 +58,10 @@ class BastController extends Controller
     {
         $type = $request->input('type', 'tanda_terima');
         $data = $bast->load('details');
-        return view('bast.print.tanda_terima', compact(['data', 'type']))
-            ->with(['title' => 'Print BAST']);
+        if ($type == 'tanda_terima') {
+            return view('bast.print.tanda_terima', compact(['data', 'type']));
+        } else {
+            return view('bast.print.bast', compact(['data', 'type']));
+        }
     }
 }
