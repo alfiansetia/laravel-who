@@ -220,13 +220,13 @@
                 <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 10px;">
                     <tr>
                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                            <p style="margin: 0; font-size: 14.5px; text-decoration: underline;">
+                            <p style="margin: 0; font-size: 14.5px;">
                                 Pihak Pertama,</p>
                             <p style="margin: 2px 0 0 0; font-size: 14.5px; line-height: 1.2;">
                                 {{ $data->name }}</p>
                         </td>
                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                            <p style="margin: 0; font-size: 14.5px; text-decoration: underline;">
+                            <p style="margin: 0; font-size: 14.5px;">
                                 Pihak Kedua,</p>
                             <p style="margin: 2px 0 0 0; font-size: 14.5px; line-height: 1.2;">PT.
                                 Mitra Asa Pratama</p>
