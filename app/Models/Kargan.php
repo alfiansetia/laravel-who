@@ -26,6 +26,11 @@ class Kargan extends Model
         return '1 Tahun ( Unit Utama )';
     }
 
+    public static function generateNameFile($name_file)
+    {
+        return str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $name_file);
+    }
+
     public static function generateNumber()
     {
         $last = self::latest()->first();

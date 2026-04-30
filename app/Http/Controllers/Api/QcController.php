@@ -89,7 +89,8 @@ class QcController extends Controller
             ]);
 
             $no = $request->no;
-            $name = "$no." . Str::slug($tgl . '_' . $request->type . '_' . $request->name, '_') . '.docx';
+            $file_name = $no . '.' . $tgl . '_' . $request->type . '_' . $request->name . '.docx';
+            $name = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $file_name);
             $path = storage_path('app/public/' . $name);
             $template->saveAs($path);
             return response()->download($path)->deleteFileAfterSend();

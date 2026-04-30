@@ -110,7 +110,7 @@ class KarganController extends Controller
         $template->setValue('sn', htmlspecialchars($kargan->sn));
         $template->setValue('masa', htmlspecialchars($kargan->masa));
         $template->setValue('pic', htmlspecialchars($kargan->pic));
-        $name = Str::slug('krg_' . $kargan->number, '_');
+        $name = Kargan::generateNameFile($kargan->number);
         $path = storage_path('app/' . $name . '.docx');
         $template->saveAs($path);
         return response()->download($path)->deleteFileAfterSend();
