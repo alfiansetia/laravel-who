@@ -25,6 +25,8 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             position: relative;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -68,6 +70,7 @@
         /* List Styling */
         .item-list-container {
             margin-top: 15px;
+            flex-grow: 1;
         }
 
         .item-list {
@@ -77,14 +80,14 @@
         }
 
         .item-list li {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 14px;
             line-height: 1.4;
         }
 
         /* Signature Styling */
         .signature-section {
-            margin-top: 40px;
+            margin-top: 20px;
             width: 100%;
         }
 
@@ -108,10 +111,10 @@
         }
 
         .form-footer-code {
-            float: right;
+            text-align: right;
             margin-top: 20px;
             font-size: 14px;
-            /* font-weight: bold; */
+            width: 100%;
         }
 
         @media print {
@@ -132,7 +135,7 @@
                 padding: 10mm 15mm;
                 box-shadow: none;
                 width: 100%;
-                min-height: 0;
+                min-height: 297mm;
             }
 
             .no-print {
@@ -169,10 +172,6 @@
                         </li>
                     @endforeach
                 </ol>
-                {{-- Baris kosong tanpa nomor untuk mendorong footer ke bawah --}}
-                @for ($i = count($data->details); $i < 25; $i++)
-                    <div style="height: 1.4em;">&nbsp;</div>
-                @endfor
             </div>
 
             <div class="signature-section">

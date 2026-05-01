@@ -25,6 +25,8 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             position: relative;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -65,9 +67,12 @@
             flex: 1;
         }
 
-        /* List Styling */
-        .item-list-container {
+        .training-content {
+            font-size: 14px;
+            line-height: 1.5;
             margin-top: 15px;
+            color: #000;
+            flex-grow: 1;
         }
 
         .item-list {
@@ -108,10 +113,10 @@
         }
 
         .form-footer-code {
-            float: right;
+            text-align: right;
             margin-top: 20px;
             font-size: 14px;
-            font-weight: bold;
+            width: 100%;
         }
 
         @media print {
@@ -195,10 +200,6 @@
                     </tbody>
                 </table>
             </div>
-
-            @for ($i = count($data->details); $i < 10; $i++)
-                <div style="height: 1.4em;">&nbsp;</div>
-            @endfor
 
             <div class="signature-section" style="margin-top: 30px;">
                 <div style="margin-bottom: 5px; font-size: 14px;">
