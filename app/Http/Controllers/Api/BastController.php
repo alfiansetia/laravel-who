@@ -110,7 +110,7 @@ class BastController extends Controller
                 }
             });
 
-            if ($lot->count() <= 2) {
+            if ($lot->count() <= 10) {
                 $values = $lot->map(function ($item) {
                     $lot = $item['lot_id'][1] ?? '';
                     $ed = $item['expired_date_do'] ?? '';

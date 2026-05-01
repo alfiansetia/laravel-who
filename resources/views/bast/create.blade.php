@@ -38,7 +38,8 @@
                             <textarea name="name" id="name" class="form-control" placeholder="Nama Penerima" rows="4" required></textarea>
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT LENGKAP</label>
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-map-marked-alt mr-1"></i> ALAMAT
+                                LENGKAP</label>
                             <textarea name="address" id="address" class="form-control" placeholder="Alamat Pengiriman" rows="4" required></textarea>
                         </div>
                     </div>
@@ -49,9 +50,10 @@
                                 value="">
                         </div>
                         <div class="form-group col-md-6 text-dark font-weight-normal">
-                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT JALAN / DO</label>
-                            <input type="text" name="do" id="do" class="form-control font-weight-bold text-primary" placeholder="Nomor DO"
-                                value="">
+                            <label class="small font-weight-bold ml-1"><i class="fas fa-file-invoice mr-1"></i> NO SURAT
+                                JALAN / DO</label>
+                            <input type="text" name="do" id="do"
+                                class="form-control font-weight-bold text-primary" placeholder="Nomor DO" value="">
                         </div>
                     </div>
                 </div>
@@ -152,6 +154,7 @@
                     data: data,
                     beforeSend: function() {},
                     success: function(res) {
+                        show_message(res.message || 'Success!', 'success')
                         window.open(`${URL_INDEX}/${res.data.id}/edit`, '_blank')
                     },
                     error: function(xhr, status, error) {

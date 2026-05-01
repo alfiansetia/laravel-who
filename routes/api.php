@@ -129,6 +129,8 @@ Route::apiResource('alamats', AlamatController::class)
     ->names('api.alamats');
 
 // Alamat Baru Routes
+Route::post('alamat-baru/{alamatBaru}/bast', [AlamatBaruController::class, 'bast'])
+    ->name('api.alamat_baru.bast');
 Route::post('alamat-baru/{alamatBaru}/duplicate', [AlamatBaruController::class, 'duplicate'])
     ->name('api.alamat_baru.duplicate');
 Route::get('alamat-baru/{alamatBaru}/sync', [AlamatBaruController::class, 'sync'])

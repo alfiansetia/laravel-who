@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AlamatBaru;
+use App\Models\Bast;
 use App\Models\Koli;
+use App\Services\DoServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 
 class AlamatBaruController extends Controller
 {
@@ -122,5 +126,28 @@ class AlamatBaruController extends Controller
         return $this->sendResponse([
             'deleted_count' => $deleted
         ], 'Alamat Baru deleted successfully.');
+    }
+
+    public function bast(AlamatBaru $alamatBaru)
+    {
+        $no_do = $alamatBaru->do;
+        $bast = Bast::query()
+            ->where('do', $no_do)
+            ->first();
+        if ($bast) {
+            return $this->sendError('BAST Sudah ada!');
+        }
+        $response = DoServices::getAll($no_do, 1);
+        $do = Arr::get($response, 'records.0', null);
+        if (!$do) {
+            return $this->sendError('DO tidak ditemukan!');
+        }
+        $bast = Bast::create([
+            'do'        => $no_do,
+            'address'   => Str::replace("\n", " ", $alamatBaru->alamat),
+            'name'      => $alamatBaru->tujuan,
+            'city'      => Arr::get($do, 'partner_address3', ''),
+        ]);
+        return $this->sendResponse($bast, 'Success Create BAST!');
     }
 }

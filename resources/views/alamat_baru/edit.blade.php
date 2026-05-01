@@ -156,6 +156,9 @@
                     <button type="button" id="btn_duplicate" class="btn btn-warning  text-white">
                         <i class="fas fa-clone"></i> Duplicate
                     </button>
+                    <button type="button" id="btn_bast" class="btn btn-success">
+                        <i class="fas fa-file"></i> Create BAST
+                    </button>
                     <button type="button" onclick="window.close()" class="btn btn-danger ">
                         <i class="fas fa-times"></i> Tutup
                     </button>
@@ -1039,6 +1042,25 @@
                     window.open(`${URL_INDEX}/${result.data.id}/edit`)
                 }).fail(function(xhr) {
                     show_message(xhr.responseJSON.message || 'Error!')
+                })
+            })
+
+            $('#btn_bast').click(function() {
+
+                confirmation('Buat BAST?', function(confirm) {
+                    if (confirm) {
+                        $.ajax({
+                            type: 'POST',
+                            url: `${URL_INDEX_API}/${CURRENT_ID}/bast`,
+                            data: {}
+                        }).done(function(result) {
+                            show_message(result.message || 'Success!', 'success')
+                            window.open(
+                                `{{ route('basts.index') }}/${result.data.id}/edit`)
+                        }).fail(function(xhr) {
+                            show_message(xhr.responseJSON.message || 'Error!')
+                        })
+                    }
                 })
             })
 

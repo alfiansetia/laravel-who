@@ -438,7 +438,9 @@
                     url: `${URL_INDEX_API}/${CURRENT_ID}`,
                     data: data,
                     beforeSend: function() {},
-                    success: function(res) {},
+                    success: function(res) {
+                        show_message(res.message || 'Success!', 'success')
+                    },
                     error: function(xhr, status, error) {
                         show_message(xhr.responseJSON.message || 'Error!')
                     }

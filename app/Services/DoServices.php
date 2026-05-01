@@ -63,6 +63,7 @@ class DoServices extends Odoo
                     'priority',
                     'picking_type_id',
                     'sale_id',
+                    'partner_address3',
                 ],
                 "limit" => intval($limit),
                 "offset" => intval($offset),
