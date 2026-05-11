@@ -193,11 +193,14 @@
                     url: `${url_index}/${id}/trace`,
                     type: "GET",
                     success: function(response) {
-                        // 1. Masukkan HTML ke dalam modal
                         let htmlContent = response.data.html || 'Tidak ada data';
                         $('#modal_trace_content').html(htmlContent);
-                        $('#modal_trace_content table').DataTable();
-                        // 3. Tampilkan modal
+                        if ($('#modal_trace_content table').length > 0) {
+                            $('#modal_trace_content table').DataTable();
+                        } else {
+                            $('#modal_trace_content').append(
+                                '<p class="text-center">Tidak ada data</p>');
+                        }
                         $('#modal_trace').modal('show');
                     },
                     error: function(xhr, textStatus, errorThrown) {
