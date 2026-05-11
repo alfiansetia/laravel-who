@@ -11,6 +11,7 @@ use App\Http\Controllers\FileSearchController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
+use App\Http\Controllers\LotController;
 use App\Http\Controllers\PackController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
@@ -32,6 +33,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+Route::get('lots', [LotController::class, 'index'])->name('lots.index');
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
 
 Route::get('printso/{so}', [FileDownloaderController::class, 'download']);

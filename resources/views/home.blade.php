@@ -334,6 +334,12 @@
                             'title' => 'Vendor',
                             'desc' => 'Daftar vendor aktif',
                         ],
+                        [
+                            'route' => 'lots.index',
+                            'icon' => 'box',
+                            'title' => 'Lot/SN',
+                            'desc' => 'Daftar Lot/SN',
+                        ],
                     ];
                 @endphp
 

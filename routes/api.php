@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KoliController;
 use App\Http\Controllers\Api\KoliItemController;
 use App\Http\Controllers\Api\KontakController;
+use App\Http\Controllers\Api\LotController;
 use App\Http\Controllers\Api\PackController;
 use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
@@ -55,6 +56,10 @@ Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.d
 Route::get('stock-opname', [StockController::class, 'opname'])->name('api.stock.opname');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
 Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
+
+Route::get('lot/{id}/trace', [LotController::class, 'trace'])->name('api.lots.trace');
+Route::get('lot/{id}', [LotController::class, 'lot'])->name('api.lots.lot');
+Route::get('lot', [LotController::class, 'index'])->name('api.lots.index');
 
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 
@@ -129,8 +134,6 @@ Route::apiResource('alamats', AlamatController::class)
     ->names('api.alamats');
 
 // Alamat Baru Routes
-Route::post('alamat-baru/{alamatBaru}/bast', [AlamatBaruController::class, 'bast'])
-    ->name('api.alamat_baru.bast');
 Route::post('alamat-baru/{alamatBaru}/duplicate', [AlamatBaruController::class, 'duplicate'])
     ->name('api.alamat_baru.duplicate');
 Route::get('alamat-baru/{alamatBaru}/sync', [AlamatBaruController::class, 'sync'])
