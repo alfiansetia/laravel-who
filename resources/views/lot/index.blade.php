@@ -196,7 +196,11 @@
                         let htmlContent = response.data.html || 'Tidak ada data';
                         $('#modal_trace_content').html(htmlContent);
                         if ($('#modal_trace_content table').length > 0) {
-                            $('#modal_trace_content table').DataTable();
+                            $('#modal_trace_content table').DataTable({
+                                order: [
+                                    [2, 'desc']
+                                ],
+                            });
                         } else {
                             $('#modal_trace_content').append(
                                 '<p class="text-center">Tidak ada data</p>');

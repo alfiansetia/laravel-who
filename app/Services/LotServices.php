@@ -32,6 +32,9 @@ class LotServices extends Odoo
         if (!empty($product)) {
             $domain[] = ['product_id', 'ilike', $product];
         }
+        if (!empty($query)) {
+            $domain[] = ['name', 'ilike', $query];
+        }
         $data = [
             "jsonrpc" => "2.0",
             "method" => "call",
