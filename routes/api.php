@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductImageController;
+use App\Http\Controllers\Api\ProductOdooController;
 use App\Http\Controllers\Api\QcController;
 use App\Http\Controllers\Api\QcLotController;
 use App\Http\Controllers\Api\ResourceController;
@@ -52,6 +53,10 @@ Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
 
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
+
+Route::get('product-odoo/{id}/on-hand', [ProductOdooController::class, 'on_hand'])->name('api.product_odoo.on_hand');
+Route::get('product-odoo/{id}', [ProductOdooController::class, 'detail'])->name('api.product_odoo.detail');
+Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('api.product_odoo.index');
 
 Route::get('stock-opname', [StockController::class, 'opname'])->name('api.stock.opname');
 Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');

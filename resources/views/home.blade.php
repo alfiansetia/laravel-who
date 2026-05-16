@@ -340,6 +340,12 @@
                             'title' => 'Lot/SN',
                             'desc' => 'Daftar Lot/SN',
                         ],
+                        [
+                            'route' => 'product_odoo.index',
+                            'icon' => 'box',
+                            'title' => 'Product',
+                            'desc' => 'Daftar Lot/SN',
+                        ],
                     ];
                 @endphp
 

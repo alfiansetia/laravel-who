@@ -17,6 +17,7 @@ use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
+use App\Http\Controllers\ProductOdooController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\QcLotController;
 use App\Http\Controllers\RIController;
@@ -35,6 +36,8 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('lots', [LotController::class, 'index'])->name('lots.index');
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+
+Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('product_odoo.index');
 
 Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
 
