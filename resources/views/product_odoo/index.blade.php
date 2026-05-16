@@ -115,6 +115,40 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal_onhand" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="modal_onhandLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal_onhandLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover" id="table_onhand" style="width: 100%;cursor: pointer;">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Location</th>
+                                <th>Lot</th>
+                                <th>Ed</th>
+                                <th style="width: 30px">QTY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('js')
@@ -452,6 +486,105 @@
 
             });
 
+            const table_onhand = $("#table_onhand").DataTable({
+                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
+                    "<'table-responsive'tr>" +
+                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
+                oLanguage: {
+                    "sSearchPlaceholder": "Search...",
+                    "sLengthMenu": "Results :  _MENU_",
+                },
+                lengthMenu: [
+                    [10, 50, 100, 500, 1000],
+                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
+                ],
+                pageLength: 10,
+                paging: true,
+                columns: [{
+                        data: "product_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data
+                        }
+                    }, {
+                        data: "location_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data
+                        }
+                    }, {
+                        data: "lot_id",
+                        render: function(data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data[1]
+                            }
+                            return data
+                        }
+                    }, {
+                        data: "itds_expired",
+                        render: function(data, type, row) {
+                            if (data != false) {
+                                return moment(data).format('YYYY.MM.DD');
+                            }
+                            return ''
+                        }
+                    },
+                    {
+                        data: "quantity",
+                        className: 'text-center',
+                    },
+                ],
+                buttons: [{
+                        extend: "colvis",
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Column Visible'
+                        },
+                        className: 'btn btn-sm btn-primary'
+                    },
+                    {
+                        extend: "collection",
+                        text: '<i class="fas fa-download mr-1"></i>Export',
+                        attr: {
+                            'data-toggle': 'tooltip',
+                            'title': 'Export Data'
+                        },
+                        className: 'btn btn-sm btn-primary',
+                        buttons: [{
+                            extend: 'copy',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'csv',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'pdf',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'excel',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }, {
+                            extend: 'print',
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }],
+                    }
+                ],
+
+            });
+
             $('#filter_product_code').select2({
                 placeholder: 'Select Product Code',
                 allowClear: true,
@@ -562,6 +695,11 @@
                     },
                     success: function(response) {
                         console.log(response);
+                        table_onhand.clear()
+                            .rows
+                            .add(response.data)
+                            .draw();
+                        $('#modal_onhand').modal('show');
 
                     },
                     error: function(xhr, textStatus, errorThrown) {
