@@ -68,13 +68,13 @@ class ProductOdooServices extends Odoo
                     "x_studio_valid_to_akl",
                     "product_variant_id"
                 ],
-                "limit" => $limit,
-                "offset" => $offset,
-                "sort" => "",
-                "context" => [
-                    "lang" => "en_US",
-                    "tz" => "Asia/Jakarta",
-                    "uid" => 192,
+                "limit"     => $limit,
+                "offset"    => $offset,
+                "sort"      => "default_code ASC",
+                "context"   => [
+                    "lang"  => "en_US",
+                    "tz"    => "Asia/Jakarta",
+                    "uid"   => 192,
                     "search_default_consumable" => 1,
                     "default_type" => "product"
                 ]
