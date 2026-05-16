@@ -140,6 +140,11 @@
                         <tbody>
                         </tbody>
                     </table>
+                    <hr class="my-2">
+                    <div class="mt-2">
+                        <span><b>Summary</b> : </span>
+                        <span id="modal_summary"></span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -219,6 +224,12 @@
                     }, {
                         data: "qty_available",
                         className: 'text-center',
+                        render: function(data, type, row) {
+                            if (type == 'display') {
+                                return hrg(data)
+                            }
+                            return data
+                        }
                     }
                 ],
                 buttons: [{
@@ -536,6 +547,12 @@
                     {
                         data: "quantity",
                         className: 'text-center',
+                        render: function(data, type, row) {
+                            if (type == 'display') {
+                                return hrg(data)
+                            }
+                            return data
+                        }
                     },
                 ],
                 buttons: [{
@@ -699,6 +716,34 @@
                             .rows
                             .add(response.data)
                             .draw();
+
+                        // Hitung summary per lokasi
+                        let summaryMap = {};
+                        if (Array.isArray(response.data)) {
+                            response.data.forEach(item => {
+                                let loc = Array.isArray(item.location_id) ? item
+                                    .location_id[1] : item.location_id;
+                                let qty = parseFloat(item.quantity) || 0;
+
+                                if (summaryMap[loc]) {
+                                    summaryMap[loc] += qty;
+                                } else {
+                                    summaryMap[loc] = qty;
+                                }
+                            });
+                        }
+
+                        let summaryHtml = '<ul class="list-unstyled mb-0">';
+                        let hasData = false;
+                        Object.entries(summaryMap).forEach(([loc, qty]) => {
+                            summaryHtml +=
+                                `<li><i class="fas fa-arrow-right mr-2 text-primary"></i><b>${loc}</b>: <span class="badge badge-info">${hrg(qty)}</span></li>`;
+                            hasData = true;
+                        });
+                        summaryHtml += '</ul>';
+
+                        $('#modal_summary').html(hasData ? summaryHtml : '-');
+
                         $('#modal_onhand').modal('show');
 
                     },

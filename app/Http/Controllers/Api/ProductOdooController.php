@@ -42,4 +42,9 @@ class ProductOdooController extends Controller
             'data'            => Arr::get($res, 'result.records')
         ]);
     }
+
+    public function detail(int $id)
+    {
+        return $this->sendError('Soon', 400);
+    }
 }
