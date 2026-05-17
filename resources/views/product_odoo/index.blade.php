@@ -195,11 +195,13 @@
                         data: "id",
                         orderable: false,
                         searchable: false,
-                        width: "10px",
                         render: function(data, type, row) {
-                            return `<div class="button-group">
+                            return `<div class="btn-group">
                                 <button type="button" class="btn btn-primary btn-sm btn-onhand">
                                     <i class="fa fa-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-warning btn-sm btn-move">
+                                    <i class="fas fa-arrows-alt-v"></i>
                                 </button>
                                 </div>`;
                         }
@@ -705,11 +707,8 @@
                     variant = data.product_variant_id[0]
                 }
                 $.ajax({
-                    url: `${URL_INDEX_API}/${id}/on-hand`,
+                    url: `${URL_INDEX_API}/${id}/${variant}/on-hand`,
                     type: "GET",
-                    data: {
-                        variant: variant
-                    },
                     success: function(response) {
                         console.log(response);
                         table_onhand.clear()
@@ -745,6 +744,27 @@
                         $('#modal_summary').html(hasData ? summaryHtml : '-');
 
                         $('#modal_onhand').modal('show');
+
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        show_message(xhr.responseJSON?.message || 'Gagal memuat data PO!',
+                            'error');
+                    },
+                })
+            });
+
+            $('#table tbody').on('click', '.btn-move', function() {
+                let row = $(this).closest('tr');
+                let data = table.row(row).data()
+                let id = data.id
+                let variant = 0
+                if (Array.isArray(data.product_variant_id)) {
+                    variant = data.product_variant_id[0]
+                }
+                $.ajax({
+                    url: `${URL_INDEX_API}/${id}/${variant}/move`,
+                    type: "GET",
+                    success: function(response) {
 
                     },
                     error: function(xhr, textStatus, errorThrown) {
