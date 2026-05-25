@@ -150,8 +150,11 @@
             const perhitunganHTML = `
                 <div class="perhitungan-item" id="perhitungan-${perhitunganCounter}">
                     <div class="row g-2 align-items-end">
-                        <div class="col-md-1">
-                            <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="col-md-1 text-center">
+                            <label class="form-label d-block">Hitung</label>
+                            <div class="d-flex align-items-center justify-content-center gap-2" style="height: 31px;">
+                                <input type="checkbox" class="form-check-input m-0" id="hitung-${perhitunganCounter}" 
+                                    checked onchange="hitungGrandTotal()">
                                 <span class="badge bg-primary nomor-badge"></span>
                             </div>
                         </div>
@@ -188,13 +191,15 @@
                                 oninput="hitungPerhitungan(${perhitunganCounter})">
                         </div>
                         <div class="col-md-3">
-                            <div class="result-inline">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="result-inline" style="height: 31px; padding: 4px 12px;">
                                 <span>Total:</span>
                                 <strong id="totalAkhir-${perhitunganCounter}">Rp 0</strong>
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <div class="d-flex gap-1">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="d-flex gap-1" style="height: 31px; align-items: center;">
                                 <button type="button" class="btn btn-sm btn-warning" onclick="duplikatPerhitungan(${perhitunganCounter})" title="Duplikat">
                                     <i class="fas fa-copy"></i>
                                 </button>
@@ -278,6 +283,7 @@
             const jumlahKirim = document.getElementById(`jumlahKirim-${id}`).value;
             const persenPajak = document.getElementById(`persenPajak-${id}`).value;
             const checkboxChecked = document.getElementById(`samakan-${id}`).checked;
+            const hitungChecked = document.getElementById(`hitung-${id}`).checked;
 
             // Buat perhitungan baru
             perhitunganCounter++;
@@ -286,8 +292,11 @@
             const perhitunganHTML = `
                 <div class="perhitungan-item" id="perhitungan-${perhitunganCounter}">
                     <div class="row g-2 align-items-end">
-                        <div class="col-md-1">
-                            <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="col-md-1 text-center">
+                            <label class="form-label d-block">Hitung</label>
+                            <div class="d-flex align-items-center justify-content-center gap-2" style="height: 31px;">
+                                <input type="checkbox" class="form-check-input m-0" id="hitung-${perhitunganCounter}" 
+                                    ${hitungChecked ? 'checked' : ''} onchange="hitungGrandTotal()">
                                 <span class="badge bg-primary nomor-badge"></span>
                             </div>
                         </div>
@@ -324,13 +333,15 @@
                                 oninput="hitungPerhitungan(${perhitunganCounter})">
                         </div>
                         <div class="col-md-3">
-                            <div class="result-inline">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="result-inline" style="height: 31px; padding: 4px 12px;">
                                 <span>Total:</span>
                                 <strong id="totalAkhir-${perhitunganCounter}">Rp 0</strong>
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <div class="d-flex gap-1">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="d-flex gap-1" style="height: 31px; align-items: center;">
                                 <button type="button" class="btn btn-sm btn-warning btn-duplikat" onclick="duplikatPerhitungan(${perhitunganCounter})" title="Duplikat">
                                     <i class="fas fa-copy"></i>
                                 </button>
@@ -362,10 +373,18 @@
 
             perhitunganItems.forEach((item) => {
                 const id = item.id.split('-')[1];
-                const totalAkhirElement = document.getElementById(`totalAkhir-${id}`);
-                if (totalAkhirElement) {
-                    const totalText = totalAkhirElement.textContent.replace(/[^0-9]/g, '');
-                    grandTotal += parseFloat(totalText) || 0;
+                const checkbox = document.getElementById(`hitung-${id}`);
+                if (checkbox) {
+                    if (checkbox.checked) {
+                        item.style.opacity = '1';
+                        const totalAkhirElement = document.getElementById(`totalAkhir-${id}`);
+                        if (totalAkhirElement) {
+                            const totalText = totalAkhirElement.textContent.replace(/[^0-9]/g, '');
+                            grandTotal += parseFloat(totalText) || 0;
+                        }
+                    } else {
+                        item.style.opacity = '0.5';
+                    }
                 }
             });
 
