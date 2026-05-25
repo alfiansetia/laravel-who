@@ -54,7 +54,8 @@ Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
 Route::post('detail_alamat/{detail_alamat}/order', [DetailAlamatController::class, 'order'])->name('api.detail_alamat.order');
 Route::apiResource('detail_alamat', DetailAlamatController::class)->names('api.detail_alamat');
 
-Route::get('product-odoo/{id}/on-hand', [ProductOdooController::class, 'on_hand'])->name('api.product_odoo.on_hand');
+Route::get('product-odoo/{id}/{variant}/move', [ProductOdooController::class, 'move'])->name('api.product_odoo.move');
+Route::get('product-odoo/{id}/{variant}/on-hand', [ProductOdooController::class, 'on_hand'])->name('api.product_odoo.on_hand');
 Route::get('product-odoo/{id}', [ProductOdooController::class, 'detail'])->name('api.product_odoo.detail');
 Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('api.product_odoo.index');
 

@@ -391,7 +391,7 @@ class ProductOdooServices extends Odoo
 
     public static function onHand(int $id, int $variant)
     {
-        $data_line = [
+        $data = [
             "jsonrpc" => "2.0",
             "method" => "call",
             "params" => [
@@ -440,11 +440,84 @@ class ProductOdooServices extends Odoo
             ],
             "id" => 16583959
         ];
-        $order_line = parent::asJson()
+        $res = parent::asJson()
             ->method('POST')
             ->withUrlParam('/web/dataset/search_read')
-            ->withData($data_line)
+            ->withData($data)
+            ->get(); 
+        return $res;       
+    }
+
+    public static function move(int $id, int $variant)
+    {
+        $data = [
+            "jsonrpc" => "2.0",
+            "method" => "call",
+            "params" => [
+                "model" => "stock.move.line",
+                "domain" => [
+                    "&",
+                    [
+                        "product_id",
+                        "=",
+                        $variant
+                    ],
+                    "&",
+                    [
+                        "product_id.product_tmpl_id",
+                        "in",
+                        [
+                            $id
+                        ]
+                    ],
+                    [
+                        "state",
+                        "=",
+                        "done"
+                    ]
+                ],
+                "fields" => [
+                    "reference",
+                    "date",
+                    "lot_id",
+                    "lot_id2",
+                    "lot_name",
+                    "x_studio_no_so",
+                    "x_studio_tgl_so",
+                    "product_id",
+                    "x_studio_id_paket",
+                    "x_studio_customer",
+                    "product_category_related",
+                    "location_id",
+                    "location_dest_id",
+                    "qty_done",
+                    "state",
+                    "product_uom_id"
+                ],
+                "limit" => 80,
+                "sort" => "date DESC",
+                "context" => [
+                    "lang" => "en_US",
+                    "tz" => "Asia/Jakarta",
+                    "uid" => 192,
+                    "active_model" => "product.template",
+                    "active_id" => 14014,
+                    "active_ids" => [
+                        14014
+                    ],
+                    "search_default_done" => 1,
+                    "search_default_groupby_product_id" => 1,
+                    "search_disable_custom_filters" => true,
+                    "group_by" => "product_id"
+                ]
+            ],
+            "id" => 737331834
+        ];
+        $res = parent::asJson()
+            ->method('POST')
+            ->withUrlParam('/web/dataset/search_read')
+            ->withData($data)
             ->get();
-        return $order_line;
+        return $res;
     }
 }

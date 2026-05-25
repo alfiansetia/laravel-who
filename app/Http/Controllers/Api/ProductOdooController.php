@@ -31,9 +31,9 @@ class ProductOdooController extends Controller
         ]);
     }
 
-    public function on_hand(Request $request, $id)
+    public function on_hand(Request $request, int $id, int $variant)
     {
-        $res = ProductOdooServices::onHand($id, $request->variant);
+        $res = ProductOdooServices::onHand($id, $variant);
         $total = Arr::get($res, 'result.length');
         return response()->json([
             'draw'            => $request->draw,
@@ -46,5 +46,17 @@ class ProductOdooController extends Controller
     public function detail(int $id)
     {
         return $this->sendError('Soon', 400);
+    }
+
+    public function move(Request $request, int $id, int $variant)
+    {
+        $res = ProductOdooServices::move($id, $variant);
+        $total = Arr::get($res, 'result.length');
+        return response()->json([
+            'draw'            => $request->draw,
+            'recordsTotal'    => $total,
+            'recordsFiltered' => $total,
+            'data'            => Arr::get($res, 'result.records')
+        ]);
     }
 }
