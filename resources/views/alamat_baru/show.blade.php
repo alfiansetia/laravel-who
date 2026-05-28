@@ -280,14 +280,16 @@
                                     <td class="style18" colspan="2">{{ $data->tlp }}</td>
                                 </tr>
                             @endif
-                            <tr>
-                                <td class="style18" style="width: 100px;vertical-align: baseline">No DO</td>
-                                <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
-                                <td class="style18" colspan="2">{{ $data->do }} @if (!empty($data->epur))
-                                        (<span style="font-size: 16pt">{{ $data->epur }}</span>)
-                                    @endif
-                                </td>
-                            </tr>
+                            @if (!empty($data->do) && $data->do != '-')
+                                <tr>
+                                    <td class="style18" style="width: 100px;vertical-align: baseline">No DO</td>
+                                    <td class="style18" style="width: 1px;vertical-align: baseline">:</td>
+                                    <td class="style18" colspan="2">{{ $data->do }} @if (!empty($data->epur))
+                                            (<span style="font-size: 16pt">{{ $data->epur }}</span>)
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                             @if (!empty($data->untuk))
                                 <tr>
                                     <td class="style18" style="width: 14%;vertical-align: baseline">Untuk</td>
