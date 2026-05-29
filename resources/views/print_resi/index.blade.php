@@ -172,7 +172,7 @@
                                         title="Jumlah Kolom">
                                     <span class="small font-weight-bold px-1">x</span>
                                     <input type="number" id="print_rows"
-                                        class="form-control form-control-sm print-opt-input" value="3" min="1"
+                                        class="form-control form-control-sm print-opt-input" value="2" min="1"
                                         title="Jumlah Baris">
                                 </div>
                                 <button type="button" id="btn-reset" class="btn btn-outline-danger mr-2">
@@ -401,6 +401,8 @@
                         const targetHeight = Math.max(1, img.height * (1 - crop.t - crop.b));
                         canvas.width = targetWidth;
                         canvas.height = targetHeight;
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
                         ctx.drawImage(img, img.width * crop.l, img.height * crop.t, targetWidth,
                             targetHeight, 0, 0, targetWidth, targetHeight);
                         canvas.toBlob(blob => resolve(blob), 'image/png');
@@ -443,6 +445,7 @@
             $('#btn-save-crop').on('click', function() {
                 if (!cropper) return;
                 const canvas = cropper.getCroppedCanvas({
+                    imageSmoothingEnabled: true,
                     imageSmoothingQuality: 'high'
                 });
                 canvas.toBlob(blob => {
@@ -485,41 +488,46 @@
                 if (extractedImages.length === 0) return;
 
                 const cols = parseInt($('#print_cols').val()) || 2;
-                const rows = parseInt($('#print_rows').val()) || 4;
+                const rows = parseInt($('#print_rows').val()) || 2;
                 const itemsPerPage = cols * rows;
 
                 const win = window.open('', '_blank');
                 win.document.write('<html><head><title>Print Resi - Layout Grid</title>');
                 win.document.write(`
                     <style>
-                        @page { margin: 4mm; size: A4; }
-                        body { margin: 0; padding: 0; font-family: sans-serif; }
+                        @page { margin: 5mm; size: A4 landscape; }
+                        body { margin: 0; padding: 0; font-family: sans-serif; background: #fff; }
                         .page {
                             display: grid;
                             grid-template-columns: repeat(${cols}, 1fr);
                             grid-template-rows: repeat(${rows}, 1fr);
-                            width: 210mm;
-                            height: 297mm;
+                            width: 287mm; /* 297mm - (5mm * 2) */
+                            height: 200mm; /* 210mm - (5mm * 2) */
                             box-sizing: border-box;
                             page-break-after: always;
+                            overflow: hidden;
                         }
                         .print-item {
-                            border: 0.5px dashed #ccc; /* Garis bantuan pemotongan */
+                            border: 0.1mm dashed #ddd; /* Garis bantu potong tipis */
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            padding: 1mm; /* Margin agar tidak mepet */
                             box-sizing: border-box;
                             overflow: hidden;
+                            height: 100%;
+                            width: 100%;
                         }
                         .print-item img {
-                            max-width: 100%;
-                            max-height: 100%;
-                            object-fit: contain;
+                            width: 100%;
+                            height: 100%;
+                            object-fit: fill; 
+                            image-rendering: -webkit-optimize-contrast;
+                            image-rendering: crisp-edges;
+                            display: block;
                         }
                         @media print {
+                            body { -webkit-print-color-adjust: exact; }
                             .page { border: none; }
-                            body { background: none; }
                         }
                     </style>
                 `);
@@ -533,7 +541,6 @@
                         if (img) {
                             win.document.write(`<div class="print-item"><img src="${img.url}"></div>`);
                         } else {
-                            // Empty cell to keep grid layout
                             win.document.write('<div class="print-item"></div>');
                         }
                     }
@@ -543,8 +550,8 @@
                 win.document.write('</body></html>');
                 win.document.close();
 
-                // Wait for images to load before printing and then close
                 win.onload = function() {
+                    win.focus();
                     win.print();
                     win.close();
                 };
