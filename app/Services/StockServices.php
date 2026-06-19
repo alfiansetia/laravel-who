@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Product;
 use App\Services\Odoo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -52,7 +53,7 @@ class StockServices extends Odoo
                         'quantity',
                         'product_uom_id',
                         'write_date',
-                        'company_id'
+                        'company_id',
                     ],
                     'groupby' => ['product_id', 'location_id'],
                     'orderby' => '',
@@ -75,18 +76,27 @@ class StockServices extends Odoo
             ->method('POST')
             ->get();
         $data = collect(Arr::get($response, 'result', []) ?? []);
-        return $data->map(function ($item) {
-            $pecah_code = pecah_code($item['product_id']);
-            $id = $pecah_code[0];
-            $code = $pecah_code[1];
-            $name = $pecah_code[2];
+
+        // 1. Ekstrak info dasar dan kumpulkan semua 'code' unik
+        $mappedData = $data->map(function ($item) {
+            [$id, $code, $name] = pecah_code($item['product_id']);
             return [
-                'id'        => $id,
-                'quantity'  => $item['quantity'] ?? 0,
-                'code'      => $code,
-                'name'      => $name,
-                'original'  => $item,
+                'id'       => $id,
+                'quantity' => $item['quantity'] ?? 0,
+                'code'     => $code,
+                'name'     => $name,
+                'original' => $item,
             ];
+        });
+
+        // 2. Query database hanya untuk kode yang ada di data (Map untuk O(1) lookup)
+        $productMap = Product::whereIn('code', $mappedData->pluck('code')->unique()->filter())
+            ->pluck('akl', 'code');
+
+        // 3. Masukkan 'akl' ke hasil akhir
+        return $mappedData->map(function ($item) use ($productMap) {
+            $item['akl'] = $productMap[$item['code']] ?? null;
+            return $item;
         });
     }
 

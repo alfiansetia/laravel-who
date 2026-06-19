@@ -31,7 +31,7 @@
                             <th>KODE</th>
                             <th>NAME</th>
                             <th>QTY</th>
-                            {{-- <th>#</th> --}}
+                            <th>AKL</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,6 +102,9 @@
                     {
                         data: "quantity",
                         className: 'text-center',
+                    }, {
+                        data: "akl",
+                        className: 'text-center'
                     },
                     // {
                     //     data: "id",
