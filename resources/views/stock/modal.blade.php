@@ -13,8 +13,7 @@
                     <thead>
                         <tr>
                             <th>LOCATION</th>
-                            <th>Lot/SN</th>
-                            <th>ED</th>
+                            <th>Lot/SN/ED</th>
                             <th style="width: 30px">QTY</th>
                         </tr>
                     </thead>

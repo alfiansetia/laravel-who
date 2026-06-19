@@ -223,17 +223,22 @@
                     scrollCollapse: true,
                     scrollY: '400px',
                     columns: [{
-                            data: "location",
-                        }, {
-                            data: "lot",
-                        },
-                        {
-                            data: "expired",
-                        }, {
-                            data: "quantity",
-                            className: 'text-center'
-                        },
-                    ],
+                        data: "location",
+                    }, {
+                        data: "lot",
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            let text = data ?? '-'
+                            let exp = row.expired ?? false
+                            if (exp != false) {
+                                text += `/${exp}`
+                            }
+                            return text
+                        }
+                    }, {
+                        data: "quantity",
+                        className: 'text-center'
+                    }, ],
                     buttons: [{
                             extend: "colvis",
                             attr: {
