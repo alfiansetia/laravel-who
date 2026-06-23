@@ -20,7 +20,7 @@ class ItController extends Controller
         }
         $gudang = $request->input('gudang');
         $search = (string) ($search ?? '');
-        $response = ItServices::withGudang($gudang)
+        $response = ItServices::withGudang(intval($gudang))
             ->getAll($search, $length, $start);
         $totalRecords = Arr::get($response, 'length', 0);
         $data = Arr::get($response, 'records', []);
