@@ -278,11 +278,17 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $p = empty($pack->product->pltbb->p) ? '' : $pack->product->pltbb->p;
+                                $l = empty($pack->product->pltbb->l) ? '' : $pack->product->pltbb->l;
+                                $t = empty($pack->product->pltbb->t) ? '' : $pack->product->pltbb->t;
+                                $b = empty($pack->product->pltbb->b) ? '' : $pack->product->pltbb->b;
+                            @endphp
                             <tr>
-                                <td class="text-center">{{ $pack->product->pltbb->p ?? '' }}</td>
-                                <td class="text-center">{{ $pack->product->pltbb->l ?? '' }}</td>
-                                <td class="text-center">{{ $pack->product->pltbb->t ?? '' }}</td>
-                                <td class="text-center">{{ $pack->product->pltbb->b ?? '' }}</td>
+                                <td class="text-center">{{ $p }}</td>
+                                <td class="text-center">{{ $l }}</td>
+                                <td class="text-center">{{ $t }}</td>
+                                <td class="text-center">{{ $b }}</td>
                             </tr>
                         </tbody>
                     </table>
