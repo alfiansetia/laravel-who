@@ -158,7 +158,7 @@
         }
 
         .section-spacer {
-            height: 30px;
+            height: 20px;
         }
 
         /* Sembunyikan spacer jika pecah halaman agar tidak ada gap kosong di awal halaman baru */
