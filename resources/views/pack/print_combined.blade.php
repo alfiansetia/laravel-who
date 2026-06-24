@@ -285,10 +285,10 @@
                                 $b = empty($pack->product->pltbb->b) ? '' : $pack->product->pltbb->b;
                             @endphp
                             <tr>
-                                <td class="text-center">{{ $p }}</td>
-                                <td class="text-center">{{ $l }}</td>
-                                <td class="text-center">{{ $t }}</td>
-                                <td class="text-center">{{ $b }}</td>
+                                <td class="text-center" style="min-height: 20px;">{{ $p }}</td>
+                                <td class="text-center" style="min-height: 20px;">{{ $l }}</td>
+                                <td class="text-center" style="min-height: 20px;">{{ $t }}</td>
+                                <td class="text-center" style="min-height: 20px;">{{ $b }}</td>
                             </tr>
                         </tbody>
                     </table>
