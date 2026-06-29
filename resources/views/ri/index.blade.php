@@ -86,9 +86,8 @@
                                         <th>Desc</th>
                                         <th>Product</th>
                                         <th>AKL</th>
-                                        <th>LOT/SN</th>
+                                        <th>LOT/SN/ED</th>
                                         <th>QTY</th>
-                                        <th>EXP DATE</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -379,22 +378,18 @@
                     }, {
                         data: "lot_id",
                         render: function(data, type, row) {
-                            return Array.isArray(data) ? data[1] : (row.lot_name ? row.lot_name :
+                            let lot = Array.isArray(data) ? data[1] : (row.lot_name ? row.lot_name :
                                 data);
+                            if (row.expired_date != false) {
+                                let exp = moment(row.expired_date).format('YYYY.MM.DD');
+                                lot += `/${exp}`
+                            }
+                            return lot;
                         }
                     },
                     {
                         data: "qty_done",
                         className: 'text-center',
-                    }, {
-                        data: "expired_date",
-                        className: 'text-center',
-                        render: function(data, type, row) {
-                            if (!data) {
-                                return '';
-                            }
-                            return moment(data).format('YYYY.MM.DD');
-                        }
                     },
                 ],
                 buttons: [{
