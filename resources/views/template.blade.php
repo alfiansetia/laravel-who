@@ -263,7 +263,7 @@
                 // Set timeout untuk auto unblock setelah 10 detik
                 blockTimeout = setTimeout(function() {
                     $.unblockUI();
-                }, 10000);
+                }, 60000);
             });
 
             $(document).ajaxComplete(function(event, jqXHR, settings) {
