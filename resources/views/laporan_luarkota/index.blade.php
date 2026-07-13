@@ -127,6 +127,8 @@
     </div>
 @endsection
 
+@include('laporan_luarkota._modal_tracking')
+
 @push('js')
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
@@ -338,6 +340,11 @@ Terima kasih.`;
                         text: '<i class="fas fa-trash mr-1"></i>Hapus Data',
                         className: 'btn btn-sm btn-danger',
                         action: () => table.clear().draw()
+                    },
+                    {
+                        text: '<i class="fas fa-truck mr-1"></i>Tracking Tiki',
+                        className: 'btn btn-sm btn-info',
+                        action: () => trackTiki()
                     }
                 ],
                 drawCallback: (settings) => $('#total').text(settings.fnRecordsDisplay())
@@ -445,6 +452,203 @@ Terima kasih.`;
                     `https://api.whatsapp.com/send/?phone=${data.no_telp}&text=${encodeURIComponent(parseTemplate(data))}`,
                     '_blank');
             });
+
+            function trackTiki() {
+                let data = table.rows({
+                    search: 'applied'
+                }).data().toArray();
+
+                let tikiRows = data.filter(row => row.ekspedisi && row.ekspedisi.toUpperCase() === 'TIKI' && row
+                    .no_resi && row.no_resi.trim() !== '');
+
+                if (tikiRows.length === 0) {
+                    return show_message('Tidak ada data TIKI dengan No Resi!', 'error');
+                }
+
+                // Map resi -> no_do dari datatable
+                let resiToDoMap = {};
+                tikiRows.forEach(row => {
+                    resiToDoMap[row.no_resi.trim()] = row.no_do || '-';
+                });
+
+                let resiList = tikiRows.map(row => row.no_resi.trim());
+
+                // Batch per 20 resi (limit TIKI API)
+                let batches = [];
+                for (let i = 0; i < resiList.length; i += 20) {
+                    batches.push(resiList.slice(i, i + 20));
+                }
+
+                console.log(`Tracking TIKI: ${resiList.length} resi, ${batches.length} batch`);
+                bloc();
+
+                let allResults = [];
+                let completed = 0;
+
+                batches.forEach((batch, index) => {
+                    let resi = batch.join(',');
+                    $.ajax({
+                        url: `{{ route('api.tiki.track') }}?resi=${encodeURIComponent(resi)}`,
+                        method: 'GET',
+                        success: (res) => {
+                            if (res.data && res.data.response) {
+                                allResults = allResults.concat(res.data.response);
+                            }
+                        },
+                        error: (xhr) => {
+                            console.error(`Batch ${index + 1} gagal:`, xhr.responseJSON
+                                ?.message || xhr.statusText);
+                        },
+                        complete: () => {
+                            completed++;
+                            if (completed === batches.length) {
+                                unbloc();
+                                showTrackingModal(allResults, resiToDoMap);
+                            }
+                        }
+                    });
+                });
+            }
+
+            function showTrackingModal(results, resiToDoMap) {
+                // Group by cnno
+                let grouped = {};
+                results.forEach(item => {
+                    if (!grouped[item.cnno]) grouped[item.cnno] = [];
+                    grouped[item.cnno].push(item);
+                });
+
+                let accordion = $('#trackingAccordion').empty();
+                let cnnoKeys = Object.keys(grouped);
+
+                cnnoKeys.forEach((cnno, idx) => {
+                    let entries = grouped[cnno];
+                    let noDo = resiToDoMap[cnno] || '-';
+                    let cust = entries[0].consignee_name || '-';
+                    let collapseId = `collapse-${idx}`;
+
+                    // Ambil entry terbaru
+                    let latest = entries.reduce((a, b) => {
+                        let dateA = a.history && a.history.length ? a.history[0].entry_date : '';
+                        let dateB = b.history && b.history.length ? b.history[0].entry_date : '';
+                        return dateA >= dateB ? a : b;
+                    });
+
+                    // Gabung semua history
+                    let allHistory = [];
+                    entries.forEach(e => {
+                        if (e.history) allHistory = allHistory.concat(e.history);
+                    });
+                    allHistory.sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+
+                    let lastHistory = allHistory.length > 0 ? allHistory[0] : null;
+                    let statusBadge = lastHistory ?
+                        `<span class="badge badge-${getStatusColor(lastHistory.status)} badge-status">${lastHistory.status}</span>` :
+                        '';
+
+                    accordion.append(`
+                        <div class="card">
+                            <div class="card-header d-flex align-items-center justify-content-between" data-toggle="collapse" data-target="#${collapseId}">
+                                <div>
+                                    <strong class="mr-3">${noDo}</strong>
+                                    <span class="text-muted mr-3"><i class="fas fa-user mr-1"></i>${cust}</span>
+                                    <code>${cnno}</code>
+                                </div>
+                                <div>
+                                    ${statusBadge}
+                                    <i class="fas fa-chevron-down ml-2 toggle-icon"></i>
+                                </div>
+                            </div>
+                            <div id="${collapseId}" class="collapse ${idx === 0 ? 'show' : ''}" data-parent="#trackingAccordion">
+                                <div class="card-body">
+                                    <!-- Detail -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><td class="text-muted" style="width:130px">No Resi</td><td><strong>${cnno}</strong></td></tr>
+                                                <tr><td class="text-muted">No DO</td><td><strong>${noDo}</strong></td></tr>
+                                                <tr><td class="text-muted">Pengirim</td><td>${latest.consignor_name || '-'}</td></tr>
+                                                <tr><td class="text-muted">Penerima</td><td>${latest.consignee_name || '-'}</td></tr>
+                                                <tr><td class="text-muted">Tujuan</td><td>${latest.destination_city_name || '-'}</td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-sm table-borderless mb-0">
+                                                <tr><td class="text-muted" style="width:130px">Berat</td><td>${latest.weight || '-'} kg</td></tr>
+                                                <tr><td class="text-muted">Ongkir</td><td>Rp ${Number(latest.shipment_fee || 0).toLocaleString('id-ID')}</td></tr>
+                                                <tr><td class="text-muted">Asuransi</td><td>Rp ${Number(latest.insurance_fee || 0).toLocaleString('id-ID')}</td></tr>
+                                                <tr><td class="text-muted">Estimasi</td><td>${latest.est_day || '-'} hari (${latest.est_date || '-'})</td></tr>
+                                                <tr><td class="text-muted">Koli</td><td>${latest.pieces_no || '-'}</td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <!-- Status Terakhir -->
+                                    ${lastHistory ? `
+                                        <div class="alert alert-${getStatusColor(lastHistory.status)} py-2 mb-3">
+                                            <strong>${lastHistory.status}</strong> &mdash; ${lastHistory.noted || ''}
+                                            <br><small>${lastHistory.entry_name || ''} &bull; ${lastHistory.entry_date}</small>
+                                        </div>` : ''}
+                                    <!-- Tracking History -->
+                                    <h6 class="text-muted mb-2"><i class="fas fa-history mr-1"></i>Riwayat Tracking</h6>
+                                    <div class="timeline">
+                                        ${allHistory.map(h => `
+                                            <div class="d-flex mb-3">
+                                                <div class="mr-3">
+                                                    <span class="badge badge-${getStatusColor(h.status)} p-2">${h.status}</span>
+                                                </div>
+                                                <div>
+                                                    <strong>${h.entry_date}</strong>
+                                                    <div>${h.noted || '-'}</div>
+                                                    <small class="text-muted">${h.entry_name || ''} (${h.entry_place || ''})</small>
+                                                </div>
+                                            </div>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+
+                // Highlight active header on expand
+                $('#trackingAccordion').off('show.bs.collapse hide.bs.collapse')
+                    .on('show.bs.collapse', function(e) {
+                        $(e.target).prev('.card-header').addClass('active-header');
+                    })
+                    .on('hide.bs.collapse', function(e) {
+                        $(e.target).prev('.card-header').removeClass('active-header');
+                    });
+                // Set first item header as active
+                $('#trackingAccordion .card:first .card-header').addClass('active-header');
+
+                $('#trackingSummary').text(`${cnnoKeys.length} resi ditemukan`);
+                $('#trackingLoading').hide();
+                $('#trackingContent').show();
+                $('#modalTrackingTiki').modal('show');
+            }
+
+            function getStatusBadge(status) {
+                if (!status) return '<span class="badge badge-secondary">N/A</span>';
+                let s = status.toUpperCase();
+                if (s.includes('MDE')) return '<span class="badge badge-primary">Data Entry</span>';
+                if (s.includes('INC')) return '<span class="badge badge-info">In Transit</span>';
+                if (s.includes('CON')) return '<span class="badge badge-warning">Consolidation</span>';
+                if (s.includes('ROS')) return '<span class="badge badge-success">Departed</span>';
+                if (s.includes('DEL')) return '<span class="badge badge-success">Delivered</span>';
+                if (s.includes('POD')) return '<span class="badge badge-success">POD</span>';
+                return `<span class="badge badge-secondary">${status}</span>`;
+            }
+
+            function getStatusColor(status) {
+                if (!status) return 'secondary';
+                let s = status.toUpperCase();
+                if (s.includes('MDE')) return 'primary';
+                if (s.includes('INC')) return 'info';
+                if (s.includes('CON')) return 'warning';
+                if (s.includes('ROS')) return 'success';
+                if (s.includes('DEL')) return 'success';
+                if (s.includes('POD')) return 'success';
+                return 'secondary';
+            }
         });
     </script>
 @endpush

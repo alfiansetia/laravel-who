@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\SoController;
 use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\SpreadsheetController;
 use App\Http\Controllers\Api\StockController;
+use App\Http\Controllers\Api\TikiController;
 use App\Http\Controllers\Api\VendorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -198,6 +199,9 @@ Route::post('spreadsheet', [SpreadsheetController::class, 'sync_product'])
 Route::apiResource('tokens', FcmTokenController::class)
     ->names('api.tokens')
     ->only(['index', 'show', 'store', 'delete']);
+
+// TIKI Tracking
+Route::get('tiki/track', [TikiController::class, 'track'])->name('api.tiki.track');
 
 
 Route::get('products/{product}/download-zip', [ProductController::class, 'downloadZip'])
