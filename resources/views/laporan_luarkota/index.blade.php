@@ -116,6 +116,38 @@
                             <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
                                 <thead class="thead-dark">
                                 </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>
+                                            <select id="filterTglKirim" class="form-control form-control-sm"
+                                                style="min-width:110px">
+                                                <option value="">Semua Tgl</option>
+                                            </select>
+                                        </th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
                                 <tbody>
                                 </tbody>
                             </table>
@@ -125,9 +157,8 @@
             </div>
         </div>
     </div>
+    @include('laporan_luarkota._modal_tracking')
 @endsection
-
-@include('laporan_luarkota._modal_tracking')
 
 @push('js')
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -350,6 +381,17 @@ Terima kasih.`;
                 drawCallback: (settings) => $('#total').text(settings.fnRecordsDisplay())
             });
 
+            // Filter dropdown tgl_kirim
+            $.fn.dataTable.ext.search.push(function(settings, data) {
+                let selected = $('#filterTglKirim').val();
+                if (!selected) return true;
+                return data[0] === selected; // kolom 0 = tgl_kirim
+            });
+
+            $('#filterTglKirim').on('change', function() {
+                table.draw();
+            });
+
             const myDropzone = new Dropzone("#excel-dropzone", {
                 url: "/",
                 autoProcessQueue: false,
@@ -426,9 +468,20 @@ Terima kasih.`;
 
                 table.clear().rows.add(result).draw();
                 unbloc();
+
+                // Populate dropdown tgl_kirim
+                populateTglKirimFilter();
+
                 show_message(result.length < 1 ? 'Tidak ada data valid!' :
                     `Berhasil Import ${result.length} Data`, result.length < 1 ? 'error' : 'success');
             });
+
+            function populateTglKirimFilter() {
+                let data = table.rows().data().toArray();
+                let dates = [...new Set(data.map(r => r.tgl_kirim).filter(Boolean))].sort();
+                let dropdown = $('#filterTglKirim').empty().append('<option value="">Semua Tgl</option>');
+                dates.forEach(d => dropdown.append(`<option value="${d}">${d}</option>`));
+            }
 
             $('#btn_delete_template').click(saveLocal);
             $('#btn_reset_template').click(saveDefaultLocal);
@@ -584,24 +637,24 @@ Terima kasih.`;
                                     </div>
                                     <!-- Status Terakhir -->
                                     ${lastHistory ? `
-                                        <div class="alert alert-${getStatusColor(lastHistory.status)} py-2 mb-3">
-                                            <strong>${lastHistory.status}</strong> &mdash; ${lastHistory.noted || ''}
-                                            <br><small>${lastHistory.entry_name || ''} &bull; ${lastHistory.entry_date}</small>
-                                        </div>` : ''}
+                                                    <div class="alert alert-${getStatusColor(lastHistory.status)} py-2 mb-3">
+                                                        <strong>${lastHistory.status}</strong> &mdash; ${lastHistory.noted || ''}
+                                                        <br><small>${lastHistory.entry_name || ''} &bull; ${lastHistory.entry_date}</small>
+                                                    </div>` : ''}
                                     <!-- Tracking History -->
                                     <h6 class="text-muted mb-2"><i class="fas fa-history mr-1"></i>Riwayat Tracking</h6>
                                     <div class="timeline">
                                         ${allHistory.map(h => `
-                                            <div class="d-flex mb-3">
-                                                <div class="mr-3">
-                                                    <span class="badge badge-${getStatusColor(h.status)} p-2">${h.status}</span>
-                                                </div>
-                                                <div>
-                                                    <strong>${h.entry_date}</strong>
-                                                    <div>${h.noted || '-'}</div>
-                                                    <small class="text-muted">${h.entry_name || ''} (${h.entry_place || ''})</small>
-                                                </div>
-                                            </div>`).join('')}
+                                                        <div class="d-flex mb-3">
+                                                            <div class="mr-3">
+                                                                <span class="badge badge-${getStatusColor(h.status)} p-2">${h.status}</span>
+                                                            </div>
+                                                            <div>
+                                                                <strong>${h.entry_date}</strong>
+                                                                <div>${h.noted || '-'}</div>
+                                                                <small class="text-muted">${h.entry_name || ''} (${h.entry_place || ''})</small>
+                                                            </div>
+                                                        </div>`).join('')}
                                     </div>
                                 </div>
                             </div>
