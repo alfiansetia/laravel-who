@@ -212,4 +212,81 @@ class KoliController extends Controller
         }
         return $this->sendResponse($newKoli->load('items'), 'Koli duplicated!');
     }
+
+    public function hitung(Koli $koli)
+    {
+        $koli->load(['items.product', 'alamatBaru']);
+
+        // Skip if koli has no items
+        if ($koli->items->isEmpty()) {
+            return $this->sendError('Koli ini belum memiliki data barang!', 400);
+        }
+
+        // 1. Get DO number from alamat_baru
+        $doNumber = $koli->alamatBaru->do ?? null;
+        if (empty($doNumber)) {
+            return $this->sendError('Nomor DO tidak ditemukan!', 404);
+        }
+
+        // 2. Fetch DO from Odoo
+        try {
+            $doRecords = DoServices::getAll($doNumber);
+        } catch (\Throwable $th) {
+            return $this->sendError('Gagal mengambil data DO dari Odoo!', 500);
+        }
+
+        $doId = 0;
+        if (count($doRecords['records'] ?? []) > 0) {
+            $doId = intval($doRecords['records'][0]['id']);
+        }
+        if ($doId === 0) {
+            return $this->sendError('Data DO tidak ditemukan di Odoo!', 404);
+        }
+
+        // 3. Get DO detail (includes so_detail.order_line_detail)
+        try {
+            $doDetail = DoServices::detail($doId);
+        } catch (\Throwable $th) {
+            return $this->sendError('Gagal mengambil detail DO dari Odoo!', 500);
+        }
+
+        $soLines = $doDetail['so_detail']['order_line_detail'] ?? [];
+
+        // 4. Build lookup map: default_code => order_line
+        $soLineMap = [];
+        foreach ($soLines as $line) {
+            $code = $line['default_code'] ?? null;
+            if ($code) {
+                $soLineMap[$code] = $line;
+            }
+        }
+
+        // 5. Calculate value for each koli item
+        $totalNilai = 0;
+        foreach ($koli->items as $item) {
+            $productCode = $item->product->code ?? null;
+            if (!$productCode || !isset($soLineMap[$productCode])) {
+                continue; // Skip if not found in SO
+            }
+
+            $soLine = $soLineMap[$productCode];
+            $priceSubtotal = floatval($soLine['price_subtotal'] ?? 0);
+            $productUomQty = floatval($soLine['product_uom_qty'] ?? 0);
+
+            if ($productUomQty <= 0) {
+                continue; // Avoid division by zero
+            }
+
+            // Parse koli qty from string like "3 Ea" -> 3
+            $koliQty = intval(explode(' ', $item->qty ?? '0')[0]);
+
+            $itemValue = ($priceSubtotal / $productUomQty) * $koliQty * 1.11;
+            $totalNilai += $itemValue;
+        }
+
+        $nilai = (int) round($totalNilai);
+        $koli->update(['nilai' => $nilai]);
+
+        return $this->sendResponse($koli->load('items'), 'Koli berhasil dihitung!');
+    }
 }

@@ -153,6 +153,8 @@ Route::apiResource('alamat-baru', AlamatBaruController::class)
     ->names('api.alamat_baru');
 
 // Koli Routes
+Route::post('koli/{koli}/hitung', [KoliController::class, 'hitung'])
+    ->name('api.koli.hitung');
 Route::get('koli/{koli}/sync', [KoliController::class, 'sync'])
     ->name('api.koli.sync');
 Route::post('koli/{koli}/duplicate', [KoliController::class, 'duplicate'])

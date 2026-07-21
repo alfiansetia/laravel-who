@@ -583,6 +583,7 @@
                                                 ${koli.nilai ? `<span class="badge badge-primary py-1 px-2" id="badge_nilai_${koli.id}">IDR ${parseInt(koli.nilai).toLocaleString('id-ID')}</span>` : `<span class="badge badge-light" id="badge_nilai_${koli.id}" style="display:none;"></span>`}
                                             </div>
                                             <div class="btn-group shadow-xs">
+                                                <button type="button" class="btn btn-xs btn-outline-warning btn-hitung-koli border-0" data-koli-id="${koli.id}" title="Hitung Nilai"><i class="fas fa-calculator"></i></button>
                                                 <button type="button" class="btn btn-xs btn-outline-danger btn-delete-koli border-0" data-koli-id="${koli.id}" title="Hapus"><i class="fas fa-trash"></i></button>
                                                 <button type="button" class="btn btn-xs btn-outline-secondary btn-sync-koli border-0" data-koli-id="${koli.id}" title="Sync Odoo"><i class="fas fa-sync"></i></button>
                                                 <button type="button" class="btn btn-xs btn-outline-primary btn-duplicate-koli border-0" data-koli-id="${koli.id}" title="Duplikat"><i class="fas fa-copy"></i></button>
@@ -691,6 +692,12 @@
             }
 
             function attachKoliEventHandlers() {
+                // Hitung koli
+                $('.btn-hitung-koli').click(function() {
+                    let koliId = $(this).data('koli-id');
+                    hitungKoli(koliId);
+                });
+
                 // Delete koli
                 $('.btn-delete-koli').click(function() {
                     let koliId = $(this).data('koli-id');
@@ -878,6 +885,28 @@
                     show_message(xhr.responseJSON.message || 'Error!');
                 });
             });
+
+            // Hitung koli
+            function hitungKoli(koliId) {
+                let btn = $(`.btn-hitung-koli[data-koli-id="${koliId}"]`);
+                let originalHtml = btn.html();
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.post(`${URL_KOLI_API}/${koliId}/hitung`).done(function(result) {
+                    let nilai = parseInt(result.data.nilai) || 0;
+                    let badge = $(`#badge_nilai_${koliId}`);
+                    badge.removeClass('badge-light').addClass('badge-primary');
+                    badge.css('display', '');
+                    badge.text(`IDR ${nilai.toLocaleString('id-ID')}`);
+                    // Also update the input field
+                    $(`#nilai_${koliId}`).val(nilai);
+                    show_message(result.message, 'success');
+                }).fail(function(xhr) {
+                    show_message(xhr.responseJSON.message || 'Gagal menghitung koli!', 'error');
+                }).always(function() {
+                    btn.prop('disabled', false).html(originalHtml);
+                });
+            }
 
             // Delete koli
             function deleteKoli(koliId) {
