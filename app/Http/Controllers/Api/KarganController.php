@@ -17,10 +17,39 @@ class KarganController extends Controller
         $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = Kargan::with('product')->latest()->get();
-        return $this->sendResponse($data, 'Success!');
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        $query = Kargan::query()->with('product');
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('number', 'like', "%{$keyword}%")
+                    ->orWhere('sn', 'like', "%{$keyword}%")
+                    ->orWhereHas('product', function ($q2) use ($keyword) {
+                        $q2->where('code', 'like', "%{$keyword}%")
+                            ->orWhere('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('id', 'desc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function store(Request $request)

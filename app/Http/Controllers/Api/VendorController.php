@@ -15,8 +15,33 @@ class VendorController extends Controller
 
     public function index(Request $request)
     {
-        $data = Vendor::query()->withCount(['packs'])->filter($request->only(['name', 'desc']))->get();
-        return $this->sendResponse($data);
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        $query = Vendor::query()->withCount(['packs']);
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('desc', 'like', "%{$keyword}%");
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('name', 'asc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function show($id)
