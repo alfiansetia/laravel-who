@@ -310,7 +310,7 @@
         const URL_INDEX_API = "{{ route('api.packs.index') }}";
         const URL_INDEX = "{{ route('packs.index') }}";
         let currentPage = 1;
-        let currentPerPage = 25;
+        let currentPerPage = 10;
         let currentSearch = '';
         let searchTimeout = null;
         let currentPackId = null;
