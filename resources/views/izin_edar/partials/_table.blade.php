@@ -51,7 +51,7 @@
             </button>
         </div>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-modern" id="tableIzinEdar" style="width:100%">
                 <thead>
@@ -81,7 +81,8 @@
         <div class="d-flex align-items-center" style="gap: 8px;">
             <span class="text-muted small">Tampilkan</span>
             <select id="perPageSelect" class="per-page-select">
-                <option value="25" selected>25</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
                 <option value="200">200</option>

@@ -2,7 +2,7 @@
     const API_URL = '{{ route('api.izin_edars.index') }}';
     const IMPORT_BATCH_URL = '{{ route('api.izin_edars.import_batch') }}';
     let currentPage = 1;
-    let currentPerPage = 25;
+    let currentPerPage = 10;
     let currentKategori = '';
     let currentSearch = '';
     let searchTimeout = null;

@@ -18,10 +18,47 @@ class AlamatBaruController extends Controller
         $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = AlamatBaru::latest()->get();
-        return $this->sendResponse($data);
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        $query = AlamatBaru::query();
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('do', 'like', "%{$keyword}%")
+                    ->orWhere('tujuan', 'like', "%{$keyword}%")
+                    ->orWhere('ekspedisi', 'like', "%{$keyword}%")
+                    ->orWhere('alamat', 'like', "%{$keyword}%")
+                    ->orWhere('up', 'like', "%{$keyword}%");
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('id', 'desc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get([
+                'id',
+                'do',
+                'tujuan',
+                'alamat',
+                'ekspedisi',
+                'total_koli',
+                'up',
+                'created_at',
+            ]);
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function show(AlamatBaru $alamatBaru)
