@@ -94,6 +94,7 @@ Route::get('ri', [RIController::class, 'index'])->name('api.ri.index');
 Route::get('ri/order-line', [RIController::class, 'order_line'])->name('api.ri.order_line');
 Route::get('ri/{id}', [RIController::class, 'detail'])->name('api.ri.detail');
 
+Route::delete('atk', [AtkController::class, 'destroy_batch'])->name('api.atk.destroy_batch');
 Route::apiResource('atk', AtkController::class)->names('api.atk');
 Route::post('atk-import', [AtkController::class, 'import'])->name('api.atk.import');
 Route::apiResource('atk-trx', AtkTransactionController::class)->names('api.atktrx');

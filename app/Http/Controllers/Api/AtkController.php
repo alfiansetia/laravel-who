@@ -12,10 +12,49 @@ class AtkController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Atk::all();
-        return response()->json(['data' => AtkResource::collection($data)], 200);
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page    = max((int) $request->input('page', 1), 1);
+
+        $query = Atk::query()->select('atks.*');
+
+        // computed stok via subquery
+        $query->selectSub(function ($sub) {
+            $sub->selectRaw("COALESCE(SUM(CASE WHEN type='in' THEN qty ELSE 0 END),0) - COALESCE(SUM(CASE WHEN type='out' THEN qty ELSE 0 END),0)")
+                ->from('atk_transactions')
+                ->whereColumn('atk_transactions.atk_id', 'atks.id');
+        }, 'stok');
+
+        // search
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('code', 'like', "%{$keyword}%")
+                    ->orWhere('name', 'like', "%{$keyword}%")
+                    ->orWhere('satuan', 'like', "%{$keyword}%")
+                    ->orWhere('desc', 'like', "%{$keyword}%");
+            });
+        }
+
+        // satuan filter
+        if ($request->filled('satuan')) {
+            $query->where('satuan', $request->satuan);
+        }
+
+        $total = (clone $query)->count();
+        $data  = $query->orderBy('code', 'asc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return response()->json([
+            'data'       => $data,
+            'total'      => $total,
+            'page'       => $page,
+            'per_page'   => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     /**
@@ -84,6 +123,15 @@ class AtkController extends Controller
         ], 200);
     }
 
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'   => 'required|array',
+            'ids.*' => 'integer|exists:atks,id',
+        ]);
+        $deleted = Atk::whereIn('id', $request->ids)->delete();
+        return $this->sendResponse(['deleted_count' => $deleted], 'Atk deleted successfully.');
+    }
 
     public function import(Request $request)
     {
