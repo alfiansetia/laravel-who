@@ -29,7 +29,7 @@ return new class extends Migration
             // 2. Kolom Khusus (Hanya ada di AKD & AKL) -> Nullable
             $table->string('sub_kategori')->nullable();
             $table->string('kelompok_produk')->nullable();
-            $table->string('tipe')->nullable();
+            $table->text('tipe')->nullable();
             $table->string('kelas', 10)->nullable();
             $table->string('kelas_resiko')->nullable();
             $table->text('pabrik2')->nullable();

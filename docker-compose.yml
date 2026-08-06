@@ -23,6 +23,18 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
       - app-network
+  who_worker:
+    build: .
+    container_name: who_worker
+    restart: unless-stopped
+    # Timeout diset 600 detik (10 menit) agar import file besar tidak terputus di tengah jalan
+    command: php artisan queue:work --verbose --tries=3 --timeout=600
+    volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor
+    networks:
+      - app-network
+      
 
 networks:
   # Menggunakan network eksternal yang sama dengan nginx-shared dan mysql-shared

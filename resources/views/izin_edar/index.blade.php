@@ -211,6 +211,38 @@
                     </h4>
                     <p class="text-muted small mb-0">Daftar Izin Edar Produk</p>
                 </div>
+                <div>
+                    <button type="button" id="btnSync" class="btn btn-primary" onclick="triggerSync()">
+                        <i class="fas fa-cloud-download-alt mr-1"></i> Sync Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Sync Progress Card --}}
+        <div class="card filter-card" id="syncCard" style="display:none;">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-sync-alt mr-2 text-primary"></i>Sync Progress</span>
+                <span id="syncStatusBadge" class="badge badge-info">idle</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted" id="syncProgressText">Menyiapkan...</small>
+                        <small class="font-weight-bold" id="syncProgressPct">0%</small>
+                    </div>
+                    <div class="progress" style="height: 22px; border-radius: 12px;">
+                        <div id="syncProgressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                            role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="syncCategories">
+                    {{-- Filled dynamically --}}
+                </div>
+                <div class="mt-2" id="syncMessage" style="display:none;">
+                    <small class="text-muted" id="syncDetailMsg"></small>
+                </div>
             </div>
         </div>
 
@@ -324,11 +356,15 @@
 @push('js')
     <script>
         const API_URL = '{{ route('api.izin_edars.index') }}';
+        const SYNC_URL = '{{ route('api.izin_edars.sync') }}';
+        const SYNC_PROGRESS_URL = '{{ route('api.izin_edars.sync_progress') }}';
+        const SYNC_RESET_URL = '{{ route('api.izin_edars.sync_reset') }}';
         let currentPage = 1;
         let currentPerPage = 50;
         let currentKategori = '';
         let currentSearch = '';
         let searchTimeout = null;
+        let syncPollInterval = null;
 
         $(document).ready(function() {
             loadData();
@@ -377,6 +413,21 @@
                 // Find row data from last loaded data
                 const rowData = window.lastRowDataMap && window.lastRowDataMap[id];
                 if (rowData) showDetail(rowData);
+            });
+
+            // Check if a sync is already running on page load
+            $.ajax({
+                url: SYNC_PROGRESS_URL,
+                type: 'GET',
+                loading: false,
+                success: function(log) {
+                    if (log && (log.status === 'pending' || log.status === 'downloading' || log
+                            .status === 'importing')) {
+                        $('#syncCard').slideDown(200);
+                        renderSyncProgress(log);
+                        startPolling();
+                    }
+                }
             });
         });
 
@@ -575,6 +626,205 @@
             const div = document.createElement('div');
             div.appendChild(document.createTextNode(str));
             return div.innerHTML;
+        }
+
+        // ── Sync Functions ──────────────────────────────────────
+
+        const STATUS_LABELS = {
+            'pending': 'Menunggu',
+            'downloading': 'Mengunduh',
+            'downloaded': 'Unduhan Selesai',
+            'importing': 'Mengimport',
+            'imported': 'Import Selesai',
+            'failed': 'Gagal',
+            'idle': 'Tidak Aktif',
+            'completed': 'Selesai',
+        };
+
+        const STATUS_COLORS = {
+            'pending': 'secondary',
+            'downloading': 'info',
+            'downloaded': 'primary',
+            'importing': 'warning',
+            'imported': 'success',
+            'failed': 'danger',
+            'idle': 'secondary',
+            'completed': 'success',
+        };
+
+        function triggerSync() {
+            const $btn = $('#btnSync');
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Starting...');
+
+            $.ajax({
+                url: SYNC_URL,
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(res) {
+                    if (res.success) {
+                        $('#syncCard').slideDown(300);
+                        startPolling();
+                    } else {
+                        alert(res.message || 'Gagal memulai sync.');
+                        resetSyncBtn();
+                    }
+                },
+                error: function(xhr) {
+                    const msg = xhr.responseJSON?.message || 'Gagal menghubungi server.';
+                    alert(msg);
+                    resetSyncBtn();
+                }
+            });
+        }
+
+        function startPolling() {
+            if (syncPollInterval) clearInterval(syncPollInterval);
+            syncPollInterval = setInterval(pollProgress, 10000); // every 10s
+            pollProgress(); // immediate first poll
+        }
+
+        function stopPolling() {
+            if (syncPollInterval) {
+                clearInterval(syncPollInterval);
+                syncPollInterval = null;
+            }
+        }
+
+        function pollProgress() {
+            $.ajax({
+                url: SYNC_PROGRESS_URL,
+                type: 'GET',
+                success: function(log) {
+                    renderSyncProgress(log);
+
+                    if (log.status === 'completed' || log.status === 'failed' || log.status === 'idle') {
+                        stopPolling();
+                        resetSyncBtn();
+                        if (log.status === 'completed') {
+                            loadData(); // refresh data table
+                        }
+                    }
+                },
+                error: function() {
+                    // Silently retry on next tick
+                }
+            });
+        }
+
+        function renderSyncProgress(log) {
+            $('#syncCard').slideDown(200);
+
+            const status = log.status || 'idle';
+            const statusColor = STATUS_COLORS[status] || 'secondary';
+            const statusLabel = STATUS_LABELS[status] || status;
+
+            $('#syncStatusBadge')
+                .removeClass('badge-secondary badge-info badge-primary badge-warning badge-success badge-danger')
+                .addClass('badge-' + statusColor)
+                .text(statusLabel);
+
+            const pct = log.progress_percent || 0;
+            const totalImported = log.total_imported || 0;
+            const totalExpected = log.total_expected || 0;
+
+            const isAnimating = (status === 'downloading' || status === 'importing');
+            const barClass = isAnimating ? 'progress-bar-striped progress-bar-animated' : 'progress-bar-animated';
+
+            $('#syncProgressBar')
+                .css('width', pct + '%')
+                .attr('aria-valuenow', pct)
+                .removeClass('progress-bar-striped progress-bar-animated')
+                .addClass(barClass)
+                .text(pct + '%');
+
+            $('#syncProgressPct').text(pct + '%');
+            $('#syncProgressText').text(
+                totalExpected > 0 ?
+                `${statusLabel} — ${totalImported.toLocaleString('id-ID')} / ${totalExpected.toLocaleString('id-ID')} baris` :
+                statusLabel
+            );
+
+            // Render per-category cards
+            const cats = log.categories || {};
+            let catsHtml = '';
+            for (const [name, cat] of Object.entries(cats)) {
+                const catStatus = cat.status || 'pending';
+                const catColor = STATUS_COLORS[catStatus] || 'secondary';
+                const catLabel = STATUS_LABELS[catStatus] || catStatus;
+                const catPct = (cat.total > 0) ? Math.round((cat.imported / cat.total) * 100) : 0;
+
+                catsHtml += `
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+                            <div class="card-body p-3 text-center">
+                                <h6 class="font-weight-bold mb-1">${name}</h6>
+                                <span class="badge badge-${catColor} mb-2" style="font-size:0.75rem;">${catLabel}</span>
+                                <div class="progress mb-1" style="height:6px;border-radius:3px;">
+                                    <div class="progress-bar bg-${catColor}" style="width:${catPct}%"></div>
+                                </div>
+                                <small class="text-muted">${(cat.imported||0).toLocaleString('id-ID')} / ${(cat.total||0).toLocaleString('id-ID')}</small>
+                                ${cat.error ? `<br><small class="text-danger" style="font-size:0.7rem;">${escapeHtml(cat.error.substring(0,60))}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            $('#syncCategories').html(catsHtml);
+
+            // Detail message
+            if (log.error || log.message) {
+                $('#syncMessage').show();
+                $('#syncDetailMsg').text(log.error || log.message || '');
+            } else {
+                $('#syncMessage').hide();
+            }
+
+            // Show force-reset button if stale or failed
+            if ((log.is_stale && ['pending','downloading','importing'].includes(status)) || status === 'failed') {
+                if (!$('#btnForceReset').length) {
+                    $('#syncStatusBadge').after(
+                        `<button id="btnForceReset" class="btn btn-sm btn-outline-danger ml-2" onclick="forceResetSync()" title="Clear stuck sync">
+                            <i class="fas fa-trash-alt mr-1"></i> Reset
+                        </button>`
+                    );
+                }
+            } else {
+                $('#btnForceReset').remove();
+            }
+
+            // Auto-hide sync card after completion (5s delay)
+            if (status === 'completed' || status === 'failed') {
+                setTimeout(function() {
+                    if (status === 'completed') {
+                        $('#syncCard').slideUp(500);
+                        $('#btnForceReset').remove();
+                    }
+                }, 5000);
+            }
+        }
+
+        function resetSyncBtn() {
+            $('#btnSync').prop('disabled', false).html('<i class="fas fa-cloud-download-alt mr-1"></i> Sync Data');
+        }
+
+        function forceResetSync() {
+            if (!confirm('Force reset sync log? This will clear the stuck process and allow a new sync.')) return;
+
+            $.ajax({
+                url: SYNC_RESET_URL,
+                type: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                success: function(res) {
+                    stopPolling();
+                    $('#syncCard').slideUp(300);
+                    resetSyncBtn();
+                    loadData();
+                },
+                error: function() {
+                    alert('Gagal mereset sync log.');
+                }
+            });
         }
     </script>
 @endpush

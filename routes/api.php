@@ -287,3 +287,11 @@ Route::get('izin-edars/{izinEdar}', [IzinEdarController::class, 'show'])
     ->name('api.izin_edars.show');
 Route::get('izin-edars', [IzinEdarController::class, 'index'])
     ->name('api.izin_edars.index');
+Route::post('izin-edars/sync', [IzinEdarController::class, 'sync'])
+    ->name('api.izin_edars.sync');
+Route::post('izin-edars/sync/stop', [IzinEdarController::class, 'syncStop'])
+    ->name('api.izin_edars.sync_stop');
+Route::get('izin-edars/sync/progress', [IzinEdarController::class, 'syncProgress'])
+    ->name('api.izin_edars.sync_progress');
+Route::delete('izin-edars/sync/reset', [IzinEdarController::class, 'syncReset'])
+    ->name('api.izin_edars.sync_reset');

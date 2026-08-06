@@ -21,3 +21,5 @@ yarn-error.log
 /public/files
 public/firebase-messaging-sw.js
 .DS_Store
+/storage/app/izin_edar/
+/storage/app/izin_edar_sync.json
