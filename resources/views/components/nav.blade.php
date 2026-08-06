@@ -181,6 +181,11 @@
                         <i class="fas fa-layer-group mr-1"></i>SOP
                     </a>
                 </li>
+                <li class="nav-item <?= Route::is('izin_edars.*') ? 'active' : '' ?>">
+                    <a class="nav-link" href="{{ route('izin_edars.index') }}">
+                        <i class="fas fa-certificate mr-1"></i>Izin Edar
+                    </a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                         aria-expanded="false">

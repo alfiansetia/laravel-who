@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\SpreadsheetController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\TikiController;
+use App\Http\Controllers\Api\IzinEdarController;
 use App\Http\Controllers\Api\VendorController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -280,3 +281,9 @@ Route::delete('shipping-estimate', [\App\Http\Controllers\Api\ShippingEstimateCo
 Route::apiResource('shipping-estimate', \App\Http\Controllers\Api\ShippingEstimateController::class)
     ->names('api.shipping_estimate')
     ->only(['index', 'show', 'destroy']);
+
+// Izin Edar API Routes
+Route::get('izin-edars/{izinEdar}', [IzinEdarController::class, 'show'])
+    ->name('api.izin_edars.show');
+Route::get('izin-edars', [IzinEdarController::class, 'index'])
+    ->name('api.izin_edars.index');

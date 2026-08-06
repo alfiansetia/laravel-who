@@ -284,6 +284,12 @@
                             'title' => 'Problem',
                             'desc' => 'Manajemen masalah produk',
                         ],
+                        [
+                            'route' => 'izin_edars.index',
+                            'icon' => 'badge-check',
+                            'title' => 'Izin Edar',
+                            'desc' => 'Data izin edar produk',
+                        ],
                     ];
                 @endphp
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\DoController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\FileSearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\LotController;
@@ -140,6 +141,10 @@ Route::get('/qc-lots', [QcLotController::class, 'index'])
     ->name('qc_lots.index');
 Route::get('/qc-lots/import', [QcLotController::class, 'import'])
     ->name('qc_lots.import');
+
+// Izin Edar Routes
+Route::get('izin-edars', [IzinEdarController::class, 'index'])
+    ->name('izin_edars.index');
 
 // Shipping Estimate Routes
 Route::resource('shipping-estimate', ShippingEstimateController::class)
