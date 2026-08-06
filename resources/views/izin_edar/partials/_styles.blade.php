@@ -80,15 +80,15 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         color: #64748b;
-        padding: 0.75rem 1rem;
+        padding: 0.35rem 0.5rem;
         white-space: nowrap;
     }
 
     .table-modern tbody td {
-        padding: 0.75rem 1rem;
+        padding: 0.3rem 0.5rem;
         vertical-align: middle;
         border-bottom: 1px solid #f1f5f9;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
     }
 
     .table-modern tbody tr {
@@ -100,20 +100,20 @@
     }
 
     .btn-action {
-        width: 32px;
-        height: 32px;
+        width: 26px;
+        height: 26px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 0;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         transition: all 0.15s;
     }
 
     .btn-action:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .toast-copy {
@@ -127,7 +127,7 @@
         border-radius: 10px;
         font-size: 0.85rem;
         font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         opacity: 0;
         transform: translateY(10px);
         transition: all 0.3s ease;
@@ -139,8 +139,8 @@
     }
 
     .badge-kategori {
-        padding: 4px 10px;
-        border-radius: 8px;
+        padding: 2px 8px;
+        border-radius: 6px;
         font-size: 0.75rem;
         font-weight: 600;
     }
