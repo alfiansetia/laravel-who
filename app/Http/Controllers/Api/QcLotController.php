@@ -23,13 +23,41 @@ class QcLotController extends Controller
             ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = QcLot::query()
-            ->with('product')
-            ->latest('qc_date')
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        $query = QcLot::query()->with('product');
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('lot_number', 'like', "%{$keyword}%")
+                    ->orWhere('lot_expiry', 'like', "%{$keyword}%")
+                    ->orWhere('qc_by', 'like', "%{$keyword}%")
+                    ->orWhere('qc_note', 'like', "%{$keyword}%")
+                    ->orWhereHas('product', function ($q2) use ($keyword) {
+                        $q2->where('code', 'like', "%{$keyword}%")
+                            ->orWhere('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('qc_date', 'desc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
             ->get();
-        return $this->sendResponse($data, 'QcLot retrieved successfully');
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function store(Request $request)
