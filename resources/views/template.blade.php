@@ -183,7 +183,7 @@
                 overlay: true,
                 displayMode: 'once',
                 id: 'question',
-                zindex: 999,
+                zindex: 1080,
                 title: 'Konfirmasi',
                 message: message,
                 position: 'center',
