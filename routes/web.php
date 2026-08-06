@@ -134,6 +134,12 @@ Route::resource('basts', BastController::class)
 
 Route::get('/product_images', [ProductImageController::class, 'index'])
     ->name('product_images.index');
+Route::post('/product_images', [ProductImageController::class, 'store'])
+    ->name('product_images.store');
+Route::delete('/product_images/{product_image}', [ProductImageController::class, 'destroy'])
+    ->name('product_images.destroy');
+Route::delete('/product_images-batch', [ProductImageController::class, 'destroy_batch'])
+    ->name('product_images.destroy_batch');
 Route::get('/product_images/{product}/collage', [ProductImageController::class, 'collage'])
     ->name('product_images.collage');
 
