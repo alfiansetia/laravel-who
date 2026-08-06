@@ -14,39 +14,144 @@ class IzinEdarSyncService
             'url'  => 'https://infoalkes.kemkes.go.id/pkrt/export/MDE=',
             'file' => 'PKD.xlsx',
             'columns' => [
-                'nomor_izin_edar', 'tgl_terbit', 'tgl_exp', 'merk',
-                'jenis_produk', 'pendaftar', 'alamat_pendaftar', 'pabrik', 'alamat_pabrik',
+                'nomor_izin_edar',
+                'tgl_terbit',
+                'tgl_exp',
+                'merk',
+                'jenis_produk',
+                'pendaftar',
+                'alamat_pendaftar',
+                'pabrik',
+                'alamat_pabrik',
             ],
         ],
         'PKL' => [
             'url'  => 'https://infoalkes.kemkes.go.id/pkrt/export/MDI=',
             'file' => 'PKL.xlsx',
             'columns' => [
-                'nomor_izin_edar', 'tgl_terbit', 'tgl_exp', 'merk',
-                'jenis_produk', 'pendaftar', 'alamat_pendaftar', 'pabrik', 'alamat_pabrik',
+                'nomor_izin_edar',
+                'tgl_terbit',
+                'tgl_exp',
+                'merk',
+                'jenis_produk',
+                'pendaftar',
+                'alamat_pendaftar',
+                'pabrik',
+                'alamat_pabrik',
             ],
         ],
         'AKD' => [
             'url'  => 'https://infoalkes.kemkes.go.id/alkes/export/MDE=',
             'file' => 'AKD.xlsx',
             'columns' => [
-                'nomor_izin_edar', 'tgl_terbit', 'tgl_exp', 'merk',
-                'sub_kategori', 'jenis_produk', 'kelompok_produk', 'tipe',
-                'kelas', 'kelas_resiko', 'pendaftar', 'alamat_pendaftar',
-                'pabrik', 'alamat_pabrik', 'pabrik2',
+                'nomor_izin_edar',
+                'tgl_terbit',
+                'tgl_exp',
+                'merk',
+                'sub_kategori',
+                'jenis_produk',
+                'kelompok_produk',
+                'tipe',
+                'kelas',
+                'kelas_resiko',
+                'pendaftar',
+                'alamat_pendaftar',
+                'pabrik',
+                'alamat_pabrik',
+                'pabrik2',
             ],
         ],
         'AKL' => [
             'url'  => 'https://infoalkes.kemkes.go.id/alkes/export/MDI=',
             'file' => 'AKL.xlsx',
             'columns' => [
-                'nomor_izin_edar', 'tgl_terbit', 'tgl_exp', 'merk',
-                'sub_kategori', 'jenis_produk', 'kelompok_produk', 'tipe',
-                'kelas', 'kelas_resiko', 'pendaftar', 'alamat_pendaftar',
-                'pabrik', 'alamat_pabrik', 'pabrik2',
+                'nomor_izin_edar',
+                'tgl_terbit',
+                'tgl_exp',
+                'merk',
+                'sub_kategori',
+                'jenis_produk',
+                'kelompok_produk',
+                'tipe',
+                'kelas',
+                'kelas_resiko',
+                'pendaftar',
+                'alamat_pendaftar',
+                'pabrik',
+                'alamat_pabrik',
+                'pabrik2',
             ],
         ],
     ];
+
+    // ── File check helpers ───────────────────────────────────────────
+
+    /**
+     * Check which Excel files currently exist in the storage directory.
+     * Returns an array with file info (name, path, size, modified_at).
+     */
+    public function checkExistingFiles(): array
+    {
+        $dir = storage_path('app/izin_edar');
+        $results = [];
+
+        foreach (self::CATEGORIES as $kategori => $config) {
+            $filePath = $dir . DIRECTORY_SEPARATOR . $config['file'];
+            $exists = File::exists($filePath);
+
+            $results[$kategori] = [
+                'file'       => $config['file'],
+                'exists'     => $exists,
+                'size'       => $exists ? File::size($filePath) : 0,
+                'size_human' => $exists ? $this->formatBytes(File::size($filePath)) : '-',
+                'path'       => $exists ? $filePath : null,
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get the absolute file path for a category's Excel file.
+     * Returns null if the category is invalid.
+     */
+    public function getFilePath(string $kategori): ?string
+    {
+        $kategori = strtoupper($kategori);
+        if (!isset(self::CATEGORIES[$kategori])) {
+            return null;
+        }
+
+        return storage_path('app/izin_edar/' . self::CATEGORIES[$kategori]['file']);
+    }
+
+    /**
+     * Delete a category's Excel file from storage.
+     * Returns true if deleted, false if file didn't exist.
+     */
+    public function deleteFile(string $kategori): bool
+    {
+        $path = $this->getFilePath($kategori);
+        if (!$path || !File::exists($path)) {
+            return false;
+        }
+
+        File::delete($path);
+        return true;
+    }
+
+    /**
+     * Format bytes to human-readable string.
+     */
+    private function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= (1 << (10 * $pow));
+        return round($bytes, $precision) . ' ' . $units[$pow];
+    }
 
     // ── Log helpers ──────────────────────────────────────────────────
 
@@ -88,7 +193,7 @@ class IzinEdarSyncService
         $log = $this->readLog();
         if (!$log) return false;
 
-        $isActive = in_array($log['status'] ?? '', ['pending', 'downloading', 'importing']);
+        $isActive = in_array($log['status'] ?? '', ['pending', 'downloading']);
         if (!$isActive) return false;
 
         // If it's stale, treat it as NOT running (allow new sync)
@@ -106,7 +211,7 @@ class IzinEdarSyncService
      */
     public function isStale(array $log): bool
     {
-        $activeStatuses = ['pending', 'downloading', 'importing'];
+        $activeStatuses = ['pending', 'downloading'];
         if (!in_array($log['status'] ?? '', $activeStatuses)) {
             return false;
         }
@@ -131,7 +236,7 @@ class IzinEdarSyncService
     {
         $log = $this->readLog();
 
-        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading', 'importing'])) {
+        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading'])) {
             // Try to delete the queue job so the worker releases it immediately
             $this->deleteQueueJob($log['job_id'] ?? null);
 
@@ -158,7 +263,7 @@ class IzinEdarSyncService
     {
         $log = $this->readLog();
 
-        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading', 'importing'])) {
+        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading'])) {
             $this->deleteQueueJob($log['job_id'] ?? null);
 
             $log['status'] = 'failed';
@@ -190,10 +295,18 @@ class IzinEdarSyncService
 
     public function startSync(): array
     {
+        return $this->startSession();
+    }
+
+    /**
+     * Start a download session for all categories.
+     */
+    private function startSession(): array
+    {
         $categories = array_keys(self::CATEGORIES);
         $log = [
             'id'          => uniqid('sync_', true),
-            'status'      => 'pending',       // pending | downloading | importing | completed | failed | stopped
+            'status'      => 'pending',
             'started_at'  => now()->toIso8601String(),
             'finished_at' => null,
             'categories'  => [],
@@ -201,11 +314,9 @@ class IzinEdarSyncService
 
         foreach ($categories as $cat) {
             $log['categories'][$cat] = [
-                'status'    => 'pending',  // pending | downloading | downloaded | importing | imported | failed
-                'total'     => 0,
-                'imported'  => 0,
-                'file'      => self::CATEGORIES[$cat]['file'],
-                'error'     => null,
+                'status'     => 'pending',  // pending | downloading | downloaded | failed
+                'file'       => self::CATEGORIES[$cat]['file'],
+                'error'      => null,
                 'started_at' => null,
                 'finished_at' => null,
             ];
@@ -292,16 +403,12 @@ class IzinEdarSyncService
     }
 
     /**
-     * Dispatch the sync job onto the queue so it can run on a background
-     * queue worker (managed by cron/supervisor on the server) while still
-     * being monitorable via the JSON log.
+     * Dispatch the download job onto the queue.
      *
      * @return string|null The dispatched job ID (for tracking/deletion).
      */
     private function launchCommand(): ?string
     {
-        // Queue::push() returns the job ID directly (e.g. DB row ID for the
-        // 'database' driver), which we store in the log for stop/cancel support.
         $jobId = \Illuminate\Support\Facades\Queue::push(new \App\Jobs\SyncIzinEdarJob());
         return $jobId ? (string) $jobId : null;
     }

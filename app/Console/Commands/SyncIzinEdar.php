@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 class SyncIzinEdar extends Command
 {
     protected $signature = 'sync:izin-edar';
-    protected $description = 'Download & import Izin Edar data from Kemkes into database (via queue)';
+    protected $description = 'Download Izin Edar Excel files from Kemkes (via queue)';
 
     protected IzinEdarSyncService $syncService;
 

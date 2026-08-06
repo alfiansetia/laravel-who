@@ -295,3 +295,13 @@ Route::get('izin-edars/sync/progress', [IzinEdarController::class, 'syncProgress
     ->name('api.izin_edars.sync_progress');
 Route::delete('izin-edars/sync/reset', [IzinEdarController::class, 'syncReset'])
     ->name('api.izin_edars.sync_reset');
+Route::get('izin-edars/sync/files', [IzinEdarController::class, 'checkFiles'])
+    ->name('api.izin_edars.check_files');
+Route::get('izin-edars/files/{kategori}/download', [IzinEdarController::class, 'downloadFile'])
+    ->name('api.izin_edars.download_file');
+Route::delete('izin-edars/files/{kategori}', [IzinEdarController::class, 'deleteFile'])
+    ->name('api.izin_edars.delete_file');
+Route::post('izin-edars/import-batch', [IzinEdarController::class, 'importBatch'])
+    ->name('api.izin_edars.import_batch');
+Route::delete('izin-edars/kategori/{kategori}', [IzinEdarController::class, 'deleteByKategori'])
+    ->name('api.izin_edars.delete_by_kategori');
