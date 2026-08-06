@@ -17,10 +17,43 @@ class SopController extends Controller
         $this->middleware('env_auth')->only(['store']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = Sop::query()->with(['product', 'items'])->get()->unique('product_id')->values();
-        return $this->sendResponse($data);
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        // Subquery: get latest SOP id per product_id
+        $query = Sop::query()
+            ->whereIn('id', function ($sub) {
+                $sub->selectRaw('MAX(id)')->from('sops')->groupBy('product_id');
+            })
+            ->with(['product']);
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('target', 'like', "%{$keyword}%")
+                    ->orWhereHas('product', function ($q2) use ($keyword) {
+                        $q2->where('code', 'like', "%{$keyword}%")
+                            ->orWhere('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('id', 'desc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function show($id)

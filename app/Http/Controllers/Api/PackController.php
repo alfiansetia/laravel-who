@@ -18,10 +18,43 @@ class PackController extends Controller
         $this->middleware('env_auth')->only(['update', 'change', 'destroy', 'destroy_batch']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = Pack::query()->with(['vendor', 'product', 'items'])->get();
-        return $this->sendResponse($data);
+        $perPage = min((int) $request->input('per_page', 25), 200);
+        $page = max((int) $request->input('page', 1), 1);
+
+        $query = Pack::query()->with(['vendor', 'product']);
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('desc', 'like', "%{$keyword}%")
+                    ->orWhere('vendor_desc', 'like', "%{$keyword}%")
+                    ->orWhereHas('product', function ($q2) use ($keyword) {
+                        $q2->where('code', 'like', "%{$keyword}%")
+                            ->orWhere('name', 'like', "%{$keyword}%");
+                    })
+                    ->orWhereHas('vendor', function ($q2) use ($keyword) {
+                        $q2->where('name', 'like', "%{$keyword}%");
+                    });
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $data = $query->orderBy('id', 'desc')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get();
+
+        return response()->json([
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ]);
     }
 
     public function show($id)
@@ -108,6 +141,16 @@ class PackController extends Controller
         }
         $pack->delete();
         return $this->sendResponse($pack, 'Deleted!');
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids'   => 'required|array',
+            'ids.*' => 'integer|exists:packs,id',
+        ]);
+        $deleted = Pack::whereIn('id', $request->ids)->delete();
+        return $this->sendResponse(['deleted_count' => $deleted], 'Pack deleted successfully.');
     }
 
     public function change(Request $request)

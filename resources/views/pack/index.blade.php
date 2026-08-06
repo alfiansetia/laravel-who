@@ -2,34 +2,184 @@
 @push('css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('plugins/select2-bootstrap4-theme/select2-bootstrap4.css') }}">
+    <style>
+        .table-modern {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-modern thead th {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 0.35rem 0.5rem;
+            white-space: nowrap;
+        }
+
+        .table-modern tbody td {
+            padding: 0.3rem 0.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.8rem;
+        }
+
+        .table-modern tbody tr {
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .btn-action {
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            padding: 0;
+            font-size: 0.7rem;
+            transition: all 0.15s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pagination-modern {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-modern .page-btn {
+            min-width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            padding: 0 8px;
+        }
+
+        .pagination-modern .page-btn:hover:not(:disabled):not(.active) {
+            background: #eef2ff;
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .pagination-modern .page-btn.active {
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .pagination-modern .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .per-page-select {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+        }
+    </style>
 @endpush
 
 @section('content')
     <div class="container-fluid">
-        {{-- <h1>Packing List</h1> --}}
-
-        <div class="responsive">
-            <form id="selected">
-                <table class="table table-sm table-hover" id="table" style="width: 100%;cursor: pointer;">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th class="text-center" style="width: 30px;">No</th>
-                            <th>Kode Product</th>
-                            <th>Name Product</th>
-                            <th>PL Name</th>
-                            <th>PL Desc</th>
-                            <th>Vendor</th>
-                            <th>Vendor Desc</th>
-                            <th>#</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </form>
+        <div class="card card-sm">
+            <div class="card-header d-flex align-items-center flex-wrap" style="gap: 8px;">
+                {{-- Left: Search + Refresh --}}
+                <div class="d-flex align-items-center flex-wrap" style="gap: 6px; flex: 1;">
+                    <div class="input-group input-group-sm" style="max-width: 400px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        </div>
+                        <input type="search" id="searchInput" class="form-control form-control-sm"
+                            placeholder="Cari product, PL name, vendor...">
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" title="Refresh"
+                        onclick="loadData()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                {{-- Right: Action Buttons --}}
+                <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
+                    <button type="button" class="btn btn-info btn-sm" onclick="window.location.href='{{ route('packs.create') }}'">
+                        <i class="fas fa-plus mr-1"></i> Add PL
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="changeData()">
+                        <i class="fas fa-exchange-alt mr-1"></i> Change Vendor
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteBatch()">
+                        <i class="fas fa-trash-alt mr-1"></i> Hapus Terpilih
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-modern" id="tablePack" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;">
+                                    <input type="checkbox" id="chkAll" class="new-control-input">
+                                </th>
+                                <th>Kode Product</th>
+                                <th>Name Product</th>
+                                <th>PL Name</th>
+                                <th>PL Desc</th>
+                                <th>Vendor</th>
+                                <th>Vendor Desc</th>
+                                <th style="width: 120px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                    <span class="text-muted small">Tampilkan</span>
+                    <select id="perPageSelect" class="per-page-select">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                    <span class="text-muted small">data</span>
+                </div>
+                <small class="text-muted" id="pageInfo"></small>
+                <div class="pagination-modern" id="pagination"></div>
+            </div>
         </div>
     </div>
 
+    {{-- Modal View/Edit PL Detail --}}
     <div class="modal fade" id="modal_pl" tabindex="-1" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
@@ -68,7 +218,7 @@
                     </div>
 
                     <div class="tab-content" id="plTabContent">
-                        <!-- Tab Detail (Screenshot Friendly) -->
+                        <!-- Tab Detail -->
                         <div class="tab-pane fade show active px-4 py-3" id="tab-detail" role="tabpanel">
                             <div class="table-responsive" style="max-height: 500px">
                                 <table class="table table-sm table-striped table-bordered mb-0" id="table_pl_view">
@@ -84,7 +234,7 @@
                             </div>
                         </div>
 
-                        <!-- Tab Edit (Interactive) -->
+                        <!-- Tab Edit -->
                         <div class="tab-pane fade px-4 py-3" id="tab-edit" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="small text-muted font-italic text-danger">* Perubahan di sini tidak otomatis tersimpan sebelum klik tombol "Simpan"</span>
@@ -118,12 +268,12 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modal_change" data-backdrop="static" data-keyboard="false"
-        aria-labelledby="staticBackdropLabelChange" aria-hidden="true">
+    {{-- Modal Change Vendor --}}
+    <div class="modal fade" id="modal_change" data-backdrop="static" data-keyboard="false" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabelChange">Change Data</h5>
+                    <h5 class="modal-title">Change Vendor</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -134,19 +284,15 @@
                         <div class="form-group col-12">
                             <label for="vendor_id">VENDOR</label>
                             <div class="input-group">
-                                <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%"
-                                    required>
+                                <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%" required>
                                     <option value="">Select Vendor</option>
                                     @foreach ($vendors as $item)
-                                        <option data-id="{{ $item->id }}" value="{{ $item->id }}">
-                                            {{ $item->name }}
-                                        </option>
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
                     </form>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -161,306 +307,77 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        const URL_INDEX_API = "{{ route('api.packs.index') }}"
-        const URL_INDEX = "{{ route('packs.index') }}"
-        var id = 0;
-        var selectedIds = [];
+        const URL_INDEX_API = "{{ route('api.packs.index') }}";
+        const URL_INDEX = "{{ route('packs.index') }}";
+        let currentPage = 1;
+        let currentPerPage = 25;
+        let currentSearch = '';
+        let searchTimeout = null;
+        let currentPackId = null;
+        let currentPack = {};
+        let changeSelectedIds = [];
 
         $(document).ready(function() {
-            $('#vendor_id').select2({
-                theme: 'bootstrap4',
-            })
+            $('#vendor_id').select2({ theme: 'bootstrap4' });
 
-            var table = $('#table').DataTable({
-                rowId: 'id',
-                ajax: URL_INDEX_API,
-                dom: "<'dt--top-section'<'row mb-2'<'col-sm-12 col-md-6 d-flex justify-content-md-start justify-content-center'B><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-center mt-md-0'f>>>" +
-                    "<'table-responsive'tr>" +
-                    "<'dt--bottom-section d-sm-flex justify-content-sm-between text-center'<'dt--pages-count  mb-sm-0 mb-3'i><'dt--pagination'p>>",
-                oLanguage: {
-                    "sSearchPlaceholder": "Search...",
-                    "sLengthMenu": "Results :  _MENU_",
-                },
-                lengthMenu: [
-                    [10, 50, 100, 500, 1000],
-                    ['10 rows', '50 rows', '100 rows', '500 rows', '1000 rows']
-                ],
-                pageLength: 10,
-                lengthChange: false,
-                order: [
-                    [1, "asc"]
-                ],
-                columns: [{
-                        data: 'id',
-                        className: "text-center",
-                        searchable: false,
-                        sortable: false,
-                        render: function(data, type, row, meta) {
-                            return `<input type="checkbox" name="id[]" value="${data}" class="new-control-input child-chk select-customers-info">`
-                        }
-                    }, {
-                        data: "product.code",
-                        className: 'text-left',
-                    },
-                    {
-                        data: "product.name",
-                        className: 'text-left',
-                    }, {
-                        data: "name",
-                        className: 'text-left',
-                    }, {
-                        data: "desc",
-                        className: 'text-left',
-                    }, {
-                        data: "vendor.name",
-                        defaultContent: '',
-                        className: 'text-left',
-                    }, {
-                        data: "vendor_desc",
-                        defaultContent: '',
-                        className: 'text-left',
-                    }, {
-                        data: "id",
-                        className: 'text-center',
-                        searchable: false,
-                        sortable: false,
-                        render: function(data, type, row, meta) {
-                            return `
-                            <div class="btn-group" role="group" aria-label="Basic example">
-                                <button type="button" class="btn btn-sm btn-info btn-download" title="Export Excel"><i class="fas fa-file-excel"></i></button>
-                                <button type="button" class="btn btn-sm btn-secondary btn-print" title="Print HTML"><i class="fas fa-print"></i></button>
-                                <button type="button" class="btn btn-sm btn-primary btn-edit"><i class="fas fa-edit"></i></button>
-                                <button type="button" class="btn btn-sm btn-danger btn-delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                            `
-                        }
-                    },
-                ],
-                buttons: [{
-                        text: '<i class="fas fa-plus mr-1"></i>Add PL',
-                        className: 'btn btn-sm btn-info',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Add PL'
-                        },
-                        action: function(e, dt, node, config) {
-                            window.location.href = URL_INDEX + '/create'
-                        }
-                    }, {
-                        extend: "colvis",
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Column Visible'
-                        },
-                        className: 'btn btn-sm btn-primary'
-                    },
-                    {
-                        extend: "pageLength",
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Page Length'
-                        },
-                        className: 'btn btn-sm btn-info'
-                    },
-                    {
-                        extend: "collection",
-                        text: '<i class="fas fa-download mr-1"></i>Export',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Export Data'
-                        },
-                        className: 'btn btn-sm btn-primary',
-                        buttons: [{
-                            extend: 'copy',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'csv',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'pdf',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'excel',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }, {
-                            extend: 'print',
-                            exportOptions: {
-                                columns: ':visible'
-                            }
-                        }],
-                    }, {
-                        text: '<i class="fa fa-tools"></i> Action',
-                        className: 'btn btn-sm btn-warning bs-tooltip',
-                        attr: {
-                            'data-toggle': 'tooltip',
-                            'title': 'Action'
-                        },
-                        extend: 'collection',
-                        autoClose: true,
-                        buttons: [{
-                            text: '<i class="fas fa-sync mr-1"></i>Refresh Data',
-                            className: 'btn btn-sm btn-warning',
-                            attr: {
-                                'data-toggle': 'tooltip',
-                                'title': 'Refresh Data'
-                            },
-                            action: function(e, dt, node, config) {
-                                table.ajax.reload()
-                            }
-                        }, {
-                            text: '<i class="fas fa-exchange-alt mr-1"></i>Change Data',
-                            className: 'btn btn-sm btn-danger',
-                            attr: {
-                                'data-toggle': 'tooltip',
-                                'title': 'Change Data'
-                            },
-                            action: function(e, dt, node, config) {
-                                change_data()
-                            }
-                        }]
-                    },
-                ],
-                headerCallback: function(e, a, t, n, s) {
-                    e.getElementsByTagName("th")[0].innerHTML =
-                        '<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">'
-                },
+            loadData();
+
+            // Search input with debounce
+            $('#searchInput').on('keyup', function() {
+                clearTimeout(searchTimeout);
+                const val = $(this).val().trim();
+                searchTimeout = setTimeout(function() {
+                    currentSearch = val;
+                    currentPage = 1;
+                    loadData();
+                }, 400);
             });
 
-            multiCheck(table);
-
-            function deleteData() {
-
-            }
-
-            $('#btn_change').click(function() {
-                $('#form_change').submit()
-            })
-
-            function change_data() {
-                if (selected()) {
-                    selectedIds = $('input[name="id[]"]:checked')
-                        .map(function() {
-                            return $(this).val();
-                        }).get();
-                    $('#modal_change').modal('show');
-                }
-            }
-
-            // Handler submit form
-            $('#form_change').on('submit', function(e) {
-                e.preventDefault();
-                let vendor_id = $('#vendor_id').val();
-                if (!vendor_id) {
-                    show_message('Pilih vendor terlebih dahulu!');
-                    return;
-                }
-                $.ajax({
-                    url: "{{ route('api.packs.change') }}", // atau "/packs-change"
-                    type: "POST",
-                    data: {
-                        vendor_id: vendor_id,
-                        ids: selectedIds,
-                    },
-                    success: function(res) {
-                        $('#modal_change').modal('hide');
-                        $('#vendor_id').val('').change();
-                        table.ajax.reload();
-                        show_message(res.message, 'success')
-                    },
-                    error: function(xhr) {
-                        show_message(xhr.responseJSON.message || 'Error!')
-                    }
-                });
+            // Per page change
+            $('#perPageSelect').on('change', function() {
+                currentPerPage = parseInt($(this).val());
+                currentPage = 1;
+                loadData();
             });
 
-            function selected() {
-                let id = $('input[name="id[]"]:checked').length;
-                if (id <= 0) {
-                    show_message("No Selected Data!")
-                    return false
-                } else {
-                    return true
+            // Select all checkbox
+            $('#chkAll').on('change', function() {
+                const checked = $(this).is(':checked');
+                $('input[name="id[]"]').prop('checked', checked);
+            });
+
+            // Row Click → Open Modal
+            $(document).on('click', '#tableBody tr', function(e) {
+                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('.btn-action').length) return;
+                const id = $(this).data('id');
+                if (id) {
+                    currentPackId = id;
+                    $('#detail-tab').tab('show');
+                    $('#btn_save_pl').addClass('d-none');
+                    $('#detail_vendor').html('<i class="fas fa-spinner fa-spin"></i>');
+                    $('#table_pl_view tbody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
+                    fetchPackDetail(id);
+                    $('#modal_pl').modal('show');
                 }
-            }
+            });
 
-            var currentPack = {};
+            // Action buttons
+            $(document).on('click', '.btn-download', function(e) {
+                e.stopPropagation();
+                const id = $(this).data('id');
+                window.open(`${URL_INDEX_API}/${id}/download`);
+            });
 
-            window.addItemRow = function(item = '', qty = '') {
-                let rowCount = $('#table_pl tbody tr').length + 1;
-                $('#table_pl tbody').append(`
-                    <tr>
-                        <td class="text-center align-middle font-weight-bold">${rowCount}</td>
-                        <td>
-                            <textarea class="form-control form-control-sm pl-item" rows="1" required placeholder="Nama Item...">${item}</textarea>
-                        </td>
-                        <td>
-                            <input type="text" class="form-control form-control-sm pl-qty" value="${qty}" placeholder="Qty...">
-                        </td>
-                        <td class="text-center align-middle">
-                            <button type="button" class="btn btn-xs btn-outline-danger" onclick="$(this).closest('tr').remove()">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `);
-            }
+            $(document).on('click', '.btn-print', function(e) {
+                e.stopPropagation();
+                const id = $(this).data('id');
+                window.open(`${URL_INDEX}/${id}/print`, '_blank');
+            });
 
-            // Fungsi untuk tarik data dan isi tabel di modal
-            function fetchPackDetail(packId) {
-                $.get(URL_INDEX_API + '/' + packId).done(function(res) {
-                    let pack = res.data;
-                    currentPack = {
-                        name: pack.name,
-                        desc: pack.desc,
-                        product_id: pack.product_id,
-                        vendor_id: pack.vendor_id,
-                        vendor_desc: pack.vendor_desc
-                    };
-
-                    // Isi Header Detail
-                    $('#detail_name').html(pack.name ?? '-');
-                    $('#detail_vendor').html(pack.vendor?.name ?? '-');
-                    $('#detail_product').html(`[${pack.product?.code ?? ''}] ${pack.product?.name ?? ''}`);
-
-                    // Kosongkan dan Isi Tabel Detail (View)
-                    $('#table_pl_view tbody').empty();
-                    // Kosongkan dan Isi Tabel Edit
-                    $('#table_pl tbody').empty();
-
-                    pack.items.forEach((item, index) => {
-                        // Table View
-                        $('#table_pl_view tbody').append(`
-                            <tr>
-                                <td class="text-center text-muted small">${index + 1}</td>
-                                <td class="font-weight-bold">${item.item}</td>
-                                <td class="text-center bg-light font-weight-bold">${item.qty || '-'}</td>
-                            </tr>
-                        `);
-                        // Table Edit
-                        addItemRow(item.item, item.qty || '');
-                    });
-
-                }).fail(function(xhr) {
-                    show_message('Gagal mengambil data!', 'error')
-                });
-            }
-
-            // Handle Perpindahan Tab
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            // Handle Tab Switching in modal
+            $(document).on('shown.bs.tab', '#plTab a[data-toggle="tab"]', function (e) {
                 let target = $(e.target).attr("href");
-                
-                // Fetch data ulang saat pindah tab
-                if (id) fetchPackDetail(id);
-
-                // Tampilkan tombol simpan hanya di tab edit
+                if (currentPackId) fetchPackDetail(currentPackId);
                 if (target === '#tab-edit') {
                     $('#btn_save_pl').removeClass('d-none');
                 } else {
@@ -468,11 +385,12 @@
                 }
             });
 
+            // Save PL items
             $('#btn_save_pl').click(function() {
                 let items = [];
                 let isValid = true;
-                
-                if($('#table_pl tbody tr').length === 0) {
+
+                if ($('#table_pl tbody tr').length === 0) {
                     show_message('Minimal harus ada 1 item!', 'warning');
                     return;
                 }
@@ -480,16 +398,12 @@
                 $('#table_pl tbody tr').each(function() {
                     let item = $(this).find('.pl-item').val().trim();
                     let qty = $(this).find('.pl-qty').val().trim();
-                    
                     if (!item) {
                         isValid = false;
                         $(this).find('.pl-item').addClass('is-invalid');
                     } else {
                         $(this).find('.pl-item').removeClass('is-invalid');
-                        items.push({
-                            item: item,
-                            qty: qty
-                        });
+                        items.push({ item: item, qty: qty });
                     }
                 });
 
@@ -498,81 +412,304 @@
                     return;
                 }
 
-                let data = {
-                    ...currentPack,
-                    items: items
-                };
+                let data = { ...currentPack, items: items };
 
                 $.ajax({
-                    url: URL_INDEX_API + '/' + id,
+                    url: URL_INDEX_API + '/' + currentPackId,
                     type: "PUT",
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                     data: data,
                     success: function(res) {
                         show_message(res.message, 'success');
-                        // Setelah simpan, balik ke tab detail untuk lihat hasilnya
                         $('#detail-tab').tab('show');
-                        table.ajax.reload(null, false);
+                        loadData();
                     },
                     error: function(xhr) {
-                        show_message(xhr.responseJSON.message || 'Error simpan data!')
+                        show_message(xhr.responseJSON?.message || 'Error simpan data!');
                     }
                 });
             });
 
-            $('#table tbody').on('click', 'tr td:not(:last-child):not(:first-child)', function() {
-                let rowData = table.row(this).data();
-                id = rowData.id;
-                
-                // Reset Modal state ke Tab Detail
-                $('#detail-tab').tab('show');
-                $('#btn_save_pl').addClass('d-none');
-                
-                // Loading state
-                $('#detail_vendor').html('<i class="fas fa-spinner fa-spin"></i>');
-                $('#table_pl_view tbody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
-
-                fetchPackDetail(id);
-                $('#modal_pl').modal('show');
+            // Change vendor form
+            $('#btn_change').click(function() {
+                $('#form_change').submit();
             });
 
-            $('#table tbody').on('click', 'tr .btn-edit', function() {
-                row = $(this).parents('tr')[0];
-                id = table.row(row).data().id
-                window.open(`${URL_INDEX}/${id}/edit`)
-            });
-
-            $('#table tbody').on('click', 'tr .btn-download', function() {
-                row = $(this).parents('tr')[0];
-                id = table.row(row).data().id
-                window.open(`${URL_INDEX_API}/${id}/download`)
-            });
-
-            $('#table tbody').on('click', 'tr .btn-print', function() {
-                row = $(this).parents('tr')[0];
-                id = table.row(row).data().id
-                window.open(`${URL_INDEX}/${id}/print`, '_blank')
-            });
-
-            $('#table tbody').on('click', 'tr .btn-delete', function() {
-                row = $(this).parents('tr')[0];
-                id = table.row(row).data().id
-                confirmation('Delete Data?', function(confirm) {
-                    if (confirm) {
-                        $.ajax({
-                            url: URL_INDEX_API + '/' + id,
-                            type: "DELETE",
-                            success: function(res) {
-                                table.ajax.reload();
-                                show_message(res.message, 'success')
-                            },
-                            error: function(xhr) {
-                                show_message(xhr.responseJSON.message || 'Error!')
-                            }
-                        });
+            $('#form_change').on('submit', function(e) {
+                e.preventDefault();
+                let vendor_id = $('#vendor_id').val();
+                if (!vendor_id) {
+                    show_message('Pilih vendor terlebih dahulu!');
+                    return;
+                }
+                $.ajax({
+                    url: "{{ route('api.packs.change') }}",
+                    type: "POST",
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: {
+                        vendor_id: vendor_id,
+                        ids: changeSelectedIds,
+                    },
+                    success: function(res) {
+                        $('#modal_change').modal('hide');
+                        $('#vendor_id').val('').change();
+                        loadData();
+                        show_message(res.message, 'success');
+                    },
+                    error: function(xhr) {
+                        show_message(xhr.responseJSON?.message || 'Error!');
                     }
-                })
+                });
+            });
+        });
+
+        // ── Data Loading ─────────────────────────────────────
+
+        function loadData() {
+            const $tbody = $('#tableBody');
+            $tbody.html(
+                `<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>`
+            );
+
+            $.ajax({
+                url: URL_INDEX_API,
+                type: 'GET',
+                data: {
+                    page: currentPage,
+                    per_page: currentPerPage,
+                    search: currentSearch,
+                },
+                success: function(res) {
+                    renderTable(res.data);
+                    renderPagination(res.page, res.total_pages, res.total);
+                },
+                error: function() {
+                    $tbody.html(
+                        `<tr><td colspan="8" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`
+                    );
+                }
+            });
+        }
+
+        // ── Table Rendering ──────────────────────────────────
+
+        function renderTable(data) {
+            const $tbody = $('#tableBody');
+
+            if (!data || data.length === 0) {
+                $tbody.html(
+                    `<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox mr-2"></i>Tidak ada data</td></tr>`
+                );
+                return;
+            }
+
+            let html = '';
+            data.forEach(row => {
+                const productCode = escapeHtml(row.product?.code || '');
+                const productName = escapeHtml(row.product?.name || '');
+                const vendorName = escapeHtml(row.vendor?.name || '');
+                html += `<tr data-id="${row.id}">
+                    <td class="text-center">
+                        <input type="checkbox" name="id[]" value="${row.id}" class="new-control-input child-chk">
+                    </td>
+                    <td>${productCode}</td>
+                    <td>${productName}</td>
+                    <td>${escapeHtml(row.name)}</td>
+                    <td>${escapeHtml(row.desc)}</td>
+                    <td>${vendorName}</td>
+                    <td>${escapeHtml(row.vendor_desc)}</td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center" style="gap: 4px;">
+                            <button type="button" class="btn btn-action btn-outline-success btn-download" data-id="${row.id}" title="Export Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </button>
+                            <button type="button" class="btn btn-action btn-outline-secondary btn-print" data-id="${row.id}" title="Print HTML">
+                                <i class="fas fa-print"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
             });
 
-        });
+            $tbody.html(html);
+            $('#chkAll').prop('checked', false);
+        }
+
+        // ── PL Detail Fetch ──────────────────────────────────
+
+        function fetchPackDetail(packId) {
+            $.get(URL_INDEX_API + '/' + packId).done(function(res) {
+                let pack = res.data;
+                currentPack = {
+                    name: pack.name,
+                    desc: pack.desc,
+                    product_id: pack.product_id,
+                    vendor_id: pack.vendor_id,
+                    vendor_desc: pack.vendor_desc
+                };
+
+                $('#detail_name').html(pack.name ?? '-');
+                $('#detail_vendor').html(pack.vendor?.name ?? '-');
+                $('#detail_product').html(`[${pack.product?.code ?? ''}] ${pack.product?.name ?? ''}`);
+
+                $('#table_pl_view tbody').empty();
+                $('#table_pl tbody').empty();
+
+                pack.items.forEach((item, index) => {
+                    $('#table_pl_view tbody').append(`
+                        <tr>
+                            <td class="text-center text-muted small">${index + 1}</td>
+                            <td class="font-weight-bold">${item.item}</td>
+                            <td class="text-center bg-light font-weight-bold">${item.qty || '-'}</td>
+                        </tr>
+                    `);
+                    addItemRow(item.item, item.qty || '');
+                });
+            }).fail(function(xhr) {
+                show_message('Gagal mengambil data!', 'error');
+            });
+        }
+
+        function addItemRow(item = '', qty = '') {
+            let rowCount = $('#table_pl tbody tr').length + 1;
+            $('#table_pl tbody').append(`
+                <tr>
+                    <td class="text-center align-middle font-weight-bold">${rowCount}</td>
+                    <td>
+                        <textarea class="form-control form-control-sm pl-item" rows="1" required placeholder="Nama Item...">${item}</textarea>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm pl-qty" value="${qty}" placeholder="Qty...">
+                    </td>
+                    <td class="text-center align-middle">
+                        <button type="button" class="btn btn-xs btn-outline-danger" onclick="$(this).closest('tr').remove()">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        }
+
+        // ── Change Vendor ────────────────────────────────────
+
+        function changeData() {
+            changeSelectedIds = $('input[name="id[]"]:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (changeSelectedIds.length === 0) {
+                show_message("No Selected Data!");
+                return;
+            }
+            $('#modal_change').modal('show');
+        }
+
+        // ── Delete Batch ─────────────────────────────────────
+
+        function deleteBatch() {
+            const selectedIds = $('input[name="id[]"]:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (selectedIds.length === 0) {
+                show_message("No Selected Data!");
+                return;
+            }
+
+            confirmation('Delete Selected (' + selectedIds.length + ')?', function(confirm) {
+                if (confirm) {
+                    $.ajax({
+                        url: URL_INDEX_API,
+                        type: "DELETE",
+                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                        data: { ids: selectedIds },
+                        success: function(res) {
+                            loadData();
+                            show_message(res.message || 'Deleted!', 'success');
+                        },
+                        error: function(xhr) {
+                            show_message(xhr.responseJSON?.message || 'Error!');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ── Pagination ───────────────────────────────────────
+
+        function renderPagination(page, totalPages, total) {
+            const $pag = $('#pagination');
+            const start = (page - 1) * currentPerPage + 1;
+            const end = Math.min(page * currentPerPage, total);
+
+            $('#pageInfo').text(total > 0 ? `Menampilkan ${start}–${end} dari ${total.toLocaleString('id-ID')} data` :
+                'Tidak ada data');
+
+            if (totalPages <= 1) {
+                $pag.html('');
+                return;
+            }
+
+            let html = '';
+
+            html +=
+                `<button class="page-btn" ${page <= 1 ? 'disabled' : ''} data-page="${page - 1}"><i class="fas fa-chevron-left"></i></button>`;
+
+            const pages = getPaginationPages(page, totalPages);
+            pages.forEach(p => {
+                if (p === '...') {
+                    html += `<span class="page-btn" style="border:none;cursor:default;">…</span>`;
+                } else {
+                    html += `<button class="page-btn ${p === page ? 'active' : ''}" data-page="${p}">${p}</button>`;
+                }
+            });
+
+            html +=
+                `<button class="page-btn" ${page >= totalPages ? 'disabled' : ''} data-page="${page + 1}"><i class="fas fa-chevron-right"></i></button>`;
+
+            $pag.html(html);
+
+            $pag.off('click', '.page-btn').on('click', '.page-btn', function() {
+                if ($(this).is(':disabled') || $(this).css('cursor') === 'default') return;
+                currentPage = parseInt($(this).data('page'));
+                loadData();
+                $('html, body').animate({
+                    scrollTop: $('#tablePack').offset().top - 80
+                }, 200);
+            });
+        }
+
+        function getPaginationPages(current, total) {
+            if (total <= 7) {
+                return Array.from({
+                    length: total
+                }, (_, i) => i + 1);
+            }
+
+            const pages = [];
+            pages.push(1);
+
+            if (current > 3) pages.push('...');
+
+            const start = Math.max(2, current - 1);
+            const end = Math.min(total - 1, current + 1);
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+
+            if (current < total - 2) pages.push('...');
+
+            pages.push(total);
+            return pages;
+        }
+
+        // ── Utility ──────────────────────────────────────────
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
     </script>
 @endpush

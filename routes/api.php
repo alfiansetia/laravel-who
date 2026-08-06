@@ -112,6 +112,8 @@ Route::get('firebase-config', function () {
 });
 
 // NEW ROUTE
+Route::delete('packs', [PackController::class, 'destroy_batch'])
+    ->name('api.packs.destroy_batch');
 Route::get('packs/{pack}/download', [PackController::class, 'download'])
     ->name('api.packs.download');
 Route::post('packs-change', [PackController::class, 'change'])
