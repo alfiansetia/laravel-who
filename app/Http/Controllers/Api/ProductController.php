@@ -21,9 +21,9 @@ class ProductController extends Controller
         $this->excelService = $excelService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = Product::orderBy('code', 'ASC')->get();
+        $data = Product::orderBy('code', 'ASC')->get(['id', 'code', 'name', 'akl', 'akl_exp', 'desc']);
         return $this->sendResponse($data, 'Success!');
     }
 
