@@ -103,10 +103,12 @@
     .product-footer .dataTables_info {
         font-size: 0.82rem;
         color: #64748b;
+        white-space: nowrap;
     }
 
     .product-footer .dataTables_length {
         font-size: 0.82rem;
+        white-space: nowrap;
     }
 
     .product-footer .dataTables_length select {
@@ -118,13 +120,20 @@
 
     .product-footer .dataTables_paginate {
         font-size: 0.82rem;
+        display: flex !important;
+        align-items: center;
+        gap: 2px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
 
     .product-footer .dataTables_paginate .paginate_button {
         border-radius: 6px;
         border: 1px solid #e2e8f0;
-        margin: 0 2px;
-        padding: 0.25rem 0.6rem;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .product-footer .dataTables_paginate .paginate_button.current {
@@ -137,5 +146,22 @@
         background: #eef2ff;
         border-color: var(--product-accent);
         color: var(--product-accent) !important;
+    }
+
+    @media (max-width: 576px) {
+        .product-footer {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 8px;
+        }
+        .product-footer .dataTables_info {
+            text-align: center;
+        }
+        .product-footer .dataTables_length {
+            text-align: center;
+        }
+        .product-footer .dataTables_paginate {
+            justify-content: center;
+        }
     }
 </style>

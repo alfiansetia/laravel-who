@@ -271,10 +271,12 @@
 
     /* ── Pagination (match izin_edar pagination-modern) ── */
     .stock-footer .dataTables_paginate {
-        display: flex;
+        display: flex !important;
         align-items: center;
         gap: 4px;
         margin: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
 
     .stock-footer .dataTables_paginate .paginate_button {
@@ -294,6 +296,8 @@
         padding: 0 8px;
         margin: 0 !important;
         box-shadow: none !important;
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .stock-footer .dataTables_paginate .paginate_button:hover {
@@ -322,5 +326,23 @@
         background: #fff;
         border-color: #e2e8f0;
         color: #64748b;
+    }
+
+    /* ── Mobile Responsive ─────────────────────────────── */
+    @media (max-width: 576px) {
+        .stock-footer {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 8px;
+        }
+        .stock-footer .dataTables_info {
+            text-align: center;
+        }
+        .stock-footer .dataTables_length {
+            justify-content: center;
+        }
+        .stock-footer .dataTables_paginate {
+            justify-content: center;
+        }
     }
 </style>
