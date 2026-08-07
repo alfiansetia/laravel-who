@@ -40,8 +40,33 @@ class ProblemController extends Controller
             $query->where('status', $request->status);
         }
 
-        $data = $query->orderBy('date', 'desc')->get();
-        return response()->json(['data' => $data]);
+        // Search by number, pic, or ri_po
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('number', 'like', "%{$search}%")
+                  ->orWhere('pic', 'like', "%{$search}%")
+                  ->orWhere('ri_po', 'like', "%{$search}%");
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 10);
+        $page    = (int) $request->input('page', 1);
+
+        $total      = $query->count();
+        $totalPages = max(1, (int) ceil($total / $perPage));
+
+        $data = $query->orderBy('date', 'desc')
+                      ->skip(($page - 1) * $perPage)
+                      ->take($perPage)
+                      ->get();
+
+        return response()->json([
+            'data'        => $data,
+            'page'        => $page,
+            'total_pages' => $totalPages,
+            'total'       => $total,
+        ]);
     }
 
     /**
