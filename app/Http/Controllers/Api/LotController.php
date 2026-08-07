@@ -11,27 +11,22 @@ class LotController extends Controller
 {
     public function index(Request $request)
     {
-        $draw   = $request->draw;
-        $start  = $request->start ?? 0;
-        $length = $request->length ?? 10;
-        $search = $request->input('search');
-        if (is_array($search)) {
-            $search = $search['value'] ?? '';
-        }
-        $product = null;
-        if ($request->filled('product')) {
-            $product = $request->product;
-        }
-        $search = (string)($search ?? '');
-        $response = LotServices::getAll($search, $length, $start, $product);
-        $totalRecords = Arr::get($response, 'length', 0);
-        $data = Arr::get($response, 'records', []);
+        $perPage = max((int) $request->input('per_page', 10), 1);
+        $page    = max((int) $request->input('page', 1), 1);
+        $offset  = ($page - 1) * $perPage;
+        $search  = (string) ($request->input('search') ?? '');
+        $product = $request->filled('product') ? $request->input('product') : null;
+
+        $response = LotServices::getAll($search, $perPage, $offset, $product);
+        $total    = Arr::get($response, 'length', 0);
+        $data     = Arr::get($response, 'records', []);
 
         return response()->json([
-            'draw'            => intval($draw),
-            'recordsTotal'    => $totalRecords,
-            'recordsFiltered' => $totalRecords,
-            'data'            => $data
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => $perPage > 0 ? (int) ceil($total / $perPage) : 0,
         ]);
     }
 
