@@ -350,7 +350,7 @@
                             'route' => 'product_odoo.index',
                             'icon' => 'box',
                             'title' => 'Product',
-                            'desc' => 'Daftar Lot/SN',
+                            'desc' => 'Daftar Product Odoo',
                         ],
                     ];
                 @endphp

@@ -62,6 +62,7 @@ Route::get('do', [DoController::class, 'index'])->name('do.index');
 Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print');
 
 Route::get('it', [ItController::class, 'index'])->name('it.index');
+Route::get('it/{id}/print', [ItController::class, 'print'])->name('it.print');
 
 // NEW ROUTE
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');

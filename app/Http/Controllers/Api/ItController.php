@@ -11,24 +11,23 @@ class ItController extends Controller
 {
     public function index(Request $request)
     {
-        $draw   = $request->draw;
-        $start  = $request->start ?? 0;
-        $length = $request->length ?? 10;
-        $search = $request->input('search');
-        if (is_array($search)) {
-            $search = $search['value'] ?? '';
-        }
-        $gudang = $request->input('gudang');
-        $search = (string) ($search ?? '');
-        $response = ItServices::withGudang(intval($gudang))
-            ->getAll($search, $length, $start);
-        $totalRecords = Arr::get($response, 'length', 0);
-        $data = Arr::get($response, 'records', []);
+        $perPage = max((int) $request->input('per_page', 10), 1);
+        $page    = max((int) $request->input('page', 1), 1);
+        $offset  = ($page - 1) * $perPage;
+        $search  = (string) ($request->input('search') ?? '');
+        $gudang  = $request->input('gudang', 5);
+
+        $response    = ItServices::withGudang(intval($gudang))
+            ->getAll($search, $perPage, $offset);
+        $total       = Arr::get($response, 'length', 0);
+        $data        = Arr::get($response, 'records', []);
+
         return response()->json([
-            'draw'            => intval($draw),
-            'recordsTotal'    => $totalRecords,
-            'recordsFiltered' => $totalRecords,
-            'data'            => $data
+            'data'        => $data,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => $perPage > 0 ? (int) ceil($total / $perPage) : 0,
         ]);
     }
 
