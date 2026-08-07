@@ -8,10 +8,44 @@ use Illuminate\Http\Request;
 
 class FcmTokenController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = FcmToken::all();
-        return $this->sendResponse($data, 'Success Get Token');
+        $draw   = $request->input('draw', 1);
+        $start  = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $search = $request->input('search.value', '');
+
+        $query = FcmToken::query();
+
+        $recordsTotal = $query->count();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('platform', 'like', "%{$search}%")
+                  ->orWhere('user_agent', 'like', "%{$search}%")
+                  ->orWhere('ip', 'like', "%{$search}%")
+                  ->orWhere('token', 'like', "%{$search}%")
+                  ->orWhere('last_status', 'like', "%{$search}%");
+            });
+        }
+
+        $recordsFiltered = $query->count();
+
+        // Ordering
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderDir = $request->input('order.0.dir', 'asc');
+        $columns = ['id', 'platform', 'user_agent', 'ip', 'token', 'last_status'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'id';
+        $query->orderBy($orderColumn, $orderDir);
+
+        $data = $query->skip($start)->take($length > 0 ? $length : 10)->get();
+
+        return response()->json([
+            'draw'            => $draw,
+            'recordsTotal'    => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data'            => $data,
+        ]);
     }
 
     public function store(Request $request)
