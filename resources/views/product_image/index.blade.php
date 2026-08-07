@@ -452,6 +452,7 @@
         const URL_INDEX_API = "{{ route('api.product_images.index') }}";
         const URL_STORE_API = "{{ route('api.product_images.store') }}";
         const URL_COLLAGE = "{{ route('product_images.collage', ':id') }}";
+        const URL_DOWNLOAD = "{{ route('product_images.download', ':id') }}";
         const URL_DESTROY_BATCH = "{{ route('product_images.destroy_batch') }}";
 
         let allImages = [];
@@ -780,6 +781,7 @@
                 html += '<div class="pi-card-header">';
                 html += '<h6><i class="fas fa-box-open"></i>[' + esc(p.code || '-') + '] ' + esc(p.name) + '</h6>';
                 html += '<div class="pi-card-actions">';
+                html += '<a href="' + URL_DOWNLOAD.replace(':id', pid) + '" class="btn btn-outline-success btn-sm" title="Download ZIP"><i class="fas fa-download"></i></a>';
                 html += '<button type="button" class="btn btn-outline-primary btn-sm btn-print-product" data-product-id="' + pid + '" title="Cetak Kolase"><i class="fas fa-print"></i></button>';
                 html += '<button type="button" class="btn btn-outline-danger btn-sm btn-delete-product-images" data-product-id="' + pid + '" data-product-name="' + esc(p.name) + '" title="Hapus Semua"><i class="fas fa-trash-alt"></i></button>';
                 html += '<span class="pi-badge-count">' + imgs.length + ' Gambar</span>';

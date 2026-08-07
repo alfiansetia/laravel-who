@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class ProductImageController extends Controller
 {
@@ -83,6 +84,43 @@ class ProductImageController extends Controller
 
         return redirect()->route('product_images.index')
             ->with('success', "{$images->count()} gambar berhasil dihapus.");
+    }
+
+    public function download(Product $product)
+    {
+        $images = ProductImage::where('product_id', $product->id)->get();
+
+        if ($images->isEmpty()) {
+            return redirect()->route('product_images.index')
+                ->with('error', 'Tidak ada gambar untuk produk ini.');
+        }
+
+        $zip = new ZipArchive();
+        $tempFile = tempnam(sys_get_temp_dir(), 'product_images_');
+
+        if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return redirect()->route('product_images.index')
+                ->with('error', 'Gagal membuat file ZIP.');
+        }
+
+        foreach ($images as $index => $image) {
+            $filePath = storage_path('app/public/products/' . $image->name);
+            if (file_exists($filePath)) {
+                $ext = pathinfo($image->name, PATHINFO_EXTENSION);
+                $zip->addFile($filePath, 'images/' . ($index + 1) . '.' . $ext);
+            }
+        }
+
+        $zip->close();
+
+        // Sanitize filename: keep alphanumeric, spaces, dots, hyphens, underscores
+        $safeCode = preg_replace('/[^A-Za-z0-9.\-_ ]/', '', $product->code ?? '');
+        $safeName = preg_replace('/[^A-Za-z0-9.\-_ ]/', '', $product->name ?? '');
+        $zipName = trim($safeCode . ' (' . $safeName . ')') . '.zip';
+
+        return response()->download($tempFile, $zipName, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
     }
 
     public function collage(Product $product)

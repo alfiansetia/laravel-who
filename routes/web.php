@@ -143,6 +143,8 @@ Route::delete('/product_images-batch', [ProductImageController::class, 'destroy_
     ->name('product_images.destroy_batch');
 Route::get('/product_images/{product}/collage', [ProductImageController::class, 'collage'])
     ->name('product_images.collage');
+Route::get('/product_images/{product}/download', [ProductImageController::class, 'download'])
+    ->name('product_images.download');
 
 Route::get('/qc-lots', [QcLotController::class, 'index'])
     ->name('qc_lots.index');
