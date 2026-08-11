@@ -2,12 +2,16 @@
     <div class="card-header d-flex align-items-center flex-wrap" style="gap: 8px;">
         {{-- Left: Search + Filter + Refresh --}}
         <div class="d-flex align-items-center flex-wrap" style="gap: 6px; flex: 1;">
-            <div class="input-group input-group-sm" style="max-width: 400px;">
+            <div class="input-group input-group-sm" style="max-width: 300px;">
                 <div class="input-group-prepend">
                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
                 </div>
                 <input type="search" id="searchInput" class="form-control form-control-sm"
                     placeholder="Cari nomor SO...">
+            </div>
+            <div class="input-group input-group-sm" style="max-width: 200px;">
+                <input type="search" id="noteSearchInput" class="form-control form-control-sm"
+                    placeholder="Cari Notes...">
             </div>
             <select id="filterSelect" class="form-control form-control-sm" style="width: auto; min-width: 140px;">
                 <option value="">All</option>

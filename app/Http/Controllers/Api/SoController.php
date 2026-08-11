@@ -15,6 +15,7 @@ class SoController extends Controller
         $page    = max((int) $request->input('page', 1), 1);
         $offset  = ($page - 1) * $perPage;
         $search  = (string) ($request->input('search') ?? '');
+        $note_search = (string) ($request->input('note_search') ?? '');
         $filter  = $request->input('filter');
         $filters = [];
         if ($filter == 'print_ok') {
@@ -24,6 +25,13 @@ class SoController extends Controller
                     "not ilike",
                     "PRINT OK"
                 ]
+            ];
+        }
+        if (!empty($note_search)) {
+            $filters[] = [
+                "note_to_wh",
+                "ilike",
+                "%$note_search%"
             ];
         }
 

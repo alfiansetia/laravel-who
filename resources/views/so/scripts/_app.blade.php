@@ -5,6 +5,7 @@
     let currentPage = 1;
     let currentPerPage = 10;
     let currentSearch = '';
+    let currentNoteSearch = '';
     let currentFilter = '';
     let searchTimeout = null;
     let tableProduct = null;
@@ -19,6 +20,16 @@
             const val = $(this).val().trim();
             searchTimeout = setTimeout(function() {
                 currentSearch = val;
+                currentPage = 1;
+                loadData();
+            }, 400);
+        });
+
+        $('#noteSearchInput').on('keyup', function() {
+            clearTimeout(searchTimeout);
+            const val = $(this).val().trim();
+            searchTimeout = setTimeout(function() {
+                currentNoteSearch = val;
                 currentPage = 1;
                 loadData();
             }, 400);
@@ -149,6 +160,7 @@
                 per_page: currentPerPage,
                 search: currentSearch,
                 filter: currentFilter,
+                note_search: currentNoteSearch || '',
             },
             success: function(res) {
                 renderTable(res.data);
