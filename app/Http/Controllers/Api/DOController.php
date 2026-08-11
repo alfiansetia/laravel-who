@@ -17,8 +17,8 @@ class DOController extends Controller
         $page    = max((int) $request->input('page', 1), 1);
         $offset  = ($page - 1) * $perPage;
         $search  = (string) ($request->input('search') ?? '');
-
-        $response = DoServices::getAll($search, $perPage, $offset);
+        $note_search = (string) ($request->input('note_search') ?? '');
+        $response = DoServices::getAll($search, $perPage, $offset, $note_search);
         $total    = Arr::get($response, 'length', 0);
         $data     = Arr::get($response, 'records', []);
 

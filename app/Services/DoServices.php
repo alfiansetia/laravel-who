@@ -9,7 +9,7 @@ class DoServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null)
+    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null, $note_search = '')
     {
         if (empty($query)) {
             $query = 'CENT/OUT';
@@ -39,6 +39,11 @@ class DoServices extends Odoo
                         'origin',
                         'ilike',
                         $query
+                    ],
+                    [
+                        'note_to_wh',
+                        'ilike',
+                        $note_search
                     ]
                 ],
                 'fields' => [

@@ -9,6 +9,10 @@
                 <input type="search" id="searchInput" class="form-control form-control-sm"
                     placeholder="Cari nomor DO...">
             </div>
+            <div class="input-group input-group-sm" style="max-width: 200px;">
+                <input type="search" id="noteSearchInput" class="form-control form-control-sm"
+                    placeholder="Cari Note...">
+            </div>
             <button type="button" id="btnRefresh" class="btn btn-outline-secondary btn-sm" title="Refresh"
                 onclick="loadData()">
                 <i class="fas fa-sync-alt"></i>
