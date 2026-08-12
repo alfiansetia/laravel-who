@@ -601,14 +601,14 @@
             $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim(Arr::get($data, 'note_to_wh', '')));
             $sistem = Arr::get($data, 'sistem', '');
 
-            $label_sistem = strtolower($sistem) === 'mf' ? '<b>' . strtoupper($sistem) . '</b>' : strtoupper($sistem);
+            $label_sistem =
+                strtolower($sistem) === 'mf' ? ('<b>' . strtoupper($sistem) . '</b><br>') : (strtoupper($sistem) . '<br>');
         @endphp
 
         <!-- Note Warehouse -->
         <div class="note-section">
             <div class="note-title">Note Warehouse</div>
-
-            <div class="note-content">{!! $label_sistem !!}<br>{!! $note_to_wh !!}</div>
+            <div class="note-content">{!! $label_sistem !!} {!! $note_to_wh !!}</div>
         </div>
 
         <!-- Product Table -->
