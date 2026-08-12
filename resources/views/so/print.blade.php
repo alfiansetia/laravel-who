@@ -562,7 +562,7 @@
             <div class="info-row">
                 <span class="info-label">Date Order :</span>
                 <span class="info-value">
-                    {{ odoo_datetime($data['confirmation_date']) }}
+                    {{ odoo_datetime($data['confirmation_date'], 'd/m/Y H:i:s') }}
                 </span>
             </div>
             <div class="info-row">
