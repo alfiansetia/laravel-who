@@ -170,9 +170,7 @@ class StockServices extends Odoo
             $expired = $item['itds_expired'] ?? null;
             $expired_ori = $expired;
             try {
-                $expired = Carbon::createFromFormat('Y-m-d H:i:s', $expired, 'UTC')
-                    ->setTimezone(config('app.timezone'))
-                    ->format('Y.m.d');
+                $expired = odoo_datetime($expired, 'Y.m.d');
             } catch (\Throwable $th) {
                 //throw $th;
             }

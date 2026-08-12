@@ -25,9 +25,7 @@ class LotResource extends JsonResource
         $name = $pecah_code[2];
         $expired = $this['itds_expired'];
         try {
-            $expired = Carbon::createFromFormat('Y-m-d H:i:s', $this['itds_expired'], 'UTC')
-                ->setTimezone(config('app.timezone'))
-                ->format('Y.m.d');
+            $expired = odoo_datetime($this['itds_expired'], 'Y.m.d');
         } catch (\Throwable $th) {
             //throw $th;
         }

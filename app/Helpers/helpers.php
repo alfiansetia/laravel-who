@@ -149,3 +149,15 @@ function parseDecimal($value, $decimals = 2)
     // format decimal
     return number_format($num, $decimals, '.', '');
 }
+
+
+function odoo_datetime($datetime, string $format = 'd/m/Y H:i'): string
+{
+    if (empty($datetime) || $datetime === false) {
+        return 'False';
+    }
+
+    return Carbon::createFromFormat('Y-m-d H:i:s', $datetime, 'UTC')
+        ->setTimezone(config('app.timezone'))
+        ->format($format);
+}

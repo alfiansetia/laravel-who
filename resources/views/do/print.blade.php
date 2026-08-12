@@ -313,13 +313,7 @@
                                     isset($item['expired_date_do']) &&
                                     $item['expired_date_do'] &&
                                     $item['expired_date_do'] !== 'False'
-                                        ? \Carbon\Carbon::createFromFormat(
-                                            'Y-m-d H:i:s',
-                                            $item['expired_date_do'],
-                                            'UTC',
-                                        )
-                                            ->setTimezone(config('app.timezone'))
-                                            ->format('d/m/Y')
+                                        ? odoo_datetime($item['expired_date_do'], 'd/m/Y')
                                         : '';
                                 return [
                                     'lot' => $item['lot_id'][1] ?? null,

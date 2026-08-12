@@ -181,9 +181,7 @@ class AlamatController extends Controller
                     $lot = $item['lot_id'][1] ?? '';
                     $ed = $item['expired_date_do'] ?? '';
                     if ($lot && $ed) {
-                        $ed = Carbon::createFromFormat('Y-m-d H:i:s', $ed, 'UTC')
-                            ->setTimezone(config('app.timezone'))
-                            ->format('d/m/Y');
+                        $ed = odoo_datetime($ed, 'd/m/Y');
                         return $lot . " Ed. " . $ed;
                     } elseif ($lot) {
                         return $lot;

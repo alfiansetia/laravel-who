@@ -561,8 +561,9 @@
         <div class="order-info">
             <div class="info-row">
                 <span class="info-label">Date Order :</span>
-                <span
-                    class="info-value">{{ $data['confirmation_date'] != false ? date('d/m/Y', strtotime($data['confirmation_date'])) : 'False' }}</span>
+                <span class="info-value">
+                    {{ odoo_datetime($data['confirmation_date']) }}
+                </span>
             </div>
             <div class="info-row">
                 <span class="info-label">Salesperson :</span>
