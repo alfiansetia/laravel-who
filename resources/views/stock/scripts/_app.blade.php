@@ -195,7 +195,7 @@
                     className: 'text-center',
                     render: function(data, type, row) {
                         let text = data || '-';
-                        if (row.expired) {
+                        if (row.expired && row.expired != 'False') {
                             text += ` / ${row.expired}`;
                         }
                         return text;
