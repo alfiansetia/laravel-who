@@ -608,10 +608,7 @@
         <div class="note-section">
             <div class="note-title">Note Warehouse</div>
 
-            <div class="note-content">
-                {!! $label_sistem !!}<br>
-                {!! $note_to_wh !!}
-            </div>
+            <div class="note-content">{!! $label_sistem !!}<br>{!! $note_to_wh !!}</div>
         </div>
 
         <!-- Product Table -->
