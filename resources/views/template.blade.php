@@ -89,6 +89,27 @@
             border-radius: 8px !important;
             border: 1px solid #e2e8f0 !important;
         }
+
+        @media (max-width: 500px) {
+            .card-header.d-flex {
+                flex-wrap: wrap !important;
+            }
+
+            .card-header.d-flex>div:first-child {
+                flex: 1 1 100% !important;
+                width: 100%;
+            }
+
+            .card-header.d-flex>div:first-child .input-group {
+                flex: 1 1 auto;
+                max-width: none !important;
+            }
+
+            .card-header.d-flex>div:last-child {
+                flex: 1 1 100% !important;
+                width: 100%;
+            }
+        }
     </style>
     <title>{{ $title }}</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/asa.png') }}" />
