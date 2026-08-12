@@ -601,7 +601,7 @@
             $note_to_wh = preg_replace("/(\r\n|\n|\r){2,}/", "\n", trim(Arr::get($data, 'note_to_wh', '')));
             $sistem = Arr::get($data, 'sistem', '');
             $mf = strtolower($sistem) == 'mf';
-            $label_mf = $mf ? '<b>' . strtoupper($sistem) . '</b><br/>' : '';
+            $label_mf = $mf ? '<b>' . strtoupper($sistem) . '</b><br/>' : strtoupper($sistem);
         @endphp
         <!-- Note Warehouse -->
         <div class="note-section">
