@@ -19,103 +19,80 @@
                     style="white-space: pre-wrap; font-style: italic;"></div>
             </div>
             <div class="modal-body">
-                <div class="accordion" id="accordionExample">
-                    <div class="card">
-                        <div class="card-header" id="headingOne">
-                            <div class="d-flex justify-content-between align-items-center w-100">
-                                <button class="btn btn-link text-left p-0" type="button" data-toggle="collapse"
-                                    data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                    SOP QC
-                                </button>
-                                <button type="button" class="btn btn-xs btn-outline-secondary d-none"
-                                    id="btn-print-sop">
-                                    <i class="fas fa-print"></i> Cetak SOP
-                                </button>
-                            </div>
-                            </h2>
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-sop" data-toggle="tab" href="#paneSop" role="tab"
+                            aria-controls="paneSop" aria-selected="true">
+                            <i class="fas fa-clipboard-check mr-1"></i> SOP QC
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-pl" data-toggle="tab" href="#panePl" role="tab"
+                            aria-controls="panePl" aria-selected="false">
+                            <i class="fas fa-box-open mr-1"></i> Packing List
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-images" data-toggle="tab" href="#paneImages" role="tab"
+                            aria-controls="paneImages" aria-selected="false">
+                            <i class="fas fa-images mr-1"></i> Images
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-pltbb" data-toggle="tab" href="#panePltbb" role="tab"
+                            aria-controls="panePltbb" aria-selected="false">
+                            <i class="fas fa-ruler-combined mr-1"></i> PLTBB
+                            <span id="pltbb_is_complete" class="badge badge-success ml-1">Complete</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3" id="productTabContent">
+                    <div class="tab-pane fade show active" id="paneSop" role="tabpanel" aria-labelledby="tab-sop">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Target : <span id="target_value"></span></h6>
+                            <button type="button" class="btn btn-xs btn-outline-secondary d-none" id="btn-print-sop">
+                                <i class="fas fa-print"></i> Cetak SOP
+                            </button>
                         </div>
-                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
-                            data-parent="#accordionExample">
-                            <div class="card-body">
-                                <h6 class="mb-2">Target : <span id="target_value"></span></h6>
-                                <table id="table_target" class="table table-sm table-hover">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th class="text-center" style="width: 30px;">No</th>
-                                            <th>ITEM</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <table id="table_target" class="table table-sm table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" style="width: 30px;">No</th>
+                                    <th>ITEM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="panePl" role="tabpanel" aria-labelledby="tab-pl">
+                        <div id="table_pl_container"></div>
+                    </div>
+                    <div class="tab-pane fade" id="paneImages" role="tabpanel" aria-labelledby="tab-images">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span></span>
+                            <button type="button" class="btn btn-xs btn-outline-primary d-none"
+                                id="btn-print-collage">
+                                <i class="fas fa-print"></i> Cetak Kolase
+                            </button>
+                        </div>
+                        <div class="text-center">
+                            <div id="detail_images"
+                                class="d-flex flex-wrap gap-2 justify-content-center align-items-center"></div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-header" id="headingTwo">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed pl-0" type="button"
-                                    data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false"
-                                    aria-controls="collapseTwo">
-                                    Packing List
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo"
-                            data-parent="#accordionExample">
-                            <div class="card-body" id="table_pl_container">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header" id="headingImages">
-                            <h2 class="mb-0">
-                                <div class="d-flex justify-content-between align-items-center w-100">
-                                    <button class="btn btn-link text-left p-0 collapsed" type="button"
-                                        data-toggle="collapse" data-target="#collapseImages" aria-expanded="false"
-                                        aria-controls="collapseImages">
-                                        Images
-                                    </button>
-                                    <button type="button" class="btn btn-xs btn-outline-primary d-none"
-                                        id="btn-print-collage">
-                                        <i class="fas fa-print"></i> Cetak Kolase
-                                    </button>
-                                </div>
-                            </h2>
-                        </div>
-                        <div id="collapseImages" class="collapse" aria-labelledby="headingImages"
-                            data-parent="#accordionExample">
-                            <div class="modal-body text-center">
-                                <div id="detail_images"
-                                    class="d-flex flex-wrap gap-2 justify-content-center align-items-center"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header" id="headingFour">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed pl-0" type="button"
-                                    data-toggle="collapse" data-target="#collapseFour" aria-expanded="false"
-                                    aria-controls="collapseFour">
-                                    PLTBB <span id="pltbb_is_complete" class="badge badge-success">Complete</span>
-                                </button>
-                            </h2>
-                        </div>
-                        <div id="collapseFour" class="collapse" aria-labelledby="headingFour"
-                            data-parent="#accordionExample">
-                            <div class="card-body" id="table_pltbb_container">
-                                <ul class="list-group">
-                                    <li class="list-group-item">P: <span id="pltbb_p"></span></li>
-                                    <li class="list-group-item">L: <span id="pltbb_l"></span></li>
-                                    <li class="list-group-item">T: <span id="pltbb_t"></span></li>
-                                    <li class="list-group-item">B: <span id="pltbb_b"></span></li>
-                                    <li class="list-group-item">Note: <span id="pltbb_note"></span></li>
-                                </ul>
-                            </div>
+                    <div class="tab-pane fade" id="panePltbb" role="tabpanel" aria-labelledby="tab-pltbb">
+                        <div id="table_pltbb_container">
+                            <ul class="list-group">
+                                <li class="list-group-item">P: <span id="pltbb_p"></span></li>
+                                <li class="list-group-item">L: <span id="pltbb_l"></span></li>
+                                <li class="list-group-item">T: <span id="pltbb_t"></span></li>
+                                <li class="list-group-item">B: <span id="pltbb_b"></span></li>
+                                <li class="list-group-item">Note: <span id="pltbb_note"></span></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
