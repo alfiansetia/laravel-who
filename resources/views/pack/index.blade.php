@@ -116,14 +116,18 @@
                         <input type="search" id="searchInput" class="form-control form-control-sm"
                             placeholder="Cari product, PL name, vendor...">
                     </div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" title="Refresh"
-                        onclick="loadData()">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" title="Refresh" onclick="loadData()">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
                 {{-- Right: Action Buttons --}}
                 <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
-                    <button type="button" class="btn btn-info btn-sm" onclick="window.location.href='{{ route('packs.create') }}'">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportAll()"
+                        title="Export semua data ke Excel">
+                        <i class="fas fa-file-excel mr-1"></i> Export Excel
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm"
+                        onclick="window.location.href='{{ route('packs.create') }}'">
                         <i class="fas fa-plus mr-1"></i> Add PL
                     </button>
                     <button type="button" class="btn btn-warning btn-sm" onclick="changeData()">
@@ -161,7 +165,8 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap"
+                style="gap: 10px;">
                 <div class="d-flex align-items-center" style="gap: 8px;">
                     <span class="text-muted small">Tampilkan</span>
                     <select id="perPageSelect" class="per-page-select">
@@ -186,12 +191,14 @@
                 <div class="modal-header bg-light py-2 d-flex align-items-center justify-content-between">
                     <ul class="nav nav-pills" id="plTab" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active font-weight-bold px-4" id="detail-tab" data-toggle="tab" href="#tab-detail" role="tab">
+                            <a class="nav-link active font-weight-bold px-4" id="detail-tab" data-toggle="tab"
+                                href="#tab-detail" role="tab">
                                 <i class="fas fa-eye mr-1"></i> VIEW DETAIL
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link font-weight-bold px-4" id="edit-tab" data-toggle="tab" href="#tab-edit" role="tab">
+                            <a class="nav-link font-weight-bold px-4" id="edit-tab" data-toggle="tab" href="#tab-edit"
+                                role="tab">
                                 <i class="fas fa-edit mr-1"></i> EDIT ITEMS
                             </a>
                         </li>
@@ -237,7 +244,8 @@
                         <!-- Tab Edit -->
                         <div class="tab-pane fade px-4 py-3" id="tab-edit" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="small text-muted font-italic text-danger">* Perubahan di sini tidak otomatis tersimpan sebelum klik tombol "Simpan"</span>
+                                <span class="small text-muted font-italic text-danger">* Perubahan di sini tidak otomatis
+                                    tersimpan sebelum klik tombol "Simpan"</span>
                                 <button type="button" class="btn btn-sm btn-info" onclick="addItemRow()">
                                     <i class="fas fa-plus mr-1"></i> Tambah Baris
                                 </button>
@@ -284,7 +292,8 @@
                         <div class="form-group col-12">
                             <label for="vendor_id">VENDOR</label>
                             <div class="input-group">
-                                <select name="vendor_id" id="vendor_id" class="custom-select select2" style="width: 100%" required>
+                                <select name="vendor_id" id="vendor_id" class="custom-select select2"
+                                    style="width: 100%" required>
                                     <option value="">Select Vendor</option>
                                     @foreach ($vendors as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -309,6 +318,7 @@
     <script>
         const URL_INDEX_API = "{{ route('api.packs.index') }}";
         const URL_INDEX = "{{ route('packs.index') }}";
+        const URL_EXPORT = "{{ route('api.packs.export') }}";
         let currentPage = 1;
         let currentPerPage = 10;
         let currentSearch = '';
@@ -318,7 +328,9 @@
         let changeSelectedIds = [];
 
         $(document).ready(function() {
-            $('#vendor_id').select2({ theme: 'bootstrap4' });
+            $('#vendor_id').select2({
+                theme: 'bootstrap4'
+            });
 
             loadData();
 
@@ -348,14 +360,16 @@
 
             // Row Click → Open Modal
             $(document).on('click', '#tableBody tr', function(e) {
-                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('.btn-action').length) return;
+                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('.btn-action').length)
+                    return;
                 const id = $(this).data('id');
                 if (id) {
                     currentPackId = id;
                     $('#detail-tab').tab('show');
                     $('#btn_save_pl').addClass('d-none');
                     $('#detail_vendor').html('<i class="fas fa-spinner fa-spin"></i>');
-                    $('#table_pl_view tbody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
+                    $('#table_pl_view tbody').html(
+                        '<tr><td colspan="3" class="text-center">Loading...</td></tr>');
                     fetchPackDetail(id);
                     $('#modal_pl').modal('show');
                 }
@@ -375,7 +389,7 @@
             });
 
             // Handle Tab Switching in modal
-            $(document).on('shown.bs.tab', '#plTab a[data-toggle="tab"]', function (e) {
+            $(document).on('shown.bs.tab', '#plTab a[data-toggle="tab"]', function(e) {
                 let target = $(e.target).attr("href");
                 if (currentPackId) fetchPackDetail(currentPackId);
                 if (target === '#tab-edit') {
@@ -403,7 +417,10 @@
                         $(this).find('.pl-item').addClass('is-invalid');
                     } else {
                         $(this).find('.pl-item').removeClass('is-invalid');
-                        items.push({ item: item, qty: qty });
+                        items.push({
+                            item: item,
+                            qty: qty
+                        });
                     }
                 });
 
@@ -412,12 +429,17 @@
                     return;
                 }
 
-                let data = { ...currentPack, items: items };
+                let data = {
+                    ...currentPack,
+                    items: items
+                };
 
                 $.ajax({
                     url: URL_INDEX_API + '/' + currentPackId,
                     type: "PUT",
-                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     data: data,
                     success: function(res) {
                         show_message(res.message, 'success');
@@ -445,7 +467,9 @@
                 $.ajax({
                     url: "{{ route('api.packs.change') }}",
                     type: "POST",
-                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     data: {
                         vendor_id: vendor_id,
                         ids: changeSelectedIds,
@@ -621,8 +645,12 @@
                     $.ajax({
                         url: URL_INDEX_API,
                         type: "DELETE",
-                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                        data: { ids: selectedIds },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        data: {
+                            ids: selectedIds
+                        },
                         success: function(res) {
                             loadData();
                             show_message(res.message || 'Deleted!', 'success');
@@ -701,6 +729,17 @@
 
             pages.push(total);
             return pages;
+        }
+
+        // ── Export All ───────────────────────────────────────
+
+        function exportAll() {
+            const params = new URLSearchParams();
+            if (currentSearch) {
+                params.set('search', currentSearch);
+            }
+            const url = URL_EXPORT + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = url;
         }
 
         // ── Utility ──────────────────────────────────────────

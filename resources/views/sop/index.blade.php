@@ -115,14 +115,18 @@
                         <input type="search" id="searchInput" class="form-control form-control-sm"
                             placeholder="Cari product, target...">
                     </div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" title="Refresh"
-                        onclick="loadData()">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" title="Refresh" onclick="loadData()">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
                 {{-- Right: Action Buttons --}}
                 <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
-                    <button type="button" class="btn btn-info btn-sm" onclick="window.location.href='{{ route('sops.create') }}'">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportAll()"
+                        title="Export semua data ke Excel">
+                        <i class="fas fa-file-excel mr-1"></i> Export Excel
+                    </button>
+                    <button type="button" class="btn btn-info btn-sm"
+                        onclick="window.location.href='{{ route('sops.create') }}'">
                         <i class="fas fa-tasks mr-1"></i> Manage SOP QC
                     </button>
                 </div>
@@ -151,12 +155,13 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap"
+                style="gap: 10px;">
                 <div class="d-flex align-items-center" style="gap: 8px;">
                     <span class="text-muted small">Tampilkan</span>
                     <select id="perPageSelect" class="per-page-select">
                         <option value="10" selected>10</option>
-                        <option value="25" >25</option>
+                        <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                         <option value="200">200</option>
@@ -175,6 +180,7 @@
     <script>
         const URL_INDEX_API = "{{ route('api.sops.index') }}";
         const URL_INDEX = "{{ route('sops.index') }}";
+        const URL_EXPORT = "{{ route('api.sops.export') }}";
         let currentPage = 1;
         let currentPerPage = 25;
         let currentSearch = '';
@@ -211,13 +217,15 @@
 
             // Row Click → Open Modal
             $(document).on('click', '#tableBody tr', function(e) {
-                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('.btn-action').length) return;
+                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('.btn-action').length)
+                    return;
                 const id = $(this).data('id');
                 if (id) {
                     currentSopId = id;
                     $('#detail-tab').tab('show');
                     $('#btn_save_sop').addClass('d-none');
-                    $('#table_sop_view tbody').html('<tr><td colspan="2" class="text-center">Loading...</td></tr>');
+                    $('#table_sop_view tbody').html(
+                        '<tr><td colspan="2" class="text-center">Loading...</td></tr>');
                     fetchSopDetail(id);
                     $('#modal_pl').modal('show');
                 }
@@ -237,7 +245,7 @@
             });
 
             // Handle Tab Switching in modal
-            $(document).on('shown.bs.tab', '#sopTab a[data-toggle="tab"]', function (e) {
+            $(document).on('shown.bs.tab', '#sopTab a[data-toggle="tab"]', function(e) {
                 let target = $(e.target).attr("href");
                 if (currentSopId) fetchSopDetail(currentSopId);
                 if (target === '#tab-edit') {
@@ -260,7 +268,9 @@
                         $(this).find('.sop-item-text').addClass('is-invalid');
                     } else {
                         $(this).find('.sop-item-text').removeClass('is-invalid');
-                        items.push({ item: text });
+                        items.push({
+                            item: text
+                        });
                     }
                 });
 
@@ -272,13 +282,17 @@
                 $.ajax({
                     url: URL_INDEX_API,
                     type: "POST",
-                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     data: {
                         product_id: currentSopData.product_id,
                         target: target_val,
                         items: items
                     },
-                    beforeSend: function() { bloc(); },
+                    beforeSend: function() {
+                        bloc();
+                    },
                     success: function(res) {
                         unbloc();
                         show_message(res.message, 'success');
@@ -475,6 +489,17 @@
 
             pages.push(total);
             return pages;
+        }
+
+        // ── Export All ───────────────────────────────────────
+
+        function exportAll() {
+            const params = new URLSearchParams();
+            if (currentSearch) {
+                params.set('search', currentSearch);
+            }
+            const url = URL_EXPORT + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = url;
         }
 
         // ── Utility ──────────────────────────────────────────

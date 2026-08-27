@@ -115,6 +115,8 @@ Route::get('firebase-config', function () {
 // NEW ROUTE
 Route::delete('packs', [PackController::class, 'destroy_batch'])
     ->name('api.packs.destroy_batch');
+Route::get('packs/export', [PackController::class, 'export'])
+    ->name('api.packs.export');
 Route::get('packs/{pack}/download', [PackController::class, 'download'])
     ->name('api.packs.download');
 Route::post('packs-change', [PackController::class, 'change'])
@@ -130,6 +132,8 @@ Route::delete('vendors', [VendorController::class, 'destroy_batch'])
 Route::apiResource('vendors', VendorController::class)
     ->names('api.vendors');
 
+Route::get('sops/export', [SopController::class, 'export'])
+    ->name('api.sops.export');
 Route::get('sops/{sop}/download', [SopController::class, 'download'])
     ->name('api.sops.download');
 Route::apiResource('sops', SopController::class)
