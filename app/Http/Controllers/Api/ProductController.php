@@ -23,7 +23,23 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $data = Product::orderBy('code', 'ASC')->get(['id', 'code', 'name', 'akl', 'akl_exp', 'desc']);
+        $data = Product::query()
+            ->withCount(['images', 'packs'])
+            ->with(['pltbb:id,product_id,p,l,t,b', 'sop:id,product_id'])
+            ->orderBy('code', 'ASC')
+            ->get(['id', 'code', 'name', 'akl', 'akl_exp', 'desc'])
+            ->map(function ($p) {
+                $p->pltbb_complete = $p->pltbb && $p->pltbb->is_complete;
+                $p->has_pltbb = !is_null($p->pltbb);
+                $p->has_sop = !is_null($p->sop);
+                $p->has_image = $p->images_count > 0;
+                $p->has_pl = $p->packs_count > 0;
+                $p->pltbb_display = $p->pltbb
+                    ? "{$p->pltbb->p}x{$p->pltbb->l}x{$p->pltbb->t}/{$p->pltbb->b}"
+                    : '-';
+                unset($p->pltbb, $p->sop);
+                return $p;
+            });
         return $this->sendResponse($data, 'Success!');
     }
 

@@ -84,6 +84,52 @@
                 data: "desc",
                 className: "text-left",
                 visible: false,
+            }, {
+                data: "pltbb_display",
+                className: "text-left",
+                visible: false,
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        if (!row.has_pltbb)
+                            return '<span class="badge badge-secondary">-</span>';
+                        const cls = row.pltbb_complete ? 'badge-success' : 'badge-warning';
+                        return `<span class="badge ${cls}">${data}</span>`;
+                    }
+                    return data || '-';
+                }
+            }, {
+                data: "images_count",
+                className: "text-center",
+                visible: false,
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        const cls = data > 0 ? 'badge-success' : 'badge-secondary';
+                        return `<span class="badge ${cls}">${data || 0}</span>`;
+                    }
+                    return data || 0;
+                }
+            }, {
+                data: "packs_count",
+                className: "text-center",
+                visible: false,
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        const cls = data > 0 ? 'badge-success' : 'badge-secondary';
+                        return `<span class="badge ${cls}">${data || 0}</span>`;
+                    }
+                    return data || 0;
+                }
+            }, {
+                data: "has_sop",
+                className: "text-center",
+                visible: false,
+                render: function(data, type, row) {
+                    if (type === 'display') {
+                        const cls = data ? 'badge-success' : 'badge-secondary';
+                        return `<span class="badge ${cls}">${data ? 'Ada' : '-'}</span>`;
+                    }
+                    return data ? 1 : 0;
+                }
             }, ],
             createdRow: function(row, data) {
                 $(row).attr('title', `${data.code} - ${data.name}`);
@@ -114,6 +160,53 @@
                     columns: ':visible'
                 }
             }],
+        });
+
+        // ── Custom Filter for PLTBB / Image / PL / SOP ──
+        $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(fn => fn._name !== 'productFilter');
+        const productFilter = function(settings, data, dataIndex) {
+            const row = table.row(dataIndex).data();
+            if (!row) return true;
+
+            const filterPltbb = $('#filterPltbb').val();
+            const filterImage = $('#filterImage').val();
+            const filterPl = $('#filterPl').val();
+            const filterSop = $('#filterSop').val();
+
+            // PLTBB filter
+            if (filterPltbb === 'ada' && !row.has_pltbb) return false;
+            if (filterPltbb === 'lengkap' && !row.pltbb_complete) return false;
+            if (filterPltbb === 'tidak_ada' && row.has_pltbb) return false;
+
+            // Image filter
+            if (filterImage === 'ada' && !row.has_image) return false;
+            if (filterImage === 'tidak_ada' && row.has_image) return false;
+
+            // PL filter
+            if (filterPl === 'ada' && !row.has_pl) return false;
+            if (filterPl === 'tidak_ada' && row.has_pl) return false;
+
+            // SOP filter
+            if (filterSop === 'ada' && !row.has_sop) return false;
+            if (filterSop === 'tidak_ada' && row.has_sop) return false;
+
+            return true;
+        };
+        productFilter._name = 'productFilter';
+        $.fn.dataTable.ext.search.push(productFilter);
+
+        $('#filterPltbb, #filterImage, #filterPl, #filterSop').on('change', function() {
+            table.draw();
+        });
+
+        $('#btnResetFilter').on('click', function() {
+            $('#filterPltbb, #filterImage, #filterPl, #filterSop').val('');
+            table.draw();
+        });
+
+        // Prevent dropdown from closing when interacting with filters
+        $(document).on('click', '#btnFilterDropdown + .dropdown-menu', function(e) {
+            e.stopPropagation();
         });
 
         // ── Search Input → DataTable Search ──────────────
@@ -354,7 +447,8 @@
                 $('#detail_images').html(imgHtml);
 
                 // Render PLTBB
-                $('#pltbb_is_complete').html('Not Complete').addClass('badge-danger').removeClass('badge-success');
+                $('#pltbb_is_complete').html('Not Complete').addClass('badge-danger').removeClass(
+                    'badge-success');
                 if (d.pltbb != null) {
                     $('#pltbb_p').html(d.pltbb.p);
                     $('#pltbb_l').html(d.pltbb.l);
@@ -362,7 +456,8 @@
                     $('#pltbb_b').html(d.pltbb.b);
                     $('#pltbb_note').html(d.pltbb.note);
                     if (d.pltbb.is_complete) {
-                        $('#pltbb_is_complete').html('Complete').addClass('badge-success').removeClass('badge-danger');
+                        $('#pltbb_is_complete').html('Complete').addClass('badge-success').removeClass(
+                            'badge-danger');
                     }
                 } else {
                     $('#pltbb_p, #pltbb_l, #pltbb_t, #pltbb_b, #pltbb_note').html('-');
@@ -382,7 +477,8 @@
                 const data = res.data || [];
                 let html = '';
                 if (data.length === 0) {
-                    html = `<tr><td colspan="8" class="text-center text-muted py-3">Tidak ada data move</td></tr>`;
+                    html =
+                        `<tr><td colspan="8" class="text-center text-muted py-3">Tidak ada data move</td></tr>`;
                 } else {
                     data.forEach(row => {
                         const fromLoc = row.location_id ? row.location_id[1] : '';
