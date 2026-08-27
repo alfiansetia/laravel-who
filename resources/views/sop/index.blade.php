@@ -182,7 +182,7 @@
         const URL_INDEX = "{{ route('sops.index') }}";
         const URL_EXPORT = "{{ route('api.sops.export') }}";
         let currentPage = 1;
-        let currentPerPage = 25;
+        let currentPerPage = 10;
         let currentSearch = '';
         let searchTimeout = null;
         let currentSopId = null;
