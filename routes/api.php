@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AlamatController;
 use App\Http\Controllers\Api\AlamatBaruController;
+use App\Http\Controllers\Api\AklController;
 use App\Http\Controllers\Api\AtkController;
 use App\Http\Controllers\Api\AtkTransactionController;
 use App\Http\Controllers\Api\AuthController;
@@ -159,6 +160,13 @@ Route::delete('alamat-baru', [AlamatBaruController::class, 'destroy_batch'])
     ->name('api.alamat_baru.delete_batch');
 Route::apiResource('alamat-baru', AlamatBaruController::class)
     ->names('api.alamat_baru');
+
+// AKL Routes
+Route::delete('akls', [AklController::class, 'destroy_batch'])
+    ->name('api.akls.delete_batch');
+Route::apiResource('akls', AklController::class)
+    ->names('api.akls')
+    ->only(['index', 'destroy']);
 
 // Koli Routes
 Route::post('koli/{koli}/hitung', [KoliController::class, 'hitung'])

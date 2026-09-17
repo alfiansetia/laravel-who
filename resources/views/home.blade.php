@@ -290,6 +290,12 @@
                             'title' => 'Izin Edar',
                             'desc' => 'Data izin edar produk',
                         ],
+                        [
+                            'route' => 'akls.index',
+                            'icon' => 'id-card',
+                            'title' => 'AKL',
+                            'desc' => 'Arsip lampiran AKL',
+                        ],
                     ];
                 @endphp
 

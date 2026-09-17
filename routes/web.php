@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AlamatBaruController;
+use App\Http\Controllers\AklController;
 use App\Http\Controllers\ItController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
@@ -154,6 +155,11 @@ Route::get('/qc-lots/import', [QcLotController::class, 'import'])
 // Izin Edar Routes
 Route::get('izin-edars', [IzinEdarController::class, 'index'])
     ->name('izin_edars.index');
+
+// AKL Routes (lampiran image/PDF di S3, reg_no boleh sama untuk perpanjangan)
+Route::resource('akls', AklController::class)
+    ->names('akls')
+    ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 
 // Shipping Estimate Routes
 Route::resource('shipping-estimate', ShippingEstimateController::class)
