@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductImage;
+use App\Services\ProductImageStorage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProductImageController extends Controller
 {
@@ -38,19 +38,30 @@ class ProductImageController extends Controller
         ]);
 
         $saved = [];
-        if (!Storage::disk('public')->exists('products')) {
-            Storage::disk('public')->makeDirectory('products');
-        }
+        $failed = [];
         foreach ($request->file('images') as $file) {
             $filename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $path = 'products/' . $filename;
-            scaleDown($file)->save(storage_path('app/public/' . $path), 90, 'jpg');
+            $encoded = scaleDown($file)->encodeByExtension('jpg', quality: 90);
+            try {
+                $ok = ProductImageStorage::put($filename, (string) $encoded);
+            } catch (\Throwable $e) {
+                report($e);
+                $ok = false;
+            }
+            if (! $ok) {
+                $failed[] = $file->getClientOriginalName();
+                continue;
+            }
             $img = ProductImage::create([
                 'product_id' => $request->product_id,
                 'name'       => $filename,
             ]);
             $saved[] = $img;
         }
+        if (empty($saved)) {
+            return response()->json(['success' => false, 'message' => 'Upload gagal, file tidak tersimpan di S3/R2.', 'failed' => $failed], 500);
+        }
+
         return $this->sendResponse($saved, 'Images uploaded');
     }
 
@@ -72,8 +83,8 @@ class ProductImageController extends Controller
         ]);
         $images = ProductImage::whereIn('id', $request->ids)->get();
         foreach ($images as $img) {
-            if ($img->name && Storage::disk('public')->exists('products/' . $img->name)) {
-                Storage::disk('public')->delete('products/' . $img->name);
+            if ($img->name) {
+                ProductImageStorage::delete($img->name);
             }
         }
         $deleted = ProductImage::whereIn('id', $request->ids)->delete();

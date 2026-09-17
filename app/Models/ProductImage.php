@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\ProductImageStorage;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -16,19 +16,15 @@ class ProductImage extends Model
         parent::boot();
 
         static::deleting(function ($image) {
-            $path = 'products/' . $image->name;
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+            if ($image->name) {
+                ProductImageStorage::delete($image->name);
             }
         });
     }
 
     public function getUrlAttribute()
     {
-        if (! $this->name) {
-            return null;
-        }
-        return asset('storage/products/' . $this->name);
+        return ProductImageStorage::url($this->name);
     }
 
     public function product()

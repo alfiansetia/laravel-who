@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\Breadcrumb;
+use App\Services\ProductImageStorage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class ProductImageController extends Controller
@@ -44,20 +44,31 @@ class ProductImageController extends Controller
             'images.*'   => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        if (!Storage::disk('public')->exists('products')) {
-            Storage::disk('public')->makeDirectory('products');
-        }
-
         $count = 0;
+        $failed = [];
         foreach ($request->file('images') as $file) {
             $filename = time() . '_' . uniqid() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $path = 'products/' . $filename;
-            scaleDown($file)->save(storage_path('app/public/' . $path), 90, 'jpg');
+            $encoded = scaleDown($file)->encodeByExtension('jpg', quality: 90);
+            try {
+                $ok = ProductImageStorage::put($filename, (string) $encoded);
+            } catch (\Throwable $e) {
+                report($e);
+                $ok = false;
+            }
+            if (! $ok) {
+                $failed[] = $file->getClientOriginalName();
+                continue;
+            }
             ProductImage::create([
                 'product_id' => $request->product_id,
                 'name'       => $filename,
             ]);
             $count++;
+        }
+
+        if ($count === 0) {
+            return redirect()->route('product_images.index')
+                ->with('error', 'Upload gagal, file tidak tersimpan di S3/R2. Cek permission API token R2 dan log laravel.');
         }
 
         return redirect()->route('product_images.index')
@@ -104,10 +115,10 @@ class ProductImageController extends Controller
         }
 
         foreach ($images as $index => $image) {
-            $filePath = storage_path('app/public/products/' . $image->name);
-            if (file_exists($filePath)) {
-                $ext = pathinfo($image->name, PATHINFO_EXTENSION);
-                $zip->addFile($filePath, 'images/' . ($index + 1) . '.' . $ext);
+            $contents = $image->name ? ProductImageStorage::get($image->name) : null;
+            if ($contents !== null) {
+                $ext = pathinfo($image->name, PATHINFO_EXTENSION) ?: 'jpg';
+                $zip->addFromString('images/' . ($index + 1) . '.' . $ext, $contents);
             }
         }
 

@@ -31,6 +31,61 @@ Proyek ini dilengkapi dengan sistem monitoring otomatis yang berjalan di backgro
   ```
   *Saran: Jalankan menggunakan Task Scheduler (Cron Job) setiap 1-5 menit.*
 
+## ☁️ Product Images → S3/R2
+
+Upload gambar produk baru langsung tersimpan di S3/R2 (Cloudflare R2, bucket `mapwho`)
+via `App\Services\ProductImageStorage`. Gambar lama yang masih ada di
+`storage/app/public/products/` tetap bisa ditampilkan (fallback local) sampai di-sync.
+
+Konfigurasi di `.env`:
+```env
+FILESYSTEM_DISK=s3
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=auto
+AWS_BUCKET=mapwho
+AWS_URL=https://s3.mapwho.my.id
+AWS_ENDPOINT=https://<account-hash>.r2.cloudflarestorage.com
+AWS_USE_PATH_STYLE_ENDPOINT=false
+```
+`AWS_ENDPOINT` dipakai untuk upload via SDK, `AWS_URL` (custom domain) dipakai
+untuk URL publik. Jangan pakai `r2.dev` untuk produksi (diblokir DNS Indonesia).
+
+### Sync file local → S3
+
+> **Sync TIDAK menghapus file local.** Command ini hanya meng-upload (copy) file
+> yang belum ada di S3. File local baru dihapus kalau memakai flag
+> `--delete-local`, dan itu pun hanya setelah file terverifikasi ada di S3.
+> Selama file local masih ada, URL gambar tetap serve dari local; setelah local
+> dihapus, URL otomatis pindah ke S3.
+
+```bash
+# 1. Cek rencana tanpa mengubah apa pun
+php artisan product-images:sync-s3 --dry-run
+
+# 2. Upload semua file yang belum ada di S3
+php artisan product-images:sync-s3
+
+# 3. Setelah dicek URL S3 valid, hapus file local yang sudah terverifikasi
+php artisan product-images:sync-s3 --delete-local
+
+# Opsi lain: --force (upload ulang walau sudah ada di S3), --limit=100
+```
+
+Kalau aplikasi jalan di Docker (service `who_app`), jalankan artisan dari dalam
+container:
+
+```bash
+# 1. Cek rencana tanpa mengubah apa pun
+docker compose exec who_app php artisan product-images:sync-s3 --dry-run
+
+# 2. Upload semua file yang belum ada di S3
+docker compose exec who_app php artisan product-images:sync-s3
+
+# 3. Setelah dicek URL S3 valid, hapus file local yang sudah terverifikasi
+docker compose exec who_app php artisan product-images:sync-s3 --delete-local
+```
+
 ## �🛠️ Teknologi yang Digunakan
 
 - **Backend**: Laravel 10/11+
