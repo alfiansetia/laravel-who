@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
+        <div class="row">
+            <div class="col-lg-5">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="fas fa-upload mr-2 text-primary"></i>Upload Lampiran AKL</h5>
@@ -78,8 +78,6 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            @include('akl.partials._preview')
                         </div>
                         <div class="card-footer text-right">
                             <a href="{{ route('akls.index') }}" class="btn btn-secondary btn-sm">
@@ -90,6 +88,16 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card" style="position: sticky; top: 80px;">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-file-alt mr-2 text-info"></i>Preview Dokumen</h5>
+                    </div>
+                    <div class="card-body">
+                        @include('akl.partials._preview')
+                    </div>
                 </div>
             </div>
         </div>
