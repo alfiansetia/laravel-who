@@ -1,8 +1,10 @@
 # 1. Menggunakan stage composer untuk mengambil binary composer terbaru
 FROM composer:latest AS composer-builder
 
-# 2. Menggunakan PHP 8.3 Alpine sebagai base image yang ringan
-FROM php:8.3-fpm-alpine
+# 2. Menggunakan PHP 8.4 Alpine sebagai base image yang ringan
+# (disamakan dengan PHP local 8.4 karena composer.lock mengunci
+#  package yang butuh php >=8.4, mis. symfony/filesystem v8.x)
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies yang dibutuhkan oleh Laravel & ekstensi PHP
 RUN apk add --no-cache \
