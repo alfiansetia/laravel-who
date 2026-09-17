@@ -41,4 +41,9 @@ class Akl extends Model
     {
         return $this->date_expired && $this->date_expired->isPast();
     }
+
+    public function items()
+    {
+        return $this->hasMany(AklItem::class);
+    }
 }

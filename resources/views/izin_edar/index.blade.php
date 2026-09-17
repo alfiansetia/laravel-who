@@ -15,6 +15,7 @@
 
     @include('izin_edar.partials._modal_upload')
     @include('izin_edar.partials._modal_detail')
+    @include('izin_edar.partials._modal_copy_akl')
 @endsection
 
 @push('js')

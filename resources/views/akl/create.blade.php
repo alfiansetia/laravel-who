@@ -65,14 +65,14 @@
                             </div>
 
                             <div class="form-group">
-                                <label>File Lampiran (PDF / Gambar) <span class="text-danger">*</span></label>
+                                <label>File Lampiran (PDF / Gambar) <span class="text-muted">(opsional)</span></label>
                                 <div class="custom-file">
                                     <input type="file" name="file" id="aklFile"
                                         class="custom-file-input @error('file') is-invalid @enderror"
-                                        accept=".jpg,.jpeg,.png,.webp,.pdf" required>
+                                        accept=".jpg,.jpeg,.png,.webp,.pdf">
                                     <label class="custom-file-label" for="aklFile">Pilih file...</label>
                                 </div>
-                                <small class="form-text text-muted">Format: JPG, PNG, WEBP, PDF. Maksimal 20MB.
+                                <small class="form-text text-muted">Boleh kosong. Format: JPG, PNG, WEBP, PDF. Maksimal 20MB.
                                     File tersimpan di S3.</small>
                                 @error('file')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>

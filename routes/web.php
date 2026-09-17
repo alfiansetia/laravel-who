@@ -157,6 +157,8 @@ Route::get('izin-edars', [IzinEdarController::class, 'index'])
     ->name('izin_edars.index');
 
 // AKL Routes (lampiran image/PDF di S3, reg_no boleh sama untuk perpanjangan)
+Route::get('akls/{akl}/items', [AklController::class, 'items'])
+    ->name('akls.items');
 Route::resource('akls', AklController::class)
     ->names('akls')
     ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);

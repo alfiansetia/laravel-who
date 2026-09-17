@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AlamatController;
 use App\Http\Controllers\Api\AlamatBaruController;
 use App\Http\Controllers\Api\AklController;
+use App\Http\Controllers\Api\AklItemController;
 use App\Http\Controllers\Api\AtkController;
 use App\Http\Controllers\Api\AtkTransactionController;
 use App\Http\Controllers\Api\AuthController;
@@ -162,11 +163,28 @@ Route::apiResource('alamat-baru', AlamatBaruController::class)
     ->names('api.alamat_baru');
 
 // AKL Routes
+Route::post('akls/copy-from-izin', [AklController::class, 'copyFromIzin'])
+    ->name('api.akls.copy_from_izin');
+Route::get('akls/{id}/check-izin', [AklController::class, 'checkIzin'])
+    ->name('api.akls.check_izin');
+Route::put('akls/{id}/apply-izin', [AklController::class, 'applyIzin'])
+    ->name('api.akls.apply_izin');
 Route::delete('akls', [AklController::class, 'destroy_batch'])
     ->name('api.akls.delete_batch');
 Route::apiResource('akls', AklController::class)
     ->names('api.akls')
     ->only(['index', 'destroy']);
+
+// AKL Item Routes (ref product code, boleh custom di luar master)
+Route::get('akl-items/{id}/check-product', [AklItemController::class, 'checkProduct'])
+    ->name('api.akl_items.check_product');
+Route::put('akl-items/{id}/apply-product', [AklItemController::class, 'applyProduct'])
+    ->name('api.akl_items.apply_product');
+Route::delete('akl-items', [AklItemController::class, 'destroy_batch'])
+    ->name('api.akl_items.destroy_batch');
+Route::apiResource('akl-items', AklItemController::class)
+    ->names('api.akl_items')
+    ->only(['index', 'store', 'destroy']);
 
 // Koli Routes
 Route::post('koli/{koli}/hitung', [KoliController::class, 'hitung'])
@@ -222,6 +240,8 @@ Route::apiResource('tokens', FcmTokenController::class)
 Route::get('tiki/track', [TikiController::class, 'track'])->name('api.tiki.track');
 
 
+Route::get('products/search', [ProductController::class, 'search'])
+    ->name('api.products.search');
 Route::get('products/{product}/download-zip', [ProductController::class, 'downloadZip'])
     ->name('api.products.download_zip');
 Route::get('products/{product}/move', [ProductController::class, 'move'])

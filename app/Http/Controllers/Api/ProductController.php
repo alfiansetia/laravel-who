@@ -148,4 +148,24 @@ class ProductController extends Controller
         }
         return $this->sendResponse($product, 'Success!');
     }
+
+    /**
+     * Pencarian ringan untuk autocomplete (ref product CODE di form AKL Item).
+     * GET /api/products/search?q=xxx  (dicari by code saja)
+     */
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->input('q', ''));
+        if (strlen($q) < 1) {
+            return $this->sendResponse([], 'Success!');
+        }
+
+        $data = Product::query()
+            ->where('code', 'like', "%{$q}%")
+            ->orderBy('code')
+            ->limit(20)
+            ->get(['id', 'code', 'name']);
+
+        return $this->sendResponse($data, 'Success!');
+    }
 }

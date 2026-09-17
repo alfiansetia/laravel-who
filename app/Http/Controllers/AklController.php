@@ -6,6 +6,7 @@ use App\Models\Akl;
 use App\Services\AklFileStorage;
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AklController extends Controller
 {
@@ -37,22 +38,30 @@ class AklController extends Controller
             'vendor'       => 'nullable|string|max:255',
             'date_from'    => 'nullable|date',
             'date_expired' => 'nullable|date|after_or_equal:date_from',
-            'file'         => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:20480',
+            'file'         => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:20480',
         ]);
 
-        $file = $request->file('file');
-        $filename = time().'_'.uniqid().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
+        $filename = null;
 
-        try {
-            $ok = AklFileStorage::put($filename, file_get_contents($file->getRealPath()));
-        } catch (\Throwable $e) {
-            report($e);
-            $ok = false;
-        }
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = $this->buildFilename(
+                $request->reg_no,
+                $request->date_expired,
+                strtolower($file->getClientOriginalExtension())
+            );
 
-        if (! $ok) {
-            return back()->withInput()
-                ->with('error', 'Upload gagal, file tidak tersimpan di S3/R2.');
+            try {
+                $ok = AklFileStorage::put($filename, file_get_contents($file->getRealPath()));
+            } catch (\Throwable $e) {
+                report($e);
+                $ok = false;
+            }
+
+            if (! $ok) {
+                return back()->withInput()
+                    ->with('error', 'Upload gagal, file tidak tersimpan di S3/R2.');
+            }
         }
 
         Akl::create([
@@ -65,7 +74,7 @@ class AklController extends Controller
         ]);
 
         return redirect()->route('akls.index')
-            ->with('success', 'Lampiran AKL berhasil diupload.');
+            ->with('success', 'Data AKL berhasil disimpan.');
     }
 
     /**
@@ -98,6 +107,21 @@ class AklController extends Controller
         return view('akl.edit', compact('bcms', 'akl'));
     }
 
+    /**
+     * Kelola item (product code ref + custom) per AKL.
+     */
+    public function items(Akl $akl)
+    {
+        $bcms = collect([
+            new Breadcrumb('AKL', route('akls.index'), true),
+            new Breadcrumb('Item '.$akl->reg_no, route('akls.items', $akl->id), false),
+        ]);
+
+        $akl->loadCount('items');
+
+        return view('akl.items', compact('bcms', 'akl'));
+    }
+
     public function update(Request $request, Akl $akl)
     {
         $request->validate([
@@ -113,7 +137,11 @@ class AklController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filename = time().'_'.uniqid().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $filename = $this->buildFilename(
+                $request->reg_no,
+                $request->date_expired,
+                strtolower($file->getClientOriginalExtension())
+            );
 
             try {
                 $ok = AklFileStorage::put($filename, file_get_contents($file->getRealPath()));
@@ -145,5 +173,39 @@ class AklController extends Controller
 
         return redirect()->route('akls.index')
             ->with('success', 'Lampiran AKL berhasil dihapus.');
+    }
+
+    /**
+     * Nama file lampiran: {reg_no}_{exp Ymd/NOEXP}_{4 random}.{ext}
+     * cth: AKL_123_20280112_AB12.pdf
+     */
+    protected function buildFilename(?string $regNo, $dateExpired, string $extension): string
+    {
+        $safeReg = trim(preg_replace('/[^A-Za-z0-9]+/', '_', (string) $regNo), '_');
+        if ($safeReg === '') {
+            $safeReg = 'AKL';
+        }
+
+        try {
+            $exp = $dateExpired
+                ? \Carbon\Carbon::parse($dateExpired)->format('Ymd')
+                : 'NOEXP';
+        } catch (\Throwable $e) {
+            $exp = 'NOEXP';
+        }
+
+        if ($extension === 'jpeg') {
+            $extension = 'jpg';
+        }
+
+        // Jaga keunikan di storage (regenerasi 4 random bila tabrakan).
+        for ($i = 0; $i < 5; $i++) {
+            $filename = $safeReg.'_'.$exp.'_'.Str::upper(Str::random(4)).'.'.$extension;
+            if (! AklFileStorage::exists($filename)) {
+                return $filename;
+            }
+        }
+
+        return $safeReg.'_'.$exp.'_'.Str::upper(Str::random(8)).'.'.$extension;
     }
 }

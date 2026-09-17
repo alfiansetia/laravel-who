@@ -43,7 +43,13 @@
             if (rowData) showDetail(rowData);
         });
 
-        // Copy button click
+        // Copy ke AKL button click
+        $(document).on('click', '.btn-copy-akl', function(e) {
+            e.stopPropagation();
+            const id = $(this).data('id');
+            const rowData = window.lastRowDataMap && window.lastRowDataMap[id];
+            if (rowData) showCopyAkl(rowData);
+        });
         $(document).on('click', '.btn-copy-row', function(e) {
             e.stopPropagation();
             const id = $(this).data('id');
@@ -116,7 +122,10 @@
                         <button type="button" class="btn btn-action btn-outline-primary btn-detail" data-id="${row.id}" title="Detail">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button type="button" class="btn btn-action btn-outline-secondary btn-copy-row" data-id="${row.id}" title="Copy">
+                        <button type="button" class="btn btn-action btn-outline-success btn-copy-akl" data-id="${row.id}" title="Copy ke AKL">
+                            <i class="fas fa-share-square"></i>
+                        </button>
+                        <button type="button" class="btn btn-action btn-outline-secondary btn-copy-row" data-id="${row.id}" title="Copy text">
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
@@ -202,6 +211,59 @@
         pages.push(total);
         return pages;
     }
+
+    // ── Copy ke AKL ──────────────────────────────────
+
+    const COPY_AKL_URL = '{{ route('api.akls.copy_from_izin') }}';
+    let copyAklId = null;
+
+    function showCopyAkl(d) {
+        copyAklId = d.id;
+        const regName = d.merk || d.jenis_produk || '-';
+        const vendor = d.pendaftar || d.pabrik || '-';
+        $('#copyAklBody').html(`
+            <div class="alert alert-info py-2 mb-3">
+                <i class="fas fa-info-circle mr-1"></i>
+                Data ini akan dibuat sebagai <strong>baris baru di tabel AKL</strong> (tanpa lampiran).
+                Kunci duplikat: <strong>Reg No + Tgl Expired</strong> — kalau pasangan itu sudah ada di AKL, copy ditolak.
+            </div>
+            <table class="table table-sm table-bordered mb-0">
+                <tr><td class="font-weight-bold text-muted" style="width:130px">Reg No</td><td class="font-weight-bold">${escapeHtml(d.nomor_izin_edar)}</td></tr>
+                <tr><td class="font-weight-bold text-muted">Nama</td><td>${escapeHtml(regName)}</td></tr>
+                <tr><td class="font-weight-bold text-muted">Vendor</td><td>${escapeHtml(vendor)}</td></tr>
+                <tr><td class="font-weight-bold text-muted">Berlaku Dari</td><td>${d.tgl_terbit ? formatDate(d.tgl_terbit) : '-'}</td></tr>
+                <tr><td class="font-weight-bold text-muted">Expired</td><td>${d.tgl_exp ? formatDate(d.tgl_exp) : '-'}</td></tr>
+            </table>
+            <div id="copyAklMsg" class="mt-2"></div>
+        `);
+        $('#btnDoCopyAkl').prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Simpan ke AKL');
+        $('#modalCopyAkl').modal('show');
+    }
+
+    $(document).on('click', '#btnDoCopyAkl', function() {
+        if (!copyAklId) return;
+        const $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
+        $('#copyAklMsg').html('');
+        $.ajax({
+            url: COPY_AKL_URL,
+            type: 'POST',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            data: { izin_edar_id: copyAklId },
+            success: function(res) {
+                $('#copyAklMsg').html(`<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i>${escapeHtml(res.message || 'Berhasil dicopy ke AKL.')}</div>`);
+                showToast(res.message || 'Berhasil dicopy ke AKL');
+                setTimeout(() => $('#modalCopyAkl').modal('hide'), 1200);
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Gagal copy ke AKL!';
+                $('#copyAklMsg').html(`<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i>${escapeHtml(msg)}</div>`);
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Simpan ke AKL');
+            }
+        });
+    });
 
     // ── Detail Modal ─────────────────────────────────────
 

@@ -129,11 +129,13 @@
                                 <th>Expired</th>
                                 <th>Status</th>
                                 <th>File</th>
+                                <th>Item</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
+                                <td colspan="10" class="text-center text-muted py-4">
                                     <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...
                                 </td>
                             </tr>
@@ -185,6 +187,72 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Preview List Item -->
+    <div class="modal fade" id="aklItemsModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" id="aklItemsTitle">Item AKL</h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0" style="font-size:.85rem">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width:35px">#</th>
+                                    <th>Code</th>
+                                    <th>Nama</th>
+                                    <th style="width:110px">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aklItemsBody">
+                                <tr><td colspan="4" class="text-center text-muted py-4">Memuat...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer py-2 d-flex justify-content-between">
+                    <small class="text-muted align-self-center" id="aklItemsInfo"></small>
+                    <div>
+                        <a id="aklItemsManage" href="#" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus mr-1"></i> Kelola / Input Item
+                        </a>
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sync Cek Izin Edar -->
+    <div class="modal fade" id="aklSyncModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" id="aklSyncTitle">Sync Cek Izin Edar</h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-3" id="aklSyncBody" style="font-size:.85rem">
+                    <div class="text-center text-muted py-4">Memuat...</div>
+                </div>
+                <div class="modal-footer py-2 d-flex justify-content-between">
+                    <small class="text-muted align-self-center" id="aklSyncInfo"></small>
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="aklSyncSave" disabled>
+                            <i class="fas fa-save mr-1"></i> Save yang Dipilih
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('js')
@@ -193,6 +261,7 @@
         const URL_INDEX_API = "{{ route('api.akls.index') }}";
         const URL_DELETE_BATCH_API = "{{ route('api.akls.delete_batch') }}";
         const URL_INDEX = "{{ route('akls.index') }}";
+        const URL_ITEMS_API = "{{ route('api.akl_items.index') }}";
         let currentPage = 1;
         let currentPerPage = 25;
         let currentSearch = '';
@@ -225,7 +294,7 @@
                 $('input[name="id[]"]').prop('checked', checked);
             });
 
-            // Row Click → Edit (abaikan klik di checkbox/tombol/link)
+            // Row Click → halaman Edit (abaikan klik di checkbox/tombol/link)
             $(document).on('click', '#tableBody tr', function(e) {
                 if ($(e.target).closest('input,button,a').length) return;
                 const id = $(this).data('id');
@@ -250,7 +319,7 @@
         function loadData() {
             const $tbody = $('#tableBody');
             $tbody.html(
-                `<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>`
+                `<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>`
             );
 
             $.ajax({
@@ -267,7 +336,7 @@
                 },
                 error: function() {
                     $tbody.html(
-                        `<tr><td colspan="8" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`
+                        `<tr><td colspan="10" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`
                     );
                 }
             });
@@ -280,7 +349,7 @@
 
             if (!data || data.length === 0) {
                 $tbody.html(
-                    `<tr><td colspan="8" class="text-center text-muted py-4"><i class="fas fa-inbox mr-2"></i>Tidak ada data</td></tr>`
+                    `<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-inbox mr-2"></i>Tidak ada data</td></tr>`
                 );
                 return;
             }
@@ -295,9 +364,22 @@
                 const fileBtn = row.file
                     ? `<button type="button" class="btn btn-outline-info btn-sm btn-akl-preview"
                            data-reg="${escapeHtml(row.reg_no)}" data-id="${row.id}" data-pdf="${row.is_pdf ? '1' : '0'}">
-                           <i class="fas ${row.is_pdf ? 'fa-file-pdf' : 'fa-file-image'} mr-1"></i>Preview
-                       </button>`
+                            <i class="fas ${row.is_pdf ? 'fa-file-pdf' : 'fa-file-image'} mr-1"></i>Preview
+                        </button>`
                     : `<span class="text-muted">-</span>`;
+                const itemCount = row.items_count ?? 0;
+                const itemBtn = `<button type="button" class="btn btn-outline-success btn-sm btn-akl-items"
+                            data-id="${row.id}" data-reg="${escapeHtml(row.reg_no)}" title="Preview list item">
+                            <i class="fas fa-boxes mr-1"></i>${itemCount} Item
+                        </button>`;
+                const aksiBtn = `<div class="btn-group btn-group-sm" role="group">
+                            <a href="${URL_INDEX}/${row.id}/items" class="btn btn-success" title="Input item">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-primary btn-akl-sync" data-id="${row.id}" data-reg="${escapeHtml(row.reg_no)}" title="Sync cek ke Izin Edar">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>`;
                 html += `<tr data-id="${row.id}">
                     <td class="text-center">
                         <input type="checkbox" name="id[]" value="${row.id}" class="new-control-input child-chk">
@@ -309,6 +391,8 @@
                     <td style="white-space:nowrap">${formatDate(row.date_expired)}</td>
                     <td>${status}</td>
                     <td>${fileBtn}</td>
+                    <td style="white-space:nowrap">${itemBtn}</td>
+                    <td>${aksiBtn}</td>
                 </tr>`;
             });
 
@@ -506,6 +590,184 @@
             $('#aklPreviewImg').attr('src', '');
             $('#aklPreviewPdfWrap').empty();
             $('#aklPreviewPdfFallback').attr('src', '');
+        });
+
+        // ── Preview List Item (modal tabel) ──────────────
+
+        $(document).on('click', '.btn-akl-items', function() {
+            const id = $(this).data('id');
+            const reg = $(this).data('reg') || ('#' + id);
+            $('#aklItemsTitle').text('Item AKL ' + reg);
+            $('#aklItemsManage').attr('href', URL_INDEX + '/' + id + '/items');
+            $('#aklItemsInfo').text('');
+            $('#aklItemsBody').html(
+                `<tr><td colspan="4" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat item...</td></tr>`
+            );
+            $('#aklItemsModal').modal('show');
+
+            $.ajax({
+                url: URL_ITEMS_API,
+                type: 'GET',
+                data: { akl_id: id },
+                success: function(res) {
+                    const data = res.data || [];
+                    $('#aklItemsInfo').text(data.length + ' item');
+                    if (!data.length) {
+                        $('#aklItemsBody').html(
+                            `<tr><td colspan="4" class="text-center text-muted py-4"><i class="fas fa-inbox mr-2"></i>Belum ada item</td></tr>`
+                        );
+                        return;
+                    }
+                    let html = '';
+                    data.forEach((row, i) => {
+                        const isCustom = row.is_custom || !row.product;
+                        const badge = isCustom
+                            ? `<span class="badge badge-warning">Custom</span>`
+                            : `<span class="badge badge-success">Terdaftar</span>`;
+                        const storedName = row.name || (row.product && row.product.name);
+                        const pname = storedName
+                            ? escapeHtml(storedName)
+                            : '<span class="text-muted">-</span>';
+                        html += `<tr>
+                            <td class="text-muted">${i + 1}</td>
+                            <td><strong>${escapeHtml(row.code)}</strong></td>
+                            <td>${pname}</td>
+                            <td>${badge}</td>
+                        </tr>`;
+                    });
+                    $('#aklItemsBody').html(html);
+                },
+                error: function() {
+                    $('#aklItemsBody').html(
+                        `<tr><td colspan="4" class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat item</td></tr>`
+                    );
+                }
+            });
+        });
+
+        // ── Sync Cek Izin Edar (pilih kandidat → save) ──
+
+        let syncAklId = null;
+
+        $(document).on('click', '.btn-akl-sync', function() {
+            syncAklId = $(this).data('id');
+            const reg = $(this).data('reg') || ('#' + syncAklId);
+            $('#aklSyncTitle').text('Sync Cek ' + reg + ' → Izin Edar');
+            $('#aklSyncInfo').text('');
+            $('#aklSyncSave').prop('disabled', true);
+            $('#aklSyncBody').html(
+                `<div class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin mr-2"></i>Mencocokkan reg_no ke Izin Edar...</div>`
+            );
+            $('#aklSyncModal').modal('show');
+
+            $.ajax({
+                url: "{{ url('api/akls') }}/" + syncAklId + "/check-izin",
+                type: 'GET',
+                success: function(res) {
+                    renderSyncModal(res.data);
+                },
+                error: function(xhr) {
+                    $('#aklSyncBody').html(
+                        `<div class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle mr-2"></i>${escapeHtml(xhr.responseJSON?.message || 'Gagal memuat data Izin Edar')}</div>`
+                    );
+                }
+            });
+        });
+
+        function syncBadge(sama) {
+            return sama
+                ? `<span class="badge badge-success">Sama</span>`
+                : `<span class="badge badge-danger">Beda</span>`;
+        }
+
+        function renderSyncModal(data) {
+            const akl = data.akl || {};
+            const matches = data.matches || [];
+            const bisaDipilih = matches.filter(m => !m.is_synced).length;
+            $('#aklSyncInfo').text(matches.length
+                ? matches.length + ' kandidat cocok (' + bisaDipilih + ' bisa dipilih)'
+                : 'Tidak ada yang cocok');
+
+            let html = `<div class="alert alert-light border py-2 mb-3">
+                <strong>Data AKL saat ini:</strong><br>
+                <span class="text-muted">Reg No:</span> <strong>${escapeHtml(akl.reg_no)}</strong> &nbsp;
+                <span class="text-muted">Nama:</span> ${escapeHtml(akl.reg_name)} &nbsp;
+                <span class="text-muted">Vendor:</span> ${escapeHtml(akl.vendor)}<br>
+                <span class="text-muted">Terbit:</span> ${formatDate(akl.date_from)} &nbsp;
+                <span class="text-muted">Expired:</span> ${formatDate(akl.date_expired)}
+            </div>`;
+
+            if (!matches.length) {
+                html += `<div class="text-center text-muted py-3"><i class="fas fa-inbox mr-2"></i>Tidak ada data yang cocok di Izin Edar untuk reg_no <strong>${escapeHtml(akl.reg_no)}</strong>.</div>`;
+                $('#aklSyncBody').html(html);
+                return;
+            }
+
+            html += `<div class="table-responsive"><table class="table table-sm table-bordered mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="width:35px"></th>
+                        <th>Nomor Izin Edar</th>
+                        <th>Merk / Produk</th>
+                        <th>Pendaftar / Pabrik</th>
+                        <th>Terbit</th>
+                        <th>Expired</th>
+                        <th>Cek</th>
+                    </tr>
+                </thead><tbody>`;
+
+            matches.forEach((m, i) => {
+                const expBadge = m.is_expired ? `<span class="badge badge-danger ml-1">Expired</span>` : `<span class="badge badge-success ml-1">Aktif</span>`;
+                const synced = !!m.is_synced;
+                html += `<tr class="${synced ? 'table-success' : ''}">
+                    <td class="text-center align-middle">
+                        ${synced
+                            ? `<input type="radio" disabled title="Sudah sama — tidak bisa dipilih">`
+                            : `<input type="radio" name="sync_pick" value="${m.id}" data-idx="${i}">`}
+                    </td>
+                    <td><strong>${escapeHtml(m.nomor_izin_edar)}</strong><br><small class="text-muted">${escapeHtml(m.kategori || '')}</small> ${syncBadge(m.diff.reg_no_sama)}</td>
+                    <td>${escapeHtml(m.merk)} ${syncBadge(m.diff.nama_sama)}<br><small class="text-muted">${escapeHtml(m.jenis_produk)}</small></td>
+                    <td>${escapeHtml(m.pendaftar)} ${syncBadge(m.diff.vendor_sama)}<br><small class="text-muted">${escapeHtml(m.pabrik)}</small></td>
+                    <td style="white-space:nowrap">${formatDate(m.tgl_terbit)}<br>${syncBadge(m.diff.terbit_sama)}</td>
+                    <td style="white-space:nowrap">${formatDate(m.tgl_exp)}${expBadge}<br>${syncBadge(m.diff.expired_sama)}</td>
+                    <td>${synced
+                        ? `<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Sudah sama</span><br><small class="text-muted">Tidak bisa dipilih</small>`
+                        : `<small class="text-muted">Saran:<br>Nama: ${escapeHtml(m.saran.reg_name || '-')}<br>Vendor: ${escapeHtml(m.saran.vendor || '-')}</small>`}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></div>
+                <small class="form-text text-muted mt-2">Baris hijau <strong>Sudah sama</strong> tidak bisa dipilih. Pilih kandidat lain yang masih <strong>Beda</strong>, lalu klik <strong>Save yang Dipilih</strong>.</small>`;
+
+            $('#aklSyncBody').html(html);
+        }
+
+        $(document).on('change', 'input[name="sync_pick"]', function() {
+            $('#aklSyncSave').prop('disabled', !$('input[name="sync_pick"]:checked').length);
+        });
+
+        $('#aklSyncSave').on('click', function() {
+            const picked = $('input[name="sync_pick"]:checked').val();
+            if (!picked || !syncAklId) return;
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
+            $.ajax({
+                url: "{{ url('api/akls') }}/" + syncAklId + "/apply-izin",
+                type: 'PUT',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                data: { izin_edar_id: picked },
+                success: function(res) {
+                    $('#aklSyncModal').modal('hide');
+                    show_message(res.message || 'AKL disinkron!', 'success');
+                    loadData();
+                },
+                error: function(xhr) {
+                    show_message(xhr.responseJSON?.message || 'Gagal menyimpan!');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Save yang Dipilih');
+                }
+            });
         });
 
         // ── Utility ──────────────────────────────────────────
