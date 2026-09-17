@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
+        <div class="row">
+            <div class="col-lg-5">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="fas fa-edit mr-2 text-warning"></i>Edit Lampiran AKL</h5>
@@ -59,20 +59,6 @@
                             </div>
 
                             <div class="form-group">
-                                <label>File Saat Ini</label><br>
-                                @if ($akl->file)
-                                    <a href="{{ route('akls.show', $akl->id) }}" target="_blank"
-                                        class="btn btn-outline-info btn-sm">
-                                        <i class="fas {{ $akl->is_pdf ? 'fa-file-pdf' : 'fa-file-image' }} mr-1"></i>
-                                        Lihat file
-                                    </a>
-                                    <small class="text-muted ml-2">{{ $akl->file }}</small>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </div>
-
-                            <div class="form-group">
                                 <label>Ganti File (opsional)</label>
                                 <div class="custom-file">
                                     <input type="file" name="file" id="aklFile"
@@ -101,6 +87,32 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="card" style="position: sticky; top: 80px;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-alt mr-2 text-info"></i>Preview Dokumen</h5>
+                        @if ($akl->file)
+                            <a href="{{ route('akls.show', $akl->id) }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-external-link-alt mr-1"></i> Buka tab baru
+                            </a>
+                        @endif
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>File Saat Ini</label><br>
+                            @if ($akl->file)
+                                <small class="text-muted">{{ $akl->file }}</small>
+                            @else
+                                <span class="text-muted">Belum ada lampiran.</span>
+                            @endif
+                        </div>
+                        @include('akl.partials._preview', [
+                            'currentUrl' => $akl->file ? route('akls.show', $akl->id) : null,
+                            'isPdf' => $akl->is_pdf,
+                        ])
+                    </div>
                 </div>
             </div>
         </div>

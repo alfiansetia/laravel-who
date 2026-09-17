@@ -12,6 +12,44 @@
         .akl-search-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
         .akl-search-item:hover, .akl-search-item.active { background: #eef2ff; }
         .akl-search-item:last-child { border-bottom: none; }
+
+        /* PDF.js TextLayer — lapisan teks transparan di atas canvas
+           supaya teks PDF bisa diseleksi & dicopy */
+        .akl-pdf-page {
+            position: relative;
+            margin: 10px auto;
+        }
+        .akl-pdf-page canvas {
+            display: block;
+        }
+        .textLayer {
+            position: absolute;
+            left: 0; top: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            opacity: 1;
+            line-height: 1;
+        }
+        .textLayer span, .textLayer br {
+            color: transparent;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+        .textLayer .highlight {
+            margin: -1px; padding: 1px;
+            background-color: rgb(180 0 170 / 30%);
+            border-radius: 4px;
+        }
+        .textLayer .highlight.selected {
+            background-color: rgb(0 100 0 / 30%);
+        }
+        .textLayer ::selection { background: rgb(0 0 255 / 30%); }
+        .textLayer .endOfContent {
+            display: block; position: absolute;
+            left: 0; top: 100%; right: 0; bottom: 0;
+            z-index: -1; cursor: default; user-select: none;
+        }
     </style>
 @endpush
 
@@ -82,6 +120,7 @@
                         @endif
                     </div>
                     <div class="card-body p-2">
+                        <p class="text-muted small mb-1 px-1"><i class="fas fa-info-circle mr-1"></i>Teks PDF bisa diseleksi &amp; dicopy langsung dari preview.</p>
                         @if ($akl->file)
                             @if ($akl->is_pdf)
                                 <div id="docPdfWrap" class="text-left"
@@ -190,14 +229,27 @@
                             return pdf.getPage(pageNum).then(function(page) {
                                 var scale = (wrap.width() - 20) / page.getViewport({ scale: 1 }).width;
                                 var viewport = page.getViewport({ scale: scale });
+                                var pageDiv = document.createElement('div');
+                                pageDiv.className = 'akl-pdf-page';
+                                pageDiv.style.width = viewport.width + 'px';
                                 var canvas = document.createElement('canvas');
-                                canvas.style.display = 'block';
-                                canvas.style.margin = '10px auto';
-                                canvas.style.maxWidth = '100%';
                                 canvas.height = viewport.height;
                                 canvas.width = viewport.width;
-                                wrap.append(canvas);
-                                return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+                                pageDiv.appendChild(canvas);
+                                var textLayerDiv = document.createElement('div');
+                                textLayerDiv.className = 'textLayer';
+                                pageDiv.appendChild(textLayerDiv);
+                                wrap.append(pageDiv);
+                                return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise.then(function() {
+                                    return pdfjsLib.renderTextLayer({
+                                        textContentSource: page.streamTextContent(),
+                                        container: textLayerDiv,
+                                        viewport: viewport,
+                                        enhanceTextSelection: true
+                                    }).promise.catch(function(e) {
+                                        console.warn('TextLayer gagal:', e);
+                                    });
+                                });
                             });
                         });
                     })(n);
