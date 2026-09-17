@@ -33,102 +33,61 @@
      </div>
  </div>
 
- @push('js')
-     <script>
-         $(document).ready(function() {
+  @push('js')
+      <script>
+          $(document).ready(function() {
 
-             function updateAuthStatus() {
+              // State awal navbar sudah di-render server-side (nav.blade.php pakai
+              // EnvAuth::check()), jadi TIDAK ada AJAX auth.status tiap page load.
+              // Satu-satunya refresh: reload halaman setelah login sukses, dan
+              // popup modal otomatis kalau ada request yang 401 (session expired).
 
-                 $.ajax({
-                     isBlocking: false,
-                     url: '{{ route('auth.status') }}',
-                     type: 'GET',
-                     success: function(res) {
-                         let statusArea = $('#authStatusArea');
-                         let btnLogin = $('#btnEnvLogin');
-                         let btnLogout = $('#btnEnvLogout');
-                         let menuSetting = $('#menuSetting');
+              $(document).on('ajaxError', function(event, jqXHR, settings, thrownError) {
+                  if (jqXHR.status == 401) {
+                      $('#authModal').modal('show')
+                  }
+              });
 
-                         if (res.data.auth) {
-                             statusArea.html('<span class="badge badge-success">Authenticated</span>');
-                             btnLogin.addClass('d-none');
-                             btnLogout.removeClass('d-none');
-                             menuSetting.removeClass('d-none'); // Show menu setting
-                         } else {
-                             statusArea.html(
-                                 '<span class="badge badge-danger">Not Authenticated</span>');
-                             btnLogin.removeClass('d-none');
-                             btnLogout.addClass('d-none');
-                             menuSetting.addClass('d-none'); // Hide menu setting
-                         }
-                     }
-                 });
-             }
+              $('#authModal').on('shown.bs.modal', function() {
+                  $('#envPassword').focus()
+              });
 
-             // 🔄 Jalankan saat halaman load
-             updateAuthStatus();
+              $('#envLoginForm').on('submit', function(e) {
+                  e.preventDefault();
 
-             // 🔄 Refresh status setiap kali modal login sukses
-             $(document).on('hidden.bs.modal', '#authModal', function() {
-                 updateAuthStatus();
-             });
+                  let password = $('#envPassword').val().trim();
+                  let $btn = $(this).find('button[type="submit"]');
+                  let $error = $('#envErrorMsg');
 
-             $('#authModal').on('shown.bs.modal', function() {
-                 $('#envPassword').focus()
-             });
+                  $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Verifikasi...');
+                  $error.addClass('d-none').text('');
 
-             $('#authModal').on('hidden.bs.modal', function() {
-                 updateAuthStatus();
-             });
+                  $.ajax({
+                      url: '{{ route('auth.verify') }}',
+                      type: 'POST',
+                      data: {
+                          password: password,
+                      },
+                      success: function(res) {
+                          if (res.data.auth) {
+                              $('#authModal').modal('hide');
+                              // Server render ulang navbar sesuai session baru
+                              location.reload();
+                          } else {
+                              $error.removeClass('d-none').text('Password salah.');
+                          }
+                      },
+                      error: function(xhr) {
+                          $error.removeClass('d-none').text('Password tidak valid.');
+                          $('#envPassword').focus()
+                      },
+                      complete: function() {
+                          $btn.prop('disabled', false).html('<i class="fa fa-lock"></i> Login');
+                          $('#envPassword').val('');
+                      }
+                  });
+              });
 
-             $(document).on('ajaxError', function(event, jqXHR, settings, thrownError) {
-                 let status = jqXHR.status
-                 if (status == 401) {
-                     $('#authModal').modal('show')
-                 }
-             });
-
-             // 🚪 Logout
-             $('#btnEnvLogout').on('click', function() {
-                 window.location.href = '{{ route('settings.index') }}';
-             });
-
-
-             $('#envLoginForm').on('submit', function(e) {
-                 e.preventDefault();
-
-                 let password = $('#envPassword').val().trim();
-                 let $btn = $(this).find('button[type="submit"]');
-                 let $error = $('#envErrorMsg');
-
-                 $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Verifikasi...');
-                 $error.addClass('d-none').text('');
-
-                 $.ajax({
-                     url: '{{ route('auth.verify') }}',
-                     type: 'POST',
-                     data: {
-                         password: password,
-                     },
-                     success: function(res) {
-                         if (res.data.auth) {
-                             $('#authModal').modal('hide');
-                             show_message('Akses diverifikasi ✅', 'success')
-                         } else {
-                             $error.removeClass('d-none').text('Password salah.');
-                         }
-                     },
-                     error: function(xhr) {
-                         $error.removeClass('d-none').text('Password tidak valid.');
-                         $('#envPassword').focus()
-                     },
-                     complete: function() {
-                         $btn.prop('disabled', false).html('<i class="fa fa-lock"></i> Login');
-                         $('#envPassword').val('');
-                     }
-                 });
-             });
-
-         });
-     </script>
- @endpush
+          });
+      </script>
+  @endpush

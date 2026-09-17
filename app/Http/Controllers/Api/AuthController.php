@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\EnvAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -18,9 +18,7 @@ class AuthController extends Controller
         $configPassword = config('envauth.password');
 
         if (Hash::check($request->password, $configPassword)) {
-            Session::put('env_authenticated', true);
-            Session::put('env_auth_time', now());
-            Session::put('env_auth_hash', $configPassword);
+            EnvAuth::login();
             return $this->sendResponse([
                 'auth'          => true,
                 'expires_in'    => '24 hours'
@@ -32,7 +30,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Session::forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
+        EnvAuth::clear();
 
         return $this->sendResponse([
             'auth' => false
@@ -41,18 +39,13 @@ class AuthController extends Controller
 
     public function status(Request $request)
     {
-        $authenticated = Session::get('env_authenticated', false);
-        $loginTime = Session::get('env_auth_time');
-
-        if ($authenticated && $loginTime && now()->diffInHours($loginTime) >= 24) {
-            Session::forget(['env_authenticated', 'env_auth_time', 'env_auth_hash']);
-            $authenticated = false;
-        }
+        // Satu logika dengan middleware (termasuk cek hash & expiry 24 jam).
+        $authenticated = EnvAuth::check();
 
         return $this->sendResponse(
             [
                 'auth'          => $authenticated,
-                'login_at'      => $loginTime,
+                'login_at'      => session()->get('env_auth_time'),
                 'expires_in'    => '24 hours'
             ],
             $authenticated ? 'Session active.' : 'Session expired or not logged in.'

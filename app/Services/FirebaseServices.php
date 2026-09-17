@@ -83,7 +83,8 @@ class FirebaseServices
     public static function send($title, $body, $so_id = 0)
     {
         try {
-            $tokens = FcmToken::all();
+            // Ambil id => token saja, tanpa hydrate full model per baris.
+            $tokens = FcmToken::query()->pluck('token', 'id');
 
             if ($tokens->isEmpty()) {
                 return true;
@@ -104,13 +105,14 @@ class FirebaseServices
             }
 
             $apiurl = "https://fcm.googleapis.com/v1/projects/$proj/messages:send";
-            $successCount = 0;
-            $failedCount = 0;
+            $successIds = [];
+            $failedGroups = []; // label error => [ids], untuk 1x bulk update per label
+            $unregisteredIds = [];
 
-            foreach ($tokens as $token) {
+            foreach ($tokens as $id => $token) {
                 try {
                     $param['message'] = [
-                        'token' => $token->token,
+                        'token' => $token,
                         'data'  => [
                             "title" => (string) $title,
                             "body"  => (string) $body,
@@ -126,48 +128,56 @@ class FirebaseServices
                     ];
 
                     // Kirim request dengan timeout 10 detik
-                    $last_status_at = now();
                     $post = Http::timeout(10)
                         ->withHeaders($headers)
                         ->asJson()
                         ->post($apiurl, $param);
 
                     if ($post->successful()) {
-                        $successCount++;
-                        $token->last_status = 'SUCCESS';
-                        $token->last_status_at = $last_status_at;
-                        $token->save();
+                        $successIds[] = $id;
                     } else {
-                        $failedCount++;
                         $errorStatus = $post->json('error.status');
                         $errorCode = $post->json('error.details.0.errorCode');
 
                         Log::warning('Firebase: Gagal mengirim notifikasi', [
-                            'token_id' => $token->id,
+                            'token_id' => $id,
                             'status_code' => $post->status(),
                             'error_status' => $errorStatus,
                             'error_code' => $errorCode,
                             'response' => $post->body()
                         ]);
 
-                        $token->last_status = $errorCode ?? $errorStatus;
-                        $token->last_status_at = $last_status_at;
-                        $token->save();
+                        $label = $errorCode ?? $errorStatus ?? 'FAILED';
+                        $failedGroups[$label][] = $id;
 
                         // Hanya hapus jika token memang sudah tidak terdaftar (UNREGISTERED)
                         if ($errorStatus === 'UNREGISTERED' || $errorCode === 'UNREGISTERED') {
-                            $token->delete();
-                            Log::info("Firebase: Token ID {$token->id} dihapus karena UNREGISTERED");
+                            $unregisteredIds[] = $id;
+                            Log::info("Firebase: Token ID {$id} dihapus karena UNREGISTERED");
                         }
                     }
                 } catch (Exception $e) {
-                    $failedCount++;
                     Log::error('Firebase: Exception saat mengirim ke token', [
-                        'token_id' => $token->id,
+                        'token_id' => $id,
                         'error' => $e->getMessage()
                     ]);
                     // Jangan menghapus token jika terjadi exception (misal: timeout/koneksi)
+                    // Status lama dibiarkan, tidak ditulis ulang.
                 }
+            }
+
+            // Bulk update status: 1 query per kelompok, bukan 1 save per token.
+            $stampedAt = now();
+            if (! empty($successIds)) {
+                FcmToken::whereIn('id', $successIds)
+                    ->update(['last_status' => 'SUCCESS', 'last_status_at' => $stampedAt]);
+            }
+            foreach ($failedGroups as $label => $ids) {
+                FcmToken::whereIn('id', $ids)
+                    ->update(['last_status' => $label, 'last_status_at' => $stampedAt]);
+            }
+            if (! empty($unregisteredIds)) {
+                FcmToken::whereIn('id', $unregisteredIds)->delete();
             }
 
             return true;

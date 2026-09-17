@@ -13,30 +13,12 @@
         measurementId: "{{ config('services.firebase.measurement_id') }}"
     };
 
-    if (!("Notification" in window)) {
-        console.log("Browser tidak mendukung notifikasi.");
-        danger('❌ Browser tidak mendukung notifikasi. 😓, Ganti browser cuy!.')
-    } else {
-        if (Notification.permission === "granted") {
-            success('✅ Izin Notifikasi sudah ok. 😁👍')
-            console.log("permission ok");
-        } else {
-            reqPermission()
-        }
-    }
-
-    function reqPermission() {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                success('✅ Izin Notifikasi sudah ok. 😁👍')
-            } else {
-                console.log("Izin notifikasi ditolak.");
-                danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
-            }
-        });
-    }
-
-
+    // Naikkan manual setiap mengubah file firebase-messaging-sw.
+    // JANGAN pakai timestamp: URL baru tiap load bikin browser download
+    // ulang & reinstall service worker di setiap halaman.
+    const FCM_SW_VERSION = '1';
+    const FCM_TOKEN_KEY = 'fcm_token';
+    const FCM_ASKED_KEY = 'fcm_perm_asked';
 
     function test_notif() {
         new Notification('✅ Dah Masuk niii. 😁👍', {
@@ -45,87 +27,114 @@
             vibrate: [200, 100, 200],
         });
     }
-    // Registrasi Service Worker
-    try {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js?v=1' + new Date().getTime())
+
+    function handleForegroundMessage(payload) {
+        console.log("🔔 Notifikasi diterima (foreground):", payload);
+        const {
+            title,
+            body,
+            icon,
+            so_id,
+            url
+        } = payload.data;
+
+        const notification = new Notification(title, {
+            body,
+            icon,
+            data: {
+                url: url
+            },
+            vibrate: [200, 100, 200],
+        });
+
+        notification.onclick = function(event) {
+            event.preventDefault();
+            window.open(this.data.url, '_blank');
+            notification.close();
+        };
+    }
+
+    // Kirim token ke backend HANYA kalau belum pernah / berubah.
+    // Mencegah updateOrCreate ke DB di setiap page load.
+    function syncFcmToken(messaging, force = false) {
+        messaging.getToken().then(token => {
+            const cached = localStorage.getItem(FCM_TOKEN_KEY);
+            if (!force && cached && cached === token) {
+                return; // sudah terdaftar, skip POST
+            }
+            localStorage.setItem(FCM_TOKEN_KEY, token);
+            fetch("{{ route('api.tokens.store') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        topic: "general",
+                        platform: navigator.platform || 'unknown',
+                    })
+                }).then(response => response.json())
+                .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))
+                .catch(err => console.error("❌ Error mengirim token:", err));
+        }).catch(err => {
+            console.log("❌ Gagal mendapatkan token:", err);
+        });
+    }
+
+    // Dipakai halaman setting untuk daftar ulang manual (mis. setelah user
+    // mengizinkan notifikasi yang sebelumnya ditolak/diabaikan).
+    window.refreshFcmToken = function() {
+        if (!('Notification' in window) || !firebase.messaging.isSupported()) {
+            return;
+        }
+        const messaging = firebase.messaging();
+        if (Notification.permission === 'granted') {
+            syncFcmToken(messaging, true);
+            return;
+        }
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                syncFcmToken(messaging, true);
+            }
+        });
+    };
+
+    // Init: permission diminta MAKSIMAL sekali per browser. Kalau user menolak
+    // ('denied'), diam saja sampai user aktifkan manual via refreshFcmToken().
+    (function initNotif() {
+        try {
+            if (!('Notification' in window)) {
+                return;
+            }
+            if (!('serviceWorker' in navigator)) {
+                return;
+            }
+            if (!firebase.messaging.isSupported()) {
+                return;
+            }
+            navigator.serviceWorker.register('/firebase-messaging-sw.js?v=' + FCM_SW_VERSION)
                 .then(registration => {
                     console.log("✅ Service Worker terdaftar");
-                    // console.log("✅ Service Worker terdaftar:", registration);
-                    // success('✅ Notifikasi sudah siap. 😁👍')
+                    firebase.initializeApp(firebaseConfig);
+                    const messaging = firebase.messaging();
+                    messaging.onMessage(handleForegroundMessage);
+
+                    if (Notification.permission === 'granted') {
+                        syncFcmToken(messaging);
+                    } else if (Notification.permission === 'default' && !localStorage.getItem(FCM_ASKED_KEY)) {
+                        localStorage.setItem(FCM_ASKED_KEY, '1');
+                        Notification.requestPermission().then(permission => {
+                            if (permission === 'granted') {
+                                syncFcmToken(messaging);
+                            }
+                        });
+                    }
                 })
                 .catch(err => {
                     console.log("❌ Service Worker gagal:", err);
-                    danger('❌ Notifikasi belum siap 😓, Tolong Refresh halaman!.')
                 });
+        } catch (err) {
+            console.log("❌ Notifikasi belum siap:", err.message);
         }
-        if (firebase.messaging.isSupported()) {
-
-            firebase.initializeApp(firebaseConfig);
-            const messaging = firebase.messaging();
-
-            // Minta izin notifikasi
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    messaging.getToken().then(token => {
-                        console.log("✅ Token FCM:", token);
-                        localStorage.setItem('fcm_token', token);
-                        success('✅ Notifikasi sudah siap. 😁👍')
-                        fetch("{{ route('api.tokens.store') }}", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    token: token,
-                                    topic: "general",
-                                    platform: navigator.platform || 'unknown',
-                                })
-                            }).then(response => response.json())
-                            .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))
-                            .catch(err => console.error("❌ Error mengirim token:", err));
-                    }).catch(err => {
-                        console.log("❌ Gagal mendapatkan token:", err);
-                        danger('❌ Gagal Atur Notifikasi 😓')
-                    });
-                } else {
-                    console.log("❌ Izin notifikasi ditolak.");
-                    danger('❌ Izin notifikasi ditolak 😓, Izinin dong Woi!.')
-                }
-            });
-
-            messaging.onMessage(payload => {
-                console.log("🔔 Notifikasi diterima (foreground):", payload);
-                const {
-                    title,
-                    body,
-                    icon,
-                    so_id,
-                    url
-                } = payload.data;
-
-                const notification = new Notification(title, {
-                    body,
-                    icon,
-                    data: {
-                        url: url
-                    },
-                    vibrate: [200, 100, 200],
-                });
-
-                notification.onclick = function(event) {
-                    event.preventDefault();
-                    window.open(this.data.url, '_blank');
-                    notification.close();
-                };
-            });
-            success('✅ Notifikasi sudah siap. 😁👍')
-        } else {
-            danger('❌ Browser gak support notif 😓')
-
-        }
-
-    } catch (err) {
-        danger('❌ Notifikasi belum siap 😓, ' + err.message)
-    }
+    })();
 </script>

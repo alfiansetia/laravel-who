@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\ProductImageStorage;
 use Illuminate\Http\Request;
 
 class ResourceController extends Controller
@@ -14,7 +15,9 @@ class ResourceController extends Controller
 
     public function index()
     {
-        $products = getFolderSize(storage_path('app/public/products'));
+        // Produk kini primer di S3; local hanya sisa yang belum di-sync.
+        $s3 = ProductImageStorage::s3Stats();
+        $localProducts = getFolderSize(storage_path('app/public/products'));
         $logs = getFolderSize(storage_path('logs'));
         $log_content = '';
         $logPath = storage_path('logs/laravel.log');
@@ -25,8 +28,15 @@ class ResourceController extends Controller
 
         return $this->sendResponse([
             'products' => [
-                'value' => $products,
-                'parse' => formatBytes($products),
+                'files' => $s3['files'],
+                'value' => $s3['bytes'],
+                'parse' => formatBytes($s3['bytes']),
+                'truncated' => $s3['truncated'],
+                'error' => $s3['error'],
+            ],
+            'products_local' => [
+                'value' => $localProducts,
+                'parse' => formatBytes($localProducts),
             ],
             'logs' => [
                 'value' => $logs,

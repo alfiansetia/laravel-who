@@ -105,4 +105,36 @@ class ProductImageStorage
             Storage::disk(self::FALLBACK_DISK)->delete($key);
         }
     }
+
+    /**
+     * Statistik isi prefix products/ di S3 (untuk halaman Server Config).
+     * Size diambil dari hasil ListObjects (tanpa HeadObject per file).
+     * Dibatasi 10.000 object agar tidak runaway; selebihnya flag truncated.
+     */
+    public static function s3Stats(): array
+    {
+        try {
+            $files = 0;
+            $bytes = 0;
+            $truncated = false;
+
+            foreach (Storage::disk(self::DISK)->getDriver()->listContents(self::PREFIX, true) as $item) {
+                if (! $item->isFile()) {
+                    continue;
+                }
+                $files++;
+                $bytes += $item->fileSize() ?? 0;
+                if ($files >= 10000) {
+                    $truncated = true;
+                    break;
+                }
+            }
+
+            return ['files' => $files, 'bytes' => $bytes, 'truncated' => $truncated, 'error' => null];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return ['files' => 0, 'bytes' => 0, 'truncated' => false, 'error' => 'S3 tidak dapat diakses'];
+        }
+    }
 }

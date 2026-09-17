@@ -149,13 +149,26 @@
                 },
                 success: function(res) {
                     const data = res.data;
+                    const p = data.products || {};
+                    const pl = data.products_local || {};
+                    const filesLabel = (p.files ?? 0).toLocaleString() + (p.truncated ? '+' : '') + ' files';
+                    const s3Value = p.error
+                        ? p.error
+                        : `${filesLabel} • ${(p.value ?? 0).toLocaleString()} bytes`;
                     let html = `
                         <div class="resource-item">
                             <div>
-                                <p class="resource-label mb-0">Products</p>
-                                <span class="resource-value">${data.products.value.toLocaleString()} bytes</span>
+                                <p class="resource-label mb-0">Products (S3)</p>
+                                <span class="resource-value">${s3Value}</span>
                             </div>
-                            <span class="resource-badge primary">${data.products.parse}</span>
+                            <span class="resource-badge primary">${p.parse ?? '-'}</span>
+                        </div>
+                        <div class="resource-item">
+                            <div>
+                                <p class="resource-label mb-0">Products (local sisa)</p>
+                                <span class="resource-value">${(pl.value ?? 0).toLocaleString()} bytes</span>
+                            </div>
+                            <span class="resource-badge secondary">${pl.parse ?? '-'}</span>
                         </div>
                         <div class="resource-item">
                             <div>

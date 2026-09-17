@@ -107,7 +107,7 @@
     }
 
     #btnEnvLogin,
-    #btnEnvLogout {
+    #btnServerConfig {
         border-radius: 10px;
         padding: 6px 15px !important;
         border: 1px solid #e2e8f0;
@@ -123,8 +123,8 @@
             padding: 10px 0 !important;
         }
 
-        #btnEnvLogin,
-        #btnEnvLogout {
+        #btnEnvLogin:not(.d-none),
+        #btnServerConfig:not(.d-none) {
             margin-left: 0;
             margin-top: 10px;
             display: inline-block !important;
@@ -203,11 +203,13 @@
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a href="javascript:void(0);" class="nav-link d-none" id="btnEnvLogin" data-toggle="modal"
+                    {{-- State awal di-render server-side (tanpa AJAX status tiap load).
+                         Pakai id yang sama agar JS login tetap cocok. --}}
+                    <a href="javascript:void(0);" class="nav-link {{ \App\Services\EnvAuth::check() ? 'd-none' : '' }}" id="btnEnvLogin" data-toggle="modal"
                         data-target="#authModal">
                         <i class="fa fa-lock mr-1"></i> Login
                     </a>
-                    <a href="javascript:void(0);" class="nav-link d-none" id="btnEnvLogout">
+                    <a href="{{ route('settings.index') }}" class="nav-link {{ \App\Services\EnvAuth::check() ? '' : 'd-none' }}" id="btnServerConfig">
                         <i class="fa fa-cog mr-1"></i> Server Config
                     </a>
                 </li>
