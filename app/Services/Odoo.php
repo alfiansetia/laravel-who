@@ -130,6 +130,18 @@ class Odoo
         }
         $body = json_decode($response->body(), true);
         $json = $response->json();
+
+        if (!is_array($body)) {
+            throw new OdooException(
+                "Invalid Odoo response: " . $response->body(),
+                $response->status(),
+                [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]
+            );
+        }
+
         if (Arr::exists($body, 'error')) {
             $message = Arr::get($body, 'error.message', 'Unknown');
             throw new OdooException(
