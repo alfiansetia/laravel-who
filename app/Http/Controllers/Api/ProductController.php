@@ -121,7 +121,7 @@ class ProductController extends Controller
         }
 
         // 3. Create ZIP
-        $zipName = preg_replace('/[^A-Za-z0-9_.\-+() ]/', '-', "{$product->code} {$product->name}") . ".zip";
+        $zipName = preg_replace('/[^A-Za-z0-9_.\-+() ]/', '-', "{$product->code}") . ".zip";
         $zipPath = storage_path("app/temp/{$zipName}");
 
         $zip = new ZipArchive;
