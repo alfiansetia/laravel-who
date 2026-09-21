@@ -15,7 +15,7 @@
                         <th style="width: 100px;">IP</th>
                         <th>Token</th>
                         <th style="width: 120px;">Last Status</th>
-                        <th style="width: 60px;" class="text-center">Aksi</th>
+                        <th style="width: 100px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

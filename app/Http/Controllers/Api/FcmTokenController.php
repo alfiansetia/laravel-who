@@ -101,6 +101,13 @@ class FcmTokenController extends Controller
             'Eh yaampun ini cuma test notif 😁✌️!'
         );
 
+        // Catat hasilnya agar kolom Last Status di halaman setting tetap hidup
+        // meski pengiriman broadcast sudah pindah ke topic.
+        FcmToken::where('token', $request->token)->update([
+            'last_status'    => $result['ok'] ? 'SUCCESS' : ($result['error'] ?? 'FAILED'),
+            'last_status_at' => now(),
+        ]);
+
         if (! $result['ok']) {
             return $this->sendError('Gagal kirim: ' . ($result['error'] ?? 'unknown'), 422);
         }

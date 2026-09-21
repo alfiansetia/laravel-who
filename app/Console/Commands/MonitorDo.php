@@ -58,7 +58,7 @@ class MonitorDo extends Command
                     if ($old_length > 0) {
                         $title = '⚠️ Ada ' . $selisih . ' DO Baru!';
                         $message = $title;
-                        FirebaseServices::send($title, $message);
+                        FirebaseServices::sendToTopic($title, $message);
                         TelegramServices::sendToGroup($message);
                         $this->info($message);
                     } else {
@@ -85,7 +85,7 @@ class MonitorDo extends Command
 
                         $doName = Arr::get($value, 'name', '-');
                         $so_id = Arr::get($value, 'sale_id.0', '0');
-                        FirebaseServices::send('⚠️ Ada DO Baru!, ' . $doName, $message, $so_id);
+                        FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, ' . $doName, $message, $so_id);
                         TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . $doName . $message);
                     }
                 }

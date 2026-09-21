@@ -41,8 +41,8 @@ class SettingController extends Controller
 
     public function test_notif()
     {
-        $serv = FirebaseServices::send('⚠️ Test!', 'Eh yaampun ini cuma test notif 😁✌️!');
-        return $this->sendResponse('Success kirim notif ke semua perangkat!');
+        FirebaseServices::sendToTopic('⚠️ Test!', 'Eh yaampun ini cuma test notif 😁✌️!');
+        return $this->sendResponse('Success kirim notif via topic ke semua perangkat!');
     }
 
     public function cek_odoo()

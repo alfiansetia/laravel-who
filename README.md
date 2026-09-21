@@ -31,6 +31,43 @@ Proyek ini dilengkapi dengan sistem monitoring otomatis yang berjalan di backgro
   ```
   *Saran: Jalankan menggunakan Task Scheduler (Cron Job) setiap 1-5 menit.*
 
+## 🔔 Notifikasi Firebase (Topic)
+
+Push notif broadcast (DO baru, tes notif) dikirim via **FCM topic** (`sendToTopic()`),
+jadi 1x HTTP request untuk semua perangkat. Token baru otomatis di-subscribe ke
+topic saat didaftarkan (`POST api/tokens/test` untuk tes per device, tombol ✈️
+di tabel List Device halaman Setting, dan ikon lonceng di navbar untuk cek
+notifikasi perangkat sendiri).
+
+### Backfill token lama ke topic
+
+Token yang sudah ada di DB sebelum fitur topic wajib di-subscribe sekali agar
+terjangkau `sendToTopic()`. Tanpa ini, device lama tidak menerima notif topic.
+
+```bash
+# 1. Cek rencana tanpa mengubah apa pun
+php artisan app:subscribe-fcm-topic --dry-run
+
+# 2. Subscribe semua token lama (token kosong dianggap topic "general")
+php artisan app:subscribe-fcm-topic
+
+# Opsi lain: --topic=nama_topic (paksa semua token ke satu topic)
+```
+
+Kalau aplikasi jalan di Docker (service `who_app`), jalankan artisan dari dalam
+container:
+
+```bash
+# 1. Cek rencana tanpa mengubah apa pun
+docker compose exec who_app php artisan app:subscribe-fcm-topic --dry-run
+
+# 2. Subscribe semua token lama
+docker compose exec who_app php artisan app:subscribe-fcm-topic
+```
+
+Cukup dijalankan **sekali** (misalnya setelah deploy). Token baru setelah itu
+auto-subscribe sendiri.
+
 ## ☁️ Product Images → S3/R2
 
 Upload gambar produk baru langsung tersimpan di S3/R2 (Cloudflare R2, bucket `mapwho`)

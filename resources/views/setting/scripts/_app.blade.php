@@ -288,7 +288,8 @@
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row) {
-                    return `<button type="button" class="btn btn-action btn-outline-primary btn-detail" data-id="${row.id}" title="Detail"><i class="fas fa-info-circle"></i></button>`;
+                    return `<button type="button" class="btn btn-action btn-outline-success btn-test" data-id="${row.id}" title="Tes Notif ke Device Ini"><i class="fas fa-paper-plane"></i></button>
+                            <button type="button" class="btn btn-action btn-outline-primary btn-detail" data-id="${row.id}" title="Detail"><i class="fas fa-info-circle"></i></button>`;
                 }
             }],
             buttons: [{
@@ -307,6 +308,38 @@
 
         $('#refresh_devices').click(function() {
             table.ajax.reload();
+        });
+
+        // ── Device Test Notif (per device) ─────────────
+
+        $('#table tbody').on('click', '.btn-test', function(e) {
+            e.stopPropagation();
+            var btn = $(this);
+            var data = table.row(btn.parents('tr')).data();
+            if (!data || !data.token) {
+                showToast('Token device kosong!', 'error');
+                return;
+            }
+            confirmation('Kirim test notif ke device ini?', function(confirm) {
+                if (!confirm) return;
+                btn.prop('disabled', true);
+                $.ajax({
+                    url: "{{ route('api.tokens.test') }}",
+                    type: 'POST',
+                    data: { token: data.token },
+                    success: function(res) {
+                        showToast(res.message || 'Terkirim!', 'success');
+                        table.ajax.reload(null, false);
+                    },
+                    error: function(xhr) {
+                        showToast(xhr.responseJSON?.message || 'Gagal mengirim!', 'error');
+                        table.ajax.reload(null, false);
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
         });
 
         // ── Device Detail ────────────────────────────────
