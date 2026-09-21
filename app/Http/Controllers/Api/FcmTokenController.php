@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FcmToken;
+use App\Services\FirebaseServices;
 use Illuminate\Http\Request;
 
 class FcmTokenController extends Controller
@@ -57,18 +58,24 @@ class FcmTokenController extends Controller
         ]);
         $userAgent = $request->userAgent();
         $ip = $request->ip();
+        $topic = $request->input('topic', 'general') ?: 'general';
         $token = FcmToken::query()->updateOrCreate(
             [
                 'token' => $request->token,
             ],
             [
                 'token'         => $request->token,
-                'topic'         => $request->topic,
+                'topic'         => $topic,
                 'user_agent'    => $userAgent,
                 'ip'            => $ip,
                 'platform'      => $request->platform,
             ]
         );
+
+        // Best-effort: daftarkan token ke topic agar sendToTopic() menjangkaunya.
+        // Kegagalan subscribe tidak menggagalkan penyimpanan token.
+        FirebaseServices::subscribeTopic($token->token, $topic);
+
         return $this->sendResponse($token, 'Success Upsert Token');
     }
 
@@ -77,8 +84,37 @@ class FcmTokenController extends Controller
         return $this->sendResponse($token, 'Success Get Token');
     }
 
+    /**
+     * Tes push notif FCM ke SATU token milik pemanggil (perangkat ini).
+     * Sengaja tanpa env_auth agar tiap user bisa cek notifikasinya sendiri,
+     * tanpa mem-broadcast ke semua perangkat.
+     */
+    public function test(Request $request)
+    {
+        $this->validate($request, [
+            'token' => 'required',
+        ]);
+
+        $result = FirebaseServices::sendToToken(
+            $request->token,
+            '⚠️ Test!',
+            'Eh yaampun ini cuma test notif 😁✌️!'
+        );
+
+        if (! $result['ok']) {
+            return $this->sendError('Gagal kirim: ' . ($result['error'] ?? 'unknown'), 422);
+        }
+
+        return $this->sendResponse(null, 'Test notif dikirim ke perangkat ini!');
+    }
+
     public function destroy(FcmToken $token)
     {
+        // Best-effort: keluarkan dari topic sebelum baris DB dihapus.
+        if (! empty($token->topic)) {
+            FirebaseServices::unsubscribeTopic($token->token, $token->topic);
+        }
+
         $token->delete();
         return $this->sendResponse($token, 'Success Delete Token');
     }

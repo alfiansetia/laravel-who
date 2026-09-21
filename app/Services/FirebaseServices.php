@@ -190,4 +190,247 @@ class FirebaseServices
             return false;
         }
     }
+
+    /**
+     * Normalisasi nama topic sesuai aturan FCM: [a-zA-Z0-9-_.~%]+
+     */
+    public static function sanitizeTopic(string $topic): string
+    {
+        $topic = ltrim(trim($topic), '/topics/');
+        $topic = preg_replace('/[^a-zA-Z0-9\-_.~%]+/', '-', $topic);
+
+        return substr($topic, 0, 900);
+    }
+
+    /**
+     * Daftarkan satu / banyak token ke sebuah topic via IID API.
+     * Dipakai agar sendToTopic() bisa menjangkau token tersebut.
+     * Best-effort: return false jika gagal, tanpa exception ke caller.
+     *
+     * @param string|array $tokens
+     */
+    public static function subscribeTopic($tokens, string $topic = 'general'): bool
+    {
+        return static::manageTopicSubscription($tokens, $topic, 'batchAdd');
+    }
+
+    /**
+     * Hapus satu / banyak token dari sebuah topic via IID API.
+     *
+     * @param string|array $tokens
+     */
+    public static function unsubscribeTopic($tokens, string $topic = 'general'): bool
+    {
+        return static::manageTopicSubscription($tokens, $topic, 'batchRemove');
+    }
+
+    /**
+     * Kirim notifikasi ke sebuah topic: 1x HTTP request untuk semua subscriber.
+     * Payload data disamakan dengan send() agar SW & foreground handler
+     * yang sudah ada tetap jalan tanpa perubahan.
+     */
+    public static function sendToTopic($title, $body, $so_id = 0, string $topic = 'general')
+    {
+        try {
+            $topic = static::sanitizeTopic($topic);
+
+            if ($topic === '') {
+                Log::warning('Firebase: Nama topic kosong, pengiriman dibatalkan');
+                return false;
+            }
+
+            $access_token = static::getAccessToken();
+
+            if (empty($access_token)) {
+                Log::warning('Firebase: Tidak bisa mengirim ke topic, access token tidak tersedia');
+                return false;
+            }
+
+            $proj = config('services.firebase.project_id');
+
+            if (empty($proj)) {
+                Log::warning('Firebase: Project ID tidak dikonfigurasi');
+                return false;
+            }
+
+            $apiurl = "https://fcm.googleapis.com/v1/projects/$proj/messages:send";
+
+            $param['message'] = [
+                'topic' => $topic,
+                'data'  => [
+                    "title" => (string) $title,
+                    "body"  => (string) $body,
+                    "icon"  => (string) asset('images/asa.png'),
+                    'so_id' => (string) $so_id,
+                    'url'   => (string) route('so.print', $so_id),
+                ],
+            ];
+
+            $post = Http::timeout(10)
+                ->withHeaders([
+                    "Authorization" => "Bearer $access_token",
+                    "Content-Type"  => "application/json",
+                ])
+                ->asJson()
+                ->post($apiurl, $param);
+
+            if ($post->successful()) {
+                return true;
+            }
+
+            Log::warning('Firebase: Gagal mengirim notifikasi ke topic', [
+                'topic'       => $topic,
+                'status_code' => $post->status(),
+                'response'    => $post->body(),
+            ]);
+
+            return false;
+        } catch (Exception $e) {
+            Log::error('Firebase: Exception saat mengirim ke topic', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'title' => $title,
+                'topic' => $topic ?? null,
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Kirim notifikasi ke SATU token (untuk tes ke perangkat ini).
+     * Return array [ok => bool, error => ?string] agar controller
+     * bisa memberi pesan yang jelas ke user.
+     */
+    public static function sendToToken($token, $title, $body, $so_id = 0): array
+    {
+        try {
+            if (empty($token)) {
+                return ['ok' => false, 'error' => 'Token kosong'];
+            }
+
+            $access_token = static::getAccessToken();
+
+            if (empty($access_token)) {
+                Log::warning('Firebase: Tidak bisa mengirim ke token, access token tidak tersedia');
+                return ['ok' => false, 'error' => 'Access token tidak tersedia'];
+            }
+
+            $proj = config('services.firebase.project_id');
+
+            if (empty($proj)) {
+                Log::warning('Firebase: Project ID tidak dikonfigurasi');
+                return ['ok' => false, 'error' => 'Project ID tidak dikonfigurasi'];
+            }
+
+            $apiurl = "https://fcm.googleapis.com/v1/projects/$proj/messages:send";
+
+            $param['message'] = [
+                'token' => $token,
+                'data'  => [
+                    "title" => (string) $title,
+                    "body"  => (string) $body,
+                    "icon"  => (string) asset('images/asa.png'),
+                    'so_id' => (string) $so_id,
+                    'url'   => (string) route('so.print', $so_id),
+                ],
+            ];
+
+            $post = Http::timeout(10)
+                ->withHeaders([
+                    "Authorization" => "Bearer $access_token",
+                    "Content-Type"  => "application/json",
+                ])
+                ->asJson()
+                ->post($apiurl, $param);
+
+            if ($post->successful()) {
+                return ['ok' => true, 'error' => null];
+            }
+
+            $errorStatus = $post->json('error.status');
+            $errorCode = $post->json('error.details.0.errorCode');
+            $label = $errorCode ?? $errorStatus ?? ('HTTP ' . $post->status());
+
+            Log::warning('Firebase: Gagal mengirim ke single token', [
+                'error_status' => $errorStatus,
+                'error_code'   => $errorCode,
+                'status_code'  => $post->status(),
+                'response'     => $post->body(),
+            ]);
+
+            return ['ok' => false, 'error' => $label];
+        } catch (Exception $e) {
+            Log::error('Firebase: Exception saat mengirim ke single token', [
+                'error' => $e->getMessage(),
+            ]);
+            return ['ok' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Helper batchAdd / batchRemove ke IID API, di-chunk 1000 token per request.
+     *
+     * @param string|array $tokens
+     */
+    protected static function manageTopicSubscription($tokens, string $topic, string $action): bool
+    {
+        try {
+            $tokens = is_array($tokens) ? array_values(array_filter($tokens)) : [$tokens];
+            $tokens = array_values(array_unique(array_filter($tokens)));
+
+            if (empty($tokens)) {
+                return true;
+            }
+
+            $topic = static::sanitizeTopic($topic);
+
+            if ($topic === '') {
+                Log::warning('Firebase: Nama topic kosong, subscribe dibatalkan');
+                return false;
+            }
+
+            $access_token = static::getAccessToken();
+
+            if (empty($access_token)) {
+                Log::warning('Firebase: Tidak bisa subscribe topic, access token tidak tersedia');
+                return false;
+            }
+
+            $ok = true;
+
+            foreach (array_chunk($tokens, 1000) as $chunk) {
+                $post = Http::timeout(10)
+                    ->withHeaders([
+                        "Authorization" => "Bearer $access_token",
+                        "Content-Type"  => "application/json",
+                        "access_token_auth" => "true",
+                    ])
+                    ->asJson()
+                    ->post("https://iid.googleapis.com/iid/v1:{$action}", [
+                        'to'                  => '/topics/' . $topic,
+                        'registration_tokens' => $chunk,
+                    ]);
+
+                if (! $post->successful()) {
+                    $ok = false;
+                    Log::warning('Firebase: Gagal subscribe topic', [
+                        'topic'       => $topic,
+                        'action'      => $action,
+                        'count'       => count($chunk),
+                        'status_code' => $post->status(),
+                        'response'    => $post->body(),
+                    ]);
+                }
+            }
+
+            return $ok;
+        } catch (Exception $e) {
+            Log::error('Firebase: Exception saat subscribe topic', [
+                'error'  => $e->getMessage(),
+                'topic'  => $topic ?? null,
+                'action' => $action ?? null,
+            ]);
+            return false;
+        }
+    }
 }

@@ -203,6 +203,13 @@
 
             <ul class="navbar-nav">
                 <li class="nav-item">
+                    {{-- Cek & tes notifikasi perangkat ini --}}
+                    <a href="javascript:void(0);" class="nav-link" id="btnNotifCheck" data-toggle="modal"
+                        data-target="#notifModal" title="Cek Notifikasi">
+                        <i class="fa fa-bell mr-1"></i><span class="d-lg-none">Notifikasi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     {{-- State awal di-render server-side (tanpa AJAX status tiap load).
                          Pakai id yang sama agar JS login tetap cocok. --}}
                     <a href="javascript:void(0);" class="nav-link {{ \App\Services\EnvAuth::check() ? 'd-none' : '' }}" id="btnEnvLogin" data-toggle="modal"

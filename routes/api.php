@@ -232,6 +232,8 @@ Route::post('spreadsheet', [SpreadsheetController::class, 'sync_product'])
     ->name('api.spreadsheet.sync_product');
 
 
+Route::post('tokens/test', [FcmTokenController::class, 'test'])
+    ->name('api.tokens.test');
 Route::apiResource('tokens', FcmTokenController::class)
     ->names('api.tokens')
     ->only(['index', 'show', 'store', 'delete']);

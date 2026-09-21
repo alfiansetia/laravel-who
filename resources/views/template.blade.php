@@ -377,6 +377,8 @@
 
     @include('components.notif')
 
+    @include('components.notif-modal')
+
     @stack('js')
 
 </body>
