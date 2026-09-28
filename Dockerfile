@@ -1,41 +1,62 @@
-# 1. Menggunakan stage composer untuk mengambil binary composer terbaru
-FROM composer:latest AS composer-builder
+# ---------- Stage 1: PHP-FPM (Laravel, Blade tanpa build frontend) ----------
+FROM php:8.4-fpm AS app
 
-# 2. Menggunakan PHP 8.4 Alpine sebagai base image yang ringan
-# (disamakan dengan PHP local 8.4 karena composer.lock mengunci
-#  package yang butuh php >=8.4, mis. symfony/filesystem v8.x)
-FROM php:8.4-fpm-alpine
+# System deps + PHP extensions (Laravel, MySQL prod + sqlite lokal) + binary pendukung:
+# - default-mysql-client : mysqldump (dipakai backup DB MySQL saat IS_DOCKER=true)
+# - sqlite3              : inspeksi database.sqlite lokal dari dalam kontainer
+# - gosu                 : drop privilege ke www-data di entrypoint
+# - procps               : pidof untuk healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git curl unzip zip procps gosu default-mysql-client sqlite3 \
+    libpng-dev libonig-dev libxml2-dev libzip-dev libicu-dev libsqlite3-dev \
+    libfreetype6-dev libjpeg62-turbo-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip intl opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install system dependencies yang dibutuhkan oleh Laravel & ekstensi PHP
-RUN apk add --no-cache \
-    bash \
-    curl \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libzip-dev
+# Composer binary
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Mengonfigurasi dan menginstal ekstensi PHP (PDO, BCMath, GD, Zip)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql bcmath gd zip
+# Limit upload PHP diselaraskan dengan nginx (lihat docker/php/uploads.ini)
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
-# Copy composer dari stage builder ke image utama
-COPY --from=composer-builder /usr/bin/composer /usr/bin/composer
-
-# Menentukan direktori kerja di dalam kontainer
 WORKDIR /var/www/html
 
-# Menyalin seluruh source code aplikasi ke dalam kontainer
+# Install dependency PHP dulu (manfaatkan layer cache)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts --prefer-dist --optimize-autoloader
+
+# Copy seluruh source (asset Blade/CSS/JS langsung dari public/, tanpa vite build)
 COPY . .
 
-# Menjalankan composer install untuk mengunduh semua dependencies vendor
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer dump-autoload --optimize \
+    && php artisan package:discover --ansi \
+    && mkdir -p storage/framework/{sessions,views,cache} storage/logs storage/app/public bootstrap/cache database \
+    && touch database/database.sqlite \
+    && chown -R www-data:www-data storage bootstrap/cache database \
+    && chmod -R 775 storage bootstrap/cache database
 
-# Mengatur hak akses kepemilikan folder ke user bawaan php-fpm (www-data)
-RUN chown -R www-data:www-data /var/www/html
+# Perbaiki permission volume mount + drop ke www-data untuk perintah artisan
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["php-fpm"]
+
+
+# ---------- Stage 2: Nginx (serve public/ + proxy PHP ke php-fpm) ----------
+FROM nginx:1.27-alpine AS web
+
+# public/ selalu sinkron dengan image php-fpm (satu Dockerfile, satu build).
+# Symlink storage menunjuk ke volume ./storage yang di-mount saat runtime (lihat compose),
+# agar file di storage/app/public bisa diserve nginx langsung.
+COPY --from=app /var/www/html/public /var/www/html/public
+RUN mkdir -p /var/www/html/storage/app/public \
+    && ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
