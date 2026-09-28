@@ -25,7 +25,7 @@ jobs:
             # --build wajib: source ikut di-bake ke image (COPY . .),
             # tanpa ini container jalan dengan kode lama.
             # who-web/worker/scheduler ikut ter-recreate otomatis karena satu image.
-            docker compose up -d --build
+            docker compose up -d --build --remove-orphans
             # -T: tanpa TTY (SSH non-interaktif). -u www-data: agar file
             # cache/migrate milik www-data, bukan root.
             docker compose exec -T -u www-data who-app php artisan migrate --force
