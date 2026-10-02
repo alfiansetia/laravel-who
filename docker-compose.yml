@@ -6,8 +6,10 @@ services:
       target: app
     container_name: who-app
     restart: unless-stopped
-    env_file:
-      - .env
+    # NOTE: .env sengaja TIDAK dimuat via env_file. Compose menginterpolasi
+    # karakter $ (mis. "$2y$12$tf/..." pada ADMIN_PASS bcrypt menjadi rusak
+    # + warning 'The "tf" variable is not set'). .env sudah di-mount ke
+    # /var/www/html/.env di bawah, dan itu yang dibaca Laravel.
     expose:
       - "9000"
     volumes:
@@ -63,8 +65,8 @@ services:
       target: app
     container_name: who-worker
     restart: unless-stopped
-    env_file:
-      - .env
+    # NOTE: sama seperti who-app — jangan pakai env_file (Compose merusak
+    # nilai mengandung $, mis. ADMIN_PASS). .env dibaca via mount di bawah.
     command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=600", "--max-time=3600"]
     volumes:
       - ./storage:/var/www/html/storage
@@ -83,8 +85,8 @@ services:
       target: app
     container_name: who-scheduler
     restart: unless-stopped
-    env_file:
-      - .env
+    # NOTE: sama seperti who-app — jangan pakai env_file (Compose merusak
+    # nilai mengandung $, mis. ADMIN_PASS). .env dibaca via mount di bawah.
     command: ["php", "artisan", "schedule:work"]
     volumes:
       - ./storage:/var/www/html/storage
