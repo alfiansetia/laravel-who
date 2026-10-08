@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Services\StockServices;
+use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -13,7 +13,9 @@ class StockController extends Controller
 {
     public function index(Request $request)
     {
-        $data = StockServices::getAll($request->location);
+        $locations = $this->normalizeLocations($request->input('location'));
+        $data = StockServices::getAll($locations);
+
         return $this->sendResponse($data);
     }
 
@@ -23,9 +25,45 @@ class StockController extends Controller
         if ($request->filled('limit')) {
             $limit = intval($request->limit);
         }
-        $locations = $request->location ?? [];
+        $locations = $this->normalizeLocations($request->input('location'));
         $data = StockServices::lot($id, $locations, $limit);
+
         return $this->sendResponse($data);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function normalizeLocations(mixed $input): array
+    {
+        if ($input === null || $input === '') {
+            return [];
+        }
+        if (is_string($input)) {
+            return array_values(array_filter(array_map('trim', explode(',', $input))));
+        }
+        if (is_array($input)) {
+            $flat = [];
+            foreach ($input as $item) {
+                if (is_string($item) && str_contains($item, ',')) {
+                    foreach (explode(',', $item) as $part) {
+                        $part = trim($part);
+                        if ($part !== '') {
+                            $flat[] = $part;
+                        }
+                    }
+                } elseif (is_string($item) || is_numeric($item)) {
+                    $trimmed = trim((string) $item);
+                    if ($trimmed !== '') {
+                        $flat[] = $trimmed;
+                    }
+                }
+            }
+
+            return array_values($flat);
+        }
+
+        return [];
     }
 
     public function opname(Request $request)
@@ -36,7 +74,7 @@ class StockController extends Controller
             return $this->sendError('Location is required', [], 400);
         }
 
-        $templatePath = public_path("master/master_opname.xlsx");
+        $templatePath = public_path('master/master_opname.xlsx');
         $spreadsheet = IOFactory::load($templatePath);
         $templateSheet = $spreadsheet->getSheet(0);
 
@@ -59,9 +97,9 @@ class StockController extends Controller
             $spreadsheet->addSheet($currentSheet);
 
             // === HEADER INFO ===
-            $currentSheet->setCellValue('C4', ': ' . $currentMonth);
-            $currentSheet->setCellValue('C5', ': ' . $real_name);
-            $currentSheet->setCellValue('C6', ': ' . $currentDate);
+            $currentSheet->setCellValue('C4', ': '.$currentMonth);
+            $currentSheet->setCellValue('C5', ': '.$real_name);
+            $currentSheet->setCellValue('C6', ': '.$currentDate);
 
             // === ITEMS LOGIC ===
             $startRow = 9;
@@ -102,12 +140,12 @@ class StockController extends Controller
                     $currentSheet->getStyle("C{$currentRow}")->getAlignment()->setWrapText(true);
                 } else {
                     // Baris kosong (style border dan alignment sudah terduplikasi di atas)
-                    $currentSheet->setCellValue("A{$currentRow}", "");
-                    $currentSheet->setCellValue("B{$currentRow}", "");
-                    $currentSheet->setCellValue("C{$currentRow}", "");
-                    $currentSheet->setCellValue("D{$currentRow}", "");
-                    $currentSheet->setCellValue("E{$currentRow}", "");
-                    $currentSheet->setCellValue("F{$currentRow}", "");
+                    $currentSheet->setCellValue("A{$currentRow}", '');
+                    $currentSheet->setCellValue("B{$currentRow}", '');
+                    $currentSheet->setCellValue("C{$currentRow}", '');
+                    $currentSheet->setCellValue("D{$currentRow}", '');
+                    $currentSheet->setCellValue("E{$currentRow}", '');
+                    $currentSheet->setCellValue("F{$currentRow}", '');
                 }
             }
 
@@ -125,10 +163,9 @@ class StockController extends Controller
             $spreadsheet->removeSheetByIndex(0);
         }
 
-
         $filename = "Stock Opname {$currentDate} {$currentTime}.xlsx";
-        $outputPath = storage_path("app/temp/" . $filename);
-        if (!file_exists(dirname($outputPath))) {
+        $outputPath = storage_path('app/temp/'.$filename);
+        if (! file_exists(dirname($outputPath))) {
             mkdir(dirname($outputPath), 0775, true);
         }
 

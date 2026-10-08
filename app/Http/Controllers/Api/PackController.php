@@ -53,10 +53,10 @@ class PackController extends Controller
             ->get();
 
         return response()->json([
-            'data'        => $data,
-            'total'       => $total,
-            'page'        => $page,
-            'per_page'    => $perPage,
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
             'total_pages' => (int) ceil($total / $perPage),
         ]);
     }
@@ -64,28 +64,29 @@ class PackController extends Controller
     public function show($id)
     {
         $data = Pack::query()->with(['vendor', 'product', 'items.children'])->find($id);
-        if (!$data) {
+        if (! $data) {
             return $this->sendNotFound();
         }
+
         return $this->sendResponse($data);
     }
 
     protected function itemRules(): array
     {
         return [
-            'name'                          => 'required|string|max:200',
-            'desc'                          => 'nullable|string|max:200',
-            'vendor_desc'                   => 'nullable|string|max:200',
-            'product_id'                    => 'required|exists:products,id',
-            'vendor_id'                     => 'required|exists:vendors,id',
-            'items'                         => 'nullable|array',
-            'items.*.item'                  => 'required_with:items|string|max:65535',
-            'items.*.qty'                   => 'nullable|string|max:200',
-            'items.*.is_group'              => 'nullable|boolean',
-            'items.*.show_number'           => 'nullable|boolean',
-            'items.*.children'              => 'nullable|array|max:100',
-            'items.*.children.*.item'       => 'nullable|string|max:65535',
-            'items.*.children.*.qty'       => 'nullable|string|max:200',
+            'name' => 'required|string|max:200',
+            'desc' => 'nullable|string|max:200',
+            'vendor_desc' => 'nullable|string|max:200',
+            'product_id' => 'required|exists:products,id',
+            'vendor_id' => 'required|exists:vendors,id',
+            'items' => 'nullable|array',
+            'items.*.item' => 'required_with:items|string|max:65535',
+            'items.*.qty' => 'nullable|string|max:200',
+            'items.*.is_group' => 'nullable|boolean',
+            'items.*.show_number' => 'nullable|boolean',
+            'items.*.children' => 'nullable|array|max:100',
+            'items.*.children.*.item' => 'nullable|string|max:65535',
+            'items.*.children.*.qty' => 'nullable|string|max:200',
             'items.*.children.*.show_number' => 'nullable|boolean',
         ];
     }
@@ -100,11 +101,11 @@ class PackController extends Controller
             // Legacy flat row that is actually a child (level=1 without parent context)
             // is sent nested by the UI, so here every top-level entry is a top.
             $topModel = $pack->items()->create([
-                'item'        => $top['item'] ?? null,
-                'qty'         => !empty($top['is_group']) ? null : ($top['qty'] ?? null),
-                'parent_id'   => null,
-                'sort_order'  => $i,
-                'is_group'    => (bool) ($top['is_group'] ?? false),
+                'item' => $top['item'] ?? null,
+                'qty' => ! empty($top['is_group']) ? null : ($top['qty'] ?? null),
+                'parent_id' => null,
+                'sort_order' => $i,
+                'is_group' => (bool) ($top['is_group'] ?? false),
                 'show_number' => array_key_exists('show_number', $top) ? (bool) $top['show_number'] : true,
             ]);
             $children = $top['children'] ?? [];
@@ -113,11 +114,11 @@ class PackController extends Controller
                     continue;
                 }
                 $pack->items()->create([
-                    'item'        => $child['item'] ?? null,
-                    'qty'         => $child['qty'] ?? null,
-                    'parent_id'   => $topModel->id,
-                    'sort_order'  => $j,
-                    'is_group'    => false,
+                    'item' => $child['item'] ?? null,
+                    'qty' => $child['qty'] ?? null,
+                    'parent_id' => $topModel->id,
+                    'sort_order' => $j,
+                    'is_group' => false,
                     'show_number' => array_key_exists('show_number', $child) ? (bool) $child['show_number'] : true,
                 ]);
             }
@@ -128,55 +129,59 @@ class PackController extends Controller
     {
         $this->validate($request, $this->itemRules());
         $pack = Pack::create([
-            'name'          => $request->name,
-            'desc'          => $request->desc,
-            'vendor_desc'   => $request->vendor_desc,
-            'product_id'    => $request->product_id,
-            'vendor_id'     => $request->vendor_id,
+            'name' => $request->name,
+            'desc' => $request->desc,
+            'vendor_desc' => $request->vendor_desc,
+            'product_id' => $request->product_id,
+            'vendor_id' => $request->vendor_id,
         ]);
-        if (!empty($request->items)) {
+        if (! empty($request->items)) {
             // Backward compat: flat legacy rows [{item,qty}] without children key
             // are treated as top-level items.
             $this->saveItems($pack, $request->items);
         }
+
         return $this->sendResponse($pack->load('items.children'), 'Created!');
     }
 
     public function update(Request $request, $id)
     {
         $pack = Pack::find($id);
-        if (!$pack) {
+        if (! $pack) {
             return $this->sendNotFound();
         }
         $this->validate($request, $this->itemRules());
         $pack->update([
-            'name'          => $request->name,
-            'desc'          => $request->desc,
-            'vendor_desc'   => $request->vendor_desc,
-            'product_id'    => $request->product_id,
-            'vendor_id'     => $request->vendor_id,
+            'name' => $request->name,
+            'desc' => $request->desc,
+            'vendor_desc' => $request->vendor_desc,
+            'product_id' => $request->product_id,
+            'vendor_id' => $request->vendor_id,
         ]);
         $this->saveItems($pack, $request->items ?? []);
+
         return $this->sendResponse($pack->load('items.children'), 'Updated!');
     }
 
     public function destroy($id)
     {
         $pack = Pack::find($id);
-        if (!$pack) {
+        if (! $pack) {
             return $this->sendNotFound();
         }
         $pack->delete();
+
         return $this->sendResponse($pack, 'Deleted!');
     }
 
     public function destroy_batch(Request $request)
     {
         $this->validate($request, [
-            'ids'   => 'required|array',
+            'ids' => 'required|array',
             'ids.*' => 'integer|exists:packs,id',
         ]);
         $deleted = Pack::whereIn('id', $request->ids)->delete();
+
         return $this->sendResponse(['deleted_count' => $deleted], 'Pack deleted successfully.');
     }
 
@@ -184,26 +189,27 @@ class PackController extends Controller
     {
         $this->validate($request, [
             'vendor_id' => 'required|exists:vendors,id',
-            'ids'       => 'required|array',
-            'ids.*'     => 'integer|exists:packs,id',
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:packs,id',
         ]);
         $updated = Pack::whereIn('id', $request->ids)
             ->update(['vendor_id' => $request->vendor_id]);
 
         return $this->sendResponse([
-            'updated_count' => $updated
+            'updated_count' => $updated,
         ], 'Vendor changed successfully.');
     }
 
     public function download($id)
     {
         $pack = Pack::find($id);
-        if (!$pack) {
+        if (! $pack) {
             return $this->sendNotFound();
         }
 
         try {
             $path = $this->excelService->generatePack($pack);
+
             return response()->download($path)->deleteFileAfterSend();
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage());
@@ -237,7 +243,7 @@ class PackController extends Controller
         }
 
         try {
-            $spreadsheet = new Spreadsheet();
+            $spreadsheet = new Spreadsheet;
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Data Packing List');
 
@@ -281,12 +287,12 @@ class PackController extends Controller
             }
 
             // Style data rows
-            $dataRange = "A2:G" . ($row - 1);
+            $dataRange = 'A2:G'.($row - 1);
             $sheet->getStyle($dataRange)->applyFromArray([
                 'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'D6DCE4']]],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
             ]);
-            $sheet->getStyle("A2:A" . ($row - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A2:A'.($row - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
             // Column widths
             $sheet->getColumnDimension('A')->setWidth(6);
@@ -298,13 +304,13 @@ class PackController extends Controller
             $sheet->getColumnDimension('G')->setWidth(25);
 
             // Auto-filter
-            $sheet->setAutoFilter("A1:G" . ($row - 1));
+            $sheet->setAutoFilter('A1:G'.($row - 1));
 
             // Generate file
-            $filename = 'Data-Packing-List-' . now()->format('Y-m-d_His') . '.xlsx';
-            $outputPath = storage_path("app/temp/" . $filename);
+            $filename = 'Data-Packing-List-'.now()->format('Y-m-d_His').'.xlsx';
+            $outputPath = storage_path('app/temp/'.$filename);
             $outputDir = dirname($outputPath);
-            if (!file_exists($outputDir)) {
+            if (! file_exists($outputDir)) {
                 mkdir($outputDir, 0777, true);
             }
 
@@ -315,7 +321,7 @@ class PackController extends Controller
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])->deleteFileAfterSend();
         } catch (\Exception $e) {
-            return $this->sendError('Gagal generate Excel: ' . $e->getMessage());
+            return $this->sendError('Gagal generate Excel: '.$e->getMessage());
         }
     }
 }

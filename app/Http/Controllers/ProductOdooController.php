@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProductOdooController extends Controller
 {
-    public function index()
+    public function index(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Product Odoo', route('product_odoo.index'), false),
+        return Inertia::render('ProductOdoo/Index', [
+            'title' => 'Product Odoo',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('product_odoo.index', compact('bcms'))->with('title', 'Product Odoo');
     }
 }

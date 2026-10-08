@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class POController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('List PO', route('po.index'), false),
+        return Inertia::render('Po/Index', [
+            'title' => 'PO',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('po.index', compact('bcms'))->with('title', 'PO');
     }
 }

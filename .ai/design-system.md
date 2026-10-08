@@ -59,6 +59,6 @@ Dilarang pagination bernomor dengan ellipsis ala `getPaginationPages()` di `alam
 
 ## 6. Ikon (Lucide, Bukan Emoticon)
 
-- Library tunggal: `lucide-vue-next`. Nama ikon PascalCase (`Truck`, `ClipboardCheck`, `FileText`, `Bell`, `Search`, `Printer`).
+- Library tunggal: `@lucide/vue` (pengganti `lucide-vue-next` yang deprecated). Nama ikon PascalCase (`Truck`, `ClipboardCheck`, `FileText`, `Bell`, `Search`, `Printer`). Wajib nama kanonis — paket baru menghapus alias lama: pakai `Send` (bukan `PaperPlane`), `Megaphone` (bukan `Bullhorn`), `CircleCheck` (bukan `CheckCircle2`), `CircleX` (bukan `XCircle`). Verifikasi dengan `node -e "import('@lucide/vue').then(m => ...)"` bila ragu; build Vite gagal bila nama salah.
 - Map modul mengikuti nav lama: Product=`Cube→Package`, Stock=`Boxes`, QC=`ClipboardCheck`, Alamat Baru=`Truck`, BAST=`FileText`, PL=`ListOrdered`, SOP=`Layers`, Odoo dropdown=`Database`, PO=`FileText`, RI=`Receipt`, SO=`ShoppingCart`, DO=`Truck`, IT=`ArrowLeftRight`.
 - Status: `StatusBadge` (contoh: draft=slate, proses=amber, siap=blue, terkirim=green, batal=red) + ikon (`Clock`, `Loader`, `CheckCircle2`, `XCircle`). Tidak ada warna hardcode di page.

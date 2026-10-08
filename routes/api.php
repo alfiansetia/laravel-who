@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\AlamatController;
-use App\Http\Controllers\Api\AlamatBaruController;
 use App\Http\Controllers\Api\AklController;
 use App\Http\Controllers\Api\AklItemController;
+use App\Http\Controllers\Api\AlamatBaruController;
+use App\Http\Controllers\Api\AlamatController;
 use App\Http\Controllers\Api\AtkController;
 use App\Http\Controllers\Api\AtkTransactionController;
 use App\Http\Controllers\Api\AuthController;
@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\DetailBastController;
 use App\Http\Controllers\Api\DOController;
 use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\Api\ItController;
+use App\Http\Controllers\Api\IzinEdarController;
 use App\Http\Controllers\Api\KarganController;
 use App\Http\Controllers\Api\KoliController;
 use App\Http\Controllers\Api\KoliItemController;
@@ -22,6 +23,8 @@ use App\Http\Controllers\Api\PackController;
 use App\Http\Controllers\Api\PackItemController;
 use App\Http\Controllers\Api\POController;
 use App\Http\Controllers\Api\ProblemController;
+use App\Http\Controllers\Api\ProblemItemController;
+use App\Http\Controllers\Api\ProblemLogController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\ProductOdooController;
@@ -30,13 +33,14 @@ use App\Http\Controllers\Api\QcLotController;
 use App\Http\Controllers\Api\ResourceController;
 use App\Http\Controllers\Api\RIController;
 use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\ShippingEstimateController;
 use App\Http\Controllers\Api\SoController;
 use App\Http\Controllers\Api\SopController;
 use App\Http\Controllers\Api\SpreadsheetController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\TikiController;
-use App\Http\Controllers\Api\IzinEdarController;
 use App\Http\Controllers\Api\VendorController;
+use App\Http\Controllers\Api\VendorOdooController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -50,7 +54,7 @@ Route::get('do/{id}', [DOController::class, 'detail'])->name('api.do.detail');
 Route::post('so/{id}/mark-as-print', [SoController::class, 'mark_as_print'])->name('api.so.mark_as_print');
 Route::post('so/{id}/mark-as-unprint', [SoController::class, 'mark_as_unprint'])->name('api.so.mark_as_unprint');
 Route::get('so', [SoController::class, 'index'])->name('api.so.index');
-Route::get('so/{id}', [SOController::class, 'detail'])->name('api.so.detail');
+Route::get('so/{id}', [SoController::class, 'detail'])->name('api.so.detail');
 
 Route::get('it', [ItController::class, 'index'])->name('api.it.index');
 Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
@@ -71,6 +75,9 @@ Route::get('lot/{id}/trace', [LotController::class, 'trace'])->name('api.lots.tr
 Route::get('lot/{id}', [LotController::class, 'lot'])->name('api.lots.lot');
 Route::get('lot', [LotController::class, 'index'])->name('api.lots.index');
 
+Route::get('vendor-odoo/{id}', [VendorOdooController::class, 'detail'])->name('api.vendor_odoo.detail');
+Route::get('vendor-odoo', [VendorOdooController::class, 'index'])->name('api.vendor_odoo.index');
+
 Route::get('monitor-do', [DOController::class, 'monitor'])->name('api.monitor.do');
 
 Route::get('problem/next-number', [ProblemController::class, 'nextNumber'])->name('api.problem.next_number');
@@ -79,12 +86,12 @@ Route::apiResource('problem', ProblemController::class)->names('api.problem')->o
 Route::post('problem/{problem}/status', [ProblemController::class, 'updateStatus']);
 
 // Problem Item Routes
-Route::apiResource('problem-item', \App\Http\Controllers\Api\ProblemItemController::class)
+Route::apiResource('problem-item', ProblemItemController::class)
     ->names('api.problem_item')
     ->only(['store', 'show', 'update', 'destroy']);
 
 // Problem Log Routes
-Route::apiResource('problem-log', \App\Http\Controllers\Api\ProblemLogController::class)
+Route::apiResource('problem-log', ProblemLogController::class)
     ->names('api.problem_log')
     ->only(['store', 'show', 'update', 'destroy']);
 
@@ -101,16 +108,15 @@ Route::apiResource('atk', AtkController::class)->names('api.atk');
 Route::post('atk-import', [AtkController::class, 'import'])->name('api.atk.import');
 Route::apiResource('atk-trx', AtkTransactionController::class)->names('api.atktrx');
 
-
 Route::get('firebase-config', function () {
     return response()->json([
-        'apiKey'            => config('services.firebase.api_key'),
-        'authDomain'        => config('services.firebase.auth_domain'),
-        'projectId'         => config('services.firebase.project_id'),
-        'storageBucket'     => config('services.firebase.storage_bucket'),
+        'apiKey' => config('services.firebase.api_key'),
+        'authDomain' => config('services.firebase.auth_domain'),
+        'projectId' => config('services.firebase.project_id'),
+        'storageBucket' => config('services.firebase.storage_bucket'),
         'messagingSenderId' => config('services.firebase.messaging_sender_id'),
-        'appId'             => config('services.firebase.app_id'),
-        'measurementId'     => config('services.firebase.measurement_id'),
+        'appId' => config('services.firebase.app_id'),
+        'measurementId' => config('services.firebase.measurement_id'),
     ]);
 });
 
@@ -212,7 +218,6 @@ Route::post('koli-item/from-do-it', [KoliItemController::class, 'fromDoIt'])
 Route::post('form-qc/', [QcController::class, 'store'])
     ->name('api.qc.store');
 
-
 Route::get('settings/cek-odoo', [SettingController::class, 'cek_odoo'])
     ->name('api.settings.cek_odoo');
 Route::get('settings/', [SettingController::class, 'index'])
@@ -231,7 +236,6 @@ Route::get('spreadsheet', [SpreadsheetController::class, 'index'])
 Route::post('spreadsheet', [SpreadsheetController::class, 'sync_product'])
     ->name('api.spreadsheet.sync_product');
 
-
 Route::post('tokens/test', [FcmTokenController::class, 'test'])
     ->name('api.tokens.test');
 Route::apiResource('tokens', FcmTokenController::class)
@@ -240,7 +244,6 @@ Route::apiResource('tokens', FcmTokenController::class)
 
 // TIKI Tracking
 Route::get('tiki/track', [TikiController::class, 'track'])->name('api.tiki.track');
-
 
 Route::get('products/search', [ProductController::class, 'search'])
     ->name('api.products.search');
@@ -299,7 +302,6 @@ Route::apiResource('product_images', ProductImageController::class)
     ->names('api.product_images')
     ->only(['index', 'show', 'store', 'destroy']);
 
-
 Route::delete('/resources', [ResourceController::class, 'destroy_log'])
     ->name('api.resources.destroy_log');
 Route::get('/resources', [ResourceController::class, 'index'])
@@ -313,9 +315,9 @@ Route::post('qc-lots/import', [QcLotController::class, 'import'])
     ->name('api.qc_lots.import');
 
 // Shipping Estimate API Routes
-Route::delete('shipping-estimate', [\App\Http\Controllers\Api\ShippingEstimateController::class, 'destroyBatch'])
+Route::delete('shipping-estimate', [ShippingEstimateController::class, 'destroyBatch'])
     ->name('api.shipping_estimate.destroy_batch');
-Route::apiResource('shipping-estimate', \App\Http\Controllers\Api\ShippingEstimateController::class)
+Route::apiResource('shipping-estimate', ShippingEstimateController::class)
     ->names('api.shipping_estimate')
     ->only(['index', 'show', 'destroy']);
 

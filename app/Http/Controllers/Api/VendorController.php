@@ -36,10 +36,10 @@ class VendorController extends Controller
             ->get();
 
         return response()->json([
-            'data'        => $data,
-            'total'       => $total,
-            'page'        => $page,
-            'per_page'    => $perPage,
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
             'total_pages' => (int) ceil($total / $perPage),
         ]);
     }
@@ -47,62 +47,66 @@ class VendorController extends Controller
     public function show($id)
     {
         $data = Vendor::with(['packs'])->find($id);
-        if (!$data) {
+        if (! $data) {
             return $this->sendNotFound();
         }
+
         return $this->sendResponse($data);
     }
 
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name'          => 'required|unique:vendors,name|string|max:200',
-            'desc'          => 'nullable|string|max:200',
+            'name' => 'required|unique:vendors,name|string|max:200',
+            'desc' => 'nullable|string|max:200',
         ]);
         $vendor = Vendor::create([
-            'name'  => $request->name,
-            'desc'  => $request->desc,
+            'name' => $request->name,
+            'desc' => $request->desc,
         ]);
+
         return $this->sendResponse($vendor, 'Created!');
     }
 
     public function update(Request $request, $id)
     {
         $vendor = Vendor::find($id);
-        if (!$vendor) {
+        if (! $vendor) {
             return $this->sendNotFound();
         }
         $this->validate($request, [
-            'name'          => 'required|string|max:200|unique:vendors,name,' . $id,
-            'desc'          => 'nullable|string|max:200',
+            'name' => 'required|string|max:200|unique:vendors,name,'.$id,
+            'desc' => 'nullable|string|max:200',
         ]);
         $vendor = Vendor::create([
-            'name'  => $request->name,
-            'desc'  => $request->desc,
+            'name' => $request->name,
+            'desc' => $request->desc,
         ]);
+
         return $this->sendResponse($vendor, 'Created!');
     }
 
     public function destroy($id)
     {
         $vendor = Vendor::find($id);
-        if (!$vendor) {
+        if (! $vendor) {
             return $this->sendNotFound();
         }
         $vendor->delete();
+
         return $this->sendResponse($vendor, 'Deleted!');
     }
 
     public function destroy_batch(Request $request)
     {
         $this->validate($request, [
-            'ids'       => 'required|array',
-            'ids.*'     => 'integer|exists:vendors,id',
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:vendors,id',
         ]);
         $deleted = Vendor::whereIn('id', $request->ids)->delete();
 
         return $this->sendResponse([
-            'deleted_count' => $deleted
+            'deleted_count' => $deleted,
         ], 'Vendor deleted successfully.');
     }
 }

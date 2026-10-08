@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vendor;
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class VendorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bcms = collect([
-            new Breadcrumb('List Vendor', route('vendors.index'), false),
+        return Inertia::render('Vendor/Index', [
+            'title' => 'Vendor Odoo',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('vendor.index', compact('bcms'));
     }
 }

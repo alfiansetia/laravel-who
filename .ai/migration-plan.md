@@ -32,7 +32,7 @@ Kolom Tabel = mode `DataTable` (`design-system.md §3`). `server + client*` = ta
 
 ## 2. Urutan Batch
 
-- **Fase 0 (3 hari):** Setup Inertia + shadcn-vue + `AppLayout/PageHeader/DataTable/TablePagination/SearchableSelect/FormField/AppModal/useToast/useConfirm/useBlock/useTableQuery/useClientTable/lib-export` + `Vendor/Index` sebagai pilot (mode server).
+- **Fase 0 (3 hari):** Setup Inertia + shadcn-vue + `AppLayout/PageHeader/DataTable/TablePagination/SearchableSelect/FormField/AppModal/useToast/useConfirm/useBlock/useTableQuery/useClientTable/lib-export` + `Home/Index` (SELESAI: fondasi + menu grid) + `Vendor/Index` sebagai pilot tabel pertama (mode server).
 - **Fase 1 (2 minggu):** Vendor, Kontak, SOP, Kargan, ATK, QC Lot. Target: buktikan pola CRUD + tabel + modal + import.
 - **Fase 2 (2–3 minggu):** AKL, Izin Edar, Shipping Estimate, Product Image, File Search, Tools kecil.
 - **Fase 3 (3–4 minggu):** Pack, BAST, Alamat, DO/SO/IT, Stock/Lot/Product-Odoo, PO/RI, Problem, QC. Alamat Baru paling akhir di fase ini.

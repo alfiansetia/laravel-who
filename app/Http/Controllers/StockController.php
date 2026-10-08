@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class StockController extends Controller
 {
-    public function index()
+    public function index(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('List Product Stock', route('stock.index'), false),
+        return Inertia::render('Stock/Index', [
+            'title' => 'Data Stock',
+            'filters' => $request->only(['search', 'location']),
         ]);
-        return view('stock.index', compact('bcms'))->with(['title' => 'Data Stock']);
     }
 }

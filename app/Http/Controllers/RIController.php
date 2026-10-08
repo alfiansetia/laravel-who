@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class RIController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('List RI', route('ri.index'), false),
+        return Inertia::render('Ri/Index', [
+            'title' => 'RI',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('ri.index', compact('bcms'))->with('title', 'RI');
     }
 }

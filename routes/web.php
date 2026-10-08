@@ -1,15 +1,15 @@
 <?php
 
-use App\Http\Controllers\AlamatController;
-use App\Http\Controllers\AlamatBaruController;
 use App\Http\Controllers\AklController;
-use App\Http\Controllers\ItController;
+use App\Http\Controllers\AlamatBaruController;
+use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AtkController;
 use App\Http\Controllers\BastController;
 use App\Http\Controllers\DoController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\FileSearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ItController;
 use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
@@ -25,14 +25,12 @@ use App\Http\Controllers\QcLotController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
-use App\Http\Controllers\SopController;
 use App\Http\Controllers\SoController;
+use App\Http\Controllers\SopController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
-
-
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
@@ -45,6 +43,7 @@ Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
 
 Route::get('monitor-do', function () {
     $title = 'Monitor DO';
+
     return view('monitor.do', compact('title'));
 })->name('monitor.do');
 
@@ -84,7 +83,6 @@ Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('too
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
-
 Route::resource('packs', PackController::class)
     ->names('packs')
     ->only(['index', 'show', 'create', 'edit']);
@@ -95,7 +93,7 @@ Route::get('packs/{pack}/print-combined', [PackController::class, 'printCombined
 
 Route::resource('vendors', VendorController::class)
     ->names('vendors')
-    ->only(['index', 'show', 'create', 'edit']);
+    ->only(['index']);
 
 Route::resource('sops', SopController::class)
     ->names('sops')
@@ -166,7 +164,6 @@ Route::resource('akls', AklController::class)
 // Shipping Estimate Routes
 Route::resource('shipping-estimate', ShippingEstimateController::class)
     ->names('shipping_estimate');
-
 
 Route::get('/firebase-messaging-sw.js', function () {
     $content = view('firebase-messaging-sw')->render();

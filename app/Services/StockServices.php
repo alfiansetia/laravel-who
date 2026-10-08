@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Services\Odoo;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
 
 class StockServices extends Odoo
 {
@@ -17,8 +15,11 @@ class StockServices extends Odoo
         //
     }
 
-    public static function getAll(array $locations = [])
+    public static function getAll(array|string|null $locations = [])
     {
+        if (! is_array($locations)) {
+            $locations = $locations === null || $locations === '' ? [] : array_values(array_filter(array_map('trim', explode(',', (string) $locations))));
+        }
         $param = [
             'jsonrpc' => '2.0',
             'method' => 'call',
@@ -28,15 +29,15 @@ class StockServices extends Odoo
                 'method' => 'read_group',
                 'kwargs' => [
                     'context' => [
-                        'lang'          => 'en_US',
-                        'tz'            => 'GMT',
-                        'uid'           => 192,
-                        'active_model'  => 'stock.quantity.history',
-                        'active_id'     => 1106,
-                        'active_ids'    => [1106],
+                        'lang' => 'en_US',
+                        'tz' => 'GMT',
+                        'uid' => 192,
+                        'active_model' => 'stock.quantity.history',
+                        'active_id' => 1106,
+                        'active_ids' => [1106],
                         'search_default_internal_loc' => 1,
-                        'group_by'      => ['product_id', 'location_id'],
-                        'search_disable_custom_filters' => true
+                        'group_by' => ['product_id', 'location_id'],
+                        'search_disable_custom_filters' => true,
                     ],
                     'domain' => [
                         ['location_id.usage', '=', 'internal'],
@@ -57,10 +58,10 @@ class StockServices extends Odoo
                     ],
                     'groupby' => ['product_id', 'location_id'],
                     'orderby' => '',
-                    'lazy' => true
-                ]
+                    'lazy' => true,
+                ],
             ],
-            'id' => 432008837
+            'id' => 432008837,
         ];
         for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
             array_push($param['params']['kwargs']['domain'], '|');
@@ -80,11 +81,12 @@ class StockServices extends Odoo
         // 1. Ekstrak info dasar dan kumpulkan semua 'code' unik
         $mappedData = $data->map(function ($item) {
             [$id, $code, $name] = pecah_code($item['product_id']);
+
             return [
-                'id'       => $id,
+                'id' => $id,
                 'quantity' => $item['quantity'] ?? 0,
-                'code'     => $code,
-                'name'     => $name,
+                'code' => $code,
+                'name' => $name,
                 'original' => $item,
             ];
         });
@@ -96,6 +98,7 @@ class StockServices extends Odoo
         // 3. Masukkan 'akl' ke hasil akhir
         return $mappedData->map(function ($item) use ($productMap) {
             $item['akl'] = $productMap[$item['code']] ?? null;
+
             return $item;
         });
     }
@@ -103,48 +106,48 @@ class StockServices extends Odoo
     public static function lot(int $id, $locations = [], int $limit = 10)
     {
         $param = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "model" => "stock.quant",
-                "domain" => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'model' => 'stock.quant',
+                'domain' => [
                     [
-                        "product_id",
-                        "in",
+                        'product_id',
+                        'in',
                         [
                             $id,
-                        ]
+                        ],
                     ],
                 ],
-                "fields" => [
-                    "product_id",
-                    "location_id",
-                    "lot_id",
-                    "itds_expired",
-                    "package_id",
-                    "owner_id",
-                    "reserved_quantity",
-                    "quantity",
-                    "product_uom_id",
-                    "write_date",
-                    "company_id"
+                'fields' => [
+                    'product_id',
+                    'location_id',
+                    'lot_id',
+                    'itds_expired',
+                    'package_id',
+                    'owner_id',
+                    'reserved_quantity',
+                    'quantity',
+                    'product_uom_id',
+                    'write_date',
+                    'company_id',
                 ],
-                "limit" => $limit,
-                "sort" => "",
-                "context" => [
-                    "lang" => "en_US",
-                    "tz" => "Asia/Jakarta",
-                    "uid" => 192,
-                    "active_model" => "product.template",
-                    "active_id" => 21418,
-                    "active_ids" => [
-                        21418
+                'limit' => $limit,
+                'sort' => '',
+                'context' => [
+                    'lang' => 'en_US',
+                    'tz' => 'Asia/Jakarta',
+                    'uid' => 192,
+                    'active_model' => 'product.template',
+                    'active_id' => 21418,
+                    'active_ids' => [
+                        21418,
                     ],
-                    "search_default_internal_loc" => 1,
-                    "search_disable_custom_filters" => true
-                ]
+                    'search_default_internal_loc' => 1,
+                    'search_disable_custom_filters' => true,
+                ],
             ],
-            "id" => 520742991
+            'id' => 520742991,
         ];
         for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
             array_push($param['params']['domain'], '|');
@@ -160,6 +163,7 @@ class StockServices extends Odoo
             ->method('POST')
             ->get();
         $data = collect(Arr::get($response, 'result.records', []) ?? []);
+
         return $data->map(function ($item) {
             $loc = get_name($item['location_id'] ?? null);
             $lot = get_name($item['lot_id'] ?? null);
@@ -172,18 +176,19 @@ class StockServices extends Odoo
             try {
                 $expired = odoo_datetime($expired, 'Y.m.d');
             } catch (\Throwable $th) {
-                //throw $th;
+                // throw $th;
             }
+
             return [
-                'id'            => $id,
-                'quantity'      => $item['quantity'] ?? 0,
-                'code'          => $code,
-                'name'          => $name,
-                'location'      => $loc,
-                'lot'           => $lot,
-                'expired'       => $expired,
-                'expired_ori'   => $expired_ori,
-                'original'      => $item,
+                'id' => $id,
+                'quantity' => $item['quantity'] ?? 0,
+                'code' => $code,
+                'name' => $name,
+                'location' => $loc,
+                'lot' => $lot,
+                'expired' => $expired,
+                'expired_ori' => $expired_ori,
+                'original' => $item,
             ];
         });
     }
@@ -191,12 +196,12 @@ class StockServices extends Odoo
     public static function getLocationAlias(string $code)
     {
         return match (strtolower($code)) {
-            'center'    => 'CENTER',
-            'cbb'       => 'CIBUBUR',
-            'krtn'      => 'KARANTINA',
-            'badstock'  => 'BADSTOCK',
-            'demo'      => 'DEMO',
-            default     => $code,
+            'center' => 'CENTER',
+            'cbb' => 'CIBUBUR',
+            'krtn' => 'KARANTINA',
+            'badstock' => 'BADSTOCK',
+            'demo' => 'DEMO',
+            default => $code,
         };
     }
 }

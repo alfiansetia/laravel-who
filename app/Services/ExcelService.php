@@ -4,12 +4,11 @@ namespace App\Services;
 
 use App\Models\Pack;
 use App\Models\PackItem;
-use App\Models\Sop;
 use App\Models\Product;
+use App\Models\Sop;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Illuminate\Support\Str;
 
 class ExcelService
 {
@@ -24,9 +23,9 @@ class ExcelService
             return null;
         }
 
-        $templatePath = public_path("master/master_pack.xlsx");
-        if (!file_exists($templatePath)) {
-            throw new \Exception("Template master_pack.xlsx not found.");
+        $templatePath = public_path('master/master_pack.xlsx');
+        if (! file_exists($templatePath)) {
+            throw new \Exception('Template master_pack.xlsx not found.');
         }
 
         $spreadsheet = IOFactory::load($templatePath);
@@ -46,7 +45,7 @@ class ExcelService
                 // Clone the template sheet
                 $sheets[$i] = clone $templateSheet;
                 // CRITICAL: Rename the sheet BEFORE adding it to the workbook to avoid name conflicts
-                $sheets[$i]->setTitle('Temp_PL_' . ($i + 1));
+                $sheets[$i]->setTitle('Temp_PL_'.($i + 1));
                 $spreadsheet->addSheet($sheets[$i]);
             }
         }
@@ -54,15 +53,15 @@ class ExcelService
         // 2. Rename to final names and Fill data
         foreach ($product->packs as $index => $pack) {
             $currentSheet = $sheets[$index];
-            $currentSheet->setTitle('PL ' . ($index + 1));
+            $currentSheet->setTitle('PL '.($index + 1));
 
-            $name   = $pack->vendor->name ?? '';
-            $desc   = $pack->vendor_desc ? " ({$pack->vendor_desc})" : '';
+            $name = $pack->vendor->name ?? '';
+            $desc = $pack->vendor_desc ? " ({$pack->vendor_desc})" : '';
             $vendor = "Pabrikan : {$name}{$desc}";
 
-            $code   = $product->code ?? '';
-            $pname  = $product->name ?? '';
-            $pdesc  = $pack->desc ? " ({$pack->desc})" : '';
+            $code = $product->code ?? '';
+            $pname = $product->name ?? '';
+            $pdesc = $pack->desc ? " ({$pack->desc})" : '';
             $productTitle = "Produk : {$code} {$pname}{$pdesc}";
 
             // === HEADER INFO ===
@@ -78,7 +77,7 @@ class ExcelService
 
             $rows = PackItem::flattenedFor($pack);
             foreach ($rows as $r) {
-                /** @var \App\Models\PackItem $item */
+                /** @var PackItem $item */
                 $item = $r['model'];
                 if ($row > $startRow) {
                     $currentSheet->duplicateStyle($baseStyle, "B{$row}:E{$row}");
@@ -100,20 +99,20 @@ class ExcelService
             $cdakb = config('cdakb.pack');
             $cdakb_row = "E{$row}";
             if (count($rows) <= 3) {
-                $cdakb_row = "E11";
+                $cdakb_row = 'E11';
             }
             $currentSheet->setCellValue($cdakb_row, $cdakb);
             $currentSheet->getStyle($cdakb_row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
         }
 
-        if (!$filename) {
+        if (! $filename) {
             $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', ($product->code ?? ''));
             $filename = "{$file_name}-PL.xlsx";
         }
 
-        $outputPath = storage_path("app/temp/" . $filename);
+        $outputPath = storage_path('app/temp/'.$filename);
         $outputDir = dirname($outputPath);
-        if (!file_exists($outputDir)) {
+        if (! file_exists($outputDir)) {
             mkdir($outputDir, 0777, true);
         }
 
@@ -130,21 +129,21 @@ class ExcelService
     {
         $pack->load(['vendor', 'product', 'items']);
 
-        $templatePath = public_path("master/master_pack.xlsx");
-        if (!file_exists($templatePath)) {
-            throw new \Exception("Template master_pack.xlsx not found.");
+        $templatePath = public_path('master/master_pack.xlsx');
+        if (! file_exists($templatePath)) {
+            throw new \Exception('Template master_pack.xlsx not found.');
         }
 
         $spreadsheet = IOFactory::load($templatePath);
         $sheet = $spreadsheet->getActiveSheet();
 
-        $name   = $pack->vendor->name ?? '';
-        $desc   = $pack->vendor_desc ? " ({$pack->vendor_desc})" : '';
+        $name = $pack->vendor->name ?? '';
+        $desc = $pack->vendor_desc ? " ({$pack->vendor_desc})" : '';
         $vendor = "Pabrikan : {$name}{$desc}";
 
-        $code   = $pack->product->code ?? '';
-        $pname  = $pack->product->name ?? '';
-        $pdesc  = $pack->desc ? " ({$pack->desc})" : '';
+        $code = $pack->product->code ?? '';
+        $pname = $pack->product->name ?? '';
+        $pdesc = $pack->desc ? " ({$pack->desc})" : '';
         $productTitle = "Produk : {$code} {$pname}{$pdesc}";
 
         // === HEADER INFO ===
@@ -160,7 +159,7 @@ class ExcelService
 
         $rows = PackItem::flattenedFor($pack);
         foreach ($rows as $r) {
-            /** @var \App\Models\PackItem $item */
+            /** @var PackItem $item */
             $item = $r['model'];
             if ($row > $startRow) {
                 $sheet->duplicateStyle($baseStyle, "B{$row}:E{$row}");
@@ -182,20 +181,20 @@ class ExcelService
         $cdakb = config('cdakb.pack');
         $cdakb_row = "E{$row}";
         if (count($rows) <= 3) {
-            $cdakb_row = "E11";
+            $cdakb_row = 'E11';
         }
         $sheet->setCellValue($cdakb_row, $cdakb);
         $sheet->getStyle($cdakb_row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-        if (!$filename) {
-            $file = $code . ($pdesc ?: '');
+        if (! $filename) {
+            $file = $code.($pdesc ?: '');
             $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', $file);
             $filename = "{$file_name}-PL.xlsx";
         }
 
-        $outputPath = storage_path("app/temp/" . $filename);
+        $outputPath = storage_path('app/temp/'.$filename);
         $outputDir = dirname($outputPath);
-        if (!file_exists($outputDir)) {
+        if (! file_exists($outputDir)) {
             mkdir($outputDir, 0777, true);
         }
 
@@ -218,9 +217,9 @@ class ExcelService
             return null;
         }
 
-        $templatePath = public_path("master/master_sop.xlsx");
-        if (!file_exists($templatePath)) {
-            throw new \Exception("Template master_sop.xlsx not found.");
+        $templatePath = public_path('master/master_sop.xlsx');
+        if (! file_exists($templatePath)) {
+            throw new \Exception('Template master_sop.xlsx not found.');
         }
 
         $spreadsheet = IOFactory::load($templatePath);
@@ -236,7 +235,7 @@ class ExcelService
                 $sheets[$i]->setTitle('Temp_SOP_1');
             } else {
                 $sheets[$i] = clone $templateSheet;
-                $sheets[$i]->setTitle('Temp_SOP_' . ($i + 1));
+                $sheets[$i]->setTitle('Temp_SOP_'.($i + 1));
                 $spreadsheet->addSheet($sheets[$i]);
             }
         }
@@ -244,11 +243,11 @@ class ExcelService
         // 2. Rename and Fill data
         foreach ($sops as $index => $sop) {
             $currentSheet = $sheets[$index];
-            $currentSheet->setTitle('SOP ' . ($index + 1));
+            $currentSheet->setTitle('SOP '.($index + 1));
 
-            $product_code  = 'Kode barang : ' . ($product->code ?? '');
-            $product_name  = 'Nama barang : ' . ($product->name ?? '');
-            $target  = 'Target : ' . ($sop->target ?? '');
+            $product_code = 'Kode barang : '.($product->code ?? '');
+            $product_name = 'Nama barang : '.($product->name ?? '');
+            $target = 'Target : '.($sop->target ?? '');
 
             // === HEADER INFO ===
             $currentSheet->setCellValue('B4', $product_code);
@@ -275,14 +274,14 @@ class ExcelService
             }
         }
 
-        if (!$filename) {
+        if (! $filename) {
             $file_name = preg_replace('/[^A-Za-z0-9_.\-+()]/', '-', ($product->code ?? ''));
             $filename = "{$file_name}-SOP.xlsx";
         }
 
-        $outputPath = storage_path("app/temp/" . $filename);
+        $outputPath = storage_path('app/temp/'.$filename);
         $outputDir = dirname($outputPath);
-        if (!file_exists($outputDir)) {
+        if (! file_exists($outputDir)) {
             mkdir($outputDir, 0777, true);
         }
 

@@ -6,7 +6,6 @@ use App\Models\Pack;
 use App\Models\Product;
 use App\Models\Vendor;
 use App\Services\Breadcrumb;
-use Illuminate\Http\Request;
 
 class PackController extends Controller
 {
@@ -16,6 +15,7 @@ class PackController extends Controller
             new Breadcrumb('List Packing List', route('packs.index'), false),
         ]);
         $vendors = Vendor::all();
+
         return view('pack.index', compact(['vendors', 'bcms']));
     }
 
@@ -27,6 +27,7 @@ class PackController extends Controller
         ]);
         $products = Product::all();
         $vendors = Vendor::all();
+
         return view('pack.create', compact(['products', 'vendors', 'bcms']));
     }
 
@@ -35,22 +36,25 @@ class PackController extends Controller
         $data = $pack->load(['product', 'vendor']);
         $bcms = collect([
             new Breadcrumb('List Packing List', route('packs.index'), true),
-            new Breadcrumb($pack->name . '-' . ($pack->product->code ?? '-'), route('packs.edit',  $data->id), false),
+            new Breadcrumb($pack->name.'-'.($pack->product->code ?? '-'), route('packs.edit', $data->id), false),
         ]);
         $products = Product::all();
         $vendors = Vendor::all();
+
         return view('pack.edit', compact(['data', 'products', 'vendors', 'bcms']));
     }
 
     public function show($id)
     {
         $product = Product::query()->with('pls')->findOrFail($id);
+
         return view('pack.show', compact('product'));
     }
 
     public function print(Pack $pack)
     {
         $pack->load(['product.sop.items', 'vendor', 'items.children']);
+
         return view('pack.print', compact('pack'));
     }
 
@@ -58,6 +62,7 @@ class PackController extends Controller
     {
         $pack->load(['product.sop.items', 'vendor', 'items.children', 'product.pltbb']);
         $sop = $pack->product->sop;
+
         return view('pack.print_combined', compact('pack', 'sop'));
     }
 }

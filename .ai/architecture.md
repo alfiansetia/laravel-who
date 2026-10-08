@@ -33,7 +33,7 @@ Laravel
 | Toast/alert | `vue-sonner` dibungkus `useToast()` | Pengganti `show_message()` iziToast |
 | Confirm | `AlertDialog` shadcn dibungkus `useConfirm()` | Pengganti `confirmation()` iziToast |
 | Blocking | `useBlock()` (overlay shadcn) | Pengganti `bloc()/unbloc()` blockUI |
-| Ikon | `lucide-vue-next` | Pengganti FontAwesome di code baru; tanpa emoticon |
+| Ikon | `@lucide/vue` | Pengganti FontAwesome di code baru; tanpa emoticon |
 | Util | `vueuse`, `axios` instance, `ziggy-js` | `route()` di Vue sama seperti Blade |
 | Tanggal | `flatpickr` dibungkus ATAU `Calendar` shadcn | Satu saja per project, jangan campur |
 
