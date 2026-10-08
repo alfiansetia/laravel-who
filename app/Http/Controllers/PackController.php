@@ -50,13 +50,13 @@ class PackController extends Controller
 
     public function print(Pack $pack)
     {
-        $pack->load(['product.sop.items', 'vendor', 'items']);
+        $pack->load(['product.sop.items', 'vendor', 'items.children']);
         return view('pack.print', compact('pack'));
     }
 
     public function printCombined(Pack $pack)
     {
-        $pack->load(['product.sop.items', 'vendor', 'items', 'product.pltbb']);
+        $pack->load(['product.sop.items', 'vendor', 'items.children', 'product.pltbb']);
         $sop = $pack->product->sop;
         return view('pack.print_combined', compact('pack', 'sop'));
     }

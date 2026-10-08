@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Pack;
+use App\Models\PackItem;
 use App\Models\Sop;
 use App\Models\Product;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -68,30 +69,37 @@ class ExcelService
             $currentSheet->setCellValue('B4', $vendor);
             $currentSheet->setCellValue('B5', $productTitle);
 
-            // === ITEMS ===
+            // === ITEMS (hierarchical, max 2 level) ===
             $startRow = 8;
             $row = $startRow;
 
             $baseStyle = $currentSheet->getStyle("B{$startRow}:E{$startRow}");
             $baseRowHeight = $currentSheet->getRowDimension($startRow)->getRowHeight();
 
-            foreach ($pack->items as $iIndex => $item) {
+            $rows = PackItem::flattenedFor($pack);
+            foreach ($rows as $r) {
+                /** @var \App\Models\PackItem $item */
+                $item = $r['model'];
                 if ($row > $startRow) {
                     $currentSheet->duplicateStyle($baseStyle, "B{$row}:E{$row}");
                     $currentSheet->getRowDimension($row)->setRowHeight($baseRowHeight);
                 }
-                $currentSheet->setCellValue("B{$row}", $iIndex + 1);
+                $currentSheet->setCellValue("B{$row}", $r['display_no']);
                 $currentSheet->setCellValue("C{$row}", $item->item);
-                $currentSheet->setCellValue("D{$row}", $item->qty);
+                $currentSheet->setCellValue("D{$row}", $item->is_group ? null : $item->qty);
                 $currentSheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $currentSheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $currentSheet->getStyle("C{$row}")->getAlignment()->setIndent($r['level'] > 0 ? 2 : 0);
+                if ($item->is_group) {
+                    $currentSheet->getStyle("C{$row}")->getFont()->setBold(true);
+                }
                 $currentSheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $row++;
             }
 
             $cdakb = config('cdakb.pack');
             $cdakb_row = "E{$row}";
-            if ($pack->items->count() <= 3) {
+            if (count($rows) <= 3) {
                 $cdakb_row = "E11";
             }
             $currentSheet->setCellValue($cdakb_row, $cdakb);
@@ -143,30 +151,37 @@ class ExcelService
         $sheet->setCellValue('B4', $vendor);
         $sheet->setCellValue('B5', $productTitle);
 
-        // === ITEMS ===
+        // === ITEMS (hierarchical, max 2 level) ===
         $startRow = 8;
         $row = $startRow;
 
         $baseStyle = $sheet->getStyle("B{$startRow}:E{$startRow}");
         $baseRowHeight = $sheet->getRowDimension($startRow)->getRowHeight();
 
-        foreach ($pack->items as $index => $item) {
+        $rows = PackItem::flattenedFor($pack);
+        foreach ($rows as $r) {
+            /** @var \App\Models\PackItem $item */
+            $item = $r['model'];
             if ($row > $startRow) {
                 $sheet->duplicateStyle($baseStyle, "B{$row}:E{$row}");
                 $sheet->getRowDimension($row)->setRowHeight($baseRowHeight);
             }
-            $sheet->setCellValue("B{$row}", $index + 1);
+            $sheet->setCellValue("B{$row}", $r['display_no']);
             $sheet->setCellValue("C{$row}", $item->item);
-            $sheet->setCellValue("D{$row}", $item->qty);
+            $sheet->setCellValue("D{$row}", $item->is_group ? null : $item->qty);
             $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle("C{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle("C{$row}")->getAlignment()->setIndent($r['level'] > 0 ? 2 : 0);
+            if ($item->is_group) {
+                $sheet->getStyle("C{$row}")->getFont()->setBold(true);
+            }
             $sheet->getStyle("D{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             $row++;
         }
 
         $cdakb = config('cdakb.pack');
         $cdakb_row = "E{$row}";
-        if ($pack->items->count() <= 3) {
+        if (count($rows) <= 3) {
             $cdakb_row = "E11";
         }
         $sheet->setCellValue($cdakb_row, $cdakb);
