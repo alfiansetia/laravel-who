@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use App\Services\OdooSession;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SettingController extends Controller
 {
@@ -13,12 +13,11 @@ class SettingController extends Controller
         $this->middleware('env_auth');
     }
 
-    public function index()
+    public function index(): Response
     {
-        $bcms = collect([
-            new Breadcrumb('App Setting', route('settings.index'), false),
+        return Inertia::render('Setting/Index', [
+            'title' => 'App Setting',
+            'session' => OdooSession::getCurrentSession(),
         ]);
-        $data = OdooSession::getCurrentSession();
-        return view('setting.index', compact(['data', 'bcms']))->with('title', 'App Setting');
     }
 }

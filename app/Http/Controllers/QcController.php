@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Services\Breadcrumb;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class QcController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Form QC', route('qc.index'), false),
-        ]);
-        $products = Product::all();
         $now = Carbon::now();
         if ($now->isMonday()) {
-            $date = $now->subDays(3)->toDateString();
+            $date = $now->copy()->subDays(3)->toDateString();
         } else {
-            $date = $now->subDay()->toDateString();
+            $date = $now->copy()->subDay()->toDateString();
         }
 
-        return view('qc.index', compact('products', 'bcms', 'date'))->with('title', 'Form QC');
+        return Inertia::render('Qc/Index', [
+            'title' => 'Form QC',
+            'defaultDate' => $date,
+        ]);
     }
 }

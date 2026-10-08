@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,43 +15,32 @@ class ToolController extends Controller
         ]);
     }
 
-    public function kalkulator(Request $request)
+    public function kalkulator(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Kalkulator Nilai', route('tools.kalkulator'), false),
+        return Inertia::render('Kalkulator/Index', [
+            'title' => 'Kalkulator Nilai',
         ]);
-
-        return view('kalkulator.index', compact('bcms'))
-            ->with('title', 'Kalkulator Nilai');
     }
 
-    public function laporan_pengiriman(Request $request)
+    public function laporan_pengiriman(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Laporan Pengiriman', route('tools.laporan_pengiriman'), false),
+        return Inertia::render('LaporanPengiriman/Index', [
+            'title' => 'Laporan Pengiriman',
         ]);
-
-        return view('laporan_pengiriman.index', compact('bcms'))
-            ->with('title', 'Laporan Pengiriman');
     }
 
-    public function laporan_luarkota(Request $request)
+    public function laporan_luarkota(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Laporan Luarkota', route('tools.laporan_luarkota'), false),
+        return Inertia::render('LaporanLuarkota/Index', [
+            'title' => 'Laporan Luarkota',
         ]);
-
-        return view('laporan_luarkota.index', compact('bcms'))
-            ->with('title', 'Laporan Luarkota');
     }
 
-    public function index()
+    public function index(): Response
     {
-        $bcms = collect([
-            new Breadcrumb('SN Tools', route('tools.sn'), false),
+        return Inertia::render('Sn/Index', [
+            'title' => 'SN Tools',
         ]);
-
-        return view('sn.index', compact('bcms'))->with(['title' => 'Tool Sn']);
     }
 
     public function scoreboard(): Response
@@ -69,20 +57,17 @@ class ToolController extends Controller
         ]);
     }
 
-    public function spreadsheet()
+    public function spreadsheet(): Response
     {
-        $title = 'Spreadsheet Tool';
-
-        return view('spreadsheet.index', compact('title'));
+        return Inertia::render('Spreadsheet/Index', [
+            'title' => 'Spreadsheet PLTBB',
+        ]);
     }
 
-    public function print_resi()
+    public function print_resi(): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Print Resi', route('tools.print_resi'), false),
+        return Inertia::render('PrintResi/Index', [
+            'title' => 'Print Resi',
         ]);
-
-        return view('print_resi.index', compact('bcms'))
-            ->with(['title' => 'Print Resi']);
     }
 }
