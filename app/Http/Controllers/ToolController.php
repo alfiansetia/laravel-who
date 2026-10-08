@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ToolController extends Controller
 {
-    public function stt(Request $request)
+    public function stt(Request $request): Response
     {
-        $bcms = collect([
-            new Breadcrumb('Speech To Text', route('tools.stt'), false),
+        return Inertia::render('Stt/Index', [
+            'title' => 'Speech To Text',
         ]);
-        return view('stt.index', compact('bcms'))
-            ->with('title', 'Speech To Text');
     }
 
     public function kalkulator(Request $request)
@@ -21,6 +21,7 @@ class ToolController extends Controller
         $bcms = collect([
             new Breadcrumb('Kalkulator Nilai', route('tools.kalkulator'), false),
         ]);
+
         return view('kalkulator.index', compact('bcms'))
             ->with('title', 'Kalkulator Nilai');
     }
@@ -30,6 +31,7 @@ class ToolController extends Controller
         $bcms = collect([
             new Breadcrumb('Laporan Pengiriman', route('tools.laporan_pengiriman'), false),
         ]);
+
         return view('laporan_pengiriman.index', compact('bcms'))
             ->with('title', 'Laporan Pengiriman');
     }
@@ -39,6 +41,7 @@ class ToolController extends Controller
         $bcms = collect([
             new Breadcrumb('Laporan Luarkota', route('tools.laporan_luarkota'), false),
         ]);
+
         return view('laporan_luarkota.index', compact('bcms'))
             ->with('title', 'Laporan Luarkota');
     }
@@ -48,24 +51,28 @@ class ToolController extends Controller
         $bcms = collect([
             new Breadcrumb('SN Tools', route('tools.sn'), false),
         ]);
+
         return view('sn.index', compact('bcms'))->with(['title' => 'Tool Sn']);
     }
 
-    public function scoreboard()
+    public function scoreboard(): Response
     {
-        $title = 'Scoreboard';
-        return view('scoreboard.index', compact('title'));
+        return Inertia::render('Scoreboard/Index', [
+            'title' => 'Scoreboard',
+        ]);
     }
 
-    public function ocr()
+    public function ocr(): Response
     {
-        $title = 'OCR Tool';
-        return view('ocr.index', compact('title'));
+        return Inertia::render('Ocr/Index', [
+            'title' => 'OCR Tool',
+        ]);
     }
 
     public function spreadsheet()
     {
         $title = 'Spreadsheet Tool';
+
         return view('spreadsheet.index', compact('title'));
     }
 
@@ -74,6 +81,7 @@ class ToolController extends Controller
         $bcms = collect([
             new Breadcrumb('Print Resi', route('tools.print_resi'), false),
         ]);
+
         return view('print_resi.index', compact('bcms'))
             ->with(['title' => 'Print Resi']);
     }

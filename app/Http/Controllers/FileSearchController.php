@@ -3,18 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class FileSearchController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         $title = 'File Search Manager';
         $jsonPath = storage_path('app/public/file-index.json');
         $lastUpdated = File::exists($jsonPath) ? date('Y-m-d H:i:s', File::lastModified($jsonPath)) : null;
 
-        return view('file-search.index', compact('title', 'lastUpdated'));
+        return Inertia::render('FileSearch/Index', [
+            'title' => $title,
+            'lastUpdated' => $lastUpdated,
+        ]);
     }
 
     public function getData()
@@ -32,7 +36,7 @@ class FileSearchController extends Controller
     {
         $path = base_path('deployment/generate-index.bat');
 
-        if (empty($path) || !File::exists($path)) {
+        if (empty($path) || ! File::exists($path)) {
             return back()->with('error', 'Script tidak ditemukan di folder deployment.');
         }
 
@@ -42,7 +46,7 @@ class FileSearchController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'json_file' => 'required|file'
+            'json_file' => 'required|file',
         ]);
 
         if ($request->hasFile('json_file')) {
@@ -50,7 +54,7 @@ class FileSearchController extends Controller
             $jsonPath = storage_path('app/public/file-index.json');
 
             // Ensure directory exists
-            if (!File::isDirectory(storage_path('app/public'))) {
+            if (! File::isDirectory(storage_path('app/public'))) {
                 File::makeDirectory(storage_path('app/public'), 0755, true);
             }
 
@@ -62,7 +66,7 @@ class FileSearchController extends Controller
                     return response()->json([
                         'success' => true,
                         'message' => 'File index berhasil diperbarui!',
-                        'last_updated' => $lastUpdated
+                        'last_updated' => $lastUpdated,
                     ]);
                 }
 
