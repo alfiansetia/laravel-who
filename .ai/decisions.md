@@ -10,10 +10,11 @@
 - Ditolak: panggil `iziToast` langsung dari Vue, `vue-toastification` (API beda jauh dari `show_message`).
 - Alasan: mapping 1:1 dari `show_message()/danger()/success()` Blade, flash Laravel otomatis jadi toast, `confirmation()` pindah ke AlertDialog (bukan toast question).
 
-## ADR-003: TanStack Table dibungkus DataTable
+## ADR-003: TanStack Table dibungkus DataTable (dua mode, pagination simple)
 - Dipilih: `@tanstack/vue-table` + `DataTable.vue` sendiri.
 - Ditolak: DataTables jQuery dipertahankan, pakai tabel shadcn mentah per page.
 - Alasan: server-side search/sort/page + seleksi massal (`multiCheck`) + skeleton/empty state terpusat. Blade DataTables buttons (Excel/PDF/Print) diganti dropdown export ke endpoint yang sudah ada.
+- Revisi: satu komponen, dua mode (cerminan Blade — tabel utama `alamat`/DO pakai paging manual serverside `page/per_page/search`; stock/products/lot + sub-tabel modal product/lot pakai `serverSide: false` clientside + tombol export copy). Mode server = `useTableQuery` (request per halaman); mode client = `useClientTable` (fetch sekali, paging lokal, export Salin/CSV dari baris termuat via `lib/export.js`). Pagination dikunci SIMPLE (`Sebelumnya` + `Halaman X dari Y` + `Berikutnya`, tanpa nomor ellipsis ala `getPaginationPages()`); export mode server wajib lewat endpoint backend, dilarang ekspor halaman aktif seolah data penuh. Matriks mode per modul ada di `migration-plan.md` kolom Tabel.
 
 ## ADR-004: SearchableSelect wajib (pengganti Select2)
 - Dipilih: Popover + Command shadcn + `useSearchable` (debounce 300ms, async).

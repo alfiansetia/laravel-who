@@ -21,12 +21,28 @@ DILARANG di code baru:
 
 Direview tiap PR: screenshot light 1366px + 390px wajib dilampirkan.
 
-## 3. Tabel (DataTable)
+## 3. Tabel (DataTable — dua mode, satu komponen)
 
-- Tampilan: header `text-xs uppercase tracking-wide text-muted-foreground`, row `h-11`, hover `muted/50`, border `border-border`, density tunggal.
-- Kolom aksi di kanan, icon-only button (`Pencil`, `Trash2`, `Eye`, `Printer`, `Download`) dengan `title`/tooltip. Tidak ada tombol teks berderet.
-- Wajib: loading skeleton (bukan spinner fullscreen), `EmptyState` saat kosong, pagination + info "Menampilkan X–Y dari Z", pertahankan `search/sort/page` di query Inertia.
-- Export (Excel/PDF/Print ala DataTables buttons) diganti 1 dropdown `Download` di `PageHeader`, memanggil endpoint export yang sudah ada.
+`DataTable` punya dua mode. Mode dipilih per modul (lihat `migration-plan.md` kolom Mode), bukan per selera. Tampilan, pagination, dan toolbar kedua mode WAJIB sama.
+
+- **Mode `server`** (default) — data live per halaman. Dipakai: alamat, DO, PO, SO, RI, IT, BAST, pack, problem, dan semua tabel utama yang `loadData()`-nya kirim `page/per_page/search` (pola `alamat/index`, `do/scripts/_app`). Data diambil via `useTableQuery` → `GET /api/...?page=&per_page=&search=&sort=`. Kontrak respons mengikuti API lama: `{ data, page, total_pages, total }`.
+- **Mode `client`** — dataset dimuat sekali per konteks filter, paging/search/sort di browser. Dipakai: stock, products/product-odoo, lot, dan sub-tabel modal (product picker, lot detail — pengganti `serverSide: false` + tombol export DataTables). Data diambil sekali via `useClientTable(fetcher)` lalu TanStack melakukan paginasi/sort/filter lokal. Alasan: dataset adalah snapshot yang perlu disalin/diexport utuh (copy/SN/lot), bukan live per halaman.
+
+DILARANG mencampur logika mode di `Pages/`: page hanya deklarasi `mode=\"server|client\"`, sumber data, dan kolom.
+
+### Pagination simple (wajib dua mode)
+
+Dilarang pagination bernomor dengan ellipsis ala `getPaginationPages()` di `alamat/index.blade.php`. Satu-satunya pola pagination:
+
+- Tombol `Sebelumnya` (`ChevronLeft`) + indikator `Halaman X dari Y` + tombol `Berikutnya` (`ChevronRight`). Di mobile icon-only, di desktop dengan label.
+- Select per-halaman `[10, 25, 50, 100]` + info `Menampilkan A–B dari C data` (format `id-ID`, samakan `sInfo` Blade: `Menampilkan _START_ - _END_ dari _TOTAL_ data`).
+- Mode server: pindah halaman = request API baru + `preserveScroll`; pertahankan `search/sort/page` di query Inertia. Mode client: pindah halaman tanpa request.
+- Sembunyikan kontrol pagination bila total ≤ 1 halaman (ikuti `renderPagination` lama: kosongkan bila `totalPages <= 1`).
+
+### Export / salin (beda mode, beda jalur)
+
+- Mode `client` → dropdown `Download` mengekspor dari **baris yang sudah dimuat**: `Salin` (clipboard TSV, pengganti tombol `copy` DataTables + `btn-copy-row`) dan `CSV` (blob download). Butuh Excel/PDF → panggil endpoint backend seperti mode server.
+- Mode `server` → dropdown `Download` memanggil **endpoint export/download backend yang sudah ada** (pengganti `trigger('exportExcel')`/route download). DILARANG mengekspor halaman aktif seolah-olah data penuh — toast warning bila backend belum sediakan export penuh.
 
 ## 4. Form & SearchableSelect
 

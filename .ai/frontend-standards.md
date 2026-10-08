@@ -12,7 +12,10 @@
 
 - `<script setup>` + Composition API saja. Tidak ada Options API di code baru.
 - Fetch: hanya via `lib/axios.js` (baseURL `/api`, header `X-Requested-With`, CSRF, interceptor error → `useToast`, hormati `isBlocking:false` ala ajax lama).
-- State server: `useTableQuery(apiFn)` untuk page/search/sort/filter + `useSearchable(fetcher)` untuk select async (debounce 300ms, cancel request basi).
+- State tabel, dua mode (detail di `design-system.md §3`):
+  - `useTableQuery(apiFn)` = mode server (alamat, DO/PO/SO/RI/IT, BAST, pack, problem): state `page/per_page/search/sort/filter` → query API per halaman, cancel request basi.
+  - `useClientTable(fetcher)` = mode client (stock, products, lot, sub-tabel modal product/lot): fetch sekali per konteks filter, paging/search/sort lokal via TanStack.
+  - Dilarang akses `table.getState()` / fetch manual di `Pages/` untuk kebutuhan yang sudah dicover kedua composable ini.
 - Inertia: navigasi via `router.visit` / `<Link>`, pertahankan state tabel (`preserveState`, `preserveScroll`, `only`). URL adalah sumber kebenaran filter.
 - Validasi: error Laravel (422) dipetakan ke `FormField` per-field; error global → toast. Jangan tampilkan JSON mentah.
 
