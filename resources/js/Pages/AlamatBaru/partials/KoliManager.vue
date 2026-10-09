@@ -12,6 +12,7 @@ import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 import { getCode } from '@/lib/odoo';
 
 const props = defineProps({
@@ -41,7 +42,7 @@ function initDraft(koli) {
 async function loadKolis() {
     loading.value = true;
     try {
-        const res = await api.get('/koli', { params: { alamat_baru_id: props.alamatId }, silent: true });
+        const res = await web.get('/koli', { params: { alamat_baru_id: props.alamatId }, silent: true });
         const body = res.data?.data ?? res.data ?? [];
         kolis.value = Array.isArray(body) ? body : (body.data ?? []);
         kolis.value.forEach(initDraft);
@@ -73,7 +74,7 @@ async function saveInline(koli) {
         return;
     }
     try {
-        const res = await api.put(`/koli/${koli.id}`, {
+        const res = await web.put(`/koli/${koli.id}`, {
             urutan: d.urutan,
             nilai: d.nilai,
             is_do: d.is_do ?? 'no',
@@ -104,7 +105,7 @@ async function saveKoli() {
     }
     await withBlock(async () => {
         try {
-            const res = await api.post('/koli', {
+            const res = await web.post('/koli', {
                 alamat_baru_id: Number(props.alamatId),
                 urutan: koliForm.value.urutan,
                 nilai: koliForm.value.nilai,
@@ -126,7 +127,7 @@ async function deleteKoli(row) {
         return;
     }
     try {
-        const res = await api.delete(`/koli/${row.id}`, { silent: true });
+        const res = await web.delete(`/koli/${row.id}`, { silent: true });
         toast.success(res.data?.message ?? 'Koli dihapus.');
         loadKolis();
     } catch (e) {
@@ -137,7 +138,7 @@ async function deleteKoli(row) {
 async function hitungKoli(row) {
     await withBlock(async () => {
         try {
-            const res = await api.post(`/koli/${row.id}/hitung`, {}, { block: true });
+            const res = await web.post(`/koli/${row.id}/hitung`, {}, { block: true });
             toast.success(res.data?.message ?? 'Nilai koli dihitung.');
             loadKolis();
         } catch {}
@@ -146,7 +147,7 @@ async function hitungKoli(row) {
 async function syncKoli(row) {
     await withBlock(async () => {
         try {
-            const res = await api.get(`/koli/${row.id}/sync`, { block: true });
+            const res = await web.get(`/koli/${row.id}/sync`, { block: true });
             toast.success(res.data?.message ?? 'Koli disinkron.');
             loadKolis();
         } catch {}
@@ -155,7 +156,7 @@ async function syncKoli(row) {
 async function duplicateKoli(row) {
     await withBlock(async () => {
         try {
-            const res = await api.post(`/koli/${row.id}/duplicate`, {}, { block: true });
+            const res = await web.post(`/koli/${row.id}/duplicate`, {}, { block: true });
             toast.success(res.data?.message ?? 'Koli diduplikasi.');
             loadKolis();
         } catch {}
@@ -302,7 +303,7 @@ async function saveManualItem() {
     }
     await withBlock(async () => {
         try {
-            const res = await api.post('/koli-item', { koli_id: activeKoli.value.id, product_id: Number(manualForm.value.product), qty: manualForm.value.qty, desc: manualForm.value.desc, lot: manualForm.value.lot }, { block: true });
+            const res = await web.post('/koli-item', { koli_id: activeKoli.value.id, product_id: Number(manualForm.value.product), qty: manualForm.value.qty, desc: manualForm.value.desc, lot: manualForm.value.lot }, { block: true });
             toast.success(res.data?.message ?? 'Barang ditambah.');
             itemModalOpen.value = false;
             loadKolis();
@@ -316,7 +317,7 @@ function codeOf(line) {
 async function pickDoLine(line) {
     await withBlock(async () => {
         try {
-            const res = await api.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
+            const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
             toast.success(res.data?.message ?? 'Barang ditambah dari DO.');
             loadKolis();
         } catch {}
@@ -325,7 +326,7 @@ async function pickDoLine(line) {
 async function pickItLine(line) {
     await withBlock(async () => {
         try {
-            const res = await api.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
+            const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
             toast.success(res.data?.message ?? 'Barang ditambah dari IT.');
             loadKolis();
         } catch {}
@@ -338,7 +339,7 @@ const editingItem = ref(null);
 const editItemForm = ref({ qty: '', desc: '', lot: '' });
 async function openEditItem(item) {
     try {
-        const res = await api.get(`/koli-item/${item.id}`, { silent: true });
+        const res = await web.get(`/koli-item/${item.id}`, { silent: true });
         const d = res.data?.data ?? res.data;
         editingItem.value = item;
         editItemForm.value = { qty: d.qty ?? '', desc: d.desc ?? '', lot: d.lot ?? '' };
@@ -350,7 +351,7 @@ async function openEditItem(item) {
 async function saveEditItem() {
     await withBlock(async () => {
         try {
-            const res = await api.put(`/koli-item/${editingItem.value.id}`, editItemForm.value, { block: true });
+            const res = await web.put(`/koli-item/${editingItem.value.id}`, editItemForm.value, { block: true });
             toast.success(res.data?.message ?? 'Item disimpan.');
             editItemOpen.value = false;
             loadKolis();
@@ -359,7 +360,7 @@ async function saveEditItem() {
 }
 async function deleteItem(item) {
     try {
-        const res = await api.delete(`/koli-item/${item.id}`, { silent: true });
+        const res = await web.delete(`/koli-item/${item.id}`, { silent: true });
         toast.success(res.data?.message ?? 'Item dihapus.');
         loadKolis();
     } catch (e) {
@@ -368,7 +369,7 @@ async function deleteItem(item) {
 }
 async function orderItem(item, type) {
     try {
-        await api.post(`/koli-item/${item.id}/order`, { type }, { silent: true });
+        await web.post(`/koli-item/${item.id}/order`, { type }, { silent: true });
         loadKolis();
     } catch (e) {
         toast.error(e.response?.data?.message ?? 'Gagal mengurutkan item.');
@@ -380,7 +381,7 @@ async function clearLot(item) {
         return;
     }
     try {
-        const res = await api.post(`/koli-item/${item.id}/clear-lot`, {}, { silent: true });
+        const res = await web.post(`/koli-item/${item.id}/clear-lot`, {}, { silent: true });
         toast.success(res.data?.message ?? 'Lot dikosongkan.');
         loadKolis();
     } catch (e) {

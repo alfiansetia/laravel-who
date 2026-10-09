@@ -13,6 +13,7 @@ import Textarea from '@/components/ui/Textarea.vue';
 import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 
 const props = defineProps({
     title: { type: String, default: 'Manage SOP QC' },
@@ -107,7 +108,7 @@ async function save() {
     }
     await withBlock(async () => {
         try {
-            const res = await api.post('/sops', { product_id: Number(productId.value), target: target.value, items }, { block: true });
+            const res = await web.post('/sops', { product_id: Number(productId.value), target: target.value, items }, { block: true });
             const sop = res.data?.data ?? res.data;
             savedSopId.value = sop?.id ?? savedSopId.value;
             toast.success('SOP disimpan.');
@@ -121,7 +122,7 @@ async function save() {
 
 function downloadSaved() {
     if (savedSopId.value) {
-        window.open(`/api/sops/${savedSopId.value}/download`, '_blank');
+        window.open(`/sops/${savedSopId.value}/download`, '_blank');
     }
 }
 function goBack() {

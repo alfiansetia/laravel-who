@@ -11,6 +11,7 @@ import Textarea from '@/components/ui/Textarea.vue';
 import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 
 const props = defineProps({
     title: { type: String, default: 'Packing List' },
@@ -49,7 +50,7 @@ async function loadItems() {
         return;
     }
     try {
-        const res = await api.get('/pack-items', { params: { pack_id: props.pack.id }, silent: true });
+        const res = await web.get('/pack-items', { params: { pack_id: props.pack.id }, silent: true });
         const body = res.data?.data ?? res.data ?? [];
         const flat = Array.isArray(body) ? body : (body.data ?? []);
         const tops = flat.filter((r) => !r.parent_id);
@@ -62,7 +63,7 @@ async function loadItems() {
             children: kids.filter((k) => String(k.parent_id) === String(t.id)).map((c) => ({ item: c.item ?? '', qty: c.qty ?? '', show_number: c.show_number !== false })),
         }));
         if (rows.value.length === 0 && props.pack) {
-            const res2 = await api.get(`/packs/${props.pack.id}`, { silent: true });
+            const res2 = await web.get(`/packs/${props.pack.id}`, { silent: true });
             const d = res2.data?.data ?? res2.data;
             rows.value = (d?.items ?? []).map((t) => ({
                 item: t.item ?? '',
@@ -229,10 +230,10 @@ async function save() {
         try {
             const payload = { product_id: Number(form.value.product_id), vendor_id: Number(form.value.vendor_id), name: form.value.name, desc: form.value.desc, vendor_desc: form.value.vendor_desc, items };
             if (isEdit.value) {
-                await api.put(`/packs/${props.pack.id}`, payload, { block: true });
+                await web.put(`/packs/${props.pack.id}`, payload, { block: true });
                 toast.success('Packing list disimpan.');
             } else {
-                await api.post('/packs', payload, { block: true });
+                await web.post('/packs', payload, { block: true });
                 toast.success('Packing list dibuat.');
                 router.visit('/packs');
             }
@@ -246,7 +247,7 @@ async function save() {
 
 function downloadCurrent() {
     if (isEdit.value) {
-        window.open(`/api/packs/${props.pack.id}/download`, '_blank');
+        window.open(`/packs/${props.pack.id}/download`, '_blank');
     }
 }
 function printCurrent() {

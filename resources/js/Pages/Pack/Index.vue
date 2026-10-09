@@ -16,7 +16,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
-import api from '@/lib/axios';
+import api from '@/lib/web';
 import { copyRows } from '@/lib/export';
 
 const props = defineProps({
@@ -123,10 +123,10 @@ async function saveChange() {
 
 function exportAll() {
     const q = query.search.value ? `?search=${encodeURIComponent(query.search.value)}` : '';
-    window.open(`/api/packs/export${q}`, '_blank');
+    window.open(`/packs/export${q}`, '_blank');
 }
 function downloadRow(row) {
-    window.open(`/api/packs/${row.id}/download`, '_blank');
+    window.open(`/packs/${row.id}/download`, '_blank');
 }
 function printRow(row) {
     window.open(`/packs/${row.id}/print`, '_blank');

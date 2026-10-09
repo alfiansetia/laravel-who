@@ -13,7 +13,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
-import api from '@/lib/axios';
+import api from '@/lib/web';
 import { copyRows } from '@/lib/export';
 
 const props = defineProps({

@@ -13,6 +13,7 @@ import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 import { odooName } from '@/lib/odoo';
 
 const props = defineProps({
@@ -35,23 +36,34 @@ const form = ref({
 });
 const errors = ref({});
 
-// DO lookup Odoo
-const doKeyword = ref('');
+// DO lookup Odoo (samakan Blade: input keyword + tombol GET DO + hasil dropdown)
+const doKeyword = ref(props.bast?.do ?? 'CENT/OUT/');
 const doOptions = ref([]);
 const doLoading = ref(false);
 const selectedDoId = ref('');
 
+function doLabel(d) {
+    let name = d.name ?? d.do ?? d.id;
+    if (d.group_id) {
+        name += ` (${Array.isArray(d.group_id) ? d.group_id[1] : d.group_id})`;
+    }
+    if (d.partner_id) {
+        name += ` ${Array.isArray(d.partner_id) ? d.partner_id[1] : d.partner_id}`;
+    }
+    return name;
+}
+
 async function searchDo(keyword) {
-    doKeyword.value = keyword;
-    if (!keyword || keyword.length < 1) {
+    doKeyword.value = keyword ?? doKeyword.value;
+    if (!doKeyword.value || doKeyword.value.length < 1) {
         return;
     }
     doLoading.value = true;
     try {
-        const res = await api.get('/do', { params: { search: keyword }, silent: true });
+        const res = await api.get('/do', { params: { search: doKeyword.value }, silent: true });
         const body = res.data?.data ?? res.data ?? [];
         const list = Array.isArray(body) ? body : (body.data ?? []);
-        doOptions.value = list.map((d) => ({ label: `${d.name ?? d.do ?? d.id}`, value: String(d.id), raw: d }));
+        doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id), raw: d }));
     } catch {
         doOptions.value = [];
     } finally {
@@ -92,15 +104,14 @@ async function saveHeader() {
     await withBlock(async () => {
         try {
             if (isEdit.value) {
-                await api.put(`/basts/${props.bast.id}`, form.value, { block: true });
+                await web.put(`/basts/${props.bast.id}`, form.value, { block: true });
                 toast.success('BAST disimpan.');
             } else {
-                const res = await api.post('/basts', form.value, { block: true });
+                const res = await web.post('/basts', form.value, { block: true });
                 const created = res.data?.data ?? res.data;
                 toast.success('BAST dibuat.');
                 if (created?.id) {
                     window.open(`/basts/${created.id}/edit`, '_blank');
-                    router.visit('/basts');
                 }
             }
         } catch (e) {
@@ -134,7 +145,7 @@ async function loadItems() {
     }
     itemsLoading.value = true;
     try {
-        const res = await api.get('/detail-basts', { params: { bast_id: props.bast.id }, silent: true });
+        const res = await web.get('/detail-basts', { params: { bast_id: props.bast.id }, silent: true });
         const body = res.data?.data ?? res.data ?? [];
         items.value = Array.isArray(body) ? body : (body.data ?? []);
     } catch (e) {
@@ -162,9 +173,9 @@ async function saveItem() {
     await withBlock(async () => {
         try {
             if (itemEditing.value) {
-                await api.put(`/detail-basts/${itemEditing.value.id}`, { qty: itemForm.value.qty, satuan: itemForm.value.satuan, lot: itemForm.value.lot }, { block: true });
+                await web.put(`/detail-basts/${itemEditing.value.id}`, { qty: itemForm.value.qty, satuan: itemForm.value.satuan, lot: itemForm.value.lot }, { block: true });
             } else {
-                await api.post('/detail-basts', { bast: props.bast.id, product: Number(itemForm.value.product), qty: itemForm.value.qty, satuan: itemForm.value.satuan, lot: itemForm.value.lot }, { block: true });
+                await web.post('/detail-basts', { bast: props.bast.id, product: Number(itemForm.value.product), qty: itemForm.value.qty, satuan: itemForm.value.satuan, lot: itemForm.value.lot }, { block: true });
             }
             toast.success('Item disimpan.');
             itemModalOpen.value = false;
@@ -182,13 +193,13 @@ async function deleteItem(row) {
     if (!ok) {
         return;
     }
-    await api.delete(`/detail-basts/${row.id}`, { silent: true }).catch(() => {});
+    await web.delete(`/detail-basts/${row.id}`, { silent: true }).catch(() => {});
     toast.success('Item dihapus.');
     loadItems();
 }
 
 async function orderItem(row, type) {
-    await api.post(`/detail-basts/${row.id}/order`, { type }, { silent: true }).catch(() => {});
+    await web.post(`/detail-basts/${row.id}/order`, { type }, { silent: true }).catch(() => {});
     loadItems();
 }
 
@@ -199,7 +210,7 @@ async function karganItem(row) {
     }
     await withBlock(async () => {
         try {
-            const res = await api.post(`/detail-basts/${row.id}/kargan`, {}, { block: true });
+            const res = await web.post(`/detail-basts/${row.id}/kargan`, {}, { block: true });
             const k = res.data?.data ?? res.data;
             toast.success('Kargan dibuat.');
             if (k?.id) {
@@ -212,7 +223,7 @@ async function karganItem(row) {
 async function syncOdoo() {
     await withBlock(async () => {
         try {
-            const res = await api.get(`/basts/${props.bast.id}/sync`, { block: true });
+            const res = await web.get(`/basts/${props.bast.id}/sync`, { block: true });
             toast.success(res.data?.data?.message ?? res.data?.message ?? 'Sinkron selesai.');
             loadItems();
         } catch {}
@@ -220,10 +231,10 @@ async function syncOdoo() {
 }
 
 function downloadFile(type = 'tanda_terima') {
-    window.open(`/api/basts/${props.bast.id}/download?type=${type}`, '_blank');
+    window.open(`/basts/${props.bast.id}/download?type=${type}`, '_blank');
 }
 function downloadZip() {
-    window.open(`/api/basts/${props.bast.id}/download-zip`, '_blank');
+    window.open(`/basts/${props.bast.id}/download-zip`, '_blank');
 }
 function printBast(type = 'tanda_terima') {
     window.open(`/basts/${props.bast.id}/print?type=${type}`, '_blank');
@@ -239,7 +250,8 @@ if (isEdit.value) {
         <PageHeader :title="title" :description="isEdit ? `DO ${bast?.do ?? ''}` : 'Buat BAST baru'">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button size="sm" @click="saveHeader">Simpan</Button>
+                <Button v-if="isEdit" variant="outline" size="sm" @click="() => window.close()">Tutup</Button>
+                <Button size="sm" @click="saveHeader">{{ isEdit ? 'Simpan' : 'Simpan & Lanjut ke Item' }}</Button>
                 <template v-if="isEdit">
                     <Button variant="outline" size="sm" @click="syncOdoo"><RefreshCw /> Sync Odoo</Button>
                     <Button variant="outline" size="sm" @click="downloadZip"><Download /> ZIP</Button>
@@ -249,20 +261,26 @@ if (isEdit.value) {
 
         <div class="rounded-lg border bg-white p-4">
             <div class="grid gap-4 sm:grid-cols-2">
-                <FormField label="Cari DO (Odoo)">
-                    <SearchableSelect :model-value="selectedDoId" :options="doOptions" :loading="doLoading" placeholder="Ketik no DO..." @update:model-value="pickDo" @search="searchDo" />
+                <FormField label="Cari No DO">
+                    <div class="flex gap-2">
+                        <Input v-model="doKeyword" placeholder="CENT/OUT/" class="flex-1" @keyup.enter="searchDo()" />
+                        <Button variant="outline" size="sm" @click="searchDo()">GET DO</Button>
+                    </div>
                 </FormField>
-                <FormField label="No DO" required :error="errors.do?.[0]">
-                    <Input v-model="form.do" placeholder="CENT/OUT/..." />
+                <FormField label="Pilih Hasil Pencarian">
+                    <SearchableSelect :model-value="selectedDoId" :options="doOptions" :loading="doLoading" placeholder="--- Pilih Hasil Pencarian ---" @update:model-value="pickDo" @search="searchDo" />
                 </FormField>
                 <FormField label="Kepada" required :error="errors.name?.[0]">
-                    <Input v-model="form.name" placeholder="Nama penerima..." />
+                    <Textarea v-model="form.name" rows="4" placeholder="Nama Penerima" />
+                </FormField>
+                <FormField label="Alamat Lengkap" required :error="errors.address?.[0]">
+                    <Textarea v-model="form.address" rows="4" placeholder="Alamat Pengiriman" />
                 </FormField>
                 <FormField label="Kota" required :error="errors.city?.[0]">
                     <Input v-model="form.city" placeholder="Kota..." />
                 </FormField>
-                <FormField label="Alamat" required :error="errors.address?.[0]" class="sm:col-span-2">
-                    <Textarea v-model="form.address" rows="2" placeholder="Alamat lengkap..." />
+                <FormField label="No Surat Jalan / DO" required :error="errors.do?.[0]">
+                    <Input v-model="form.do" placeholder="Nomor DO" class="font-bold" />
                 </FormField>
             </div>
         </div>
@@ -270,12 +288,14 @@ if (isEdit.value) {
         <div v-if="isEdit" class="rounded-lg border bg-white">
             <div class="flex flex-wrap items-center gap-2 border-b px-3 py-2">
                 <b class="text-sm">Item BAST ({{ items.length }})</b>
-                <span class="ml-auto flex gap-1">
+                <span class="ml-auto flex flex-wrap gap-1">
                     <Button size="sm" @click="openAddItem"><FilePlus /> Tambah Item</Button>
                     <Button variant="outline" size="sm" @click="printBast('tanda_terima')"><Printer /> Tanda Terima</Button>
                     <Button variant="outline" size="sm" @click="printBast('training')"><Printer /> Training</Button>
                     <Button variant="outline" size="sm" @click="printBast('bast')"><Printer /> BAST</Button>
-                    <Button variant="outline" size="sm" @click="downloadFile('tanda_terima')"><Download /> Docx</Button>
+                    <Button variant="outline" size="sm" @click="downloadFile('tanda_terima')"><Download /> Docx Terima</Button>
+                    <Button variant="outline" size="sm" @click="downloadFile('training')"><Download /> Docx Training</Button>
+                    <Button variant="outline" size="sm" @click="downloadFile('bast')"><Download /> Docx BAST</Button>
                 </span>
             </div>
             <div v-if="itemsLoading" class="space-y-2 p-3">
@@ -312,8 +332,8 @@ if (isEdit.value) {
                         <SearchableSelect v-model="itemForm.satuan" :options="satuanOptions" placeholder="EA" />
                     </FormField>
                 </div>
-                <FormField label="Lot / Serial">
-                    <Textarea v-model="itemForm.lot" rows="3" placeholder="Lot..." />
+                <FormField label="Lot / Expiration Date (ED)">
+                    <Textarea v-model="itemForm.lot" rows="5" placeholder="Masukkan keterangan Lot atau ED..." />
                 </FormField>
             </div>
             <template #footer>

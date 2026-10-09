@@ -11,6 +11,7 @@ import Textarea from '@/components/ui/Textarea.vue';
 import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 import { odooName } from '@/lib/odoo';
 
 const props = defineProps({
@@ -213,11 +214,11 @@ async function save() {
     await withBlock(async () => {
         try {
             if (isEdit.value) {
-                await api.put(`/alamat-baru/${props.record.id}`, payload, { block: true });
+                await web.put(`/alamat-baru/${props.record.id}`, payload, { block: true });
                 toast.success('Alamat disimpan.');
                 emit('saved', props.record.id);
             } else {
-                const res = await api.post('/alamat-baru', payload, { block: true });
+                const res = await web.post('/alamat-baru', payload, { block: true });
                 const created = res.data?.data ?? res.data;
                 toast.success('Alamat dibuat.');
                 emit('saved', created?.id ?? null);

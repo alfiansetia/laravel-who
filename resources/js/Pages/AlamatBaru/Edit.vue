@@ -7,7 +7,7 @@ import KoliManager from './partials/KoliManager.vue';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
-import api from '@/lib/axios';
+import api from '@/lib/web';
 
 const props = defineProps({
     title: { type: String, default: 'Edit Alamat Baru' },

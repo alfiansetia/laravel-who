@@ -10,6 +10,7 @@ import Card from '@/components/ui/Card.vue';
 import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import web from '@/lib/web';
 import { copyText } from '@/lib/export';
 
 const props = defineProps({
@@ -253,7 +254,7 @@ async function submitDownload() {
     }
     saving.value = true;
     try {
-        const res = await api.post('/form-qc', buildPayload(), { responseType: 'blob' });
+        const res = await web.post('/form-qc', buildPayload(), { responseType: 'blob' });
         const disposition = res.headers?.['content-disposition'] ?? '';
         const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         const filename = match?.[1]?.replace(/['"]/g, '') ?? 'form-qc.docx';

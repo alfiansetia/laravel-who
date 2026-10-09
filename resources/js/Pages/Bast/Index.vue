@@ -13,7 +13,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
-import api from '@/lib/axios';
+import api from '@/lib/web';
 import { copyRows } from '@/lib/export';
 
 const props = defineProps({
@@ -84,10 +84,10 @@ async function deleteBatch() {
 }
 
 function downloadFile(row, type = 'tanda_terima') {
-    window.open(`/api/basts/${row.id}/download?type=${type}`, '_blank');
+    window.open(`/basts/${row.id}/download?type=${type}`, '_blank');
 }
 function downloadZip(row) {
-    window.open(`/api/basts/${row.id}/download-zip`, '_blank');
+    window.open(`/basts/${row.id}/download-zip`, '_blank');
 }
 function printBast(row, type = 'tanda_terima') {
     window.open(`/basts/${row.id}/print?type=${type}`, '_blank');

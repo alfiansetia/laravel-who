@@ -14,7 +14,7 @@ import Textarea from '@/components/ui/Textarea.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
-import api from '@/lib/axios';
+import api from '@/lib/web';
 import { copyRows } from '@/lib/export';
 
 const props = defineProps({
@@ -122,7 +122,7 @@ async function saveSop() {
 function downloadSop(row) {
     const id = row?.id ?? detail.value?.id;
     if (id) {
-        window.open(`/api/sops/${id}/download`, '_blank');
+        window.open(`/sops/${id}/download`, '_blank');
     }
 }
 function printSop(row) {
@@ -133,7 +133,7 @@ function printSop(row) {
 }
 function exportAll() {
     const q = query.search.value ? `?search=${encodeURIComponent(query.search.value)}` : '';
-    window.open(`/api/sops/export${q}`, '_blank');
+    window.open(`/sops/export${q}`, '_blank');
 }
 function goCreate() {
     router.visit('/sops/create');
