@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Percayai header X-Forwarded-* dari TLS-terminating proxy agar
+        // request()->secure() dan url()/route() menghasilkan https (anti mixed content).
+        $middleware->trustProxies(at: '*');
+
         $middleware->append([
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
