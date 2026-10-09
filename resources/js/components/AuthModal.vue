@@ -33,7 +33,12 @@ async function submit() {
         if (res.data?.data?.auth) {
             close();
             toast.success('Login berhasil. Akses server dibuka 24 jam.');
-            router.reload();
+            const intended = res.data?.data?.intended;
+            if (typeof intended === 'string' && intended.startsWith('/') && !intended.startsWith('//')) {
+                router.visit(intended);
+            } else {
+                router.reload();
+            }
         } else {
             error.value = 'Password salah.';
         }

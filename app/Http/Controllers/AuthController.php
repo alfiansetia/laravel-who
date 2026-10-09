@@ -52,14 +52,19 @@ class AuthController extends Controller
         if ($authenticated) {
             EnvAuth::login();
 
+            // Kembalikan URL tujuan yang disimpan middleware saat redirect.
+            $intended = $this->sanitizedIntended($request);
+            session()->forget('url.intended');
+
             if ($request->wantsJson()) {
                 return $this->sendResponse([
                     'auth' => true,
                     'expires_in' => '24 hours',
+                    'intended' => $intended,
                 ], 'Authenticated successfully.');
             }
 
-            return back()->with('success', 'Authenticated successfully.');
+            return redirect($intended ?? route('home'))->with('success', 'Authenticated successfully.');
         }
 
         if ($request->wantsJson()) {
@@ -99,5 +104,42 @@ class AuthController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Ambil URL tujuan dari session dalam bentuk path lokal saja.
+     * Middleware menyimpan fullUrl() absolut, jadi terima host yang sama
+     * dengan host request dan tolak URL luar (open redirect).
+     */
+    private function sanitizedIntended(Request $request): ?string
+    {
+        $intended = session()->get('url.intended');
+        if (! is_string($intended) || $intended === '') {
+            return null;
+        }
+
+        $parts = parse_url($intended);
+        if (! is_array($parts)) {
+            return null;
+        }
+
+        $host = $parts['host'] ?? null;
+        if (is_string($host) && $host !== '' && strtolower($host) !== strtolower($request->getHost())) {
+            return null;
+        }
+
+        $scheme = $parts['scheme'] ?? null;
+        if (is_string($scheme) && $scheme !== '' && ! in_array(strtolower($scheme), ['http', 'https'], true)) {
+            return null;
+        }
+
+        $path = $parts['path'] ?? null;
+        if (! is_string($path) || ! str_starts_with($path, '/') || str_starts_with($path, '//')) {
+            return null;
+        }
+
+        $query = $parts['query'] ?? null;
+
+        return $path.((is_string($query) && $query !== '') ? '?'.$query : '');
     }
 }

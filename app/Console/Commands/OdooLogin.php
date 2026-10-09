@@ -13,16 +13,29 @@ use Symfony\Component\DomCrawler\Crawler;
 class OdooLogin extends Command
 {
     protected $signature = 'app:odoo-login';
+
     protected $description = 'Login ke Odoo dan ambil session_id';
 
     public function handle()
     {
         try {
-            $profile = Odoo::getProfile();
-            $this->info('Session Valid!');
-            return 0;
+            // Validasi via identitas pemilik session (tidak bergantung uid
+            // tersimpan yang bisa basi setelah tempel manual). Sekalian
+            // selaraskan uid/nama bila session valid tapi file tidak sinkron.
+            $res = Odoo::getSessionInfo();
+            $info = is_array($res) ? ($res['result'] ?? null) : null;
+            if (is_array($info) && ! empty($info['uid'])) {
+                OdooSession::updateIdentityFromSessionInfo($info);
+                $this->info('Session Valid!');
+
+                return 0;
+            }
+            $this->info('Session Invalid, otw Login!');
+
+            return $this->login();
         } catch (\Throwable $th) {
             $this->info('Session Invalid, otw Login!');
+
             return $this->login();
         }
     }
@@ -35,6 +48,7 @@ class OdooLogin extends Command
 
             if (empty($db) || empty($baseUrl)) {
                 $this->error('Konfigurasi Odoo tidak lengkap');
+
                 return 1;
             }
 
@@ -42,11 +56,11 @@ class OdooLogin extends Command
             $client = new Client([
                 'cookies' => true,
                 'timeout' => 15,
-                'connect_timeout' => 10
+                'connect_timeout' => 10,
             ]);
 
             $this->info('Mengambil halaman login...');
-            $loginPage = $client->get($baseUrl . '/web?db=' . $db);
+            $loginPage = $client->get($baseUrl.'/web?db='.$db);
             $html = $loginPage->getBody();
 
             // 2. Ambil csrf_token dari HTML
@@ -55,25 +69,26 @@ class OdooLogin extends Command
 
             if ($csrfInput->count() === 0) {
                 $this->error('CSRF token tidak ditemukan di halaman login');
+
                 return 1;
             }
 
             $csrfToken = $csrfInput->attr('value');
-            $this->info("csrf_token => " . $csrfToken);
+            $this->info('csrf_token => '.$csrfToken);
 
             // 3. Kirim POST login dengan cookies
             $this->info('Mengirim request login...');
-            $res = $client->post($baseUrl . '/web/login', [
+            $res = $client->post($baseUrl.'/web/login', [
                 'form_params' => [
-                    'csrf_token'    => $csrfToken,
-                    'db'            => $db,
-                    'login'         => Odoo::getEmail(),
-                    'password'      => Odoo::getPassword(),
+                    'csrf_token' => $csrfToken,
+                    'db' => $db,
+                    'login' => Odoo::getEmail(),
+                    'password' => Odoo::getPassword(),
                 ],
             ]);
 
             $this->info('Mengambil session info...');
-            $html2 = $client->get($baseUrl . '/web?')->getBody()->getContents();
+            $html2 = $client->get($baseUrl.'/web?')->getBody()->getContents();
 
             // Cari isi session_info dengan regex
             if (preg_match('/odoo\.session_info\s*=\s*(\{.*?\});/s', $html2, $matches)) {
@@ -88,40 +103,45 @@ class OdooLogin extends Command
 
                     if (empty($session_id) || empty($uid)) {
                         $this->error('Session ID atau UID kosong');
+
                         return 1;
                     }
 
                     $data = [
-                        'session_id'            => Arr::get($session_info, 'session_id'),
-                        'uid'                   => Arr::get($session_info, 'uid'),
-                        'db'                    => Arr::get($session_info, 'db'),
-                        'name'                  => Arr::get($session_info, 'name'),
-                        'username'              => Arr::get($session_info, 'username'),
-                        'partner_display_name'  => Arr::get($session_info, 'partner_display_name'),
-                        'partner_id'            => Arr::get($session_info, 'partner_id'),
+                        'session_id' => Arr::get($session_info, 'session_id'),
+                        'uid' => Arr::get($session_info, 'uid'),
+                        'db' => Arr::get($session_info, 'db'),
+                        'name' => Arr::get($session_info, 'name'),
+                        'username' => Arr::get($session_info, 'username'),
+                        'partner_display_name' => Arr::get($session_info, 'partner_display_name'),
+                        'partner_id' => Arr::get($session_info, 'partner_id'),
                     ];
 
                     OdooSession::saveSession($data);
                     $url = config('app.url');
 
                     // Kirim notifikasi Telegram (sudah ada error handling internal)
-                    TelegramServices::sendToGroup('Success Login on : ' . $url . ', session : ' . $session_id);
+                    TelegramServices::sendToGroup('Success Login on : '.$url.', session : '.$session_id);
 
-                    $this->info('Session ID berhasil disimpan: ' . $session_id);
+                    $this->info('Session ID berhasil disimpan: '.$session_id);
+
                     return 0;
                 } else {
-                    $this->error("Gagal decode session_info JSON: " . json_last_error_msg());
+                    $this->error('Gagal decode session_info JSON: '.json_last_error_msg());
+
                     return 1;
                 }
             } else {
-                $this->error("session_info tidak ditemukan di HTML");
+                $this->error('session_info tidak ditemukan di HTML');
+
                 return 1;
             }
         } catch (\Exception $e) {
             // Kirim notifikasi error (sudah ada error handling internal)
-            TelegramServices::sendToGroup('Error Login : ' . $e->getMessage());
+            TelegramServices::sendToGroup('Error Login : '.$e->getMessage());
 
-            $this->error('Terjadi kesalahan: ' . $e->getMessage());
+            $this->error('Terjadi kesalahan: '.$e->getMessage());
+
             return 1;
         }
     }

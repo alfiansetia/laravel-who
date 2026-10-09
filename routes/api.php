@@ -142,6 +142,15 @@ Route::post('/auth/verify', [AuthController::class, 'verify'])->name('auth.verif
 Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 Route::get('/auth/status', [AuthController::class, 'status'])->name('auth.status');
 
+Route::get('/resources/logs/{file}', [SettingController::class, 'logShow'])
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('api.resources.log_show');
+Route::post('/resources/logs/{file}/clear', [SettingController::class, 'logClear'])
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('api.resources.log_clear');
+Route::delete('/resources/logs/{file}', [SettingController::class, 'logDestroy'])
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('api.resources.log_destroy');
 Route::delete('/resources', [SettingController::class, 'resourceDestroyLog'])
     ->name('api.resources.destroy_log');
 Route::get('/resources', [SettingController::class, 'resourceIndex'])
