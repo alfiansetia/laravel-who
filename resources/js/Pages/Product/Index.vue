@@ -192,14 +192,16 @@ async function openDetail(row) {
     detailOpen.value = true;
     detailLoading.value = true;
     activeTab.value = 'sop';
-    try {
-        const res = await api.get(`/products/${row.id}`, { silent: true });
-        detail.value = res.data?.data ?? res.data;
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat detail product.');
-    } finally {
-        detailLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/products/${row.id}`, { block: true, silent: true });
+            detail.value = res.data?.data ?? res.data;
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat detail product.');
+        } finally {
+            detailLoading.value = false;
+        }
+    });
 }
 
 function downloadZip() {
@@ -243,30 +245,32 @@ async function openMove(row) {
     moveOpen.value = true;
     moveTable.setRows([]);
     moveLoading.value = true;
-    try {
-        const res = await api.get(`/products/${row.id}/move`, { silent: true });
-        const body = res.data?.data ?? res.data ?? [];
-        const mapped = (Array.isArray(body) ? body : []).map((m) => ({
-            reference: m.reference ?? '-',
-            location: odooName(m.location_id),
-            destination: odooName(m.location_dest_id),
-            date: m.date ?? '-',
-            lot: odooName(m.lot_id),
-            qty: m.qty_done ?? m.quantity_done ?? 0,
-            doc: m.x_studio_no_so ?? '-',
-            customer: m.x_studio_customer ?? '-',
-        }));
-        moveTable.setRows(mapped);
-        if (mapped.length === 0) {
-            toast.info('Tidak ada data move.');
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/products/${row.id}/move`, { block: true, silent: true });
+            const body = res.data?.data ?? res.data ?? [];
+            const mapped = (Array.isArray(body) ? body : []).map((m) => ({
+                reference: m.reference ?? '-',
+                location: odooName(m.location_id),
+                destination: odooName(m.location_dest_id),
+                date: m.date ?? '-',
+                lot: odooName(m.lot_id),
+                qty: m.qty_done ?? m.quantity_done ?? 0,
+                doc: m.x_studio_no_so ?? '-',
+                customer: m.x_studio_customer ?? '-',
+            }));
+            moveTable.setRows(mapped);
+            if (mapped.length === 0) {
+                toast.info('Tidak ada data move.');
+            }
+        } catch (e) {
+            moveTable.setRows([]);
+            moveTable.error.value = e.response?.data?.message ?? 'Gagal memuat move.';
+            toast.error(moveTable.error.value);
+        } finally {
+            moveLoading.value = false;
         }
-    } catch (e) {
-        moveTable.setRows([]);
-        moveTable.error.value = e.response?.data?.message ?? 'Gagal memuat move.';
-        toast.error(moveTable.error.value);
-    } finally {
-        moveLoading.value = false;
-    }
+    });
 }
 
 const moveSearchBox = ref('');

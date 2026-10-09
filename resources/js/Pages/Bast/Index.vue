@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Download, Pencil, Plus, Printer, RefreshCw, Trash2 } from '@lucide/vue';
+import { Copy, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -85,16 +85,6 @@ async function deleteBatch() {
     });
 }
 
-function downloadFile(row, type = 'tanda_terima') {
-    window.open(`/basts/${row.id}/download?type=${type}`, '_blank');
-}
-function downloadZip(row) {
-    window.open(`/basts/${row.id}/download-zip`, '_blank');
-}
-function printBast(row, type = 'tanda_terima') {
-    window.open(`/basts/${row.id}/print?type=${type}`, '_blank');
-}
-
 query.fetch();
 </script>
 
@@ -135,13 +125,6 @@ query.fetch();
             <template #cell-do="{ row }"><b>{{ row.do ?? '-' }}</b></template>
             <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
             <template #cell-city="{ row }">{{ row.city ?? '-' }}</template>
-            <template #actions="{ row }">
-                <div class="flex justify-end gap-1">
-                    <Button variant="outline" size="sm" title="Edit" @click="goEdit(row)"><Pencil /></Button>
-                    <Button variant="outline" size="sm" title="Print tanda terima" @click="printBast(row, 'tanda_terima')"><Printer /></Button>
-                    <Button variant="outline" size="sm" title="Unduh dokumen" @click="downloadFile(row)"><Download /></Button>
-                </div>
-            </template>
         </DataTable>
     </AppLayout>
 </template>

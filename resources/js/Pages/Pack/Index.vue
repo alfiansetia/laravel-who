@@ -152,21 +152,23 @@ async function openDetail(row) {
     modalOpen.value = true;
     activeTab.value = 'view';
     detailLoading.value = true;
-    try {
-        const res = await api.get(`/packs/${row.id}`, { silent: true });
-        detail.value = res.data?.data ?? res.data;
-        editForm.value = {
-            name: detail.value?.name ?? '',
-            desc: detail.value?.desc ?? '',
-            vendor_desc: detail.value?.vendor_desc ?? '',
-            items: flattenItems(detail.value?.items ?? []).map((i) => ({ item: i.item ?? '', qty: i.qty ?? '' })),
-        };
-    } catch (e) {
-        detail.value = row;
-        toast.error(e.response?.data?.message ?? 'Gagal memuat detail PL.');
-    } finally {
-        detailLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/packs/${row.id}`, { block: true, silent: true });
+            detail.value = res.data?.data ?? res.data;
+            editForm.value = {
+                name: detail.value?.name ?? '',
+                desc: detail.value?.desc ?? '',
+                vendor_desc: detail.value?.vendor_desc ?? '',
+                items: flattenItems(detail.value?.items ?? []).map((i) => ({ item: i.item ?? '', qty: i.qty ?? '' })),
+            };
+        } catch (e) {
+            detail.value = row;
+            toast.error(e.response?.data?.message ?? 'Gagal memuat detail PL.');
+        } finally {
+            detailLoading.value = false;
+        }
+    });
 }
 
 function flattenItems(items) {

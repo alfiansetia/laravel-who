@@ -245,15 +245,17 @@ async function pickDo(val) {
         return;
     }
     doLinesLoading.value = true;
-    try {
-        const res = await api.get(`/do/${val}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        doLines.value = mapMoveLines(d);
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
-    } finally {
-        doLinesLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/do/${val}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            doLines.value = mapMoveLines(d);
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
+        } finally {
+            doLinesLoading.value = false;
+        }
+    });
 }
 
 // IT tab
@@ -293,15 +295,17 @@ async function pickIt(val) {
         return;
     }
     itLinesLoading.value = true;
-    try {
-        const res = await api.get(`/it/${val}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        itLines.value = mapMoveLines(d);
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat IT.');
-    } finally {
-        itLinesLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/it/${val}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            itLines.value = mapMoveLines(d);
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat IT.');
+        } finally {
+            itLinesLoading.value = false;
+        }
+    });
 }
 
 function openAddItem(koli) {

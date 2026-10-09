@@ -67,23 +67,25 @@ async function fetchDoList() {
         return;
     }
     doLoading.value = true;
-    try {
-        const res = await api.get('/do', { params: { search: keyword }, silent: true });
-        const body = res.data?.data ?? res.data ?? [];
-        const list = Array.isArray(body) ? body : (body.data ?? []);
-        doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id) }));
-        selectedDoId.value = '';
-        if (doOptions.value.length === 0) {
-            toast.warning('DO tidak ditemukan.');
-        } else {
-            toast.success(`${doOptions.value.length} DO ditemukan, pilih salah satu.`);
+    await withBlock(async () => {
+        try {
+            const res = await api.get('/do', { params: { search: keyword }, block: true, silent: true });
+            const body = res.data?.data ?? res.data ?? [];
+            const list = Array.isArray(body) ? body : (body.data ?? []);
+            doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id) }));
+            selectedDoId.value = '';
+            if (doOptions.value.length === 0) {
+                toast.warning('DO tidak ditemukan.');
+            } else {
+                toast.success(`${doOptions.value.length} DO ditemukan, pilih salah satu.`);
+            }
+        } catch (e) {
+            doOptions.value = [];
+            toast.error(e.response?.data?.message ?? 'Gagal mengambil data DO.');
+        } finally {
+            doLoading.value = false;
         }
-    } catch (e) {
-        doOptions.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal mengambil data DO.');
-    } finally {
-        doLoading.value = false;
-    }
+    });
 }
 
 function wrapAddress(text, firstLimit = 45, otherLimit = 65) {
@@ -121,62 +123,64 @@ async function pickDo(val) {
     if (!val) {
         return;
     }
-    try {
-        const res = await api.get(`/do/${val}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        let tujuan = '';
-        let ekspedisi = '';
-        let up = '';
-        let name = '';
-        let epur = '';
-        let noteToWh = '';
-        if (d.partner_id !== false && d.partner_id != null) {
-            tujuan = d.partner_id[1] ?? '';
-        }
-        if (d.ekspedisi_id !== false && d.ekspedisi_id != null) {
-            ekspedisi = d.ekspedisi_id[1] ?? '';
-        }
-        if (d.delivery_manual !== false && d.delivery_manual != null) {
-            up = d.delivery_manual;
-            if (up === '-') {
-                up = '';
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/do/${val}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            let tujuan = '';
+            let ekspedisi = '';
+            let up = '';
+            let name = '';
+            let epur = '';
+            let noteToWh = '';
+            if (d.partner_id !== false && d.partner_id != null) {
+                tujuan = d.partner_id[1] ?? '';
             }
-        }
-        if (d.name !== false && d.name != null) {
-            name = d.name;
-        }
-        if (d.no_aks !== false && d.no_aks != null) {
-            epur = d.no_aks;
-            if (epur === '-') {
-                epur = '';
+            if (d.ekspedisi_id !== false && d.ekspedisi_id != null) {
+                ekspedisi = d.ekspedisi_id[1] ?? '';
             }
+            if (d.delivery_manual !== false && d.delivery_manual != null) {
+                up = d.delivery_manual;
+                if (up === '-') {
+                    up = '';
+                }
+            }
+            if (d.name !== false && d.name != null) {
+                name = d.name;
+            }
+            if (d.no_aks !== false && d.no_aks != null) {
+                epur = d.no_aks;
+                if (epur === '-') {
+                    epur = '';
+                }
+            }
+            let alamat = d.partner_address ?? '';
+            if (d.partner_address2 !== false && d.partner_address2 != null) {
+                alamat += `\n${d.partner_address2}`;
+            }
+            if (d.partner_address3 !== false && d.partner_address3 != null) {
+                alamat += `\n${d.partner_address3}`;
+            }
+            if (d.partner_address4 !== false && d.partner_address4 != null) {
+                alamat += `\n${d.partner_address4}`;
+            }
+            if (d.note_to_wh !== false && d.note_to_wh != null) {
+                noteToWh = String(d.note_to_wh).replace(/\n/g, '<br>');
+            }
+            form.value.do = name;
+            form.value.up = up;
+            form.value.alamat = wrapAddress(alamat);
+            form.value.tujuan = tujuan;
+            form.value.ekspedisi = ekspedisi;
+            form.value.epur = epur;
+            form.value.tlp = '';
+            form.value.untuk = '';
+            noteWhHtml.value = noteToWh;
+            toast.success('Data DO dimuat.');
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
         }
-        let alamat = d.partner_address ?? '';
-        if (d.partner_address2 !== false && d.partner_address2 != null) {
-            alamat += `\n${d.partner_address2}`;
-        }
-        if (d.partner_address3 !== false && d.partner_address3 != null) {
-            alamat += `\n${d.partner_address3}`;
-        }
-        if (d.partner_address4 !== false && d.partner_address4 != null) {
-            alamat += `\n${d.partner_address4}`;
-        }
-        if (d.note_to_wh !== false && d.note_to_wh != null) {
-            noteToWh = String(d.note_to_wh).replace(/\n/g, '<br>');
-        }
-        form.value.do = name;
-        form.value.up = up;
-        form.value.alamat = wrapAddress(alamat);
-        form.value.tujuan = tujuan;
-        form.value.ekspedisi = ekspedisi;
-        form.value.epur = epur;
-        form.value.tlp = '';
-        form.value.untuk = '';
-        noteWhHtml.value = noteToWh;
-        toast.success('Data DO dimuat.');
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
-    }
+    });
 }
 
 function setEpur(val) {

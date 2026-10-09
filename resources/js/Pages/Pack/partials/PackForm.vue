@@ -83,14 +83,16 @@ async function loadTemplates() {
     if (!form.value.product_id) {
         return;
     }
-    try {
-        const res = await api.get(`/products/${form.value.product_id}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        templates.value = d?.packs ?? [];
-    } catch (e) {
-        templates.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal memuat template pack.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/products/${form.value.product_id}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            templates.value = d?.packs ?? [];
+        } catch (e) {
+            templates.value = [];
+            toast.error(e.response?.data?.message ?? 'Gagal memuat template pack.');
+        }
+    });
 }
 
 function onProductChange(v) {

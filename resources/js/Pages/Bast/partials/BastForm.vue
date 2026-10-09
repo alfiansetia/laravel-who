@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp, Download, FilePlus, Printer, RefreshCw, Stamp, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, ChevronDown, Download, FilePlus, Printer, RefreshCw, Stamp, Trash2 } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import AppModal from '@/components/AppModal.vue';
 import FormField from '@/components/FormField.vue';
@@ -53,22 +53,29 @@ function doLabel(d) {
     return name;
 }
 
-async function searchDo(keyword) {
+async function searchDo(keyword, overlay = false) {
     doKeyword.value = keyword ?? doKeyword.value;
     if (!doKeyword.value || doKeyword.value.length < 1) {
         return;
     }
     doLoading.value = true;
-    try {
-        const res = await api.get('/do', { params: { search: doKeyword.value }, silent: true });
-        const body = res.data?.data ?? res.data ?? [];
-        const list = Array.isArray(body) ? body : (body.data ?? []);
-        doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id), raw: d }));
-    } catch (e) {
-        doOptions.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
-    } finally {
-        doLoading.value = false;
+    const run = async () => {
+        try {
+            const res = await api.get('/do', { params: { search: doKeyword.value }, silent: true, ...(overlay ? { block: true } : {}) });
+            const body = res.data?.data ?? res.data ?? [];
+            const list = Array.isArray(body) ? body : (body.data ?? []);
+            doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id), raw: d }));
+        } catch (e) {
+            doOptions.value = [];
+            toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
+        } finally {
+            doLoading.value = false;
+        }
+    };
+    if (overlay) {
+        await withBlock(run);
+    } else {
+        await run();
     }
 }
 
@@ -77,23 +84,25 @@ async function pickDo(val) {
     if (!val) {
         return;
     }
-    try {
-        const res = await api.get(`/do/${val}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        form.value.do = d.name ?? form.value.do;
-        form.value.name = odooName(d.partner_id) ?? form.value.name;
-        const addr = [d.partner_address, d.partner_address2, d.partner_address3, d.partner_address4].filter(Boolean).join(', ');
-        if (addr) {
-            form.value.address = addr;
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/do/${val}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            form.value.do = d.name ?? form.value.do;
+            form.value.name = odooName(d.partner_id) ?? form.value.name;
+            const addr = [d.partner_address, d.partner_address2, d.partner_address3, d.partner_address4].filter(Boolean).join(', ');
+            if (addr) {
+                form.value.address = addr;
+            }
+            const city = d.partner_address3 ?? '';
+            if (city) {
+                form.value.city = city;
+            }
+            toast.success('Data DO dimuat.');
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
         }
-        const city = d.partner_address3 ?? '';
-        if (city) {
-            form.value.city = city;
-        }
-        toast.success('Data DO dimuat.');
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
-    }
+    });
 }
 
 async function saveHeader() {
@@ -257,6 +266,8 @@ function printBast(type = 'tanda_terima') {
     window.open(`/basts/${props.bast.id}/print?type=${type}`, '_blank');
 }
 
+const docMenuOpen = ref(false);
+
 if (isEdit.value) {
     loadItems();
 }
@@ -268,11 +279,7 @@ if (isEdit.value) {
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
                 <Button v-if="isEdit" variant="outline" size="sm" @click="() => window.close()">Tutup</Button>
-                <Button size="sm" @click="saveHeader">{{ isEdit ? 'Simpan' : 'Simpan & Lanjut ke Item' }}</Button>
-                <template v-if="isEdit">
-                    <Button variant="outline" size="sm" @click="syncOdoo"><RefreshCw /> Sync Odoo</Button>
-                    <Button variant="outline" size="sm" @click="downloadZip"><Download /> ZIP</Button>
-                </template>
+                <Button v-if="!isEdit" size="sm" @click="saveHeader">Simpan & Lanjut ke Item</Button>
             </template>
         </PageHeader>
 
@@ -280,8 +287,8 @@ if (isEdit.value) {
             <div class="grid gap-4 sm:grid-cols-2">
                 <FormField label="Cari No DO">
                     <div class="flex gap-2">
-                        <Input v-model="doKeyword" placeholder="CENT/OUT/" class="flex-1" @keyup.enter="searchDo()" />
-                        <Button variant="outline" size="sm" @click="searchDo()">GET DO</Button>
+                        <Input v-model="doKeyword" placeholder="CENT/OUT/" class="flex-1" @keyup.enter="searchDo(null, true)" />
+                        <Button variant="outline" size="sm" @click="searchDo(null, true)">GET DO</Button>
                     </div>
                 </FormField>
                 <FormField label="Pilih Hasil Pencarian">
@@ -305,14 +312,25 @@ if (isEdit.value) {
         <div v-if="isEdit" class="rounded-lg border bg-white">
             <div class="flex flex-wrap items-center gap-2 border-b px-3 py-2">
                 <b class="text-sm">Item BAST ({{ items.length }})</b>
-                <span class="ml-auto flex flex-wrap gap-1">
+                <span class="ml-auto flex flex-wrap items-center gap-1">
                     <Button size="sm" @click="openAddItem"><FilePlus /> Tambah Item</Button>
-                    <Button variant="outline" size="sm" @click="printBast('tanda_terima')"><Printer /> Tanda Terima</Button>
-                    <Button variant="outline" size="sm" @click="printBast('training')"><Printer /> Training</Button>
-                    <Button variant="outline" size="sm" @click="printBast('bast')"><Printer /> BAST</Button>
-                    <Button variant="outline" size="sm" @click="downloadFile('tanda_terima')"><Download /> Docx Terima</Button>
-                    <Button variant="outline" size="sm" @click="downloadFile('training')"><Download /> Docx Training</Button>
-                    <Button variant="outline" size="sm" @click="downloadFile('bast')"><Download /> Docx BAST</Button>
+                    <span class="relative">
+                        <Button variant="outline" size="sm" @click="docMenuOpen = !docMenuOpen"><Printer /> Print / Unduh <ChevronDown /></Button>
+                        <span v-if="docMenuOpen" class="fixed inset-0 z-40" @click="docMenuOpen = false" />
+                        <span v-if="docMenuOpen" class="absolute right-0 z-50 mt-1 w-56 rounded-lg border bg-white p-1 text-left shadow-lg">
+                            <p class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Print</p>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; printBast('tanda_terima')"><Printer class="size-4 text-slate-500" /> Tanda Terima</button>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; printBast('training')"><Printer class="size-4 text-slate-500" /> Training</button>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; printBast('bast')"><Printer class="size-4 text-slate-500" /> BAST</button>
+                            <p class="mt-1 border-t px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Docx</p>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; downloadFile('tanda_terima')"><Download class="size-4 text-slate-500" /> Docx Terima</button>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; downloadFile('training')"><Download class="size-4 text-slate-500" /> Docx Training</button>
+                            <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="docMenuOpen = false; downloadFile('bast')"><Download class="size-4 text-slate-500" /> Docx BAST</button>
+                        </span>
+                    </span>
+                    <Button variant="outline" size="sm" @click="downloadZip"><Download /> ZIP</Button>
+                    <Button variant="outline" size="sm" @click="syncOdoo"><RefreshCw /> Sync Odoo</Button>
+                    <Button size="sm" @click="saveHeader">Simpan</Button>
                 </span>
             </div>
             <div v-if="itemsLoading" class="space-y-2 p-3">

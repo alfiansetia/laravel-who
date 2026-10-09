@@ -13,6 +13,7 @@ import StatusBadge from '@/components/StatusBadge.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import { useClientTable } from '@/composables/useClientTable';
+import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
@@ -24,6 +25,7 @@ const props = defineProps({
 
 const toast = useToast();
 const { confirm } = useConfirm();
+const { withBlock } = useBlock();
 
 const searchBox = ref('');
 const statusFilter = ref('all');
@@ -207,14 +209,16 @@ async function openCompare(row) {
     dbPltbb.value = null;
     compareOpen.value = true;
     compareLoading.value = true;
-    try {
-        const res = await api.get(`/products/${encodeURIComponent(row.code)}/compare`, { silent: true });
-        dbPltbb.value = res.data?.data?.pltbb ?? null;
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat data pembanding.');
-    } finally {
-        compareLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/products/${encodeURIComponent(row.code)}/compare`, { block: true, silent: true });
+            dbPltbb.value = res.data?.data?.pltbb ?? null;
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat data pembanding.');
+        } finally {
+            compareLoading.value = false;
+        }
+    });
 }
 
 function cellVal(v) {

@@ -13,6 +13,7 @@ import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import Card from '@/components/ui/Card.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
+import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
@@ -27,6 +28,7 @@ const props = defineProps({
 
 const toast = useToast();
 const { confirm } = useConfirm();
+const { withBlock } = useBlock();
 const query = useTableQuery(
     (p) => api.get('/izin-edars', { params: { ...p, kategori: kategoriBox.value || undefined } }),
     { search: props.filters.search ?? '', page: Number(props.filters.page ?? 1) },
@@ -110,15 +112,17 @@ const detailLoading = ref(false);
 async function openDetail(row) {
     detailOpen.value = true;
     detailLoading.value = true;
-    try {
-        const res = await api.get(`/izin-edars/${row.id}`, { silent: true });
-        detail.value = res.data?.data ?? res.data;
-    } catch (e) {
-        detail.value = row;
-        toast.error(e.response?.data?.message ?? 'Gagal memuat detail.');
-    } finally {
-        detailLoading.value = false;
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/izin-edars/${row.id}`, { block: true, silent: true });
+            detail.value = res.data?.data ?? res.data;
+        } catch (e) {
+            detail.value = row;
+            toast.error(e.response?.data?.message ?? 'Gagal memuat detail.');
+        } finally {
+            detailLoading.value = false;
+        }
+    });
 }
 function detailPairs() {
     const d = detail.value ?? {};

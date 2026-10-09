@@ -94,23 +94,25 @@ async function fetchDoList() {
         return;
     }
     doLoading.value = true;
-    try {
-        const res = await api.get('/do', { params: { search: keyword }, silent: true });
-        const body = res.data?.data ?? res.data ?? [];
-        const list = Array.isArray(body) ? body : (body.data ?? []);
-        doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id) }));
-        selectedDoId.value = '';
-        if (doOptions.value.length === 0) {
-            toast.warning('DO tidak ditemukan.');
-        } else {
-            toast.success(`${doOptions.value.length} DO ditemukan, pilih salah satu.`);
+    await withBlock(async () => {
+        try {
+            const res = await api.get('/do', { params: { search: keyword }, block: true, silent: true });
+            const body = res.data?.data ?? res.data ?? [];
+            const list = Array.isArray(body) ? body : (body.data ?? []);
+            doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id) }));
+            selectedDoId.value = '';
+            if (doOptions.value.length === 0) {
+                toast.warning('DO tidak ditemukan.');
+            } else {
+                toast.success(`${doOptions.value.length} DO ditemukan, pilih salah satu.`);
+            }
+        } catch (e) {
+            doOptions.value = [];
+            toast.error(e.response?.data?.message ?? 'Gagal mengambil data DO.');
+        } finally {
+            doLoading.value = false;
         }
-    } catch (e) {
-        doOptions.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal mengambil data DO.');
-    } finally {
-        doLoading.value = false;
-    }
+    });
 }
 
 async function pickDo(val) {
@@ -118,31 +120,33 @@ async function pickDo(val) {
     if (!val) {
         return;
     }
-    try {
-        const res = await api.get(`/do/${val}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        let alamat = odooText(d.partner_address);
-        ['partner_address2', 'partner_address3', 'partner_address4'].forEach((k) => {
-            const t = odooText(d[k]);
-            if (t) {
-                alamat += `\n${t}`;
-            }
-        });
-        form.value.do = odooText(d.name);
-        form.value.up = odooText(d.delivery_manual) === '-' ? '' : odooText(d.delivery_manual);
-        form.value.tujuan = odooText(d.partner_id);
-        form.value.ekspedisi = odooText(d.ekspedisi_id);
-        form.value.alamat = alamat;
-        form.value.epur = odooText(d.no_aks) === '-' ? '' : odooText(d.no_aks);
-        form.value.tlp = '';
-        form.value.untuk = '';
-        epurKind.value = 'NULL';
-        const noteToWh = odooText(d.note_to_wh);
-        noteWhHtml.value = noteToWh ? String(noteToWh).replace(/\n/g, '<br>') : '';
-        toast.success('Data DO dimuat.');
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await api.get(`/do/${val}`, { block: true, silent: true });
+            const d = res.data?.data ?? res.data;
+            let alamat = odooText(d.partner_address);
+            ['partner_address2', 'partner_address3', 'partner_address4'].forEach((k) => {
+                const t = odooText(d[k]);
+                if (t) {
+                    alamat += `\n${t}`;
+                }
+            });
+            form.value.do = odooText(d.name);
+            form.value.up = odooText(d.delivery_manual) === '-' ? '' : odooText(d.delivery_manual);
+            form.value.tujuan = odooText(d.partner_id);
+            form.value.ekspedisi = odooText(d.ekspedisi_id);
+            form.value.alamat = alamat;
+            form.value.epur = odooText(d.no_aks) === '-' ? '' : odooText(d.no_aks);
+            form.value.tlp = '';
+            form.value.untuk = '';
+            epurKind.value = 'NULL';
+            const noteToWh = odooText(d.note_to_wh);
+            noteWhHtml.value = noteToWh ? String(noteToWh).replace(/\n/g, '<br>') : '';
+            toast.success('Data DO dimuat.');
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
+        }
+    });
 }
 
 function onEpurKindChange() {
