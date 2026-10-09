@@ -215,7 +215,7 @@ Route::apiResource('koli-item', KoliItemController::class)
 Route::post('koli-item/from-do-it', [KoliItemController::class, 'fromDoIt'])
     ->name('api.koli_item.from_do_it');
 
-Route::post('form-qc/', [QcController::class, 'store'])
+Route::post('form-qc', [QcController::class, 'store'])
     ->name('api.qc.store');
 
 Route::get('settings/cek-odoo', [SettingController::class, 'cek_odoo'])

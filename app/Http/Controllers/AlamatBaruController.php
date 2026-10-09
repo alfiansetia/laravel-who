@@ -4,40 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\AlamatBaru;
 use App\Models\Product;
-use App\Services\Breadcrumb;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AlamatBaruController extends Controller
 {
-
-    public function index()
+    public function index(Request $request)
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat Baru', route('alamat_baru.index'), false),
+        return Inertia::render('AlamatBaru/Index', [
+            'title' => 'List Alamat Baru',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('alamat_baru.index', compact(['bcms']))->with(['title' => 'List Alamat Baru']);
     }
 
     public function create()
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat Baru', route('alamat_baru.index'), true),
-            new Breadcrumb('Create Alamat Baru', route('alamat_baru.create'), false),
+        return Inertia::render('AlamatBaru/Create', [
+            'title' => 'Create Alamat Baru',
         ]);
-        return view('alamat_baru.create', compact(['bcms']))->with(['title' => 'Create Alamat Baru']);
     }
 
     public function edit(AlamatBaru $alamatBaru)
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat Baru', route('alamat_baru.index'), true),
-            new Breadcrumb($alamatBaru->do, route('alamat_baru.edit', $alamatBaru->id), false),
-        ]);
         $data = $alamatBaru;
         $products = Product::query()
             ->select('id', 'code', 'name')
+            ->orderBy('code')
             ->get();
-        return view('alamat_baru.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Alamat Baru']);
+
+        return Inertia::render('AlamatBaru/Edit', [
+            'title' => 'Edit Alamat Baru',
+            'record' => $data,
+            'products' => $products,
+        ]);
     }
 
     public function show(Request $request, AlamatBaru $alamatBaru)
@@ -50,6 +49,7 @@ class AlamatBaruController extends Controller
             })
             ->with('items.product')
             ->get();
+
         return view('alamat_baru.show', compact('data', 'kolis', 'is_split'))->with(['title' => 'Detail Alamat Baru']);
     }
 }

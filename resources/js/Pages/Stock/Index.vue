@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import BlockOverlay from '@/components/BlockOverlay.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import MultiSelect from '@/components/MultiSelect.vue';
 import FormField from '@/components/FormField.vue';
@@ -159,91 +158,89 @@ load();
 
 <template>
     <AppLayout>
-        <BlockOverlay>
-            <PageHeader :title="title" description="Pantau stok barang (snapshot Odoo)">
-                <template #actions>
-                    <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
-                    <Button variant="outline" size="sm" @click="copyRows(table.filtered.value, ['code', 'name', 'quantity'])"><Copy /> Salin</Button>
-                    <Button variant="outline" size="sm" @click="downloadCsv('stock', table.filtered.value, ['code', 'name', 'quantity', 'akl'])"><Download /> CSV</Button>
-                    <Button size="sm" @click="downloadOpname"><Download /> Opname</Button>
-                </template>
-            </PageHeader>
-            <FilterPanel title="Filter Stock" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Lokasi">
-                    <MultiSelect v-model="locations" :options="locationOptions" placeholder="Pilih lokasi..." />
-                </FormField>
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari kode / nama / AKL..." @input="onSearchInput" />
-                </FormField>
-                <template #actions>
-                    <Button size="sm" @click="load">Terapkan</Button>
-                </template>
-            </FilterPanel>
+        <PageHeader :title="title" description="Pantau stok barang (snapshot Odoo)">
+            <template #actions>
+                <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
+                <Button variant="outline" size="sm" @click="copyRows(table.filtered.value, ['code', 'name', 'quantity'])"><Copy /> Salin</Button>
+                <Button variant="outline" size="sm" @click="downloadCsv('stock', table.filtered.value, ['code', 'name', 'quantity', 'akl'])"><Download /> CSV</Button>
+                <Button size="sm" @click="downloadOpname"><Download /> Opname</Button>
+            </template>
+        </PageHeader>
+        <FilterPanel title="Filter Stock" :active-count="activeCount" @reset="resetFilter">
+            <FormField label="Lokasi">
+                <MultiSelect v-model="locations" :options="locationOptions" placeholder="Pilih lokasi..." />
+            </FormField>
+            <FormField label="Pencarian">
+                <Input :model-value="searchBox" type="search" placeholder="Cari kode / nama / AKL..." @input="onSearchInput" />
+            </FormField>
+            <template #actions>
+                <Button size="sm" @click="load">Terapkan</Button>
+            </template>
+        </FilterPanel>
+        <DataTable
+            :columns="columns"
+            :rows="table.rows.value"
+            :loading="table.loading.value"
+            :error="table.error.value"
+            :page="table.page.value"
+            :total-pages="table.totalPages.value"
+            :total="table.total.value"
+            :per-page="table.perPage.value"
+            sortable
+            clickable
+            empty-title="Stok tidak ditemukan"
+            empty-message="Ubah filter lokasi atau kata kunci pencarian."
+            @update:page="table.setPage"
+            @update:per-page="table.setPerPage"
+            @sort="table.toggleSort"
+            @row-click="openLot"
+        >
+            <template #cell-code="{ row }"><b>{{ row.code ?? '-' }}</b></template>
+            <template #cell-quantity="{ row }"><span class="inline-flex min-w-12 items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold" :class="Number(row.quantity ?? 0) === 0 ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white'">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</span></template>
+            <template #cell-akl="{ row }"><span v-if="row.akl" :title="row.akl" class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-700">{{ row.akl }}</span><span v-else class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400">-</span></template>
+            <template #actions="{ row }">
+                <Button variant="outline" size="sm" title="Salin kode + nama" @click="copyRow(row)"><Copy /></Button>
+            </template>
+        </DataTable>
+        <AppModal v-model:open="lotOpen" :title="`${activeProduct?.code ?? ''} — ${activeProduct?.name ?? 'Detail Lot/SN'}`" size="xl">
+            <div class="mb-2 flex flex-wrap items-center gap-2">
+                <Input :model-value="lotSearchBox" type="search" placeholder="Cari lokasi / lot..." class="max-w-xs" @input="onLotSearchInput" />
+                <Button variant="outline" size="sm" @click="copyRows(lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'], 'lot')"><Copy /> Salin</Button>
+                <Button variant="outline" size="sm" @click="downloadCsv(`lot-${activeProduct?.code ?? 'stock'}`, lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'])"><Download /> CSV</Button>
+            </div>
             <DataTable
-                :columns="columns"
-                :rows="table.rows.value"
-                :loading="table.loading.value"
-                :error="table.error.value"
-                :page="table.page.value"
-                :total-pages="table.totalPages.value"
-                :total="table.total.value"
-                :per-page="table.perPage.value"
+                :columns="lotColumns"
+                :rows="lotTable.rows.value"
+                :loading="lotTable.loading.value"
+                :error="lotTable.error.value"
+                :page="lotTable.page.value"
+                :total-pages="lotTable.totalPages.value"
+                :total="lotTable.total.value"
+                :per-page="lotTable.perPage.value"
                 sortable
-                clickable
-                empty-title="Stok tidak ditemukan"
-                empty-message="Ubah filter lokasi atau kata kunci pencarian."
-                @update:page="table.setPage"
-                @update:per-page="table.setPerPage"
-                @sort="table.toggleSort"
-                @row-click="openLot"
+                empty-title="Lot tidak ditemukan"
+                empty-message="Ubah kata kunci pencarian."
+                @update:page="lotTable.setPage"
+                @update:per-page="lotTable.setPerPage"
+                @sort="lotTable.toggleSort"
             >
-                <template #cell-code="{ row }"><b>{{ row.code ?? '-' }}</b></template>
-                <template #cell-quantity="{ row }"><span class="inline-flex min-w-12 items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold" :class="Number(row.quantity ?? 0) === 0 ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white'">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</span></template>
-                <template #cell-akl="{ row }"><span v-if="row.akl" :title="row.akl" class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-700">{{ row.akl }}</span><span v-else class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400">-</span></template>
-                <template #actions="{ row }">
-                    <Button variant="outline" size="sm" title="Salin kode + nama" @click="copyRow(row)"><Copy /></Button>
-                </template>
+                <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
+                <template #cell-quantity="{ row }">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</template>
             </DataTable>
-            <AppModal v-model:open="lotOpen" :title="`${activeProduct?.code ?? ''} — ${activeProduct?.name ?? 'Detail Lot/SN'}`" size="xl">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                    <Input :model-value="lotSearchBox" type="search" placeholder="Cari lokasi / lot..." class="max-w-xs" @input="onLotSearchInput" />
-                    <Button variant="outline" size="sm" @click="copyRows(lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'], 'lot')"><Copy /> Salin</Button>
-                    <Button variant="outline" size="sm" @click="downloadCsv(`lot-${activeProduct?.code ?? 'stock'}`, lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'])"><Download /> CSV</Button>
-                </div>
-                <DataTable
-                    :columns="lotColumns"
-                    :rows="lotTable.rows.value"
-                    :loading="lotTable.loading.value"
-                    :error="lotTable.error.value"
-                    :page="lotTable.page.value"
-                    :total-pages="lotTable.totalPages.value"
-                    :total="lotTable.total.value"
-                    :per-page="lotTable.perPage.value"
-                    sortable
-                    empty-title="Lot tidak ditemukan"
-                    empty-message="Ubah kata kunci pencarian."
-                    @update:page="lotTable.setPage"
-                    @update:per-page="lotTable.setPerPage"
-                    @sort="lotTable.toggleSort"
-                >
-                    <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
-                    <template #cell-quantity="{ row }">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</template>
-                </DataTable>
-                <div class="mt-3 grid gap-3 md:grid-cols-2">
-                    <FormField label="Lot/SN">
-                        <div class="flex gap-1">
-                            <Button variant="outline" size="sm" title="Salin Lot/SN" @click="copyText(lotSummary.lot)"><Copy /></Button>
-                            <Textarea :model-value="lotSummary.lot" rows="3" readonly placeholder="Ringkasan lot per qty..." />
-                        </div>
-                    </FormField>
-                    <FormField label="Serial Number">
-                        <div class="flex gap-1">
-                            <Button variant="outline" size="sm" title="Salin Serial Number" @click="copyText(lotSummary.sn)"><Copy /></Button>
-                            <Textarea :model-value="lotSummary.sn" rows="3" readonly placeholder="Ringkasan SN..." />
-                        </div>
-                    </FormField>
-                </div>
-            </AppModal>
-        </BlockOverlay>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+                <FormField label="Lot/SN">
+                    <div class="flex gap-1">
+                        <Button variant="outline" size="sm" title="Salin Lot/SN" @click="copyText(lotSummary.lot)"><Copy /></Button>
+                        <Textarea :model-value="lotSummary.lot" rows="3" readonly placeholder="Ringkasan lot per qty..." />
+                    </div>
+                </FormField>
+                <FormField label="Serial Number">
+                    <div class="flex gap-1">
+                        <Button variant="outline" size="sm" title="Salin Serial Number" @click="copyText(lotSummary.sn)"><Copy /></Button>
+                        <Textarea :model-value="lotSummary.sn" rows="3" readonly placeholder="Ringkasan SN..." />
+                    </div>
+                </FormField>
+            </div>
+        </AppModal>
     </AppLayout>
 </template>

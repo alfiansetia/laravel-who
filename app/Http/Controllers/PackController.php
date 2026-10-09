@@ -5,50 +5,51 @@ namespace App\Http\Controllers;
 use App\Models\Pack;
 use App\Models\Product;
 use App\Models\Vendor;
-use App\Services\Breadcrumb;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PackController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bcms = collect([
-            new Breadcrumb('List Packing List', route('packs.index'), false),
-        ]);
-        $vendors = Vendor::all();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
 
-        return view('pack.index', compact(['vendors', 'bcms']));
+        return Inertia::render('Pack/Index', [
+            'title' => 'Packing List',
+            'vendors' => $vendors,
+            'filters' => $request->only(['search', 'page']),
+        ]);
     }
 
     public function create()
     {
-        $bcms = collect([
-            new Breadcrumb('List Packing List', route('packs.index'), true),
-            new Breadcrumb('Create Packing List', route('packs.create'), false),
-        ]);
-        $products = Product::all();
-        $vendors = Vendor::all();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
 
-        return view('pack.create', compact(['products', 'vendors', 'bcms']));
+        return Inertia::render('Pack/Create', [
+            'title' => 'Create Packing List',
+            'products' => $products,
+            'vendors' => $vendors,
+        ]);
     }
 
     public function edit(Pack $pack)
     {
         $data = $pack->load(['product', 'vendor']);
-        $bcms = collect([
-            new Breadcrumb('List Packing List', route('packs.index'), true),
-            new Breadcrumb($pack->name.'-'.($pack->product->code ?? '-'), route('packs.edit', $data->id), false),
-        ]);
-        $products = Product::all();
-        $vendors = Vendor::all();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
 
-        return view('pack.edit', compact(['data', 'products', 'vendors', 'bcms']));
+        return Inertia::render('Pack/Edit', [
+            'title' => 'Edit Packing List',
+            'pack' => $data,
+            'products' => $products,
+            'vendors' => $vendors,
+        ]);
     }
 
     public function show($id)
     {
-        $product = Product::query()->with('pls')->findOrFail($id);
-
-        return view('pack.show', compact('product'));
+        return redirect()->route('packs.index');
     }
 
     public function print(Pack $pack)

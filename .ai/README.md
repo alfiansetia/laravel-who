@@ -30,3 +30,4 @@ Folder ini adalah sumber kebenaran untuk migrasi. Semua code baru WAJIB mengikut
 4. **Select = searchable.** Semua select pakai `SearchableSelect`. Tidak ada `<select>` native di form.
 5. **Alert/toast = satu jalur.** Pengganti `show_message()`, `confirmation()`, `bloc()` Blade adalah `useToast()` + `useConfirm()` + `useBlock()` (basis `vue-sonner`). Tidak ada `alert()`, tidak ada iziToast langsung di page.
 6. **Ikon = Lucide.** Tidak ada emoticon/emoji di UI maupun di code (❌ ✅ 🚀 dsb). Status pakai `StatusBadge` + ikon Lucide.
+7. **Export = Salin + CSV.** Mode client hanya `copyRows` + `downloadCsv` dari `lib/export.js`. Dilarang membawa tombol Excel/PDF/Print DataTables Blade; butuh format lain wajib lewat endpoint backend.

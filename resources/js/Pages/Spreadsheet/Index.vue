@@ -5,7 +5,10 @@ import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DataTable from '@/components/DataTable.vue';
+import FilterPanel from '@/components/FilterPanel.vue';
+import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
+import SearchableSelect from '@/components/SearchableSelect.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -58,6 +61,33 @@ const table = useClientTable(async () => {
 
 const rawAll = computed(() => table.allRows.value);
 
+function parseDecimal(value, decimals = 2) {
+    if (value === null || value === undefined || value === '') {
+        return (0).toFixed(decimals);
+    }
+    let num = String(value).replace(',', '.');
+    num = parseFloat(num);
+    if (Number.isNaN(num)) {
+        num = 0;
+    }
+    return num.toFixed(decimals);
+}
+
+function isMissingDim(v) {
+    return v === '' || v === null || v === undefined;
+}
+
+function validationMessage(e, fallback) {
+    const errors = e.response?.data?.errors;
+    if (errors) {
+        const first = Object.values(errors).flat()[0];
+        if (first) {
+            return first;
+        }
+    }
+    return e.response?.data?.message ?? fallback;
+}
+
 function applyStatusFilter() {
     if (statusFilter.value === 'all') {
         table.setRows(rawAll.value);
@@ -83,8 +113,23 @@ function onSearchInput(e) {
     table.setSearch(e.target.value);
 }
 
+const statusOptions = [
+    { label: 'Semua', value: 'all' },
+    { label: 'Lengkap', value: 'lengkap' },
+    { label: 'Belum Lengkap', value: 'tidak_lengkap' },
+];
+
+const activeCount = computed(() => (table.search.value ? 1 : 0) + (statusFilter.value !== 'all' ? 1 : 0));
+
 function setStatusFilter(v) {
     statusFilter.value = v;
+    applyStatusFilter();
+}
+
+function resetFilter() {
+    searchBox.value = '';
+    table.setSearch('', 0);
+    statusFilter.value = 'all';
     applyStatusFilter();
 }
 
@@ -99,7 +144,7 @@ function onDownload() {
 }
 
 async function syncRow(row) {
-    if (!row.code || row.p === '' || row.l === '' || row.t === '' || row.b === '') {
+    if (!row.code || isMissingDim(row.p) || isMissingDim(row.l) || isMissingDim(row.t) || isMissingDim(row.b)) {
         toast.warning(`Kode dan P/L/T/B wajib ada untuk ${row.code || 'baris ini'}.`);
         return;
     }
@@ -114,11 +159,19 @@ async function syncRow(row) {
     syncingCode.value = row.code;
     try {
         const res = await api.post('/spreadsheet', {
-            code: row.code, p: String(row.p), l: String(row.l), t: String(row.t), b: String(row.b), note: row.note ?? '',
+            code: row.code,
+            p: parseDecimal(row.p),
+            l: parseDecimal(row.l),
+            t: parseDecimal(row.t),
+            b: parseDecimal(row.b),
+            note: row.note ?? '',
         });
         toast.success(res.data?.message ?? 'Data berhasil disimpan.');
     } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal sinkron.');
+        if (e.response?.status !== 422) {
+            return;
+        }
+        toast.error(validationMessage(e, 'Gagal sinkron.'));
     } finally {
         syncingCode.value = '';
     }
@@ -139,7 +192,10 @@ async function syncAll() {
         toast.success(res.data?.message ?? 'Sinkronisasi selesai.');
         table.fetch();
     } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal sinkronisasi.');
+        if (e.response?.status !== 422) {
+            return;
+        }
+        toast.error(validationMessage(e, 'Gagal sinkronisasi.'));
     } finally {
         syncingAll.value = false;
     }
@@ -179,20 +235,14 @@ table.fetch();
             </template>
         </PageHeader>
 
-        <div class="mb-3 flex flex-wrap items-center gap-2">
-            <Input :model-value="searchBox" type="search" placeholder="Cari kode atau nama..." class="max-w-xs" @input="onSearchInput" />
-            <div class="flex items-center gap-1 rounded-md border p-1">
-                <Button
-                    v-for="opt in [{ value: 'all', label: 'Semua' }, { value: 'lengkap', label: 'Lengkap' }, { value: 'tidak_lengkap', label: 'Belum Lengkap' }]"
-                    :key="opt.value"
-                    :variant="statusFilter === opt.value ? 'default' : 'ghost'"
-                    size="sm"
-                    @click="setStatusFilter(opt.value)"
-                >
-                    {{ opt.label }}
-                </Button>
-            </div>
-        </div>
+        <FilterPanel title="Filter Spreadsheet" :active-count="activeCount" @reset="resetFilter">
+            <FormField label="Pencarian">
+                <Input :model-value="searchBox" type="search" placeholder="Cari kode atau nama..." @input="onSearchInput" />
+            </FormField>
+            <FormField label="Status">
+                <SearchableSelect :model-value="statusFilter" :options="statusOptions" placeholder="Semua Status" :clearable="false" @update:model-value="setStatusFilter" />
+            </FormField>
+        </FilterPanel>
 
         <DataTable
             :columns="columns"

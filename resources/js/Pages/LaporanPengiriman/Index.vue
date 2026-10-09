@@ -68,7 +68,7 @@ function doLabel(item) {
 async function searchDo() {
     doLoading.value = true;
     try {
-        const res = await api.get('/do', { params: { search: doKeyword.value } });
+        const res = await api.get('/do', { params: { search: doKeyword.value }, silent: true });
         const list = res.data?.data ?? [];
         doOptions.value = list.map((d) => ({ label: doLabel(d), value: d.id }));
         if (list.length === 0) {
@@ -92,7 +92,7 @@ async function onPickDo(id) {
         return;
     }
     try {
-        const res = await api.get(`/do/${id}`, { silent: true });
+        const res = await api.get(`/do/${id}`, { silent: true, block: true });
         const d = res.data?.data ?? res.data;
         const partner = odooName(d.partner_id);
         const desc = (d.move_ids_detail ?? []).map((m) => {

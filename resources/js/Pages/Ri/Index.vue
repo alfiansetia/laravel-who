@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import BlockOverlay from '@/components/BlockOverlay.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -196,114 +195,112 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <BlockOverlay>
-            <PageHeader :title="title" description="Receiving Inventory (Odoo)">
-                <template #actions>
-                    <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-                </template>
-            </PageHeader>
-            <FilterPanel title="Filter RI" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari nomor RI..." @input="onSearchInput" />
-                </FormField>
-            </FilterPanel>
-            <DataTable
-                :columns="columns"
-                :rows="query.rows.value"
-                :loading="query.loading.value"
-                :error="query.error.value"
-                :page="query.page.value"
-                :total-pages="query.totalPages.value"
-                :total="query.total.value"
-                :per-page="query.perPage.value"
-                :per-page-options="perPageOptions"
-                clickable
-                empty-title="RI tidak ditemukan"
-                @update:page="query.setPage"
-                @update:per-page="query.setPerPage"
-                @row-click="openDetail"
-            >
-                <template #cell-name="{ row }"><b>{{ row.name ?? '-' }}</b></template>
-                <template #cell-partner_id="{ row }">{{ Array.isArray(row.partner_id) ? odooName(row.partner_id) : '-' }}</template>
-                <template #cell-origin="{ row }">{{ row.origin ?? '-' }}</template>
-                <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 50) }}</template>
-                <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
-            </DataTable>
-            <AppModal v-model:open="detailOpen" :title="`List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
-                <div class="mb-2 flex gap-1 border-b">
-                    <Button :variant="detailTab === 'product' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'product'">Product</Button>
-                    <Button :variant="detailTab === 'lot' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'lot'">Product Lot</Button>
+        <PageHeader :title="title" description="Receiving Inventory (Odoo)">
+            <template #actions>
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            </template>
+        </PageHeader>
+        <FilterPanel title="Filter RI" :active-count="activeCount" @reset="resetFilter">
+            <FormField label="Pencarian">
+                <Input :model-value="searchBox" type="search" placeholder="Cari nomor RI..." @input="onSearchInput" />
+            </FormField>
+        </FilterPanel>
+        <DataTable
+            :columns="columns"
+            :rows="query.rows.value"
+            :loading="query.loading.value"
+            :error="query.error.value"
+            :page="query.page.value"
+            :total-pages="query.totalPages.value"
+            :total="query.total.value"
+            :per-page="query.perPage.value"
+            :per-page-options="perPageOptions"
+            clickable
+            empty-title="RI tidak ditemukan"
+            @update:page="query.setPage"
+            @update:per-page="query.setPerPage"
+            @row-click="openDetail"
+        >
+            <template #cell-name="{ row }"><b>{{ row.name ?? '-' }}</b></template>
+            <template #cell-partner_id="{ row }">{{ Array.isArray(row.partner_id) ? odooName(row.partner_id) : '-' }}</template>
+            <template #cell-origin="{ row }">{{ row.origin ?? '-' }}</template>
+            <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 50) }}</template>
+            <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
+        </DataTable>
+        <AppModal v-model:open="detailOpen" :title="`List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
+            <div class="mb-2 flex gap-1 border-b">
+                <Button :variant="detailTab === 'product' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'product'">Product</Button>
+                <Button :variant="detailTab === 'lot' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'lot'">Product Lot</Button>
+            </div>
+            <div v-if="detailTab === 'product'">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                    <Input :model-value="productSearchBox" type="search" placeholder="Cari code / nama..." class="max-w-xs" @input="onProductSearchInput" />
+                    <Button variant="outline" size="sm" @click="copyRows(productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'], 'item RI')"><Copy /> Salin</Button>
+                    <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-product`, productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'])"><Download /> CSV</Button>
                 </div>
-                <div v-if="detailTab === 'product'">
-                    <div class="mb-2 flex flex-wrap items-center gap-2">
-                        <Input :model-value="productSearchBox" type="search" placeholder="Cari code / nama..." class="max-w-xs" @input="onProductSearchInput" />
-                        <Button variant="outline" size="sm" @click="copyRows(productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'], 'item RI')"><Copy /> Salin</Button>
-                        <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-product`, productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'])"><Download /> CSV</Button>
-                    </div>
-                    <DataTable
-                        :columns="productColumns"
-                        :rows="productTable.rows.value"
-                        :loading="productTable.loading.value"
-                        :error="productTable.error.value"
-                        :page="productTable.page.value"
-                        :total-pages="productTable.totalPages.value"
-                        :total="productTable.total.value"
-                        :per-page="productTable.perPage.value"
-                        sortable
-                        empty-title="Item tidak ditemukan"
-                        empty-message="Ubah kata kunci pencarian."
-                        @update:page="productTable.setPage"
-                        @update:per-page="productTable.setPerPage"
-                        @sort="productTable.toggleSort"
-                    >
-                        <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
-                        <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
-                        <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
-                        <template #cell-akl="{ row }">{{ odooName(row.akl_id) }}</template>
-                        <template #cell-qty_total="{ row }">{{ row.product_uom_qty ?? 0 }}</template>
-                        <template #cell-qty_done="{ row }">{{ row.quantity_done ?? 0 }}</template>
-                        <template #cell-qty_sisa="{ row }">{{ Number(row.product_uom_qty ?? 0) - Number(row.quantity_done ?? 0) }}</template>
-                    </DataTable>
+                <DataTable
+                    :columns="productColumns"
+                    :rows="productTable.rows.value"
+                    :loading="productTable.loading.value"
+                    :error="productTable.error.value"
+                    :page="productTable.page.value"
+                    :total-pages="productTable.totalPages.value"
+                    :total="productTable.total.value"
+                    :per-page="productTable.perPage.value"
+                    sortable
+                    empty-title="Item tidak ditemukan"
+                    empty-message="Ubah kata kunci pencarian."
+                    @update:page="productTable.setPage"
+                    @update:per-page="productTable.setPerPage"
+                    @sort="productTable.toggleSort"
+                >
+                    <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
+                    <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
+                    <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
+                    <template #cell-akl="{ row }">{{ odooName(row.akl_id) }}</template>
+                    <template #cell-qty_total="{ row }">{{ row.product_uom_qty ?? 0 }}</template>
+                    <template #cell-qty_done="{ row }">{{ row.quantity_done ?? 0 }}</template>
+                    <template #cell-qty_sisa="{ row }">{{ Number(row.product_uom_qty ?? 0) - Number(row.quantity_done ?? 0) }}</template>
+                </DataTable>
+            </div>
+            <div v-else>
+                <div class="mb-2 grid max-w-xl gap-2 sm:grid-cols-2">
+                    <SearchableSelect v-model="lotCodeFilter" :options="lotCodeOptions" placeholder="Select Product Code" />
+                    <Button variant="outline" size="sm" @click="lotCodeFilter = ''">Reset</Button>
                 </div>
-                <div v-else>
-                    <div class="mb-2 grid max-w-xl gap-2 sm:grid-cols-2">
-                        <SearchableSelect v-model="lotCodeFilter" :options="lotCodeOptions" placeholder="Select Product Code" />
-                        <Button variant="outline" size="sm" @click="lotCodeFilter = ''">Reset</Button>
-                    </div>
-                    <div class="mb-2 flex flex-wrap items-center gap-2">
-                        <Input :model-value="lotSearchBox" type="search" placeholder="Cari lot..." class="max-w-xs" @input="onLotSearchInput" />
-                        <Button variant="outline" size="sm" @click="copyRows(lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'], 'lot RI')"><Copy /> Salin</Button>
-                        <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-lot`, lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'])"><Download /> CSV</Button>
-                    </div>
-                    <DataTable
-                        :columns="lotColumns"
-                        :rows="lotTable.rows.value"
-                        :loading="lotTable.loading.value"
-                        :error="lotTable.error.value"
-                        :page="lotTable.page.value"
-                        :total-pages="lotTable.totalPages.value"
-                        :total="lotTable.total.value"
-                        :per-page="lotTable.perPage.value"
-                        sortable
-                        empty-title="Lot tidak ditemukan"
-                        empty-message="Ubah kata kunci pencarian."
-                        @update:page="lotTable.setPage"
-                        @update:per-page="lotTable.setPerPage"
-                        @sort="lotTable.toggleSort"
-                    >
-                        <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
-                        <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
-                        <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
-                        <template #cell-akl="{ row }">{{ aklMap[Array.isArray(row.product_id) ? row.product_id[0] : -1] ?? '-' }}</template>
-                        <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
-                        <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
-                    </DataTable>
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                    <Input :model-value="lotSearchBox" type="search" placeholder="Cari lot..." class="max-w-xs" @input="onLotSearchInput" />
+                    <Button variant="outline" size="sm" @click="copyRows(lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'], 'lot RI')"><Copy /> Salin</Button>
+                    <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-lot`, lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'])"><Download /> CSV</Button>
                 </div>
-                <div class="mt-2 space-y-1 border-t pt-2 text-sm">
-                    <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }}</p>
-                    <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }}</p>
-                </div>
-            </AppModal>
-        </BlockOverlay>
+                <DataTable
+                    :columns="lotColumns"
+                    :rows="lotTable.rows.value"
+                    :loading="lotTable.loading.value"
+                    :error="lotTable.error.value"
+                    :page="lotTable.page.value"
+                    :total-pages="lotTable.totalPages.value"
+                    :total="lotTable.total.value"
+                    :per-page="lotTable.perPage.value"
+                    sortable
+                    empty-title="Lot tidak ditemukan"
+                    empty-message="Ubah kata kunci pencarian."
+                    @update:page="lotTable.setPage"
+                    @update:per-page="lotTable.setPerPage"
+                    @sort="lotTable.toggleSort"
+                >
+                    <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
+                    <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
+                    <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
+                    <template #cell-akl="{ row }">{{ aklMap[Array.isArray(row.product_id) ? row.product_id[0] : -1] ?? '-' }}</template>
+                    <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
+                    <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
+                </DataTable>
+            </div>
+            <div class="mt-2 space-y-1 border-t pt-2 text-sm">
+                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }}</p>
+                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }}</p>
+            </div>
+        </AppModal>
     </AppLayout>
 </template>

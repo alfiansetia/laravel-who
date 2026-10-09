@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { useAuthModal } from '@/composables/useAuthModal';
+import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 
 const { open: openAuthModal } = useAuthModal();
+const { block, unblock } = useBlock();
 const toast = useToast();
 
 const api = axios.create({
@@ -19,12 +21,23 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers['X-CSRF-TOKEN'] = token;
     }
+    if (config.block) {
+        block();
+    }
     return config;
 });
 
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        if (response.config?.block) {
+            unblock();
+        }
+        return response;
+    },
     (error) => {
+        if (error.config?.block) {
+            unblock();
+        }
         if (error.response?.status === 401 && !error.config?.url?.includes('auth/verify')) {
             openAuthModal();
             return Promise.reject(error);

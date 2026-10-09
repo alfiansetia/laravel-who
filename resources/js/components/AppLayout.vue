@@ -18,6 +18,8 @@ import {
     X,
 } from '@lucide/vue';
 import AuthModal from '@/components/AuthModal.vue';
+import BlockOverlay from '@/components/BlockOverlay.vue';
+import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import NotifModal from '@/components/NotifModal.vue';
 import { useAuthModal } from '@/composables/useAuthModal';
 import { useToast } from '@/composables/useToast';
@@ -222,9 +224,12 @@ watch(flash, (f) => pushFlash(f));
 
         <AuthModal />
         <NotifModal v-model:open="notifOpen" :env-logged-in="envLoggedIn" />
+        <ConfirmDialog />
 
         <main class="mx-auto w-full max-w-7xl px-4 py-6">
-            <slot />
+            <BlockOverlay>
+                <slot />
+            </BlockOverlay>
         </main>
     </div>
 </template>

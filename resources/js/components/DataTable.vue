@@ -22,6 +22,7 @@ const props = defineProps({
     emptyMessage: { type: String, default: '' },
     sortable: { type: Boolean, default: false },
     clickable: { type: Boolean, default: false },
+    showFooter: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(['update:page', 'update:perPage', 'update:selected', 'sort', 'row-click']);
@@ -63,8 +64,8 @@ function toggleOne(id, e) {
                         <th
                             v-for="col in columns"
                             :key="col.key"
-                            class="whitespace-nowrap px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
-                            :class="col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : ''"
+                            class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                            :class="[(col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : ''), col.wrap ? '' : 'whitespace-nowrap']"
                         >
                             <button
                                 v-if="sortable && col.sortable !== false"
@@ -97,8 +98,9 @@ function toggleOne(id, e) {
                             <td
                                 v-for="col in columns"
                                 :key="col.key"
-                                class="whitespace-nowrap px-3 py-2"
-                                :class="cn(col.align === 'center' && 'text-center', col.align === 'right' && 'text-right', col.mono && 'font-mono text-xs')"
+                                class="px-3 py-2"
+                                :class="cn(col.align === 'center' && 'text-center', col.align === 'right' && 'text-right', col.mono && 'font-mono text-xs', col.wrap ? 'whitespace-normal break-words' : 'whitespace-nowrap')"
+                                :style="col.wrap && col.maxWidth ? { maxWidth: col.maxWidth } : undefined"
                             >
                                 <slot :name="'cell-' + col.key" :row="row" :value="row[col.key]">
                                     {{ row[col.key] ?? '-' }}
@@ -117,7 +119,7 @@ function toggleOne(id, e) {
                 </tbody>
             </table>
         </div>
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2.5">
+        <div v-if="showFooter" class="flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2.5">
             <div class="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>Tampilkan</span>
                 <select

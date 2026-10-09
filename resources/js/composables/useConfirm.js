@@ -11,6 +11,14 @@ const state = ref({
 
 let resolver = null;
 
+function resolve(value) {
+    state.value.open = false;
+    if (resolver) {
+        resolver(value);
+        resolver = null;
+    }
+}
+
 export function useConfirm() {
     function confirm(options = {}) {
         state.value = {
@@ -21,17 +29,9 @@ export function useConfirm() {
             cancelText: options.cancelText ?? 'Batal',
             tone: options.tone ?? 'default',
         };
-        return new Promise((resolve) => {
-            resolver = resolve;
+        return new Promise((res) => {
+            resolver = res;
         });
-    }
-
-    function resolve(value) {
-        state.value.open = false;
-        if (resolver) {
-            resolver(value);
-            resolver = null;
-        }
     }
 
     return { state, confirm, resolve };

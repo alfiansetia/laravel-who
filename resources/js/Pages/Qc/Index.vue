@@ -253,7 +253,7 @@ async function submitDownload() {
     }
     saving.value = true;
     try {
-        const res = await api.post('/form-qc/', buildPayload(), { responseType: 'blob' });
+        const res = await api.post('/form-qc', buildPayload(), { responseType: 'blob' });
         const disposition = res.headers?.['content-disposition'] ?? '';
         const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         const filename = match?.[1]?.replace(/['"]/g, '') ?? 'form-qc.docx';

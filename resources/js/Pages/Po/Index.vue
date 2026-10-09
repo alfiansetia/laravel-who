@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import BlockOverlay from '@/components/BlockOverlay.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
@@ -112,71 +111,69 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <BlockOverlay>
-            <PageHeader :title="title" description="Purchase Order (Odoo)">
-                <template #actions>
-                    <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-                </template>
-            </PageHeader>
-            <FilterPanel title="Filter PO" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari nomor PO..." @input="onSearchInput" />
-                </FormField>
-            </FilterPanel>
+        <PageHeader :title="title" description="Purchase Order (Odoo)">
+            <template #actions>
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            </template>
+        </PageHeader>
+        <FilterPanel title="Filter PO" :active-count="activeCount" @reset="resetFilter">
+            <FormField label="Pencarian">
+                <Input :model-value="searchBox" type="search" placeholder="Cari nomor PO..." @input="onSearchInput" />
+            </FormField>
+        </FilterPanel>
+        <DataTable
+            :columns="columns"
+            :rows="query.rows.value"
+            :loading="query.loading.value"
+            :error="query.error.value"
+            :page="query.page.value"
+            :total-pages="query.totalPages.value"
+            :total="query.total.value"
+            :per-page="query.perPage.value"
+            :per-page-options="perPageOptions"
+            clickable
+            empty-title="PO tidak ditemukan"
+            @update:page="query.setPage"
+            @update:per-page="query.setPerPage"
+            @row-click="openDetail"
+        >
+            <template #cell-name="{ row }"><b>{{ row.name ?? '-' }}</b></template>
+            <template #cell-partner_id="{ row }">{{ odooName(row.partner_id) }}</template>
+            <template #cell-user_id="{ row }">{{ odooName(row.user_id) }}</template>
+            <template #cell-notes="{ row }">{{ truncate(row.notes, 40) }}</template>
+            <template #cell-picking_count="{ row }">{{ row.picking_count ?? 0 }}</template>
+        </DataTable>
+        <AppModal v-model:open="detailOpen" :title="`List Item PO No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
+            <div class="mb-2 flex flex-wrap items-center gap-2">
+                <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
+                <Button variant="outline" size="sm" @click="copyRows(itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'], 'item PO')"><Copy /> Salin</Button>
+                <Button variant="outline" size="sm" @click="downloadCsv(`po-${detail?.name ?? activeRow?.name ?? 'detail'}`, itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'])"><Download /> CSV</Button>
+            </div>
             <DataTable
-                :columns="columns"
-                :rows="query.rows.value"
-                :loading="query.loading.value"
-                :error="query.error.value"
-                :page="query.page.value"
-                :total-pages="query.totalPages.value"
-                :total="query.total.value"
-                :per-page="query.perPage.value"
-                :per-page-options="perPageOptions"
-                clickable
-                empty-title="PO tidak ditemukan"
-                @update:page="query.setPage"
-                @update:per-page="query.setPerPage"
-                @row-click="openDetail"
+                :columns="itemColumns"
+                :rows="itemTable.rows.value"
+                :loading="itemTable.loading.value"
+                :error="itemTable.error.value"
+                :page="itemTable.page.value"
+                :total-pages="itemTable.totalPages.value"
+                :total="itemTable.total.value"
+                :per-page="itemTable.perPage.value"
+                sortable
+                empty-title="Item tidak ditemukan"
+                empty-message="Ubah kata kunci pencarian."
+                @update:page="itemTable.setPage"
+                @update:per-page="itemTable.setPerPage"
+                @sort="itemTable.toggleSort"
             >
-                <template #cell-name="{ row }"><b>{{ row.name ?? '-' }}</b></template>
-                <template #cell-partner_id="{ row }">{{ odooName(row.partner_id) }}</template>
-                <template #cell-user_id="{ row }">{{ odooName(row.user_id) }}</template>
-                <template #cell-notes="{ row }">{{ truncate(row.notes, 40) }}</template>
-                <template #cell-picking_count="{ row }">{{ row.picking_count ?? 0 }}</template>
+                <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
+                <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
+                <template #cell-origin="{ row }">{{ odooName(row.product_id) }}</template>
+                <template #cell-akl="{ row }">{{ odooName(row.akl) }}</template>
+                <template #cell-qty="{ row }">{{ row.product_qty ?? 0 }}</template>
+                <template #cell-qty_received="{ row }">{{ row.qty_received ?? 0 }}</template>
+                <template #cell-qty_sisa="{ row }">{{ Number(row.product_qty ?? 0) - Number(row.qty_received ?? 0) }}</template>
             </DataTable>
-            <AppModal v-model:open="detailOpen" :title="`List Item PO No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                    <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
-                    <Button variant="outline" size="sm" @click="copyRows(itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'], 'item PO')"><Copy /> Salin</Button>
-                    <Button variant="outline" size="sm" @click="downloadCsv(`po-${detail?.name ?? activeRow?.name ?? 'detail'}`, itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'])"><Download /> CSV</Button>
-                </div>
-                <DataTable
-                    :columns="itemColumns"
-                    :rows="itemTable.rows.value"
-                    :loading="itemTable.loading.value"
-                    :error="itemTable.error.value"
-                    :page="itemTable.page.value"
-                    :total-pages="itemTable.totalPages.value"
-                    :total="itemTable.total.value"
-                    :per-page="itemTable.perPage.value"
-                    sortable
-                    empty-title="Item tidak ditemukan"
-                    empty-message="Ubah kata kunci pencarian."
-                    @update:page="itemTable.setPage"
-                    @update:per-page="itemTable.setPerPage"
-                    @sort="itemTable.toggleSort"
-                >
-                    <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
-                    <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
-                    <template #cell-origin="{ row }">{{ odooName(row.product_id) }}</template>
-                    <template #cell-akl="{ row }">{{ odooName(row.akl) }}</template>
-                    <template #cell-qty="{ row }">{{ row.product_qty ?? 0 }}</template>
-                    <template #cell-qty_received="{ row }">{{ row.qty_received ?? 0 }}</template>
-                    <template #cell-qty_sisa="{ row }">{{ Number(row.product_qty ?? 0) - Number(row.qty_received ?? 0) }}</template>
-                </DataTable>
-                <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.notes ?? '-' }}</p>
-            </AppModal>
-        </BlockOverlay>
+            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.notes ?? '-' }}</p>
+        </AppModal>
     </AppLayout>
 </template>

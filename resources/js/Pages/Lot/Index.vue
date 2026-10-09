@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import BlockOverlay from '@/components/BlockOverlay.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
@@ -158,79 +157,77 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <BlockOverlay>
-            <PageHeader :title="title" description="Daftar Lot / SN">
-                <template #actions>
-                    <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-                    <Button variant="outline" size="sm" @click="copyRows(query.rows.value, ['name', 'product_qty1'])"><Copy /> Salin</Button>
-                </template>
-            </PageHeader>
-            <FilterPanel title="Filter Lot" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari lot..." @input="onSearchInput" />
-                </FormField>
-                <FormField label="Produk">
-                    <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="searchingProduct" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" @search="searchProduct" />
-                </FormField>
-            </FilterPanel>
-            <DataTable
-                :columns="columns"
-                :rows="query.rows.value"
-                :loading="query.loading.value"
-                :error="query.error.value"
-                :page="query.page.value"
-                :total-pages="query.totalPages.value"
-                :total="query.total.value"
-                :per-page="query.perPage.value"
-                :per-page-options="perPageOptions"
-                empty-title="Lot tidak ditemukan"
-                empty-message="Ubah kata kunci atau filter produk."
-                @update:page="query.setPage"
-                @update:per-page="query.setPerPage"
-            >
-                <template #cell-trace="{ row }">
-                    <div class="flex justify-center gap-1">
-                        <Button variant="outline" size="sm" title="Trace" @click="openTrace(row)"><Route /></Button>
-                    </div>
-                </template>
-                <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
-                <template #cell-product_qty1="{ row }">{{ formatQtyUS(row.product_qty1) }}</template>
-                <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
-            </DataTable>
-            <AppModal v-model:open="traceOpen" title="Lot Traceability" size="xl">
-                <div v-if="traceTable.loading.value || traceTable.total.value > 0">
-                    <div class="mb-2 flex flex-wrap items-center gap-2">
-                        <Input :model-value="traceSearchBox" type="search" placeholder="Cari reference / produk / lot..." class="max-w-xs" @input="onTraceSearchInput" />
-                    </div>
-                    <DataTable
-                        :columns="traceColumns"
-                        :rows="traceTable.rows.value"
-                        :loading="traceTable.loading.value"
-                        :error="traceTable.error.value"
-                        :page="traceTable.page.value"
-                        :total-pages="traceTable.totalPages.value"
-                        :total="traceTable.total.value"
-                        :per-page="traceTable.perPage.value"
-                        :per-page-options="perPageOptions"
-                        sortable
-                        empty-title="Trace tidak ditemukan"
-                        empty-message="Ubah kata kunci pencarian."
-                        @update:page="traceTable.setPage"
-                        @update:per-page="traceTable.setPerPage"
-                        @sort="traceTable.toggleSort"
-                    >
-                        <template #cell-ref="{ row }"><span v-html="row._html?.[0] ?? row.ref" /></template>
-                        <template #cell-product="{ row }"><span v-html="row._html?.[1] ?? row.product" /></template>
-                        <template #cell-date="{ row }"><span v-html="row._html?.[2] ?? row.date" /></template>
-                        <template #cell-lot="{ row }"><span v-html="row._html?.[3] ?? row.lot" /></template>
-                        <template #cell-from="{ row }"><span v-html="row._html?.[4] ?? row.from" /></template>
-                        <template #cell-to="{ row }"><span v-html="row._html?.[5] ?? row.to" /></template>
-                        <template #cell-qty="{ row }"><span v-html="row._html?.[6] ?? row.qty" /></template>
-                    </DataTable>
+        <PageHeader :title="title" description="Daftar Lot / SN">
+            <template #actions>
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+                <Button variant="outline" size="sm" @click="copyRows(query.rows.value, ['name', 'product_qty1'])"><Copy /> Salin</Button>
+            </template>
+        </PageHeader>
+        <FilterPanel title="Filter Lot" :active-count="activeCount" @reset="resetFilter">
+            <FormField label="Pencarian">
+                <Input :model-value="searchBox" type="search" placeholder="Cari lot..." @input="onSearchInput" />
+            </FormField>
+            <FormField label="Produk">
+                <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="searchingProduct" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" @search="searchProduct" />
+            </FormField>
+        </FilterPanel>
+        <DataTable
+            :columns="columns"
+            :rows="query.rows.value"
+            :loading="query.loading.value"
+            :error="query.error.value"
+            :page="query.page.value"
+            :total-pages="query.totalPages.value"
+            :total="query.total.value"
+            :per-page="query.perPage.value"
+            :per-page-options="perPageOptions"
+            empty-title="Lot tidak ditemukan"
+            empty-message="Ubah kata kunci atau filter produk."
+            @update:page="query.setPage"
+            @update:per-page="query.setPerPage"
+        >
+            <template #cell-trace="{ row }">
+                <div class="flex justify-center gap-1">
+                    <Button variant="outline" size="sm" title="Trace" @click="openTrace(row)"><Route /></Button>
                 </div>
-                <div v-else-if="traceHtml" class="max-h-[60vh] overflow-auto rounded border p-3 text-sm" v-html="traceHtml" />
-                <p v-else class="text-sm text-muted-foreground">Tidak ada data trace.</p>
-            </AppModal>
-        </BlockOverlay>
+            </template>
+            <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
+            <template #cell-product_qty1="{ row }">{{ formatQtyUS(row.product_qty1) }}</template>
+            <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
+        </DataTable>
+        <AppModal v-model:open="traceOpen" title="Lot Traceability" size="xl">
+            <div v-if="traceTable.loading.value || traceTable.total.value > 0">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                    <Input :model-value="traceSearchBox" type="search" placeholder="Cari reference / produk / lot..." class="max-w-xs" @input="onTraceSearchInput" />
+                </div>
+                <DataTable
+                    :columns="traceColumns"
+                    :rows="traceTable.rows.value"
+                    :loading="traceTable.loading.value"
+                    :error="traceTable.error.value"
+                    :page="traceTable.page.value"
+                    :total-pages="traceTable.totalPages.value"
+                    :total="traceTable.total.value"
+                    :per-page="traceTable.perPage.value"
+                    :per-page-options="perPageOptions"
+                    sortable
+                    empty-title="Trace tidak ditemukan"
+                    empty-message="Ubah kata kunci pencarian."
+                    @update:page="traceTable.setPage"
+                    @update:per-page="traceTable.setPerPage"
+                    @sort="traceTable.toggleSort"
+                >
+                    <template #cell-ref="{ row }"><span v-html="row._html?.[0] ?? row.ref" /></template>
+                    <template #cell-product="{ row }"><span v-html="row._html?.[1] ?? row.product" /></template>
+                    <template #cell-date="{ row }"><span v-html="row._html?.[2] ?? row.date" /></template>
+                    <template #cell-lot="{ row }"><span v-html="row._html?.[3] ?? row.lot" /></template>
+                    <template #cell-from="{ row }"><span v-html="row._html?.[4] ?? row.from" /></template>
+                    <template #cell-to="{ row }"><span v-html="row._html?.[5] ?? row.to" /></template>
+                    <template #cell-qty="{ row }"><span v-html="row._html?.[6] ?? row.qty" /></template>
+                </DataTable>
+            </div>
+            <div v-else-if="traceHtml" class="max-h-[60vh] overflow-auto rounded border p-3 text-sm" v-html="traceHtml" />
+            <p v-else class="text-sm text-muted-foreground">Tidak ada data trace.</p>
+        </AppModal>
     </AppLayout>
 </template>

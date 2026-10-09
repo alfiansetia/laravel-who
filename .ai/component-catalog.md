@@ -36,7 +36,7 @@
 | `useAuthModal()` | `$('#authModal').modal('show')` global | Singleton `isOpen` — satu-satunya cara membuka modal login dari mana saja (termasuk interceptor 401). |
 | `ConfirmDialog.vue` + `useConfirm()` | `confirmation()` iziToast | `await confirm({...})`, tone destructive untuk hapus. |
 | `useToast()` (`vue-sonner`) | `show_message()`, `danger()`, `success()` | Satu-satunya cara toast. Jangan panggil `iziToast` langsung. `vue-sonner` hanya boleh diimpor di 2 file: `composables/useToast.js` (bungkus `success/error/warning/info` + `duration 4000` + `closeButton`) dan `AppLayout.vue` (`Toaster`). `lib/axios.js`, `lib/export.js`, dan semua `Pages/` WAJIB lewat `useToast()`. Dilarang `window.alert`, `toast` langsung dari `vue-sonner` di luar 2 file itu. |
-| `useBlock()` | `bloc()/unbloc()`, `$.blockUI` | Overlay + skeleton untuk import/sync/download. |
+| `useBlock()` + `BlockOverlay` | `bloc()/unbloc()`, `$.blockUI` | Overlay global (mount sekali di `AppLayout`, dilarang per-page). Axios: `block: true` per request user tanpa indikator inline; non-axios: `withBlock()`. Jangan block autocomplete/polling. |
 | `useTableQuery.js` | `loadData()` + `renderPagination()` manual (`alamat`, `do`) | Mode server: state page/per_page/search/sort/filter, cancel request basi, sinkron URL. |
 | `lib/export.js` | Tombol `copy`/`csv` DataTables + `btn-copy-row`/`btn_copy_lot` | `copyRows(rows)` (clipboard TSV) + `copyText(text)` (string mentah, mis. `code\tname` per baris atau summary textarea) + `downloadCsv(filename, rows)`. Hanya mode client. Mode server lewat endpoint backend. |
 | `useSearchable.js` | `$.ajax` di dalam Select2 | Debounce 300ms, minimum 1 huruf untuk async besar. |

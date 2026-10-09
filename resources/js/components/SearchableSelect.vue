@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { Check, ChevronsUpDown } from '@lucide/vue';
 
 const props = defineProps({
@@ -21,6 +21,9 @@ const emit = defineEmits(['update:modelValue', 'search']);
 
 const open = ref(false);
 const keyword = ref('');
+const triggerEl = ref(null);
+const panelEl = ref(null);
+const panelStyle = ref({});
 let searchTimer = null;
 
 function cancelPendingSearch() {
@@ -59,6 +62,61 @@ const selectedLabel = computed(() => {
     return found ? (found[props.labelKey] ?? found.label ?? found.name) : '';
 });
 
+function placePanel() {
+    const el = triggerEl.value;
+    if (!el) {
+        return;
+    }
+    const rect = el.getBoundingClientRect();
+    const panelHeight = 240;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const above = spaceBelow < panelHeight + 8 && rect.top > panelHeight + 8;
+    panelStyle.value = {
+        position: 'fixed',
+        left: `${Math.max(8, rect.left)}px`,
+        width: `${rect.width}px`,
+        zIndex: 200,
+        ...(above
+            ? { bottom: `${Math.max(8, window.innerHeight - rect.top + 4)}px`, maxHeight: `${Math.min(panelHeight, rect.top - 16)}px` }
+            : { top: `${rect.bottom + 4}px`, maxHeight: `${Math.min(panelHeight, spaceBelow - 8)}px` }),
+    };
+}
+
+async function toggle() {
+    if (props.disabled) {
+        return;
+    }
+    open.value = !open.value;
+    if (open.value) {
+        await nextTick();
+        placePanel();
+    }
+}
+
+function onOutside(e) {
+    if (!open.value) {
+        return;
+    }
+    const t = triggerEl.value;
+    const p = panelEl.value;
+    if (t?.contains(e.target) || p?.contains(e.target)) {
+        return;
+    }
+    open.value = false;
+}
+
+function onKey(e) {
+    if (e.key === 'Escape' && open.value) {
+        open.value = false;
+    }
+}
+
+function onViewport() {
+    if (open.value) {
+        placePanel();
+    }
+}
+
 function choose(opt) {
     cancelPendingSearch();
     emit('update:modelValue', opt[props.valueKey] ?? opt.value ?? opt.id);
@@ -77,54 +135,82 @@ watch(open, (v) => {
     if (!v) {
         cancelPendingSearch();
         keyword.value = '';
+        return;
     }
+    document.addEventListener('pointerdown', onOutside, true);
+    window.addEventListener('resize', onViewport);
+    window.addEventListener('scroll', onViewport, true);
 });
 
-onBeforeUnmount(() => cancelPendingSearch());
+watch(
+    () => open.value,
+    (v, prev) => {
+        if (prev && !v) {
+            document.removeEventListener('pointerdown', onOutside, true);
+            window.removeEventListener('resize', onViewport);
+            window.removeEventListener('scroll', onViewport, true);
+        }
+    },
+);
+
+onBeforeUnmount(() => {
+    cancelPendingSearch();
+    document.removeEventListener('pointerdown', onOutside, true);
+    window.removeEventListener('resize', onViewport);
+    window.removeEventListener('scroll', onViewport, true);
+});
 </script>
 
 <template>
-    <div class="relative">
+    <div>
         <button
+            ref="triggerEl"
             type="button"
             :disabled="disabled"
             class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm disabled:opacity-50"
-            @click="open = !open"
+            @click="toggle"
         >
             <span class="truncate" :class="selectedLabel ? '' : 'text-muted-foreground'">{{ selectedLabel || placeholder }}</span>
             <ChevronsUpDown class="size-4 shrink-0 text-muted-foreground" />
         </button>
-        <div v-if="open" class="absolute z-50 mt-1 w-full rounded-md border bg-white p-1 shadow-lg">
-            <input
-                :placeholder="searchPlaceholder"
-                class="mb-1 h-8 w-full rounded border px-2 text-sm"
-                @input="onSearch"
-            />
-            <div v-if="loading" class="px-1 py-1">
-                <div v-for="n in 3" :key="n" class="mb-1 h-8 animate-pulse rounded bg-slate-100" />
+        <Teleport to="body">
+            <div
+                v-if="open"
+                ref="panelEl"
+                class="overflow-y-auto rounded-md border bg-white p-1 shadow-lg"
+                :style="panelStyle"
+            >
+                <input
+                    :placeholder="searchPlaceholder"
+                    class="mb-1 h-8 w-full rounded border px-2 text-sm"
+                    @input="onSearch"
+                />
+                <div v-if="loading" class="px-1 py-1">
+                    <div v-for="n in 3" :key="n" class="mb-1 h-8 animate-pulse rounded bg-slate-100" />
+                </div>
+                <div v-else class="max-h-48 overflow-y-auto">
+                    <button
+                        v-if="clearable && modelValue !== ''"
+                        type="button"
+                        class="w-full rounded px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent"
+                        @click="clearSelection"
+                    >
+                        Hapus pilihan
+                    </button>
+                    <button
+                        v-for="opt in filtered"
+                        :key="String(opt[valueKey] ?? opt.value ?? opt.id)"
+                        type="button"
+                        class="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-accent"
+                        @click="choose(opt)"
+                    >
+                        <span class="truncate">{{ opt[labelKey] ?? opt.label ?? opt.name }}</span>
+                        <Check v-if="String(opt[valueKey] ?? opt.value ?? opt.id) === String(modelValue)" class="size-4" />
+                    </button>
+                    <p v-if="filtered.length === 0" class="px-2 py-3 text-center text-xs text-muted-foreground">Data tidak ditemukan.</p>
+                </div>
             </div>
-            <div v-else class="max-h-56 overflow-y-auto">
-                <button
-                    v-if="clearable && modelValue !== ''"
-                    type="button"
-                    class="w-full rounded px-2 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent"
-                    @click="clearSelection"
-                >
-                    Hapus pilihan
-                </button>
-                <button
-                    v-for="opt in filtered"
-                    :key="String(opt[valueKey] ?? opt.value ?? opt.id)"
-                    type="button"
-                    class="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-accent"
-                    @click="choose(opt)"
-                >
-                    <span class="truncate">{{ opt[labelKey] ?? opt.label ?? opt.name }}</span>
-                    <Check v-if="String(opt[valueKey] ?? opt.value ?? opt.id) === String(modelValue)" class="size-4" />
-                </button>
-                <p v-if="filtered.length === 0" class="px-2 py-3 text-center text-xs text-muted-foreground">Data tidak ditemukan.</p>
-            </div>
-        </div>
+        </Teleport>
         <p v-if="error" class="mt-1 text-xs text-destructive">{{ error }}</p>
     </div>
 </template>
