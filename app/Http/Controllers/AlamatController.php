@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\Breadcrumb;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AlamatController extends Controller
 {
@@ -55,17 +56,17 @@ class AlamatController extends Controller
             new Breadcrumb('List Alamat', route('alamats.index'), false),
         ]);
 
-        return view('alamat.index', compact(['bcms']))->with(['title' => 'List Alamat']);
+        return Inertia::render('Alamat/Index', [
+            'title' => 'List Alamat',
+            'filters' => $request->only(['search', 'page']),
+        ]);
     }
 
     public function create()
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), true),
-            new Breadcrumb('Create Alamat', route('alamats.create'), false),
+        return Inertia::render('Alamat/Create', [
+            'title' => 'Create Alamat',
         ]);
-
-        return view('alamat.create', compact(['bcms']))->with(['title' => 'Create Alamat']);
     }
 
     public function edit(Alamat $alamat)
@@ -75,9 +76,16 @@ class AlamatController extends Controller
             new Breadcrumb($alamat->do, route('alamats.edit', $alamat->id), false),
         ]);
         $data = $alamat;
-        $products = Product::all();
+        $products = Product::query()
+            ->select('id', 'code', 'name')
+            ->orderBy('code')
+            ->get();
 
-        return view('alamat.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Alamat']);
+        return Inertia::render('Alamat/Edit', [
+            'title' => 'Edit Alamat',
+            'record' => $data,
+            'products' => $products,
+        ]);
     }
 
     public function show(Request $request, Alamat $alamat)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ShippingEstimate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class ShippingEstimateController extends Controller
 {
@@ -32,12 +33,17 @@ class ShippingEstimateController extends Controller
             return response()->json(['data' => $data]);
         }
 
-        return view('shipping_estimate.index');
+        return Inertia::render('ShippingEstimate/Index', [
+            'title' => 'Shipping Estimate',
+            'filters' => $request->only(['search']),
+        ]);
     }
 
     public function create()
     {
-        return view('shipping_estimate.create');
+        return Inertia::render('ShippingEstimate/Create', [
+            'title' => 'Tambah Shipping Estimate',
+        ]);
     }
 
     public function store(Request $request)
@@ -107,6 +113,10 @@ class ShippingEstimateController extends Controller
 
             DB::commit();
 
+            if ($request->wantsJson()) {
+                return $this->sendResponse($estimate->load(['items', 'packages', 'rates']), 'Data berhasil disimpan');
+            }
+
             return redirect()->route('shipping_estimate.edit', $estimate->id)
                 ->with('success', 'Data berhasil disimpan');
         } catch (\Exception $e) {
@@ -143,14 +153,20 @@ class ShippingEstimateController extends Controller
             ]);
         }
 
-        return view('shipping_estimate.show', compact('estimate'));
+        return Inertia::render('ShippingEstimate/Show', [
+            'title' => 'Detail '.$estimate->no_so,
+            'recordId' => $estimate->id,
+        ]);
     }
 
     public function edit($id)
     {
         $estimate = ShippingEstimate::with(['items', 'packages', 'rates'])->findOrFail($id);
 
-        return view('shipping_estimate.edit', compact('estimate'));
+        return Inertia::render('ShippingEstimate/Edit', [
+            'title' => 'Edit '.$estimate->no_so,
+            'record' => $estimate,
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -223,6 +239,10 @@ class ShippingEstimateController extends Controller
             }
 
             DB::commit();
+
+            if ($request->wantsJson()) {
+                return $this->sendResponse($estimate->load(['items', 'packages', 'rates']), 'Data berhasil diupdate');
+            }
 
             return redirect()->route('shipping_estimate.edit', $estimate->id)
                 ->with('success', 'Data berhasil diupdate');

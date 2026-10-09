@@ -47,6 +47,7 @@ class HomeController extends Controller
                     ['route' => 'problems.index', 'icon' => 'CircleAlert', 'title' => 'Problem', 'desc' => 'Manajemen masalah produk'],
                     ['route' => 'izin_edars.index', 'icon' => 'BadgeCheck', 'title' => 'Izin Edar', 'desc' => 'Data izin edar produk'],
                     ['route' => 'akls.index', 'icon' => 'IdCard', 'title' => 'AKL', 'desc' => 'Arsip lampiran AKL'],
+                    ['route' => 'shipping_estimate.index', 'icon' => 'Ship', 'title' => 'Estimasi Kirim', 'desc' => 'Estimasi ongkos kirim'],
                 ]),
             ],
             [
@@ -60,6 +61,7 @@ class HomeController extends Controller
                     ['route' => 'it.index', 'icon' => 'RefreshCw', 'title' => 'IT', 'desc' => 'Inventory transfer'],
                     ['route' => 'so.index', 'icon' => 'ShoppingBag', 'title' => 'SO', 'desc' => 'Sales order'],
                     ['route' => 'do.index', 'icon' => 'PackageOpen', 'title' => 'DO', 'desc' => 'Delivery order'],
+                    ['route' => 'monitor.do', 'icon' => 'Activity', 'title' => 'Monitor DO', 'desc' => 'Pantau DO berjalan'],
                     ['route' => 'vendors.index', 'icon' => 'Store', 'title' => 'Vendor', 'desc' => 'Daftar vendor aktif'],
                     ['route' => 'lots.index', 'icon' => 'Box', 'title' => 'Lot/SN', 'desc' => 'Daftar Lot/SN'],
                     ['route' => 'product_odoo.index', 'icon' => 'Box', 'title' => 'Product', 'desc' => 'Daftar Product Odoo'],

@@ -54,6 +54,7 @@ const odooLinks = [
     { label: 'Sales Order (SO)', route: 'so.index', match: 'so.*' },
     { label: 'Delivery Order (DO)', route: 'do.index', match: 'do.*' },
     { label: 'Internal Transfer (IT)', route: 'it.index', match: 'it.*' },
+    { label: 'Monitor DO', route: 'monitor.do', match: 'monitor.*' },
 ];
 
 function isActive(match) {
@@ -103,7 +104,7 @@ watch(flash, (f) => pushFlash(f));
         <header class="sticky top-0 z-40 border-b bg-[#e3f2fd]">
             <div class="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4">
                 <Link :href="href('index')" class="flex shrink-0 items-center">
-                    <img src="/images/asa.png" height="35" width="35" alt="ASA Logo" class="h-9 w-9 object-contain" />
+                    <img src="/images/asa.png" alt="ASA Logo" class="h-10 w-auto object-contain" />
                 </Link>
 
                 <nav class="hidden flex-1 items-center justify-center gap-1 lg:flex">

@@ -1,4 +1,5 @@
 import {
+    Activity,
     ArrowDownToLine,
     BadgeCheck,
     Barcode,
@@ -27,6 +28,7 @@ import {
     Search,
     Settings,
     ShieldCheck,
+    Ship,
     ShoppingBag,
     ShoppingCart,
     Sparkles,
@@ -39,6 +41,7 @@ import {
 } from '@lucide/vue';
 
 export const menuIcons = {
+    Activity,
     ArrowDownToLine,
     BadgeCheck,
     Barcode,
@@ -76,6 +79,7 @@ export const menuIcons = {
     Truck,
     UserPlus,
     Wrench,
+    Ship,
 };
 
 export function menuIcon(name) {

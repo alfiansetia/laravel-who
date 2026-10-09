@@ -31,6 +31,7 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
@@ -42,9 +43,9 @@ Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('produ
 Route::get('printso/{so}', [FileDownloaderController::class, 'download']);
 
 Route::get('monitor-do', function () {
-    $title = 'Monitor DO';
-
-    return view('monitor.do', compact('title'));
+    return Inertia::render('MonitorDo/Index', [
+        'title' => 'Monitor DO',
+    ]);
 })->name('monitor.do');
 
 Route::get('problems', [ProblemController::class, 'index'])->name('problems.index');
@@ -153,9 +154,11 @@ Route::resource('sops', SopController::class)
 Route::get('sops/{sop}/print', [SopController::class, 'print'])
     ->name('sops.print');
 
+Route::delete('alamats', [AlamatController::class, 'destroy_batch'])
+    ->name('alamats.destroy_batch');
 Route::resource('alamats', AlamatController::class)
     ->names('alamats')
-    ->only(['index', 'create', 'edit', 'show']);
+    ->only(['index', 'create', 'edit', 'show', 'store', 'update', 'destroy']);
 
 Route::delete('alamat-baru', [AlamatBaruController::class, 'destroy_batch'])
     ->name('alamat_baru.destroy_batch');
