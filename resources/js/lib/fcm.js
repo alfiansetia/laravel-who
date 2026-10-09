@@ -2,9 +2,11 @@ import api from '@/lib/axios';
 
 const TOKEN_KEY = 'fcm_token';
 const ASKED_KEY = 'fcm_perm_asked';
-const SW_VERSION = '1';
+// Samakan dengan SW_VERSION di app.blade.php + resources/views/sw.blade.php.
+const SW_VERSION = '2';
 
 let initialized = false;
+let vapidKey = null;
 
 function firebaseApp() {
     if (typeof window.firebase === 'undefined' || typeof window.firebase.messaging === 'undefined') {
@@ -34,22 +36,26 @@ export function initFcm(config) {
         return;
     }
     initialized = true;
+    vapidKey = config.vapidKey || null;
+    if (!vapidKey) {
+        console.log('FCM: FIREBASE_VAPID_KEY belum diisi — token push tidak akan terbit.');
+    }
+    // Satu-satunya SW scope root (offline + FCM). Jangan daftarkan SW lain.
     navigator.serviceWorker
-        .register(`/firebase-messaging-sw.js?v=${SW_VERSION}`)
+        .register(`/sw.js?v=${SW_VERSION}`)
         .then((registration) => {
             if (fb.apps.length === 0) {
                 fb.initializeApp(config);
             }
             const messaging = fb.messaging();
             messaging.onMessage(handleForegroundMessage);
-            void registration;
             if (Notification.permission === 'granted') {
-                syncFcmToken(messaging);
+                syncFcmToken(messaging, false, registration);
             } else if (Notification.permission === 'default' && !localStorage.getItem(ASKED_KEY)) {
                 localStorage.setItem(ASKED_KEY, '1');
                 Notification.requestPermission().then((permission) => {
                     if (permission === 'granted') {
-                        syncFcmToken(messaging);
+                        syncFcmToken(messaging, false, registration);
                     }
                 });
             }
@@ -65,12 +71,12 @@ export function refreshFcmToken() {
     }
     const messaging = firebaseApp().messaging();
     if (Notification.permission === 'granted') {
-        syncFcmToken(messaging, true);
+        navigator.serviceWorker.ready.then((registration) => syncFcmToken(messaging, true, registration));
         return true;
     }
     Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
-            syncFcmToken(messaging, true);
+            navigator.serviceWorker.ready.then((registration) => syncFcmToken(messaging, true, registration));
         }
     });
     return true;
@@ -84,9 +90,14 @@ export function testLocalNotif() {
     });
 }
 
-function syncFcmToken(messaging, force = false) {
+function syncFcmToken(messaging, force = false, registration = null) {
+    // VAPID wajib untuk Web Push (dari shared props `firebase`, backend).
+    const options = registration ? { serviceWorkerRegistration: registration } : {};
+    if (vapidKey) {
+        options.vapidKey = vapidKey;
+    }
     messaging
-        .getToken()
+        .getToken(options)
         .then((token) => {
             const cached = localStorage.getItem(TOKEN_KEY);
             if (!force && cached && cached === token) {

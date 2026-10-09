@@ -74,8 +74,9 @@ async function lookupCode(v) {
                     nameBox.value = list[0].name ?? '';
                 }
             }
-        } catch {
+        } catch (e) {
             codeState.value = '';
+            toast.error(e.response?.data?.message ?? 'Gagal mencari product.');
         }
     }, 400);
 }
@@ -148,7 +149,7 @@ async function openCheck(row) {
     checkOpen.value = true;
     checkLoading.value = true;
     try {
-        const res = await web.get(`/akl-items/${row.id}/check-product`, { silent: true });
+        const res = await web.get(`/akl-items/${row.id}/check-product`, { silent: true, block: true });
         checkItem.value = res.data?.data?.item ?? row;
         checkMatches.value = res.data?.data?.matches ?? [];
         if (checkMatches.value.length === 0) {

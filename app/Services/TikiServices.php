@@ -21,18 +21,17 @@ class TikiServices
      * Track one or more TIKI connote numbers.
      *
      * @param  string|array  $connotes  Single resi string or array of resi strings
-     * @return array|null
      */
     public static function track(string|array $connotes): ?array
     {
         $connoteParam = is_array($connotes) ? implode(',', $connotes) : $connotes;
 
-        $url = self::getBaseUrl() . '/api/track';
+        $url = self::getBaseUrl().'/api/track';
 
         try {
             $response = Http::withHeaders([
                 'X-API-Key' => self::getApiKey(),
-                'Accept'    => 'application/json',
+                'Accept' => 'application/json',
             ])->timeout(30)->get($url, [
                 'resi' => $connoteParam,
             ]);

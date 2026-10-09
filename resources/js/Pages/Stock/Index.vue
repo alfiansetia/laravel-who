@@ -16,6 +16,7 @@ import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyRows, copyText, downloadCsv } from '@/lib/export';
+import { formatQtyID } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'Data Stock' },
@@ -124,7 +125,7 @@ async function openLot(row) {
     lotTable.setRows([]);
     lotTable.loading.value = true;
     try {
-        const res = await api.get(`/stock/${row.id}`, { params: { ...locationParams(), limit: row.quantity ?? 10 }, silent: true });
+        const res = await api.get(`/stock/${row.id}`, { params: { ...locationParams(), limit: row.quantity ?? 10 }, silent: true, block: true });
         const body = res.data?.data ?? res.data;
         lotTable.setRows(Array.isArray(body) ? body : (body.data ?? []));
     } catch (e) {
@@ -196,7 +197,7 @@ load();
             @row-click="openLot"
         >
             <template #cell-code="{ row }"><b>{{ row.code ?? '-' }}</b></template>
-            <template #cell-quantity="{ row }"><span class="inline-flex min-w-12 items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold" :class="Number(row.quantity ?? 0) === 0 ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white'">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</span></template>
+            <template #cell-quantity="{ row }"><span class="inline-flex min-w-12 items-center justify-center rounded-md px-2 py-0.5 text-xs font-semibold" :class="Number(row.quantity ?? 0) === 0 ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white'">{{ formatQtyID(row.quantity) }}</span></template>
             <template #cell-akl="{ row }"><span v-if="row.akl" :title="row.akl" class="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs text-emerald-700">{{ row.akl }}</span><span v-else class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400">-</span></template>
             <template #actions="{ row }">
                 <Button variant="outline" size="sm" title="Salin kode + nama" @click="copyRow(row)"><Copy /></Button>
@@ -225,7 +226,7 @@ load();
                 @sort="lotTable.toggleSort"
             >
                 <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
-                <template #cell-quantity="{ row }">{{ Number(row.quantity ?? 0).toLocaleString('id-ID') }}</template>
+                <template #cell-quantity="{ row }">{{ formatQtyID(row.quantity) }}</template>
             </DataTable>
             <div class="mt-3 grid gap-3 md:grid-cols-2">
                 <FormField label="Lot/SN">

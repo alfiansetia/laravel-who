@@ -2,16 +2,17 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 
 class LotResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -27,17 +28,18 @@ class LotResource extends JsonResource
         try {
             $expired = odoo_datetime($this['itds_expired'], 'Y.m.d');
         } catch (\Throwable $th) {
-            //throw $th;
+            // throw $th;
         }
+
         return [
-            'id'        => $id,
-            'quantity'  => $this['quantity'],
-            'code'      => $code,
-            'name'      => $name,
-            'location'  => $loc,
-            'lot'       => $lot,
-            'expired'   => $expired,
-            'expired_ori'   => $this['itds_expired'],
+            'id' => $id,
+            'quantity' => $this['quantity'],
+            'code' => $code,
+            'name' => $name,
+            'location' => $loc,
+            'lot' => $lot,
+            'expired' => $expired,
+            'expired_ori' => $this['itds_expired'],
 
         ];
     }

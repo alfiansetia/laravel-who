@@ -12,24 +12,25 @@
         appId: "{{ config('services.firebase.app_id') }}",
         measurementId: "{{ config('services.firebase.measurement_id') }}"
     };
+    const FCM_VAPID_KEY = "{{ config('services.firebase.vapid_key') }}";
 
-    // Naikkan manual setiap mengubah file firebase-messaging-sw.
+    // Naikkan manual setiap mengubah resources/views/sw.blade.php.
     // JANGAN pakai timestamp: URL baru tiap load bikin browser download
     // ulang & reinstall service worker di setiap halaman.
-    const FCM_SW_VERSION = '1';
+    const FCM_SW_VERSION = '2';
     const FCM_TOKEN_KEY = 'fcm_token';
     const FCM_ASKED_KEY = 'fcm_perm_asked';
 
     function test_notif() {
-        new Notification('✅ Dah Masuk niii. 😁👍', {
-            body: 'Ini Tes Notif dari saye...',
+        new Notification('Notifikasi masuk.', {
+            body: 'Ini tes notifikasi dari aplikasi.',
             icon: "images/asa.png",
             vibrate: [200, 100, 200],
         });
     }
 
     function handleForegroundMessage(payload) {
-        console.log("🔔 Notifikasi diterima (foreground):", payload);
+        console.log("Notifikasi diterima (foreground):", payload);
         const {
             title,
             body,
@@ -56,8 +57,15 @@
 
     // Kirim token ke backend HANYA kalau belum pernah / berubah.
     // Mencegah updateOrCreate ke DB di setiap page load.
-    function syncFcmToken(messaging, force = false) {
-        messaging.getToken().then(token => {
+    function syncFcmToken(messaging, force = false, registration = null) {
+        // VAPID wajib untuk Web Push (isi FIREBASE_VAPID_KEY di .env).
+        const options = registration ? {
+            serviceWorkerRegistration: registration
+        } : {};
+        if (FCM_VAPID_KEY) {
+            options.vapidKey = FCM_VAPID_KEY;
+        }
+        messaging.getToken(options).then(token => {
             const cached = localStorage.getItem(FCM_TOKEN_KEY);
             if (!force && cached && cached === token) {
                 return; // sudah terdaftar, skip POST
@@ -74,10 +82,10 @@
                         platform: navigator.platform || 'unknown',
                     })
                 }).then(response => response.json())
-                .then(data => console.log("✅ Token berhasil dikirim ke backend:", data))
-                .catch(err => console.error("❌ Error mengirim token:", err));
+                .then(data => console.log("Token berhasil dikirim ke backend:", data))
+                .catch(err => console.error("Error mengirim token:", err));
         }).catch(err => {
-            console.log("❌ Gagal mendapatkan token:", err);
+            console.log("Gagal mendapatkan token:", err);
         });
     }
 
@@ -112,29 +120,30 @@
             if (!firebase.messaging.isSupported()) {
                 return;
             }
-            navigator.serviceWorker.register('/firebase-messaging-sw.js?v=' + FCM_SW_VERSION)
+            // Satu-satunya SW scope root (offline + FCM). Jangan daftarkan SW lain.
+            navigator.serviceWorker.register('/sw.js?v=' + FCM_SW_VERSION)
                 .then(registration => {
-                    console.log("✅ Service Worker terdaftar");
+                    console.log("Service Worker terdaftar");
                     firebase.initializeApp(firebaseConfig);
                     const messaging = firebase.messaging();
                     messaging.onMessage(handleForegroundMessage);
 
                     if (Notification.permission === 'granted') {
-                        syncFcmToken(messaging);
+                        syncFcmToken(messaging, false, registration);
                     } else if (Notification.permission === 'default' && !localStorage.getItem(FCM_ASKED_KEY)) {
                         localStorage.setItem(FCM_ASKED_KEY, '1');
                         Notification.requestPermission().then(permission => {
                             if (permission === 'granted') {
-                                syncFcmToken(messaging);
+                                syncFcmToken(messaging, false, registration);
                             }
                         });
                     }
                 })
                 .catch(err => {
-                    console.log("❌ Service Worker gagal:", err);
+                    console.log("Service Worker gagal:", err);
                 });
         } catch (err) {
-            console.log("❌ Notifikasi belum siap:", err.message);
+            console.log("Notifikasi belum siap:", err.message);
         }
     })();
 </script>

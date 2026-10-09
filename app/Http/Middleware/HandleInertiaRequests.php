@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                 'storageBucket' => config('services.firebase.storage_bucket'),
                 'messagingSenderId' => config('services.firebase.messaging_sender_id'),
                 'appId' => config('services.firebase.app_id'),
+                'vapidKey' => config('services.firebase.vapid_key'),
             ],
         ];
     }

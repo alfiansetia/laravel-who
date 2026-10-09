@@ -6,6 +6,22 @@ export function formatNumber(value) {
     return n.toLocaleString('id-ID');
 }
 
+export function formatQtyID(value) {
+    const n = Number(value ?? 0);
+    if (Number.isNaN(n)) {
+        return '0';
+    }
+    return n.toLocaleString('id-ID');
+}
+
+export function formatBerat(value) {
+    const n = Number(value ?? 0);
+    if (Number.isNaN(n)) {
+        return '0';
+    }
+    return `${n.toLocaleString('id-ID')} kg`;
+}
+
 export function formatDate(value) {
     if (!value) {
         return '-';

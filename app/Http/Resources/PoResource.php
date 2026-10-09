@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PoResource extends JsonResource
@@ -9,8 +11,8 @@ class PoResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -42,12 +44,12 @@ class PoResource extends JsonResource
         //     }
         // }
         return [
-            'id'        => $id,
-            'quantity'  => $this['product_qty'],
-            'qty_ri'    => $this['qty_received'],
-            'code'      => $code,
-            'name'      => $name,
-            'akl'       => $akl,
+            'id' => $id,
+            'quantity' => $this['product_qty'],
+            'qty_ri' => $this['qty_received'],
+            'code' => $code,
+            'name' => $name,
+            'akl' => $akl,
         ];
     }
 }

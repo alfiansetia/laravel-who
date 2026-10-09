@@ -80,11 +80,12 @@ async function openEdit(row) {
     editId.value = row.id;
     errors.value = {};
     try {
-        const res = await api.get(`/atk/${row.id}`, { silent: true });
+        const res = await api.get(`/atk/${row.id}`, { silent: true, block: true });
         const d = res.data?.data ?? res.data;
         form.value = { code: d.code ?? '', name: d.name ?? '', satuan: d.satuan ?? '', desc: d.desc ?? '' };
-    } catch {
+    } catch (e) {
         form.value = { code: row.code ?? '', name: row.name ?? '', satuan: row.satuan ?? '', desc: row.desc ?? '' };
+        toast.error(e.response?.data?.message ?? 'Gagal memuat detail ATK.');
     }
     formOpen.value = true;
 }
@@ -191,7 +192,7 @@ async function openDetail(row) {
     detailOpen.value = true;
     detailLoading.value = true;
     try {
-        const res = await api.get('/atk-trx', { params: { atk_id: row.id }, silent: true });
+        const res = await api.get('/atk-trx', { params: { atk_id: row.id }, silent: true, block: true });
         detailRows.value = res.data?.data ?? res.data ?? [];
     } catch (e) {
         detailRows.value = [];

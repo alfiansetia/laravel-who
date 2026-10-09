@@ -91,7 +91,7 @@ async function openDetail(row) {
     itemTable.setRows([]);
     itemTable.loading.value = true;
     try {
-        const res = await api.get(`/po/${encodeURIComponent(row.id)}`, { silent: true });
+        const res = await api.get(`/po/${encodeURIComponent(row.id)}`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         detail.value = body;
         itemTable.setRows(body.order_line_detail ?? []);

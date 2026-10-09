@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input.vue';
 import Card from '@/components/ui/Card.vue';
 import { useClientTable } from '@/composables/useClientTable';
 import { useToast } from '@/composables/useToast';
+import { useBlock } from '@/composables/useBlock';
 import api from '@/lib/web';
 
 const props = defineProps({
@@ -18,6 +19,7 @@ const props = defineProps({
 });
 
 const toast = useToast();
+const { withBlock } = useBlock();
 const rows = ref([]);
 const table = useClientTable(null, { searchKeys: ['code', 'name', 'satuan'] });
 function syncTable() {
@@ -40,28 +42,31 @@ async function onFile(e) {
     if (!file) {
         return;
     }
-    const text = await file.text();
-    const out = [];
-    text.split(/\r?\n/).forEach((line, idx) => {
-        if (!line.trim()) {
-            return;
-        }
-        const c = line.split(/[\t;,]/);
-        if (idx === 0 && /kode/i.test(c[0] ?? '')) {
-            return;
-        }
-        const code = (c[0] ?? '').trim();
-        const name = (c[1] ?? '').trim();
-        const satuan = (c[2] ?? '').trim().toLowerCase();
-        if (!code || !name || !satuan) {
-            return;
-        }
-        out.push({ code, name, satuan });
+    await withBlock(async () => {
+        await new Promise((r) => requestAnimationFrame(() => r()));
+        const text = await file.text();
+        const out = [];
+        text.split(/\r?\n/).forEach((line, idx) => {
+            if (!line.trim()) {
+                return;
+            }
+            const c = line.split(/[\t;,]/);
+            if (idx === 0 && /kode/i.test(c[0] ?? '')) {
+                return;
+            }
+            const code = (c[0] ?? '').trim();
+            const name = (c[1] ?? '').trim();
+            const satuan = (c[2] ?? '').trim().toLowerCase();
+            if (!code || !name || !satuan) {
+                return;
+            }
+            out.push({ code, name, satuan });
+        });
+        rows.value = out;
+        syncTable();
+        toast.success(`${out.length} baris dimuat dari file.`);
+        e.target.value = '';
     });
-    rows.value = out;
-    syncTable();
-    toast.success(`${out.length} baris dimuat dari file.`);
-    e.target.value = '';
 }
 
 function removeRow(row) {

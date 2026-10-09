@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Toaster } from 'vue-sonner';
 import {
     Bell,
     Cog,
     Database,
+    Download,
     Lock,
     Menu,
     Package,
@@ -31,6 +32,34 @@ const { open: openAuthModal } = useAuthModal();
 const menuOpen = ref(false);
 const notifOpen = ref(false);
 
+// PWA install prompt (ditangkap di app.blade.php via beforeinstallprompt).
+const pwaInstallable = ref(!!window.__pwaInstallPrompt);
+const pwaInstalled = ref(false);
+
+function onPwaInstallable() {
+    pwaInstallable.value = true;
+}
+
+function onPwaInstalled() {
+    pwaInstallable.value = false;
+    pwaInstalled.value = true;
+}
+
+async function installPwa() {
+    const prompt = window.__pwaInstallPrompt;
+    if (!prompt) {
+        return;
+    }
+    prompt.prompt();
+    try {
+        await prompt.userChoice;
+    } catch {
+        // abaikan
+    }
+    window.__pwaInstallPrompt = null;
+    pwaInstallable.value = false;
+}
+
 const envLoggedIn = computed(() => page.props.auth?.envLoggedIn ?? false);
 const flash = computed(() => page.props.flash ?? {});
 
@@ -45,7 +74,6 @@ const mainLinks = [
 ];
 
 const odooLinks = [
-    { label: 'Stock', route: 'stock.index', match: 'stock.*' },
     { label: 'Lot / SN', route: 'lots.index', match: 'lots.*' },
     { label: 'Product Odoo', route: 'product_odoo.index', match: 'product_odoo.*' },
     { label: 'Vendor', route: 'vendors.index', match: 'vendors.*' },
@@ -93,15 +121,22 @@ onMounted(() => {
     if (page.props.firebase?.apiKey) {
         initFcm(page.props.firebase);
     }
+    window.addEventListener('pwa:installable', onPwaInstallable);
+    window.addEventListener('pwa:installed', onPwaInstalled);
 });
 watch(flash, (f) => pushFlash(f));
+
+onBeforeUnmount(() => {
+    window.removeEventListener('pwa:installable', onPwaInstallable);
+    window.removeEventListener('pwa:installed', onPwaInstalled);
+});
 </script>
 
 <template>
     <div class="min-h-screen">
         <Toaster position="top-right" rich-colors close-button :gap="8" :expand="false" offset="64px" :visible-toasts="3" />
 
-        <header class="sticky top-0 z-40 border-b bg-[#e3f2fd]">
+        <header class="sticky top-0 z-40 border-b bg-muted/60 backdrop-blur">
             <div class="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4">
                 <Link :href="href('index')" class="flex shrink-0 items-center">
                     <img src="/images/asa.png" alt="ASA Logo" class="h-10 w-auto object-contain" />
@@ -118,16 +153,17 @@ watch(flash, (f) => pushFlash(f));
                         <component :is="link.icon" class="size-4" />
                         {{ link.label }}
                     </Link>
-                    <div class="group relative">
+                    <div class="group relative focus-within:visible">
                         <button
                             type="button"
-                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-primary"
+                            class="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            aria-haspopup="true"
                         >
                             <Database class="size-4" />
                             Odoo
                         </button>
                         <div
-                            class="invisible absolute left-0 top-full w-60 rounded-xl border bg-white p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100"
+                            class="invisible absolute left-0 top-full w-60 rounded-xl border bg-white p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
                         >
                             <Link
                                 v-for="link in odooLinks"
@@ -142,6 +178,15 @@ watch(flash, (f) => pushFlash(f));
                 </nav>
 
                 <div class="ml-auto hidden items-center gap-1 lg:flex">
+                    <button
+                        v-if="pwaInstallable && !pwaInstalled"
+                        type="button"
+                        title="Install aplikasi"
+                        class="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary"
+                        @click="installPwa"
+                    >
+                        <Download class="size-4" /> Install
+                    </button>
                     <button
                         type="button"
                         title="Cek Notifikasi"
@@ -178,7 +223,7 @@ watch(flash, (f) => pushFlash(f));
                 </button>
             </div>
 
-            <nav v-if="menuOpen" class="border-t bg-[#e3f2fd] px-4 py-2 lg:hidden">
+            <nav v-if="menuOpen" class="border-t bg-muted/60 px-4 py-2 lg:hidden">
                 <Link
                     v-for="link in mainLinks"
                     :key="link.route"
@@ -198,6 +243,14 @@ watch(flash, (f) => pushFlash(f));
                 >
                     {{ link.label }}
                 </Link>
+                <button
+                    v-if="pwaInstallable && !pwaInstalled"
+                    type="button"
+                    class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-slate-600"
+                    @click="installPwa(); menuOpen = false"
+                >
+                    <Download class="size-4" /> Install App
+                </button>
                 <button
                     type="button"
                     class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-slate-600"

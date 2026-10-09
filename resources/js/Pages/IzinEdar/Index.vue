@@ -371,7 +371,7 @@ function fileSize(bytes) {
 }
 async function checkFiles() {
     try {
-        const res = await api.get('/izin-edars/sync/files', { silent: true });
+        const res = await api.get('/izin-edars/sync/files', { silent: true, block: true });
         const raw = res.data?.files ?? [];
         files.value = Array.isArray(raw)
             ? raw

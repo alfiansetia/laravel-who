@@ -118,7 +118,7 @@ async function openDetail(row) {
     itemTable.setRows([]);
     itemTable.loading.value = true;
     try {
-        const res = await api.get(`/so/${row.id}`, { silent: true });
+        const res = await api.get(`/so/${row.id}`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         detail.value = body;
         itemTable.setRows(body.order_line_detail ?? body.order_line ?? []);
@@ -150,7 +150,9 @@ async function markPrint(row, unprint = false) {
             await api.post(`/so/${row.id}/mark-as-${unprint ? 'unprint' : 'print'}`, { note: row.note_to_wh ?? '' });
             toast.success(unprint ? 'Tanda print dihapus.' : 'SO ditandai sudah print.');
             query.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menandai print.');
+        }
     });
 }
 

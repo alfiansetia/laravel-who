@@ -1,17 +1,32 @@
 {
-    "name": "WHO APP",
-    "short_name": "LPT",
-    "start_url": "/index.php",
-    "background_color": "#6777ef",
-    "description": "WHO APP",
-    "display": "fullscreen",
-    "theme_color": "#6777ef",
+    "id": "/",
+    "name": "ASA WHO",
+    "short_name": "WHO",
+    "description": "ASA WHO — Warehouse & Order",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#e3f2fd",
+    "theme_color": "#e3f2fd",
     "icons": [
         {
-            "src": "logo.png",
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ]
 }

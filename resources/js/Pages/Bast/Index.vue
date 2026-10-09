@@ -79,7 +79,9 @@ async function deleteBatch() {
             toast.success('BAST dihapus.');
             selected.value = [];
             query.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus BAST.');
+        }
     });
 }
 

@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use App\Jobs\SyncIzinEdarJob;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 class IzinEdarSyncService
@@ -11,7 +16,7 @@ class IzinEdarSyncService
 
     public const CATEGORIES = [
         'PKD' => [
-            'url'  => 'https://infoalkes.kemkes.go.id/pkrt/export/MDE=',
+            'url' => 'https://infoalkes.kemkes.go.id/pkrt/export/MDE=',
             'file' => 'PKD.xlsx',
             'columns' => [
                 'nomor_izin_edar',
@@ -26,7 +31,7 @@ class IzinEdarSyncService
             ],
         ],
         'PKL' => [
-            'url'  => 'https://infoalkes.kemkes.go.id/pkrt/export/MDI=',
+            'url' => 'https://infoalkes.kemkes.go.id/pkrt/export/MDI=',
             'file' => 'PKL.xlsx',
             'columns' => [
                 'nomor_izin_edar',
@@ -41,7 +46,7 @@ class IzinEdarSyncService
             ],
         ],
         'AKD' => [
-            'url'  => 'https://infoalkes.kemkes.go.id/alkes/export/MDE=',
+            'url' => 'https://infoalkes.kemkes.go.id/alkes/export/MDE=',
             'file' => 'AKD.xlsx',
             'columns' => [
                 'nomor_izin_edar',
@@ -62,7 +67,7 @@ class IzinEdarSyncService
             ],
         ],
         'AKL' => [
-            'url'  => 'https://infoalkes.kemkes.go.id/alkes/export/MDI=',
+            'url' => 'https://infoalkes.kemkes.go.id/alkes/export/MDI=',
             'file' => 'AKL.xlsx',
             'columns' => [
                 'nomor_izin_edar',
@@ -96,15 +101,15 @@ class IzinEdarSyncService
         $results = [];
 
         foreach (self::CATEGORIES as $kategori => $config) {
-            $filePath = $dir . DIRECTORY_SEPARATOR . $config['file'];
+            $filePath = $dir.DIRECTORY_SEPARATOR.$config['file'];
             $exists = File::exists($filePath);
 
             $results[$kategori] = [
-                'file'       => $config['file'],
-                'exists'     => $exists,
-                'size'       => $exists ? File::size($filePath) : 0,
+                'file' => $config['file'],
+                'exists' => $exists,
+                'size' => $exists ? File::size($filePath) : 0,
                 'size_human' => $exists ? $this->formatBytes(File::size($filePath)) : '-',
-                'path'       => $exists ? $filePath : null,
+                'path' => $exists ? $filePath : null,
             ];
         }
 
@@ -118,11 +123,11 @@ class IzinEdarSyncService
     public function getFilePath(string $kategori): ?string
     {
         $kategori = strtoupper($kategori);
-        if (!isset(self::CATEGORIES[$kategori])) {
+        if (! isset(self::CATEGORIES[$kategori])) {
             return null;
         }
 
-        return storage_path('app/izin_edar/' . self::CATEGORIES[$kategori]['file']);
+        return storage_path('app/izin_edar/'.self::CATEGORIES[$kategori]['file']);
     }
 
     /**
@@ -132,11 +137,12 @@ class IzinEdarSyncService
     public function deleteFile(string $kategori): bool
     {
         $path = $this->getFilePath($kategori);
-        if (!$path || !File::exists($path)) {
+        if (! $path || ! File::exists($path)) {
             return false;
         }
 
         File::delete($path);
+
         return true;
     }
 
@@ -150,7 +156,8 @@ class IzinEdarSyncService
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         $bytes /= (1 << (10 * $pow));
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 
     // ── Log helpers ──────────────────────────────────────────────────
@@ -160,18 +167,20 @@ class IzinEdarSyncService
 
     public function getLogPath(): string
     {
-        return storage_path('app/' . self::LOG_PATH);
+        return storage_path('app/'.self::LOG_PATH);
     }
 
     public function readLog(): ?array
     {
         $path = $this->getLogPath();
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             return null;
         }
         $raw = File::get($path);
         $log = json_decode($raw, true);
-        if (!is_array($log)) return null;
+        if (! is_array($log)) {
+            return null;
+        }
 
         // Attach staleness flag
         $log['is_stale'] = $this->isStale($log);
@@ -191,15 +200,20 @@ class IzinEdarSyncService
     public function isRunning(): bool
     {
         $log = $this->readLog();
-        if (!$log) return false;
+        if (! $log) {
+            return false;
+        }
 
         $isActive = in_array($log['status'] ?? '', ['pending', 'downloading']);
-        if (!$isActive) return false;
+        if (! $isActive) {
+            return false;
+        }
 
         // If it's stale, treat it as NOT running (allow new sync)
         if ($this->isStale($log)) {
             // Auto-mark the stale log as failed
-            $this->markFailed('Sync timed out — no progress for ' . self::STALE_TIMEOUT_MINUTES . ' minutes.');
+            $this->markFailed('Sync timed out — no progress for '.self::STALE_TIMEOUT_MINUTES.' minutes.');
+
             return false;
         }
 
@@ -212,16 +226,19 @@ class IzinEdarSyncService
     public function isStale(array $log): bool
     {
         $activeStatuses = ['pending', 'downloading'];
-        if (!in_array($log['status'] ?? '', $activeStatuses)) {
+        if (! in_array($log['status'] ?? '', $activeStatuses)) {
             return false;
         }
 
         // Check against started_at
         $startedAt = $log['started_at'] ?? null;
-        if (!$startedAt) return true; // No start time = definitely stale
+        if (! $startedAt) {
+            return true;
+        } // No start time = definitely stale
 
         try {
-            $start = new \Carbon\Carbon($startedAt);
+            $start = new Carbon($startedAt);
+
             return $start->diffInMinutes(now()) >= self::STALE_TIMEOUT_MINUTES;
         } catch (\Throwable $e) {
             return true; // Parse error = stale
@@ -305,18 +322,18 @@ class IzinEdarSyncService
     {
         $categories = array_keys(self::CATEGORIES);
         $log = [
-            'id'          => uniqid('sync_', true),
-            'status'      => 'pending',
-            'started_at'  => now()->toIso8601String(),
+            'id' => uniqid('sync_', true),
+            'status' => 'pending',
+            'started_at' => now()->toIso8601String(),
             'finished_at' => null,
-            'categories'  => [],
+            'categories' => [],
         ];
 
         foreach ($categories as $cat) {
             $log['categories'][$cat] = [
-                'status'     => 'pending',  // pending | downloading | downloaded | failed
-                'file'       => self::CATEGORIES[$cat]['file'],
-                'error'      => null,
+                'status' => 'pending',  // pending | downloading | downloaded | failed
+                'file' => self::CATEGORIES[$cat]['file'],
+                'error' => null,
                 'started_at' => null,
                 'finished_at' => null,
             ];
@@ -337,11 +354,12 @@ class IzinEdarSyncService
 
     // ── Update category status ───────────────────────────────────────
 
-
     public function updateCategory(string $kategori, array $updates): void
     {
         $log = $this->readLog();
-        if (!$log) return;
+        if (! $log) {
+            return;
+        }
 
         $log['categories'][$kategori] = array_merge($log['categories'][$kategori] ?? [], $updates);
         $this->writeLog($log);
@@ -350,7 +368,9 @@ class IzinEdarSyncService
     public function updateGlobalStatus(string $status): void
     {
         $log = $this->readLog();
-        if (!$log) return;
+        if (! $log) {
+            return;
+        }
 
         $log['status'] = $status;
         $this->writeLog($log);
@@ -359,7 +379,9 @@ class IzinEdarSyncService
     public function markCompleted(): void
     {
         $log = $this->readLog();
-        if (!$log) return;
+        if (! $log) {
+            return;
+        }
 
         $log['status'] = 'completed';
         $log['finished_at'] = now()->toIso8601String();
@@ -369,7 +391,9 @@ class IzinEdarSyncService
     public function markFailed(string $error): void
     {
         $log = $this->readLog();
-        if (!$log) return;
+        if (! $log) {
+            return;
+        }
 
         $log['status'] = 'failed';
         $log['finished_at'] = now()->toIso8601String();
@@ -389,14 +413,16 @@ class IzinEdarSyncService
      */
     private function deleteQueueJob(?string $jobId): void
     {
-        if (!$jobId) return;
+        if (! $jobId) {
+            return;
+        }
 
         try {
-            \Illuminate\Support\Facades\DB::table('jobs')
+            DB::table('jobs')
                 ->where('id', $jobId)
                 ->delete();
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning(
+            Log::warning(
                 "[SyncIzinEdar] Could not delete queue job {$jobId}: {$e->getMessage()}"
             );
         }
@@ -409,7 +435,8 @@ class IzinEdarSyncService
      */
     private function launchCommand(): ?string
     {
-        $jobId = \Illuminate\Support\Facades\Queue::push(new \App\Jobs\SyncIzinEdarJob());
+        $jobId = Queue::push(new SyncIzinEdarJob);
+
         return $jobId ? (string) $jobId : null;
     }
 }

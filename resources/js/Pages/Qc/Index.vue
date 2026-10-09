@@ -131,7 +131,7 @@ async function pickProduct() {
         return;
     }
     try {
-        const res = await api.get(`/products/${selectedProduct.value}`, { silent: true });
+        const res = await api.get(`/products/${selectedProduct.value}`, { silent: true, block: true });
         const p = res.data?.data ?? {};
         form.value.name = p.name ?? '';
         form.value.merk = getPrefix(p.code);
@@ -177,7 +177,7 @@ async function getPL() {
         return;
     }
     try {
-        const res = await api.get(`/products/${selectedProduct.value}`, { silent: true });
+        const res = await api.get(`/products/${selectedProduct.value}`, { silent: true, block: true });
         const packs = res.data?.data?.packs ?? [];
         if (packs.length === 0) {
             toast.warning('Tidak ada Packing List untuk produk ini.');

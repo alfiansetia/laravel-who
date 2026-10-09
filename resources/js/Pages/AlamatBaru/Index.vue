@@ -75,7 +75,9 @@ async function deleteBatch() {
             toast.success('Alamat dihapus.');
             selected.value = [];
             query.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus alamat.');
+        }
     });
 }
 

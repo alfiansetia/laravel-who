@@ -40,7 +40,7 @@ import {
     Wrench,
 } from '@lucide/vue';
 
-export const menuIcons = {
+const menuIcons = {
     Activity,
     ArrowDownToLine,
     BadgeCheck,

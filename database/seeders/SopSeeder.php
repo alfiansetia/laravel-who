@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Sop;
 use App\Models\Target;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SopSeeder extends Seeder
@@ -18,7 +17,7 @@ class SopSeeder extends Seeder
         foreach ($targ as $item) {
             $sop = Sop::create([
                 'product_id' => $item->product_id,
-                'target'     => $item->target,
+                'target' => $item->target,
             ]);
 
             // Jika Target punya items, buat SOP items-nya

@@ -89,7 +89,9 @@ async function deleteBatch(ids = null) {
             toast.success('Packing list dihapus.');
             selected.value = [];
             query.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus packing list.');
+        }
     });
 }
 
@@ -117,7 +119,9 @@ async function saveChange() {
             changeOpen.value = false;
             selected.value = [];
             query.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal mengganti vendor.');
+        }
     });
 }
 
@@ -200,7 +204,9 @@ async function saveFlat() {
             toast.success('Packing list disimpan.');
             query.fetch();
             activeTab.value = 'view';
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyimpan packing list.');
+        }
     });
 }
 

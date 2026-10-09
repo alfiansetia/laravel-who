@@ -9,9 +9,9 @@ class PackItem extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'is_group'    => 'boolean',
+        'is_group' => 'boolean',
         'show_number' => 'boolean',
-        'sort_order'  => 'integer',
+        'sort_order' => 'integer',
     ];
 
     public function scopeFilter($query, array $filters)
@@ -81,8 +81,8 @@ class PackItem extends Model
             if ($top->show_number) {
                 foreach ($children as $ci => $child) {
                     $rows[] = [
-                        'model'      => $child,
-                        'level'      => 1,
+                        'model' => $child,
+                        'level' => 1,
                         'display_no' => $child->show_number ? self::alpha($ci) : '',
                     ];
                 }
@@ -90,8 +90,8 @@ class PackItem extends Model
                 $cc = 1;
                 foreach ($children as $child) {
                     $rows[] = [
-                        'model'      => $child,
-                        'level'      => 1,
+                        'model' => $child,
+                        'level' => 1,
                         'display_no' => $child->show_number ? (string) $cc++ : '',
                     ];
                 }
@@ -107,7 +107,7 @@ class PackItem extends Model
         $n = $zeroBasedIndex;
         $s = '';
         do {
-            $s = chr(97 + ($n % 26)) . $s;
+            $s = chr(97 + ($n % 26)).$s;
             $n = intdiv($n, 26) - 1;
         } while ($n >= 0);
 

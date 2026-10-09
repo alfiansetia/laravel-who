@@ -72,7 +72,7 @@ async function openDetail(row) {
     detailLoading.value = true;
     errors.value = {};
     try {
-        const res = await api.get(`/sops/${row.id}`, { silent: true });
+        const res = await api.get(`/sops/${row.id}`, { silent: true, block: true });
         detail.value = res.data?.data ?? res.data;
         editTarget.value = detail.value?.target ?? '';
         editItems.value = (detail.value?.items ?? []).map((i) => ({ item: i.item ?? '' }));

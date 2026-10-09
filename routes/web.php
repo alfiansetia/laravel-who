@@ -48,6 +48,9 @@ Route::get('monitor-do', function () {
     ]);
 })->name('monitor.do');
 
+// NOTE: `problems/*` (plural, Blade pages) vs `problem/*` (singular, JSON)
+// sengaja beda path agar kontrak Blade lama + API tidak tabrakan.
+// Jangan digabung tanpa migrasi Blade + PWA (lihat .ai/backend-conventions.md §5).
 Route::get('problems', [ProblemController::class, 'index'])->name('problems.index');
 Route::get('problems/import', [ProblemController::class, 'import'])->name('problems.import');
 Route::get('problems/create', [ProblemController::class, 'create'])->name('problems.create');
@@ -76,7 +79,7 @@ Route::delete('problem-log/{problemLog}', [ProblemController::class, 'problemLog
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('so', [SoController::class, 'index'])->name('so.index');
-Route::get('so/{id}/print', [SoController::class, 'print'])->name('so.print');
+Route::get('so/{id}/print', [SoController::class, 'print'])->name('so.print')->whereNumber('id');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
 Route::post('atk', [AtkController::class, 'store'])->name('atk.store');
@@ -96,10 +99,10 @@ Route::match(['put', 'patch'], 'atk-trx/{atk_trx}', [AtkController::class, 'trxU
 Route::delete('atk-trx/{atk_trx}', [AtkController::class, 'trxDestroy'])->name('atk_trx.destroy');
 
 Route::get('do', [DoController::class, 'index'])->name('do.index');
-Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print');
+Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print')->whereNumber('id');
 
 Route::get('it', [ItController::class, 'index'])->name('it.index');
-Route::get('it/{id}/print', [ItController::class, 'print'])->name('it.print');
+Route::get('it/{id}/print', [ItController::class, 'print'])->name('it.print')->whereNumber('id');
 
 // NEW ROUTE
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');
@@ -305,6 +308,17 @@ Route::delete('akl-items/{akl_item}', [AklController::class, 'aklItemDestroy'])-
 Route::resource('shipping-estimate', ShippingEstimateController::class)
     ->names('shipping_estimate');
 
+// Service Worker gabungan (offline + FCM background). Satu-satunya SW scope root.
+// WAJIB lewat route: nginx serve file statis lebih dulu, jadi public/sw.js dihapus.
+Route::get('/sw.js', function () {
+    $content = view('sw')->render();
+
+    return response($content, 200)
+        ->header('Content-Type', 'application/javascript')
+        ->header('Cache-Control', 'no-cache');
+})->name('sw');
+
+// Transisi: rute lama dipertahankan untuk klien yang masih meregistrasi versi 1.
 Route::get('/firebase-messaging-sw.js', function () {
     $content = view('firebase-messaging-sw')->render();
 

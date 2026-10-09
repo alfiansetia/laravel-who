@@ -10,6 +10,7 @@ import { useBlock } from '@/composables/useBlock';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
+import { formatNumber } from '@/lib/format';
 import { odooName } from '@/lib/odoo';
 
 const props = defineProps({
@@ -56,7 +57,7 @@ function fmtThousand(digits) {
     if (!d) {
         return '';
     }
-    return Number(d).toLocaleString('id-ID');
+    return formatNumber(d);
 }
 
 function onNilaiInput(e) {

@@ -13,6 +13,6 @@ class Alamat extends Model
 
     public function detail()
     {
-        return $this->hasMany(DetailAlamat::class)->orderBy('order');;
+        return $this->hasMany(DetailAlamat::class)->orderBy('order');
     }
 }

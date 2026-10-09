@@ -174,7 +174,7 @@ async function openDetail(row) {
     productTable.loading.value = true;
     lotTable.loading.value = true;
     try {
-        const res = await api.get(`/do/${row.id}`, { silent: true });
+        const res = await api.get(`/do/${row.id}`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         detail.value = body;
         productLines.value = body.move_ids_detail ?? [];

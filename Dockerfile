@@ -1,4 +1,12 @@
-# ---------- Stage 1: PHP-FPM (Laravel, Blade tanpa build frontend) ----------
+# ---------- Stage 0: Frontend (Vue/Inertia via Vite) ----------
+FROM node:22-alpine AS frontend
+WORKDIR /src
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+RUN npm run build
+
+# ---------- Stage 1: PHP-FPM (Laravel) ----------
 FROM php:8.4-fpm AS app
 
 # System deps + PHP extensions (Laravel, MySQL prod + sqlite lokal) + binary pendukung:
@@ -26,8 +34,11 @@ WORKDIR /var/www/html
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --no-progress --no-scripts --prefer-dist --optimize-autoloader
 
-# Copy seluruh source (asset Blade/CSS/JS langsung dari public/, tanpa vite build)
+# Copy seluruh source
 COPY . .
+
+# Salin hasil vite build dari stage frontend (diabaikan bila tidak ada).
+COPY --from=frontend /src/public/build ./public/build
 
 RUN composer dump-autoload --optimize \
     && php artisan package:discover --ansi \

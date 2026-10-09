@@ -48,14 +48,16 @@ async function onProductChange(val) {
         return;
     }
     try {
-        const res = await api.get(`/products/${val}`, { silent: true });
+        const res = await api.get(`/products/${val}`, { silent: true, block: true });
         const sop = res.data?.data?.sop ?? res.data?.sop;
         if (sop) {
             target.value = sop.target ?? '';
             rows.value = (sop.items ?? []).map((i) => ({ item: i.item ?? '' }));
             savedSopId.value = sop.id ?? null;
         }
-    } catch {}
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal memuat SOP product.');
+    }
 }
 
 function addRow(content = '') {

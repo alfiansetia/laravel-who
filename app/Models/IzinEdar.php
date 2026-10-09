@@ -43,7 +43,7 @@ class IzinEdar extends Model
      */
     public function getIsExpiringSoonAttribute(): bool
     {
-        return $this->tgl_exp && !$this->tgl_exp->isPast() && $this->tgl_exp->diffInDays(now()) <= 30;
+        return $this->tgl_exp && ! $this->tgl_exp->isPast() && $this->tgl_exp->diffInDays(now()) <= 30;
     }
 
     /**
@@ -54,6 +54,7 @@ class IzinEdar extends Model
         if ($kategori) {
             $query->where('kategori', $kategori);
         }
+
         return $query;
     }
 
@@ -65,11 +66,12 @@ class IzinEdar extends Model
         if ($keyword) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('nomor_izin_edar', 'like', "%{$keyword}%")
-                  ->orWhere('merk', 'like', "%{$keyword}%")
-                  ->orWhere('pendaftar', 'like', "%{$keyword}%")
-                  ->orWhere('jenis_produk', 'like', "%{$keyword}%");
+                    ->orWhere('merk', 'like', "%{$keyword}%")
+                    ->orWhere('pendaftar', 'like', "%{$keyword}%")
+                    ->orWhere('jenis_produk', 'like', "%{$keyword}%");
             });
         }
+
         return $query;
     }
 }

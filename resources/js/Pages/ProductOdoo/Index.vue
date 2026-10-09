@@ -132,7 +132,7 @@ async function openDetail(row) {
     lotCodeFilter.value = '';
     detailLoading.value = true;
     try {
-        const res = await api.get(`/product-odoo/${row.id}`, { silent: true });
+        const res = await api.get(`/product-odoo/${row.id}`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         detail.value = body;
         productLines.value = body.move_ids_detail ?? [];
@@ -154,7 +154,7 @@ async function openStock(row, mode) {
     onhandRows.value = [];
     onhandTitle.value = `${mode === 'move' ? 'Move' : 'On Hand'}: ${row.name ?? ''}`;
     try {
-        const res = await api.get(`/product-odoo/${row.id}/${variantOf(row)}/${mode === 'move' ? 'move' : 'on-hand'}`, { silent: true });
+        const res = await api.get(`/product-odoo/${row.id}/${variantOf(row)}/${mode === 'move' ? 'move' : 'on-hand'}`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         onhandRows.value = body.data ?? body.records ?? [];
     } catch (e) {

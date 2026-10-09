@@ -4,12 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailBast extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = ['bast_id', 'product_id', 'qty', 'satuan', 'lot', 'order'];
+
+    protected $casts = [
+        'bast_id' => 'integer',
+        'product_id' => 'integer',
+        'order' => 'integer',
+    ];
 
     public function scopeFilter($query, array $filters)
     {
@@ -18,12 +25,12 @@ class DetailBast extends Model
         }
     }
 
-    public function bast()
+    public function bast(): BelongsTo
     {
         return $this->belongsTo(Bast::class, 'bast_id');
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }

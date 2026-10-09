@@ -16,6 +16,7 @@ import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyText } from '@/lib/export';
+import { formatNumber } from '@/lib/format';
 
 const props = defineProps({
     title: { type: String, default: 'App Setting' },
@@ -258,7 +259,7 @@ async function logout() {
         return;
     }
     try {
-        await api.post('/auth/logout');
+        await api.post('/auth/logout', {}, { block: true });
         router.visit(route('index'));
     } catch (e) {
         toast.error(e.response?.data?.message ?? 'Gagal logout.');
@@ -342,7 +343,7 @@ async function clearLogFile(name) {
         return;
     }
     try {
-        const res = await api.post(`/resources/logs/${encodeURIComponent(name)}/clear`);
+        const res = await api.post(`/resources/logs/${encodeURIComponent(name)}/clear`, {}, { block: true });
         toast.success(res.data?.message ?? 'Log dikosongkan.');
         loadResource();
         if (logDetailOpen.value && logFile.value === name) {
@@ -364,7 +365,7 @@ async function deleteLogFile(name) {
         return;
     }
     try {
-        const res = await api.delete(`/resources/logs/${encodeURIComponent(name)}`);
+        const res = await api.delete(`/resources/logs/${encodeURIComponent(name)}`, { block: true });
         toast.success(res.data?.message ?? 'Log dihapus.');
         if (logDetailOpen.value && logFile.value === name) {
             logDetailOpen.value = false;
@@ -544,7 +545,7 @@ fetchDevices();
                 <div v-else-if="resource" class="space-y-2 text-sm">
                     <div class="flex items-center justify-between gap-2">
                         <span>Products (S3)</span>
-                        <span class="font-medium">{{ resource.products?.error ?? `${Number(resource.products?.files ?? 0).toLocaleString('id-ID')}${resource.products?.truncated ? '+' : ''} files • ${resource.products?.value ?? 0} bytes` }}</span>
+                        <span class="font-medium">{{ resource.products?.error ?? `${formatNumber(resource.products?.files ?? 0)}${resource.products?.truncated ? '+' : ''} files • ${resource.products?.value ?? 0} bytes` }}</span>
                         <span class="rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{{ resource.products?.parse }}</span>
                     </div>
                     <div class="flex items-center justify-between gap-2">
@@ -586,7 +587,7 @@ fetchDevices();
                 <template #cell-name="{ row }">
                     <span class="inline-flex items-center gap-1.5 font-mono text-xs"><FileText class="size-3.5 text-slate-400" />{{ row.name }}</span>
                 </template>
-                <template #cell-size="{ row }">{{ row.parse }} <span class="text-xs text-muted-foreground">({{ Number(row.size).toLocaleString('id-ID') }} B)</span></template>
+                <template #cell-size="{ row }">{{ row.parse }} <span class="text-xs text-muted-foreground">({{ formatNumber(row.size) }} B)</span></template>
                 <template #cell-lines="{ row }">{{ row.lines ?? '-' }}</template>
                 <template #actions="{ row }">
                     <div class="flex justify-end gap-1">
@@ -771,7 +772,7 @@ fetchDevices();
             <div v-if="logMeta" class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span class="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium text-slate-600">{{ logMeta.parse }}</span>
                 <span>{{ logMeta.modified }}</span>
-                <span>{{ Number(logTotal).toLocaleString('id-ID') }} entri</span>
+                <span>{{ formatNumber(logTotal) }} entri</span>
                 <span v-if="logTruncated" class="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 font-medium text-amber-700">File besar, hanya 2 MB terakhir yang dibaca</span>
             </div>
 
@@ -833,7 +834,7 @@ fetchDevices();
                 <p v-else class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">Tidak ada entri log yang cocok.</p>
 
                 <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                    <span>{{ logTotal > 0 ? `Menampilkan ${(logPage - 1) * logPerPage + 1}–${Math.min(logPage * logPerPage, logTotal)} dari ${Number(logTotal).toLocaleString('id-ID')} entri` : 'Tidak ada entri' }}</span>
+                    <span>{{ logTotal > 0 ? `Menampilkan ${(logPage - 1) * logPerPage + 1}–${Math.min(logPage * logPerPage, logTotal)} dari ${formatNumber(logTotal)} entri` : 'Tidak ada entri' }}</span>
                     <div v-if="logTotalPages > 1" class="flex items-center gap-2">
                         <Button variant="outline" size="sm" :disabled="logPage <= 1 || logLoading" @click="fetchLogDetail(logFile, logPage - 1)">Sebelumnya</Button>
                         <span>Halaman {{ logPage }} dari {{ logTotalPages }}</span>

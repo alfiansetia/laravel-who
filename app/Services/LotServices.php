@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Exceptions\OdooException;
-use App\Services\Odoo;
 use Exception;
 use Illuminate\Support\Arr;
 
@@ -22,53 +21,55 @@ class LotServices extends Odoo
     public static function withGudang(int $gudang_id)
     {
         self::$gudang_id = $gudang_id;
-        return new self();
+
+        return new self;
     }
 
-    public static function getAll($query = '', int $limit = 80, int $offset = 0, $product)
+    public static function getAll($query, int $limit, int $offset, $product)
     {
         $url_param = '/web/dataset/search_read';
         $domain = [];
-        if (!empty($product)) {
+        if (! empty($product)) {
             $domain[] = ['product_id', 'ilike', $product];
         }
-        if (!empty($query)) {
+        if (! empty($query)) {
             $domain[] = ['name', 'ilike', $query];
         }
         $data = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "model" => "stock.production.lot",
-                "domain" => $domain,
-                "fields" => [
-                    "name",
-                    "product_qty1",
-                    "ref",
-                    "product_id",
-                    "create_date",
-                    "use_date",
-                    "life_date"
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'model' => 'stock.production.lot',
+                'domain' => $domain,
+                'fields' => [
+                    'name',
+                    'product_qty1',
+                    'ref',
+                    'product_id',
+                    'create_date',
+                    'use_date',
+                    'life_date',
                 ],
-                "limit" => $limit,
-                "offset" => $offset,
-                "sort" => "",
-                "context" => [
-                    "lang" => "en_US",
-                    "tz" => "Asia/Jakarta",
-                    "uid" => 192,
-                    "search_default_group_by_product" => 1
-                ]
+                'limit' => $limit,
+                'offset' => $offset,
+                'sort' => '',
+                'context' => [
+                    'lang' => 'en_US',
+                    'tz' => 'Asia/Jakarta',
+                    'uid' => 192,
+                    'search_default_group_by_product' => 1,
+                ],
             ],
         ];
-        $response  = parent::asJson()
+        $response = parent::asJson()
             ->withUrlParam($url_param)
             ->method('POST')
             ->withData($data)
             ->get();
-        if (!isset($response['result'])) {
+        if (! isset($response['result'])) {
             throw new Exception('Odoo Error');
         }
+
         return $response['result'];
     }
 
@@ -76,100 +77,100 @@ class LotServices extends Odoo
     {
         $url_param = '/web/dataset/call_kw/stock.picking/read';
         $data = [
-            'jsonrpc'   => '2.0',
-            'method'    => 'call',
-            'params'    => [
-                'args'  => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
                     [intval($id)],
                     [
-                        "id",
-                        "is_locked",
-                        "show_mark_as_todo",
-                        "show_check_availability",
-                        "show_validate",
-                        "show_lots_text",
-                        "cancel_done_picking",
-                        "picking_type_code",
-                        "show_operations",
-                        "move_line_exist",
-                        "has_packages",
-                        "state",
-                        "picking_type_entire_packs",
-                        "has_scrap_move",
-                        "has_tracking",
-                        "name",
-                        "x_studio_field_2kd16",
-                        "x_studio_no_do_manual",
-                        "partner_id",
-                        "partner_address",
-                        "partner_address2",
-                        "partner_address3",
-                        "partner_address4",
-                        "x_studio_customer",
-                        "bill_to",
-                        "delivery_manual",
-                        "ekspedisi_id",
-                        "x_studio_update_eta",
-                        "pp",
-                        "ppk",
-                        "location_id",
-                        "kurir_id",
-                        "kurir_state",
-                        "tanggal_sampai",
-                        "tanggal_persetujuan",
-                        "location_dest_id",
-                        "picking_type_id",
-                        "backorder_id",
-                        "date",
-                        "force_date",
-                        "x_studio_date",
-                        "date_done",
-                        "confirmation_date_so",
-                        "print_x_studio_date",
-                        "print_tanggal_sampai",
-                        "tgl_bast",
-                        "origin",
-                        "x_studio_id_paket",
-                        "x_studio_no_po",
-                        "x_studio_no_ska",
-                        "itr_id",
-                        "invoice_state",
-                        "cancel_reason",
-                        "note_itr",
-                        "receipts_date",
-                        "no_po",
-                        "no_aks",
-                        "no_ska",
-                        "no_sph",
-                        "no_si",
-                        "tgl_akhir_kontrak",
-                        "note_to_wh",
-                        "priority_so",
-                        "system_so",
-                        "owner_id",
-                        "penanggung_jawab",
-                        "jumlah_hari",
-                        "partner",
-                        "schedule_id",
-                        "move_line_ids_without_package",
-                        "package_level_ids_details",
-                        "immediate_transfer",
-                        "move_ids_without_package",
-                        "package_level_ids",
-                        "move_type",
-                        "sale_id",
-                        "company_id",
-                        "group_id",
-                        "scheduled_date",
-                        "priority",
-                        "note",
-                        "move_temp_id",
-                        "message_follower_ids",
-                        "activity_ids",
-                        "message_ids",
-                        "message_attachment_count",
-                        "display_name"
-                    ]
+                        'id',
+                        'is_locked',
+                        'show_mark_as_todo',
+                        'show_check_availability',
+                        'show_validate',
+                        'show_lots_text',
+                        'cancel_done_picking',
+                        'picking_type_code',
+                        'show_operations',
+                        'move_line_exist',
+                        'has_packages',
+                        'state',
+                        'picking_type_entire_packs',
+                        'has_scrap_move',
+                        'has_tracking',
+                        'name',
+                        'x_studio_field_2kd16',
+                        'x_studio_no_do_manual',
+                        'partner_id',
+                        'partner_address',
+                        'partner_address2',
+                        'partner_address3',
+                        'partner_address4',
+                        'x_studio_customer',
+                        'bill_to',
+                        'delivery_manual',
+                        'ekspedisi_id',
+                        'x_studio_update_eta',
+                        'pp',
+                        'ppk',
+                        'location_id',
+                        'kurir_id',
+                        'kurir_state',
+                        'tanggal_sampai',
+                        'tanggal_persetujuan',
+                        'location_dest_id',
+                        'picking_type_id',
+                        'backorder_id',
+                        'date',
+                        'force_date',
+                        'x_studio_date',
+                        'date_done',
+                        'confirmation_date_so',
+                        'print_x_studio_date',
+                        'print_tanggal_sampai',
+                        'tgl_bast',
+                        'origin',
+                        'x_studio_id_paket',
+                        'x_studio_no_po',
+                        'x_studio_no_ska',
+                        'itr_id',
+                        'invoice_state',
+                        'cancel_reason',
+                        'note_itr',
+                        'receipts_date',
+                        'no_po',
+                        'no_aks',
+                        'no_ska',
+                        'no_sph',
+                        'no_si',
+                        'tgl_akhir_kontrak',
+                        'note_to_wh',
+                        'priority_so',
+                        'system_so',
+                        'owner_id',
+                        'penanggung_jawab',
+                        'jumlah_hari',
+                        'partner',
+                        'schedule_id',
+                        'move_line_ids_without_package',
+                        'package_level_ids_details',
+                        'immediate_transfer',
+                        'move_ids_without_package',
+                        'package_level_ids',
+                        'move_type',
+                        'sale_id',
+                        'company_id',
+                        'group_id',
+                        'scheduled_date',
+                        'priority',
+                        'note',
+                        'move_temp_id',
+                        'message_follower_ids',
+                        'activity_ids',
+                        'message_ids',
+                        'message_attachment_count',
+                        'display_name',
+                    ],
                 ],
                 'model' => 'stock.picking',
                 'method' => 'read',
@@ -186,18 +187,18 @@ class LotServices extends Odoo
                         'contact_display' => 'partner_address',
                         'search_default_available' => 1,
                         'search_disable_custom_filters' => true,
-                        'bin_size' => true
-                    ]
-                ]
+                        'bin_size' => true,
+                    ],
+                ],
             ],
         ];
-        $response  = parent::asJson()
+        $response = parent::asJson()
             ->withUrlParam($url_param)
             ->method('POST')
             ->withData($data)
             ->get();
         $res = Arr::get($response, 'result.0', null);
-        if (!$res) {
+        if (! $res) {
             throw new OdooException('Data Not Found!', 404);
         }
         try {
@@ -209,12 +210,13 @@ class LotServices extends Odoo
             $res['move_ids_detail'] = [];
             $res['move_line_detail'] = [];
         }
+
         return $res;
     }
 
     public static function getOrderLines(array $line)
     {
-        $id_prod =  array_map('intval', array_filter($line, 'is_numeric'));
+        $id_prod = array_map('intval', array_filter($line, 'is_numeric'));
         $data_line = [
             'jsonrpc' => '2.0',
             'method' => 'call',
@@ -222,34 +224,34 @@ class LotServices extends Odoo
                 'args' => [
                     $id_prod,
                     [
-                        "product_id",
-                        "name",
-                        "date_expected",
-                        "state",
-                        "picking_type_id",
-                        "location_id",
-                        "location_dest_id",
-                        "scrapped",
-                        "picking_code",
-                        "product_type",
-                        "show_details_visible",
-                        "show_reserved_availability",
-                        "show_operations",
-                        "additional",
-                        "has_move_lines",
-                        "is_locked",
-                        "x_studio_lot",
-                        "x_studio_field_X7gbX",
-                        "hs_code",
-                        "akl_id",
-                        "exp_date",
-                        "is_initial_demand_editable",
-                        "is_quantity_done_editable",
-                        "product_uom_qty",
-                        "reserved_availability",
-                        "quantity_done",
-                        "product_uom"
-                    ]
+                        'product_id',
+                        'name',
+                        'date_expected',
+                        'state',
+                        'picking_type_id',
+                        'location_id',
+                        'location_dest_id',
+                        'scrapped',
+                        'picking_code',
+                        'product_type',
+                        'show_details_visible',
+                        'show_reserved_availability',
+                        'show_operations',
+                        'additional',
+                        'has_move_lines',
+                        'is_locked',
+                        'x_studio_lot',
+                        'x_studio_field_X7gbX',
+                        'hs_code',
+                        'akl_id',
+                        'exp_date',
+                        'is_initial_demand_editable',
+                        'is_quantity_done_editable',
+                        'product_uom_qty',
+                        'reserved_availability',
+                        'quantity_done',
+                        'product_uom',
+                    ],
                 ],
                 'model' => 'stock.move',
                 'method' => 'read',
@@ -271,126 +273,128 @@ class LotServices extends Odoo
                         'form_view_ref' => 'stock.view_move_picking_form',
                         'address_in_id' => 25823,
                         'default_location_id' => 12,
-                        'default_location_dest_id' => 9
-                    ]
-                ]
+                        'default_location_dest_id' => 9,
+                    ],
+                ],
             ],
-            'id' => 555446768
+            'id' => 555446768,
         ];
         $order_line = parent::asJson()
             ->method('POST')
             ->withUrlParam('/web/dataset/call_kw/stock.move/read')
             ->withData($data_line)
             ->get();
+
         return $order_line;
     }
 
     public static function getOrderLinesDetail(array $line)
     {
-        $id_prod =  array_map('intval', array_filter($line, 'is_numeric'));
+        $id_prod = array_map('intval', array_filter($line, 'is_numeric'));
         $data_line = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "args" => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
                     $id_prod,
                     [
-                        "picking_id",
-                        "product_id",
-                        "package_level_id",
-                        "location_id",
-                        "location_dest_id",
-                        "lot_id",
-                        "expired_date_do",
-                        "lot_name",
-                        "expired_date",
-                        "lot_id2",
-                        "package_id",
-                        "result_package_id",
-                        "owner_id",
-                        "is_initial_demand_editable",
-                        "product_uom_qty",
-                        "qty_availa",
-                        "state",
-                        "is_locked",
-                        "qty_done",
-                        "product_uom_id"
-                    ]
+                        'picking_id',
+                        'product_id',
+                        'package_level_id',
+                        'location_id',
+                        'location_dest_id',
+                        'lot_id',
+                        'expired_date_do',
+                        'lot_name',
+                        'expired_date',
+                        'lot_id2',
+                        'package_id',
+                        'result_package_id',
+                        'owner_id',
+                        'is_initial_demand_editable',
+                        'product_uom_qty',
+                        'qty_availa',
+                        'state',
+                        'is_locked',
+                        'qty_done',
+                        'product_uom_id',
+                    ],
                 ],
-                "model" => "stock.move.line",
-                "method" => "read",
-                "kwargs" => [
-                    "context" => [
-                        "lang" => "en_US",
-                        "tz" => "Asia/Jakarta",
-                        "uid" => 192,
-                        "params" => [
-                            "action" => 384,
-                            "active_id" => 2,
-                            "model" => "stock.picking",
-                            "view_type" => "list",
-                            "menu_id" => 241
+                'model' => 'stock.move.line',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        'lang' => 'en_US',
+                        'tz' => 'Asia/Jakarta',
+                        'uid' => 192,
+                        'params' => [
+                            'action' => 384,
+                            'active_id' => 2,
+                            'model' => 'stock.picking',
+                            'view_type' => 'list',
+                            'menu_id' => 241,
                         ],
-                        "contact_display" => "partner_address",
-                        "search_disable_custom_filters" => true,
-                        "active_model" => "stock.move",
-                        "active_id" => 2,
-                        "active_ids" => [
-                            2
+                        'contact_display' => 'partner_address',
+                        'search_disable_custom_filters' => true,
+                        'active_model' => 'stock.move',
+                        'active_id' => 2,
+                        'active_ids' => [
+                            2,
                         ],
-                        "search_default_picking_type_id" => [
-                            2
+                        'search_default_picking_type_id' => [
+                            2,
                         ],
-                        "default_picking_type_id" => 2,
-                        "search_default_available" => 1,
-                        "show_lots_m2o" => true,
-                        "show_lots_text" => false,
-                        "show_source_location" => "stock.location()",
-                        "show_destination_location" => "stock.location()",
-                        "show_package" => true,
-                        "show_reserved_quantity" => false,
-                        "tree_view_ref" => "stock.view_stock_move_line_operation_tree",
-                        "default_product_uom_id" => 61,
-                        "default_picking_id" => 20018,
-                        "default_move_id" => 226881,
-                        "default_product_id" => 22006,
-                        "default_location_id" => 12,
-                        "default_location_dest_id" => 9
-                    ]
-                ]
+                        'default_picking_type_id' => 2,
+                        'search_default_available' => 1,
+                        'show_lots_m2o' => true,
+                        'show_lots_text' => false,
+                        'show_source_location' => 'stock.location()',
+                        'show_destination_location' => 'stock.location()',
+                        'show_package' => true,
+                        'show_reserved_quantity' => false,
+                        'tree_view_ref' => 'stock.view_stock_move_line_operation_tree',
+                        'default_product_uom_id' => 61,
+                        'default_picking_id' => 20018,
+                        'default_move_id' => 226881,
+                        'default_product_id' => 22006,
+                        'default_location_id' => 12,
+                        'default_location_dest_id' => 9,
+                    ],
+                ],
             ],
-            "id" => 647906249
+            'id' => 647906249,
         ];
         $order_line = parent::asJson()
             ->method('POST')
             ->withUrlParam('/web/dataset/call_kw/stock.move/read')
             ->withData($data_line)
             ->get();
+
         return $order_line;
     }
 
     public static function getTraceHtml(int $id)
     {
         $data = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "id" => 24584546,
-            "params" => [
-                "args" => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'id' => 24584546,
+            'params' => [
+                'args' => [
                     [
-                        "lang" => "en_US",
-                        "tz" => "Asia/Jakarta",
-                        "uid" => 192,
-                        "active_id" => (int) $id,
-                        "model" => "stock.production.lot",
-                        "ttype" => false,
-                        "auto_unfold" => false,
-                        "lot_name" => false
-                    ]
+                        'lang' => 'en_US',
+                        'tz' => 'Asia/Jakarta',
+                        'uid' => 192,
+                        'active_id' => (int) $id,
+                        'model' => 'stock.production.lot',
+                        'ttype' => false,
+                        'auto_unfold' => false,
+                        'lot_name' => false,
+                    ],
                 ],
-                "model" => "stock.traceability.report",
-                "method" => "get_html",
-                "kwargs" => (object)[]
+                'model' => 'stock.traceability.report',
+                'method' => 'get_html',
+                'kwargs' => (object) [],
             ],
         ];
         $trace = parent::asJson()
@@ -398,6 +402,7 @@ class LotServices extends Odoo
             ->withUrlParam('/web/dataset/call_kw/stock.traceability.report/get_html')
             ->withData($data)
             ->get();
+
         return $trace;
     }
 }

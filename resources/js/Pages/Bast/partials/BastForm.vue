@@ -64,8 +64,9 @@ async function searchDo(keyword) {
         const body = res.data?.data ?? res.data ?? [];
         const list = Array.isArray(body) ? body : (body.data ?? []);
         doOptions.value = list.map((d) => ({ label: doLabel(d), value: String(d.id), raw: d }));
-    } catch {
+    } catch (e) {
         doOptions.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
     } finally {
         doLoading.value = false;
     }
@@ -193,14 +194,26 @@ async function deleteItem(row) {
     if (!ok) {
         return;
     }
-    await web.delete(`/detail-basts/${row.id}`, { silent: true }).catch(() => {});
-    toast.success('Item dihapus.');
-    loadItems();
+    await withBlock(async () => {
+        try {
+            await web.delete(`/detail-basts/${row.id}`, { block: true });
+            toast.success('Item dihapus.');
+            loadItems();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus item.');
+        }
+    });
 }
 
 async function orderItem(row, type) {
-    await web.post(`/detail-basts/${row.id}/order`, { type }, { silent: true }).catch(() => {});
-    loadItems();
+    await withBlock(async () => {
+        try {
+            await web.post(`/detail-basts/${row.id}/order`, { type }, { block: true });
+            loadItems();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal mengurutkan item.');
+        }
+    });
 }
 
 async function karganItem(row) {
@@ -216,7 +229,9 @@ async function karganItem(row) {
             if (k?.id) {
                 window.open(`/kargans/${k.id}/edit`, '_blank');
             }
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal membuat kargan.');
+        }
     });
 }
 
@@ -226,7 +241,9 @@ async function syncOdoo() {
             const res = await web.get(`/basts/${props.bast.id}/sync`, { block: true });
             toast.success(res.data?.data?.message ?? res.data?.message ?? 'Sinkron selesai.');
             loadItems();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyinkron Odoo.');
+        }
     });
 }
 

@@ -65,7 +65,7 @@ class PackController extends Controller
             ]);
         }
 
-        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->limit(50)->get();
 
         return Inertia::render('Pack/Index', [
             'title' => 'Packing List',
@@ -76,8 +76,8 @@ class PackController extends Controller
 
     public function create()
     {
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
-        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->limit(50)->get();
 
         return Inertia::render('Pack/Create', [
             'title' => 'Create Packing List',
@@ -89,8 +89,8 @@ class PackController extends Controller
     public function edit(Pack $pack)
     {
         $data = $pack->load(['product', 'vendor']);
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
-        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->limit(50)->get();
 
         return Inertia::render('Pack/Edit', [
             'title' => 'Edit Packing List',

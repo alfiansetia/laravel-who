@@ -21,7 +21,7 @@ class CheckAuthMiddleware
             Log::info('CheckAuthMiddleware: unauthenticated or expired session');
 
             // Jika request dari API, return JSON
-            if ($request->expectsJson() || $request->is('api/*')) {
+            if ($request->expectsJson() || $request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['message' => 'Session expired or unauthorized.'], 401);
             }
 

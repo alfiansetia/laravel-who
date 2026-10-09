@@ -40,23 +40,23 @@ class MonitorDo extends Command
             $do = DoServices::getAll('CENT/OUT/', 5);
 
             // Validasi response dari DoServices
-            if (!is_array($do)) {
+            if (! is_array($do)) {
                 throw new Exception('DoServices response tidak valid');
             }
 
             $odoo_length = Arr::get($do, 'length', 0);
             $old_length = Arr::get($session, 'length', 0);
 
-            $this->info('old: ' . $old_length);
-            $this->info('new: ' . $odoo_length);
+            $this->info('old: '.$old_length);
+            $this->info('new: '.$odoo_length);
 
             if ($odoo_length > $old_length && $odoo_length > 0) {
                 $selisih = $odoo_length - $old_length;
-                $this->info('selisih: ' . $selisih);
+                $this->info('selisih: '.$selisih);
 
                 if ($selisih > 5) {
                     if ($old_length > 0) {
-                        $title = '⚠️ Ada ' . $selisih . ' DO Baru!';
+                        $title = '⚠️ Ada '.$selisih.' DO Baru!';
                         $message = $title;
                         FirebaseServices::sendToTopic($title, $message);
                         TelegramServices::sendToGroup($message);
@@ -69,24 +69,24 @@ class MonitorDo extends Command
                     $this->info('Jumlah Berubah. Kirim Notif!');
                     $records = Arr::get($do, 'records', []);
 
-                    if (!is_array($records)) {
+                    if (! is_array($records)) {
                         throw new Exception('DO records tidak valid');
                     }
 
                     for ($i = 0; $i < $selisih; $i++) {
-                        if (!isset($records[$i])) {
+                        if (! isset($records[$i])) {
                             continue; // Skip jika record tidak ada
                         }
 
                         $value = $records[$i];
-                        $message = ' SO : ' . Arr::get($value, 'origin', '') . ', ';
-                        $message .= ' TO : ' . get_name($value['partner_id'] ?? null) . ', ';
-                        $message .= ' NOTE : ' . Arr::get($value, 'note_to_wh', '') . ', ';
+                        $message = ' SO : '.Arr::get($value, 'origin', '').', ';
+                        $message .= ' TO : '.get_name($value['partner_id'] ?? null).', ';
+                        $message .= ' NOTE : '.Arr::get($value, 'note_to_wh', '').', ';
 
                         $doName = Arr::get($value, 'name', '-');
                         $so_id = Arr::get($value, 'sale_id.0', '0');
-                        FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, ' . $doName, $message, $so_id);
-                        TelegramServices::sendToGroup('⚠️ Ada DO Baru!, ' . $doName . $message);
+                        FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, '.$doName, $message, $so_id);
+                        TelegramServices::sendToGroup('⚠️ Ada DO Baru!, '.$doName.$message);
                     }
                 }
             } else {
@@ -98,12 +98,12 @@ class MonitorDo extends Command
             $this->saveSession(Arr::get($session, 'length', 0), now());
 
             if (Carbon::parse($last_error)->diffInMinutes(now()) >= 30) {
-                TelegramServices::sendToGroup('Error : ' . $th->getMessage() . ' Last Error : ' . $last_error);
+                TelegramServices::sendToGroup('Error : '.$th->getMessage().' Last Error : '.$last_error);
             }
 
             Log::error('MonitorDo: Exception', [
                 'error' => $th->getMessage(),
-                'last_error' => $last_error
+                'last_error' => $last_error,
             ]);
         }
     }
@@ -119,12 +119,13 @@ class MonitorDo extends Command
 
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     Log::warning('MonitorDo: JSON tidak valid', [
-                        'error' => json_last_error_msg()
+                        'error' => json_last_error_msg(),
                     ]);
+
                     return $this->saveDefaultSession();
                 }
 
-                if (empty($data['last_error']) || !isset($data['length'])) {
+                if (empty($data['last_error']) || ! isset($data['length'])) {
                     return $this->saveDefaultSession();
                 }
 
@@ -134,25 +135,26 @@ class MonitorDo extends Command
             }
         } catch (Exception $e) {
             Log::error('MonitorDo: Exception saat membaca session', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return $this->saveDefaultSession();
         }
     }
 
-    public function saveSession($length = 0, $last_error)
+    public function saveSession($length, $last_error)
     {
         try {
             $json = json_encode([
-                'length'        => $length,
-                'last_error'    => $last_error,
+                'length' => $length,
+                'last_error' => $last_error,
             ], JSON_PRETTY_PRINT);
 
             $session_file = storage_path('app/monitor.json');
             File::put($session_file, $json);
         } catch (Exception $e) {
             Log::error('MonitorDo: Exception saat menyimpan session', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -161,8 +163,8 @@ class MonitorDo extends Command
     {
         try {
             $data = [
-                'length'        => 0,
-                'last_error'    => Carbon::now()->subHour(),
+                'length' => 0,
+                'last_error' => Carbon::now()->subHour(),
             ];
 
             $session_file = storage_path('app/monitor.json');
@@ -171,7 +173,7 @@ class MonitorDo extends Command
             return $data;
         } catch (Exception $e) {
             Log::error('MonitorDo: Exception saat menyimpan default session', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return [

@@ -6,6 +6,11 @@ services:
       target: app
     container_name: who-app
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     # NOTE: .env sengaja TIDAK dimuat via env_file. Compose menginterpolasi
     # karakter $ (mis. "$2y$12$tf/..." pada ADMIN_PASS bcrypt menjadi rusak
     # + warning 'The "tf" variable is not set'). .env sudah di-mount ke
@@ -35,6 +40,11 @@ services:
       target: web
     container_name: who-web
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     # Hanya expose ke dalam network, tanpa publish port ke host.
     # Cloudflare Tunnel (di network yang sama) forward ke http://who-web:80
     expose:
@@ -65,6 +75,11 @@ services:
       target: app
     container_name: who-worker
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     # NOTE: sama seperti who-app — jangan pakai env_file (Compose merusak
     # nilai mengandung $, mis. ADMIN_PASS). .env dibaca via mount di bawah.
     command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=600", "--max-time=3600"]
@@ -85,6 +100,11 @@ services:
       target: app
     container_name: who-scheduler
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
     # NOTE: sama seperti who-app — jangan pakai env_file (Compose merusak
     # nilai mengandung $, mis. ADMIN_PASS). .env dibaca via mount di bawah.
     command: ["php", "artisan", "schedule:work"]
@@ -100,7 +120,10 @@ services:
 
 networks:
   # Join ke network yang sudah dipakai service mysql + cloudflared.
-  # Pastikan network ini sudah ada (dibuat oleh stack mysql).
+  # Pastikan network ini sudah ada (dibuat oleh stack mysql):
+  #   docker network create app-network
+  # Dev lokal tanpa stack mysql: ganti ke `external: false` sementara
+  # atau buat network di atas sebelum `docker compose up`.
   app-network:
     name: app-network
     external: true

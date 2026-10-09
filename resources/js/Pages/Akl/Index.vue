@@ -143,7 +143,7 @@ async function openSync(row) {
     syncOpen.value = true;
     syncLoading.value = true;
     try {
-        const res = await api.get(`/akls/${row.id}/check-izin`, { silent: true });
+        const res = await api.get(`/akls/${row.id}/check-izin`, { silent: true, block: true });
         syncAkl.value = res.data?.data?.akl ?? row;
         syncMatches.value = res.data?.data?.matches ?? [];
         if (syncMatches.value.length === 0) {

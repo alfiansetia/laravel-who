@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
+import MultiSelect from '@/components/MultiSelect.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -113,7 +114,7 @@ async function load() {
     await withBlock(() => table.fetch());
 }
 
-const columns = [
+const ALL_COLUMNS = [
     { key: 'code', label: 'Kode', mono: true },
     { key: 'name', label: 'Nama' },
     { key: 'akl', label: 'AKL', mono: true },
@@ -123,6 +124,14 @@ const columns = [
     { key: 'packs_count', label: 'PL', align: 'center' },
     { key: 'has_sop', label: 'SOP', align: 'center' },
 ];
+
+const HIDDEN_DEFAULT = ['pltbb_display', 'images_count', 'packs_count', 'has_sop'];
+
+const visibleCols = ref(ALL_COLUMNS.map((c) => c.key).filter((k) => !HIDDEN_DEFAULT.includes(k)));
+
+const columns = computed(() => ALL_COLUMNS.filter((c) => visibleCols.value.includes(c.key)));
+
+const columnOptions = computed(() => ALL_COLUMNS.map((c) => ({ label: c.label, value: c.key })));
 
 const perPageOptions = [10, 25, 50, 100];
 
@@ -164,7 +173,9 @@ async function syncProduct() {
             const res = await api.post('/product-sync', {}, { block: true });
             toast.success(res.data?.message ?? 'Sinkron selesai.');
             await table.fetch();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyinkron product.');
+        }
     });
 }
 
@@ -316,6 +327,9 @@ load();
             </FormField>
             <FormField label="SOP">
                 <SearchableSelect v-model="filterSop" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
+            </FormField>
+            <FormField label="Kolom tampil" :hint="`${visibleCols.length} dari ${ALL_COLUMNS.length} kolom tampil`">
+                <MultiSelect v-model="visibleCols" :options="columnOptions" placeholder="Kolom tampil" />
             </FormField>
         </FilterPanel>
         <DataTable

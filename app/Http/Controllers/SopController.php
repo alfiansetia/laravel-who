@@ -76,7 +76,7 @@ class SopController extends Controller
 
     public function create()
     {
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
         $sop_items = SopItem::query()
             ->select('item')
             ->distinct()

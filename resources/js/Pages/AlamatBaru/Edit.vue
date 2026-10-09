@@ -32,7 +32,9 @@ async function duplicate() {
             if (created?.id) {
                 window.open(`/alamat-baru/${created.id}/edit`, '_blank');
             }
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menduplikasi alamat.');
+        }
     });
 }
 
@@ -50,7 +52,9 @@ async function createBast() {
             if (id) {
                 window.open(`/basts/${id}/edit`, '_blank');
             }
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal membuat BAST.');
+        }
     });
 }
 

@@ -87,7 +87,10 @@ async function loadTemplates() {
         const res = await api.get(`/products/${form.value.product_id}`, { silent: true });
         const d = res.data?.data ?? res.data;
         templates.value = d?.packs ?? [];
-    } catch {}
+    } catch (e) {
+        templates.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat template pack.');
+    }
 }
 
 function onProductChange(v) {

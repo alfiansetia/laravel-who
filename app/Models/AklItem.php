@@ -30,6 +30,7 @@ class AklItem extends Model
         if ($this->relationLoaded('product') && $this->product) {
             return $this->product->name;
         }
+
         // Fallback query ringan bila relasi belum di-load.
         return Product::where('code', $this->code)->value('name');
     }
@@ -39,6 +40,7 @@ class AklItem extends Model
         if ($this->relationLoaded('product')) {
             return is_null($this->product);
         }
+
         return ! Product::where('code', $this->code)->exists();
     }
 }

@@ -60,6 +60,7 @@ class ShippingEstimate extends Model
     {
         return $this->packages->sum(function ($pkg) {
             $dimWeight = ceil(($pkg->dimension_length * $pkg->dimension_width * $pkg->dimension_height) / 6000);
+
             return $dimWeight * ($pkg->quantity ?? 1);
         });
     }
@@ -71,6 +72,7 @@ class ShippingEstimate extends Model
     {
         return $this->packages->sum(function ($pkg) {
             $dimWeight = ceil(($pkg->dimension_length * $pkg->dimension_width * $pkg->dimension_height) / 4000);
+
             return $dimWeight * ($pkg->quantity ?? 1);
         });
     }

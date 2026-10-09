@@ -15,42 +15,42 @@ class ProductServices extends Odoo
             'in',
             [
                 'consu',
-                'product'
-            ]
+                'product',
+            ],
         ]];
-        if (!empty($query)) {
-            $domains =     [
+        if (! empty($query)) {
+            $domains = [
                 [
-                    "type",
-                    "in",
+                    'type',
+                    'in',
                     [
-                        "consu",
-                        "product"
-                    ]
+                        'consu',
+                        'product',
+                    ],
                 ],
-                "|",
-                "|",
-                "|",
+                '|',
+                '|',
+                '|',
                 [
-                    "default_code",
-                    "ilike",
-                    "bdf"
-                ],
-                [
-                    "product_variant_ids.default_code",
-                    "ilike",
-                    "bdf"
+                    'default_code',
+                    'ilike',
+                    'bdf',
                 ],
                 [
-                    "name",
-                    "ilike",
-                    "bdf"
+                    'product_variant_ids.default_code',
+                    'ilike',
+                    'bdf',
                 ],
                 [
-                    "barcode",
-                    "ilike",
-                    "bdf"
-                ]
+                    'name',
+                    'ilike',
+                    'bdf',
+                ],
+                [
+                    'barcode',
+                    'ilike',
+                    'bdf',
+                ],
             ];
         }
         $url_param = '/web/dataset/search_read';
@@ -58,10 +58,10 @@ class ProductServices extends Odoo
             'jsonrpc' => '2.0',
             'method' => 'call',
             'params' => [
-                'model'     => 'product.template',
-                "limit"     => intval($limit),
-                "offset"    => intval($offset),
-                'sort'      => 'default_code ASC',
+                'model' => 'product.template',
+                'limit' => intval($limit),
+                'offset' => intval($offset),
+                'sort' => 'default_code ASC',
                 'domain' => $domains,
                 'fields' => [
                     'id',
@@ -78,15 +78,16 @@ class ProductServices extends Odoo
                     'uom_id',
                     'active',
                     'x_studio_field_i3XMM',
-                    'description'
+                    'description',
                 ],
             ],
         ];
-        $response  = parent::asJson()
+        $response = parent::asJson()
             ->withUrlParam($url_param)
             ->method('POST')
             ->withData($data)
             ->get();
+
         return Arr::get($response, 'result.records', []);
     }
 }

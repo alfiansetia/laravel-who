@@ -16,7 +16,9 @@ import Textarea from '@/components/ui/Textarea.vue';
 import { useClientTable } from '@/composables/useClientTable';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
+import { useBlock } from '@/composables/useBlock';
 import api from '@/lib/axios';
+import { formatNumber } from '@/lib/format';
 
 const props = defineProps({
     title: { type: String, default: 'Laporan Luar Kota' },
@@ -46,6 +48,7 @@ const COLUMN_LABELS = {
 
 const toast = useToast();
 const { confirm } = useConfirm();
+const { withBlock } = useBlock();
 
 const excelInput = ref(null);
 const dropActive = ref(false);
@@ -146,10 +149,12 @@ async function handleFile(file) {
     }
     importing.value = true;
     try {
-        await loadScript(XLSX_SRC);
-        const buffer = await file.arrayBuffer();
-        workbook.value = window.XLSX.read(buffer, { type: 'array' });
-        sheetNames.value = workbook.value.SheetNames;
+        await withBlock(async () => {
+            await loadScript(XLSX_SRC);
+            const buffer = await file.arrayBuffer();
+            workbook.value = window.XLSX.read(buffer, { type: 'array' });
+            sheetNames.value = workbook.value.SheetNames;
+        });
         showSheets.value = true;
         activeSheet.value = '';
         toast.info('Pilih sheet untuk dimuat.');
@@ -179,53 +184,57 @@ function loadSheet(name) {
     if (!workbook.value) {
         return;
     }
-    activeSheet.value = name;
-    const sheet = workbook.value.Sheets[name];
-    const json = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, blankrows: false });
-    const result = [];
-    json.forEach((row) => {
-        if (!Array.isArray(row) || !Number.isInteger(row[0])) {
-            return;
-        }
-        if (row[0] === null || row[1] === null || row[2] === null || row[3] === null) {
-            return;
-        }
-        rowSeq += 1;
-        result.push({
-            id: rowSeq,
-            tgl_kirim: excelDateToString(row[0]),
-            no_do: row[1] ?? null,
-            tgl_do: excelDateToString(row[2]),
-            customer: row[3] ?? null,
-            area: row[4] ?? null,
-            no_telp: parsePhone(row[5]),
-            ekspedisi: row[6] ?? null,
-            jenis_kiriman: row[7] ?? null,
-            tgl_estimasi: excelDateToString(row[8]),
-            tgl_real: excelDateToString(row[9]),
-            tgl_confirm: excelDateToString(row[10]),
-            confirm_with: row[11] ?? null,
-            con_brg_y: row[12] ?? null,
-            con_brg_n: row[13] ?? null,
-            con_qty_y: row[14] ?? null,
-            con_qty_n: row[15] ?? null,
-            no_resi: row[16] ?? null,
-            jenis_barang: row[17] ?? null,
-            koli: row[18] ?? null,
-            berat_estimasi: parseDecimal(row[19]),
-            berat_real: parseDecimal(row[20]),
-            ongkir_estimasi: row[21] ?? null,
-            ongkir_real: row[22] ?? null,
+    withBlock(async () => {
+        // Beri kesempatan overlay ter-render sebelum parse berat memblokir thread.
+        await new Promise((r) => requestAnimationFrame(() => r()));
+        activeSheet.value = name;
+        const sheet = workbook.value.Sheets[name];
+        const json = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, blankrows: false });
+        const result = [];
+        json.forEach((row) => {
+            if (!Array.isArray(row) || !Number.isInteger(row[0])) {
+                return;
+            }
+            if (row[0] === null || row[1] === null || row[2] === null || row[3] === null) {
+                return;
+            }
+            rowSeq += 1;
+            result.push({
+                id: rowSeq,
+                tgl_kirim: excelDateToString(row[0]),
+                no_do: row[1] ?? null,
+                tgl_do: excelDateToString(row[2]),
+                customer: row[3] ?? null,
+                area: row[4] ?? null,
+                no_telp: parsePhone(row[5]),
+                ekspedisi: row[6] ?? null,
+                jenis_kiriman: row[7] ?? null,
+                tgl_estimasi: excelDateToString(row[8]),
+                tgl_real: excelDateToString(row[9]),
+                tgl_confirm: excelDateToString(row[10]),
+                confirm_with: row[11] ?? null,
+                con_brg_y: row[12] ?? null,
+                con_brg_n: row[13] ?? null,
+                con_qty_y: row[14] ?? null,
+                con_qty_n: row[15] ?? null,
+                no_resi: row[16] ?? null,
+                jenis_barang: row[17] ?? null,
+                koli: row[18] ?? null,
+                berat_estimasi: parseDecimal(row[19]),
+                berat_real: parseDecimal(row[20]),
+                ongkir_estimasi: row[21] ?? null,
+                ongkir_real: row[22] ?? null,
+            });
         });
+        rawRows.value = result;
+        tglFilter.value = '';
+        applyView();
+        if (result.length === 0) {
+            toast.warning('Tidak ada data valid pada sheet ini.');
+        } else {
+            toast.success(`Berhasil impor ${result.length} data.`);
+        }
     });
-    rawRows.value = result;
-    tglFilter.value = '';
-    applyView();
-    if (result.length === 0) {
-        toast.warning('Tidak ada data valid pada sheet ini.');
-    } else {
-        toast.success(`Berhasil impor ${result.length} data.`);
-    }
 }
 
 function resetImport() {
@@ -328,7 +337,8 @@ async function trackTiki() {
                 const res = await api.get('/tiki/track', { params: { resi: batch.join(',') }, silent: true });
                 const payload = res.data?.data ?? res.data;
                 return payload?.response ?? [];
-            } catch {
+            } catch (e) {
+                toast.error(e.response?.data?.message ?? 'Gagal memuat tracking TIKI.');
                 return [];
             }
         }));
@@ -491,24 +501,20 @@ onBeforeUnmount(() => {
                         </span>
                     </button>
                     <div v-if="expandedTrack === idx" class="grid gap-3 border-t p-3 text-sm sm:grid-cols-2">
-                        <table class="w-full text-sm">
-                            <tbody>
-                                <tr><td class="py-0.5 text-muted-foreground">No Resi</td><td class="py-0.5 font-medium">{{ g.cnno }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">No DO</td><td class="py-0.5 font-medium">{{ g.noDo }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Pengirim</td><td class="py-0.5">{{ g.items.consignor_name ?? '-' }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Penerima</td><td class="py-0.5">{{ g.items.consignee_name ?? '-' }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Tujuan</td><td class="py-0.5">{{ g.items.destination_city_name ?? '-' }}</td></tr>
-                            </tbody>
-                        </table>
-                        <table class="w-full text-sm">
-                            <tbody>
-                                <tr><td class="py-0.5 text-muted-foreground">Berat</td><td class="py-0.5">{{ g.items.weight ?? '-' }} kg</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Ongkir</td><td class="py-0.5">Rp {{ Number(g.items.shipment_fee ?? 0).toLocaleString('id-ID') }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Asuransi</td><td class="py-0.5">Rp {{ Number(g.items.insurance_fee ?? 0).toLocaleString('id-ID') }}</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Estimasi</td><td class="py-0.5">{{ g.items.est_day ?? '-' }} hari ({{ g.items.est_date ?? '-' }})</td></tr>
-                                <tr><td class="py-0.5 text-muted-foreground">Koli</td><td class="py-0.5">{{ g.items.pieces_no ?? '-' }}</td></tr>
-                            </tbody>
-                        </table>
+                        <dl class="space-y-0.5 text-sm">
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">No Resi</dt><dd class="font-medium">{{ g.cnno }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">No DO</dt><dd class="font-medium">{{ g.noDo }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Pengirim</dt><dd class="text-right">{{ g.items.consignor_name ?? '-' }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Penerima</dt><dd class="text-right">{{ g.items.consignee_name ?? '-' }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Tujuan</dt><dd class="text-right">{{ g.items.destination_city_name ?? '-' }}</dd></div>
+                        </dl>
+                        <dl class="space-y-0.5 text-sm">
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Berat</dt><dd>{{ g.items.weight ?? '-' }} kg</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Ongkir</dt><dd>Rp {{ formatNumber(g.items.shipment_fee ?? 0) }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Asuransi</dt><dd>Rp {{ formatNumber(g.items.insurance_fee ?? 0) }}</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Estimasi</dt><dd>{{ g.items.est_day ?? '-' }} hari ({{ g.items.est_date ?? '-' }})</dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-muted-foreground">Koli</dt><dd>{{ g.items.pieces_no ?? '-' }}</dd></div>
+                        </dl>
                         <div class="rounded-md border p-2 text-sm sm:col-span-2" :class="statusColor(g.last.status)">
                             <b>{{ g.last.status ?? '-' }}</b> — {{ g.last.noted ?? '' }}<br />
                             <span class="text-xs">{{ g.last.entry_name ?? '' }} • {{ g.last.entry_date ?? '' }}</span>

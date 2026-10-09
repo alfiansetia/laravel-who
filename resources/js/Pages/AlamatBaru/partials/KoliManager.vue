@@ -13,6 +13,7 @@ import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
+import { formatNumber } from '@/lib/format';
 import { getCode } from '@/lib/odoo';
 
 const props = defineProps({
@@ -61,7 +62,7 @@ function idr(nilai) {
     if (!n) {
         return '';
     }
-    return `IDR ${n.toLocaleString('id-ID')}`;
+    return `IDR ${formatNumber(n)}`;
 }
 
 async function saveInline(koli) {
@@ -73,20 +74,22 @@ async function saveInline(koli) {
         toast.error('Koli harus diisi');
         return;
     }
-    try {
-        const res = await web.put(`/koli/${koli.id}`, {
-            urutan: d.urutan,
-            nilai: d.nilai,
-            is_do: d.is_do ?? 'no',
-            is_pk: d.is_pk ?? 'no',
-            is_asuransi: d.is_asuransi ?? 'no',
-            is_banting: d.is_banting ?? 'no',
-        }, { silent: true });
-        toast.success(res.data?.message ?? 'Data koli berhasil disimpan!');
-        loadKolis();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal menyimpan data koli!');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await web.put(`/koli/${koli.id}`, {
+                urutan: d.urutan,
+                nilai: d.nilai,
+                is_do: d.is_do ?? 'no',
+                is_pk: d.is_pk ?? 'no',
+                is_asuransi: d.is_asuransi ?? 'no',
+                is_banting: d.is_banting ?? 'no',
+            }, { block: true });
+            toast.success(res.data?.message ?? 'Data koli berhasil disimpan!');
+            loadKolis();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyimpan data koli!');
+        }
+    });
 }
 
 // Koli add modal
@@ -117,22 +120,26 @@ async function saveKoli() {
             toast.success(res.data?.message ?? 'Koli ditambah.');
             koliModalOpen.value = false;
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menambah koli.');
+        }
     });
 }
 
 async function deleteKoli(row) {
-    const ok = await confirm({ title: 'Delete Koli?', message: `Koli ${row.urutan ?? ''}`, confirmText: 'Ya, hapus', tone: 'destructive' });
+    const ok = await confirm({ title: 'Hapus Koli?', message: `Koli ${row.urutan ?? ''}`, confirmText: 'Ya, hapus', tone: 'destructive' });
     if (!ok) {
         return;
     }
-    try {
-        const res = await web.delete(`/koli/${row.id}`, { silent: true });
-        toast.success(res.data?.message ?? 'Koli dihapus.');
-        loadKolis();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal menghapus koli.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await web.delete(`/koli/${row.id}`, { block: true });
+            toast.success(res.data?.message ?? 'Koli dihapus.');
+            loadKolis();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus koli.');
+        }
+    });
 }
 
 async function hitungKoli(row) {
@@ -141,7 +148,9 @@ async function hitungKoli(row) {
             const res = await web.post(`/koli/${row.id}/hitung`, {}, { block: true });
             toast.success(res.data?.message ?? 'Nilai koli dihitung.');
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghitung nilai koli.');
+        }
     });
 }
 async function syncKoli(row) {
@@ -150,7 +159,9 @@ async function syncKoli(row) {
             const res = await web.get(`/koli/${row.id}/sync`, { block: true });
             toast.success(res.data?.message ?? 'Koli disinkron.');
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyinkron koli.');
+        }
     });
 }
 async function duplicateKoli(row) {
@@ -159,7 +170,9 @@ async function duplicateKoli(row) {
             const res = await web.post(`/koli/${row.id}/duplicate`, {}, { block: true });
             toast.success(res.data?.message ?? 'Koli diduplikasi.');
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menduplikasi koli.');
+        }
     });
 }
 function printKoli(row = null) {
@@ -218,8 +231,9 @@ async function searchDo(kw) {
         const body = res.data?.data ?? res.data ?? [];
         const list = Array.isArray(body) ? body : (body.data ?? []);
         doOptions.value = list.map((d) => ({ label: refLabel(d), value: String(d.id) }));
-    } catch {
+    } catch (e) {
         doOptions.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat DO.');
     } finally {
         doLoading.value = false;
     }
@@ -265,8 +279,9 @@ async function searchIt(kw) {
         const body = res.data?.data ?? res.data ?? [];
         const list = Array.isArray(body) ? body : (body.data ?? []);
         itOptions.value = list.map((d) => ({ label: refLabel(d), value: String(d.id) }));
-    } catch {
+    } catch (e) {
         itOptions.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat IT.');
     } finally {
         itLoading.value = false;
     }
@@ -298,7 +313,7 @@ function openAddItem(koli) {
 
 async function saveManualItem() {
     if (!manualForm.value.product) {
-        toast.error('Select Product!');
+        toast.error('Pilih produk!');
         return;
     }
     await withBlock(async () => {
@@ -307,7 +322,9 @@ async function saveManualItem() {
             toast.success(res.data?.message ?? 'Barang ditambah.');
             itemModalOpen.value = false;
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menambah barang.');
+        }
     });
 }
 
@@ -320,7 +337,9 @@ async function pickDoLine(line) {
             const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
             toast.success(res.data?.message ?? 'Barang ditambah dari DO.');
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menambah barang dari DO.');
+        }
     });
 }
 async function pickItLine(line) {
@@ -329,7 +348,9 @@ async function pickItLine(line) {
             const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
             toast.success(res.data?.message ?? 'Barang ditambah dari IT.');
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menambah barang dari IT.');
+        }
     });
 }
 
@@ -338,15 +359,17 @@ const editItemOpen = ref(false);
 const editingItem = ref(null);
 const editItemForm = ref({ qty: '', desc: '', lot: '' });
 async function openEditItem(item) {
-    try {
-        const res = await web.get(`/koli-item/${item.id}`, { silent: true });
-        const d = res.data?.data ?? res.data;
-        editingItem.value = item;
-        editItemForm.value = { qty: d.qty ?? '', desc: d.desc ?? '', lot: d.lot ?? '' };
-        editItemOpen.value = true;
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal memuat item.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await web.get(`/koli-item/${item.id}`, { block: true });
+            const d = res.data?.data ?? res.data;
+            editingItem.value = item;
+            editItemForm.value = { qty: d.qty ?? '', desc: d.desc ?? '', lot: d.lot ?? '' };
+            editItemOpen.value = true;
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal memuat item.');
+        }
+    });
 }
 async function saveEditItem() {
     await withBlock(async () => {
@@ -355,38 +378,46 @@ async function saveEditItem() {
             toast.success(res.data?.message ?? 'Item disimpan.');
             editItemOpen.value = false;
             loadKolis();
-        } catch {}
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menyimpan item.');
+        }
     });
 }
 async function deleteItem(item) {
-    try {
-        const res = await web.delete(`/koli-item/${item.id}`, { silent: true });
-        toast.success(res.data?.message ?? 'Item dihapus.');
-        loadKolis();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal menghapus item.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await web.delete(`/koli-item/${item.id}`, { block: true });
+            toast.success(res.data?.message ?? 'Item dihapus.');
+            loadKolis();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal menghapus item.');
+        }
+    });
 }
 async function orderItem(item, type) {
-    try {
-        await web.post(`/koli-item/${item.id}/order`, { type }, { silent: true });
-        loadKolis();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal mengurutkan item.');
-    }
+    await withBlock(async () => {
+        try {
+            await web.post(`/koli-item/${item.id}/order`, { type }, { block: true });
+            loadKolis();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal mengurutkan item.');
+        }
+    });
 }
 async function clearLot(item) {
     const ok = await confirm({ title: 'Hapus Lot?', message: item.product?.code ?? '', confirmText: 'Ya, lanjutkan' });
     if (!ok) {
         return;
     }
-    try {
-        const res = await web.post(`/koli-item/${item.id}/clear-lot`, {}, { silent: true });
-        toast.success(res.data?.message ?? 'Lot dikosongkan.');
-        loadKolis();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal mengosongkan lot.');
-    }
+    await withBlock(async () => {
+        try {
+            const res = await web.post(`/koli-item/${item.id}/clear-lot`, {}, { block: true });
+            toast.success(res.data?.message ?? 'Lot dikosongkan.');
+            loadKolis();
+        } catch (e) {
+            toast.error(e.response?.data?.message ?? 'Gagal mengosongkan lot.');
+        }
+    });
 }
 
 const itemColumns = [
@@ -458,11 +489,11 @@ loadKolis();
                         <template #cell-lot="{ row }">{{ row.lot ?? '' }}</template>
                         <template #actions="{ row }">
                             <div class="flex justify-center gap-0.5">
-                                <Button variant="secondary" size="sm" class="h-7 w-7 px-0" title="Move Up" :disabled="(koli.items ?? []).indexOf(row) === 0" @click="orderItem(row, 'up')"><ArrowUp /></Button>
-                                <Button variant="secondary" size="sm" class="h-7 w-7 px-0" title="Move Down" :disabled="(koli.items ?? []).indexOf(row) === (koli.items ?? []).length - 1" @click="orderItem(row, 'down')"><ArrowDown /></Button>
-                                <Button variant="outline" size="sm" class="h-7 w-7 px-0 text-amber-600" title="Edit" @click="openEditItem(row)"><Pencil /></Button>
-                                <Button variant="outline" size="sm" class="h-7 w-7 px-0 text-cyan-600" title="Clear Lot" :disabled="!row.lot" @click="clearLot(row)"><Eraser /></Button>
-                                <Button variant="destructive" size="sm" class="h-7 w-7 px-0" title="Delete" @click="deleteItem(row)"><Trash2 /></Button>
+                                <Button variant="secondary" size="sm" class="h-7 w-7 px-0" title="Naik" :disabled="(koli.items ?? []).indexOf(row) === 0" @click="orderItem(row, 'up')"><ArrowUp /></Button>
+                                <Button variant="secondary" size="sm" class="h-7 w-7 px-0" title="Turun" :disabled="(koli.items ?? []).indexOf(row) === (koli.items ?? []).length - 1" @click="orderItem(row, 'down')"><ArrowDown /></Button>
+                                <Button variant="outline" size="sm" class="h-7 w-7 px-0 text-amber-600" title="Ubah" @click="openEditItem(row)"><Pencil /></Button>
+                                <Button variant="outline" size="sm" class="h-7 w-7 px-0 text-cyan-600" title="Bersihkan Lot" :disabled="!row.lot" @click="clearLot(row)"><Eraser /></Button>
+                                <Button variant="destructive" size="sm" class="h-7 w-7 px-0" title="Hapus" @click="deleteItem(row)"><Trash2 /></Button>
                             </div>
                         </template>
                     </DataTable>
@@ -504,7 +535,7 @@ loadKolis();
                 </div>
             </div>
             <template #footer>
-                <Button variant="ghost" @click="koliModalOpen = false">Close</Button>
+                <Button variant="ghost" @click="koliModalOpen = false">Tutup</Button>
                 <Button @click="saveKoli">Simpan Koli</Button>
             </template>
         </AppModal>

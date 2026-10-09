@@ -78,7 +78,7 @@ async function openDetail(row) {
     detailOpen.value = true;
     detailLoading.value = true;
     try {
-        const res = await api.get(`/vendor-odoo/${row.id}`, { silent: true });
+        const res = await api.get(`/vendor-odoo/${row.id}`, { silent: true, block: true });
         detail.value = res.data?.data ?? res.data;
     } catch (e) {
         detail.value = row;

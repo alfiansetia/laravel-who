@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\FcmToken;
+use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Exception;
 
 class FirebaseServices
 {
@@ -26,7 +26,7 @@ class FirebaseServices
             // Cek apakah token sudah ada di cache
             $cachedToken = Cache::get(self::$cacheKey);
 
-            if (!empty($cachedToken)) {
+            if (! empty($cachedToken)) {
                 return $cachedToken;
             }
 
@@ -35,19 +35,21 @@ class FirebaseServices
 
             if (empty($key)) {
                 Log::warning('Firebase: Private key tidak dikonfigurasi');
+
                 return null;
             }
 
             $credentialsFilePath = storage_path($key);
 
-            if (!file_exists($credentialsFilePath)) {
+            if (! file_exists($credentialsFilePath)) {
                 Log::error('Firebase: File credentials tidak ditemukan', [
-                    'path' => $credentialsFilePath
+                    'path' => $credentialsFilePath,
                 ]);
+
                 return null;
             }
 
-            $client = new \Google_Client();
+            $client = new \Google_Client;
             $client->setAuthConfig($credentialsFilePath);
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
             $client->fetchAccessTokenWithAssertion();
@@ -56,6 +58,7 @@ class FirebaseServices
 
             if (empty($access_token)) {
                 Log::warning('Firebase: Access token kosong');
+
                 return null;
             }
 
@@ -66,8 +69,9 @@ class FirebaseServices
         } catch (Exception $e) {
             Log::error('Firebase: Exception saat mendapatkan access token', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -94,6 +98,7 @@ class FirebaseServices
 
             if (empty($access_token)) {
                 Log::warning('Firebase: Tidak bisa mengirim notifikasi, access token tidak tersedia');
+
                 return false;
             }
 
@@ -101,6 +106,7 @@ class FirebaseServices
 
             if (empty($proj)) {
                 Log::warning('Firebase: Project ID tidak dikonfigurasi');
+
                 return false;
             }
 
@@ -113,18 +119,18 @@ class FirebaseServices
                 try {
                     $param['message'] = [
                         'token' => $token,
-                        'data'  => [
-                            "title" => (string) $title,
-                            "body"  => (string) $body,
-                            "icon"  => (string) asset('images/asa.png'),
+                        'data' => [
+                            'title' => (string) $title,
+                            'body' => (string) $body,
+                            'icon' => (string) asset('images/asa.png'),
                             'so_id' => (string) $so_id,
-                            'url'   => (string) route('so.print', $so_id),
+                            'url' => (string) route('so.print', $so_id),
                         ],
                     ];
 
                     $headers = [
-                        "Authorization" => "Bearer $access_token",
-                        "Content-Type"  => "application/json",
+                        'Authorization' => "Bearer $access_token",
+                        'Content-Type' => 'application/json',
                     ];
 
                     // Kirim request dengan timeout 10 detik
@@ -144,7 +150,7 @@ class FirebaseServices
                             'status_code' => $post->status(),
                             'error_status' => $errorStatus,
                             'error_code' => $errorCode,
-                            'response' => $post->body()
+                            'response' => $post->body(),
                         ]);
 
                         $label = $errorCode ?? $errorStatus ?? 'FAILED';
@@ -159,7 +165,7 @@ class FirebaseServices
                 } catch (Exception $e) {
                     Log::error('Firebase: Exception saat mengirim ke token', [
                         'token_id' => $id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                     // Jangan menghapus token jika terjadi exception (misal: timeout/koneksi)
                     // Status lama dibiarkan, tidak ditulis ulang.
@@ -185,8 +191,9 @@ class FirebaseServices
             Log::error('Firebase: Exception saat mengirim notifikasi', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'title' => $title
+                'title' => $title,
             ]);
+
             return false;
         }
     }
@@ -207,7 +214,7 @@ class FirebaseServices
      * Dipakai agar sendToTopic() bisa menjangkau token tersebut.
      * Best-effort: return false jika gagal, tanpa exception ke caller.
      *
-     * @param string|array $tokens
+     * @param  string|array  $tokens
      */
     public static function subscribeTopic($tokens, string $topic = 'general'): bool
     {
@@ -217,7 +224,7 @@ class FirebaseServices
     /**
      * Hapus satu / banyak token dari sebuah topic via IID API.
      *
-     * @param string|array $tokens
+     * @param  string|array  $tokens
      */
     public static function unsubscribeTopic($tokens, string $topic = 'general'): bool
     {
@@ -236,6 +243,7 @@ class FirebaseServices
 
             if ($topic === '') {
                 Log::warning('Firebase: Nama topic kosong, pengiriman dibatalkan');
+
                 return false;
             }
 
@@ -243,6 +251,7 @@ class FirebaseServices
 
             if (empty($access_token)) {
                 Log::warning('Firebase: Tidak bisa mengirim ke topic, access token tidak tersedia');
+
                 return false;
             }
 
@@ -250,6 +259,7 @@ class FirebaseServices
 
             if (empty($proj)) {
                 Log::warning('Firebase: Project ID tidak dikonfigurasi');
+
                 return false;
             }
 
@@ -257,19 +267,19 @@ class FirebaseServices
 
             $param['message'] = [
                 'topic' => $topic,
-                'data'  => [
-                    "title" => (string) $title,
-                    "body"  => (string) $body,
-                    "icon"  => (string) asset('images/asa.png'),
+                'data' => [
+                    'title' => (string) $title,
+                    'body' => (string) $body,
+                    'icon' => (string) asset('images/asa.png'),
                     'so_id' => (string) $so_id,
-                    'url'   => (string) route('so.print', $so_id),
+                    'url' => (string) route('so.print', $so_id),
                 ],
             ];
 
             $post = Http::timeout(10)
                 ->withHeaders([
-                    "Authorization" => "Bearer $access_token",
-                    "Content-Type"  => "application/json",
+                    'Authorization' => "Bearer $access_token",
+                    'Content-Type' => 'application/json',
                 ])
                 ->asJson()
                 ->post($apiurl, $param);
@@ -279,9 +289,9 @@ class FirebaseServices
             }
 
             Log::warning('Firebase: Gagal mengirim notifikasi ke topic', [
-                'topic'       => $topic,
+                'topic' => $topic,
                 'status_code' => $post->status(),
-                'response'    => $post->body(),
+                'response' => $post->body(),
             ]);
 
             return false;
@@ -292,6 +302,7 @@ class FirebaseServices
                 'title' => $title,
                 'topic' => $topic ?? null,
             ]);
+
             return false;
         }
     }
@@ -312,6 +323,7 @@ class FirebaseServices
 
             if (empty($access_token)) {
                 Log::warning('Firebase: Tidak bisa mengirim ke token, access token tidak tersedia');
+
                 return ['ok' => false, 'error' => 'Access token tidak tersedia'];
             }
 
@@ -319,6 +331,7 @@ class FirebaseServices
 
             if (empty($proj)) {
                 Log::warning('Firebase: Project ID tidak dikonfigurasi');
+
                 return ['ok' => false, 'error' => 'Project ID tidak dikonfigurasi'];
             }
 
@@ -326,19 +339,19 @@ class FirebaseServices
 
             $param['message'] = [
                 'token' => $token,
-                'data'  => [
-                    "title" => (string) $title,
-                    "body"  => (string) $body,
-                    "icon"  => (string) asset('images/asa.png'),
+                'data' => [
+                    'title' => (string) $title,
+                    'body' => (string) $body,
+                    'icon' => (string) asset('images/asa.png'),
                     'so_id' => (string) $so_id,
-                    'url'   => (string) route('so.print', $so_id),
+                    'url' => (string) route('so.print', $so_id),
                 ],
             ];
 
             $post = Http::timeout(10)
                 ->withHeaders([
-                    "Authorization" => "Bearer $access_token",
-                    "Content-Type"  => "application/json",
+                    'Authorization' => "Bearer $access_token",
+                    'Content-Type' => 'application/json',
                 ])
                 ->asJson()
                 ->post($apiurl, $param);
@@ -349,13 +362,13 @@ class FirebaseServices
 
             $errorStatus = $post->json('error.status');
             $errorCode = $post->json('error.details.0.errorCode');
-            $label = $errorCode ?? $errorStatus ?? ('HTTP ' . $post->status());
+            $label = $errorCode ?? $errorStatus ?? ('HTTP '.$post->status());
 
             Log::warning('Firebase: Gagal mengirim ke single token', [
                 'error_status' => $errorStatus,
-                'error_code'   => $errorCode,
-                'status_code'  => $post->status(),
-                'response'     => $post->body(),
+                'error_code' => $errorCode,
+                'status_code' => $post->status(),
+                'response' => $post->body(),
             ]);
 
             return ['ok' => false, 'error' => $label];
@@ -363,6 +376,7 @@ class FirebaseServices
             Log::error('Firebase: Exception saat mengirim ke single token', [
                 'error' => $e->getMessage(),
             ]);
+
             return ['ok' => false, 'error' => $e->getMessage()];
         }
     }
@@ -370,7 +384,7 @@ class FirebaseServices
     /**
      * Helper batchAdd / batchRemove ke IID API, di-chunk 1000 token per request.
      *
-     * @param string|array $tokens
+     * @param  string|array  $tokens
      */
     protected static function manageTopicSubscription($tokens, string $topic, string $action): bool
     {
@@ -386,6 +400,7 @@ class FirebaseServices
 
             if ($topic === '') {
                 Log::warning('Firebase: Nama topic kosong, subscribe dibatalkan');
+
                 return false;
             }
 
@@ -393,6 +408,7 @@ class FirebaseServices
 
             if (empty($access_token)) {
                 Log::warning('Firebase: Tidak bisa subscribe topic, access token tidak tersedia');
+
                 return false;
             }
 
@@ -401,24 +417,24 @@ class FirebaseServices
             foreach (array_chunk($tokens, 1000) as $chunk) {
                 $post = Http::timeout(10)
                     ->withHeaders([
-                        "Authorization" => "Bearer $access_token",
-                        "Content-Type"  => "application/json",
-                        "access_token_auth" => "true",
+                        'Authorization' => "Bearer $access_token",
+                        'Content-Type' => 'application/json',
+                        'access_token_auth' => 'true',
                     ])
                     ->asJson()
                     ->post("https://iid.googleapis.com/iid/v1:{$action}", [
-                        'to'                  => '/topics/' . $topic,
+                        'to' => '/topics/'.$topic,
                         'registration_tokens' => $chunk,
                     ]);
 
                 if (! $post->successful()) {
                     $ok = false;
                     Log::warning('Firebase: Gagal subscribe topic', [
-                        'topic'       => $topic,
-                        'action'      => $action,
-                        'count'       => count($chunk),
+                        'topic' => $topic,
+                        'action' => $action,
+                        'count' => count($chunk),
                         'status_code' => $post->status(),
-                        'response'    => $post->body(),
+                        'response' => $post->body(),
                     ]);
                 }
             }
@@ -426,10 +442,11 @@ class FirebaseServices
             return $ok;
         } catch (Exception $e) {
             Log::error('Firebase: Exception saat subscribe topic', [
-                'error'  => $e->getMessage(),
-                'topic'  => $topic ?? null,
+                'error' => $e->getMessage(),
+                'topic' => $topic ?? null,
                 'action' => $action ?? null,
             ]);
+
             return false;
         }
     }

@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\HasPaginatedJson;
+use App\Http\Requests\Bast\ReorderDetailBastRequest;
+use App\Http\Requests\Bast\StoreBastRequest;
+use App\Http\Requests\Bast\StoreDetailBastRequest;
+use App\Http\Requests\Bast\UpdateDetailBastRequest;
 use App\Models\Bast;
 use App\Models\DetailBast;
 use App\Models\Kargan;
@@ -9,14 +14,18 @@ use App\Models\Product;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use PhpOffice\PhpWord\TemplateProcessor;
 use ZipArchive;
 
 class BastController extends Controller
 {
+    use HasPaginatedJson;
+
     public function __construct()
     {
         $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
@@ -29,10 +38,7 @@ class BastController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->wantsJson()) {
-            $perPage = min((int) $request->input('per_page', 25), 200);
-            $page = max((int) $request->input('page', 1), 1);
-
+        if ($this->isApi($request)) {
             $query = Bast::query();
 
             if ($request->filled('search')) {
@@ -45,20 +51,7 @@ class BastController extends Controller
                 });
             }
 
-            $total = (clone $query)->count();
-
-            $data = $query->orderBy('id', 'desc')
-                ->offset(($page - 1) * $perPage)
-                ->limit($perPage)
-                ->get(['id', 'do', 'name', 'city', 'address', 'created_at']);
-
-            return response()->json([
-                'data' => $data,
-                'total' => $total,
-                'page' => $page,
-                'per_page' => $perPage,
-                'total_pages' => (int) ceil($total / $perPage),
-            ]);
+            return $this->paginatedJson($request, $query, ['id', 'do', 'name', 'city', 'address', 'created_at']);
         }
 
         return Inertia::render('Bast/Index', [
@@ -74,7 +67,9 @@ class BastController extends Controller
      */
     public function create()
     {
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
+        // Dropdown: jangan preload seluruh tabel products (berat). Ambil 50 teratas;
+        // cari lengkap via /api/products/search (SearchableSelect async).
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
 
         return Inertia::render('Bast/Create', [
             'title' => 'Create BAST',
@@ -89,7 +84,7 @@ class BastController extends Controller
      */
     public function edit(Bast $bast)
     {
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
         $data = $bast->load('details.product');
 
         return Inertia::render('Bast/Edit', [
@@ -101,57 +96,33 @@ class BastController extends Controller
 
     public function show(Request $request, Bast $bast)
     {
+        // Jangan tulis saat GET (write-on-read bikin N query + race).
+        // Order diperbaiki via detailOrder / command backfill, bukan di show.
         $detail = $bast->load('details.product');
-        foreach ($detail->details as $key => $item) {
-            $item->order = $key;
-            $item->save();
-        }
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($detail, 'Success!');
         }
 
         return redirect()->route('basts.edit', $bast);
     }
 
-    public function store(Request $request)
+    public function store(StoreBastRequest $request)
     {
-        $this->validate($request, [
-            'name' => 'required|max:250',
-            'address' => 'required|max:250',
-            'city' => 'required|max:250',
-            'do' => 'required|max:250',
-        ]);
-        $bast = Bast::create([
-            'name' => $request->name,
-            'address' => $request->address,
-            'city' => $request->city,
-            'do' => $request->do,
-        ]);
+        $bast = Bast::create($request->validated());
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($bast, 'Created!');
         }
 
         return redirect()->route('basts.index')->with('success', 'Created!');
     }
 
-    public function update(Request $request, Bast $bast)
+    public function update(StoreBastRequest $request, Bast $bast)
     {
-        $this->validate($request, [
-            'name' => 'required|max:250',
-            'address' => 'required|max:250',
-            'city' => 'required|max:250',
-            'do' => 'required|max:250',
-        ]);
-        $bast->update([
-            'name' => $request->name,
-            'address' => $request->address,
-            'city' => $request->city,
-            'do' => $request->do,
-        ]);
+        $bast->update($request->validated());
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($bast, 'Updated!');
         }
 
@@ -162,7 +133,7 @@ class BastController extends Controller
     {
         $bast->delete();
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($bast, 'Deleted!');
         }
 
@@ -177,7 +148,7 @@ class BastController extends Controller
         ]);
         $deleted = Bast::whereIn('id', $request->ids)->delete();
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse([
                 'deleted_count' => $deleted,
             ], 'Bast deleted successfully.');
@@ -190,11 +161,11 @@ class BastController extends Controller
     {
         $id = 0;
         $do = $bast->do;
-        $json = DoServices::getAll($do);
+        $json = Cache::remember('odoo:do:list:'.$do, 300, fn () => DoServices::getAll($do));
         if (count($json['records'] ?? []) > 0) {
             $id = intval($json['records'][0]['id']);
         }
-        $detail = DoServices::detail($id);
+        $detail = Cache::remember('odoo:do:detail:'.$id, 300, fn () => DoServices::detail($id));
         $pd_jd = [];
         foreach (($detail['move_ids_detail'] ?? []) as $item) {
             $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
@@ -221,27 +192,36 @@ class BastController extends Controller
 
             preg_match('/\[(.*?)\]/', $item['product_id'][1], $matches);
             if (isset($matches[1])) {
-                $pro = Product::query()->where('code', $matches[1])->first();
-                if ($pro) {
-                    array_push($pd_jd, [
-                        'code' => $matches[1],
-                        'qty' => $item['quantity_done'],
-                        'satuan' => 'EA',
-                        'default' => $item['product_id'][1],
-                        'lot' => $values,
-                    ]);
-                    DetailBast::create([
-                        'product_id' => $pro->id,
-                        'bast_id' => $bast->id,
-                        'qty' => $item['quantity_done'],
-                        'satuan' => 'EA',
-                        'lot' => $values,
-                    ]);
-                }
+                $codes[] = $matches[1];
+                $pending[] = ['item' => $item, 'code' => $matches[1], 'lot' => $values];
             }
         }
 
-        if ($request->wantsJson()) {
+        // Satu query untuk semua kode (hindari N+1 Product::where dalam loop).
+        $productsByCode = Product::query()->whereIn('code', $codes ?? [])->get()->keyBy('code');
+        foreach ($pending ?? [] as $row) {
+            $pro = $productsByCode->get($row['code']);
+            if ($pro) {
+                $item = $row['item'];
+                $values = $row['lot'];
+                array_push($pd_jd, [
+                    'code' => $row['code'],
+                    'qty' => $item['quantity_done'],
+                    'satuan' => 'EA',
+                    'default' => $item['product_id'][1],
+                    'lot' => $values,
+                ]);
+                DetailBast::create([
+                    'product_id' => $pro->id,
+                    'bast_id' => $bast->id,
+                    'qty' => $item['quantity_done'],
+                    'satuan' => 'EA',
+                    'lot' => $values,
+                ]);
+            }
+        }
+
+        if ($this->isApi($request)) {
             return $this->sendResponse(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
         }
 
@@ -296,7 +276,7 @@ class BastController extends Controller
             return response()->download($zipPath)->deleteFileAfterSend();
         }
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse(null, 'Gagal membuat file ZIP');
         }
 
@@ -306,7 +286,7 @@ class BastController extends Controller
     public function print(Request $request, Bast $bast)
     {
         $type = $request->input('type', 'tanda_terima');
-        $data = $bast->load('details');
+        $data = $bast->load('details.product');
         if ($type == 'tanda_terima') {
             return view('bast.print.tanda_terima', compact(['data', 'type']));
         } elseif ($type == 'training') {
@@ -327,28 +307,21 @@ class BastController extends Controller
         return $this->sendResponse($data);
     }
 
-    public function detailStore(Request $request)
+    public function detailStore(StoreDetailBastRequest $request)
     {
-        $this->validate($request, [
-            'bast' => 'required|exists:basts,id',
-            'product' => 'required|exists:products,id',
-            'qty' => 'required',
-            'lot' => 'nullable',
-            'satuan' => 'required|in:Pcs,Pck,Unit,EA,Box,Btl,Vial',
-        ]);
-
-        $lastOrder = DetailBast::where('bast_id', $request->bast)->max('order') ?? -1;
+        $validated = $request->validated();
+        $lastOrder = DetailBast::where('bast_id', $validated['bast'])->max('order') ?? -1;
 
         $data = DetailBast::create([
-            'bast_id' => $request->bast,
-            'product_id' => $request->product,
-            'qty' => $request->qty,
-            'lot' => $request->lot,
-            'satuan' => $request->satuan,
+            'bast_id' => $validated['bast'],
+            'product_id' => $validated['product'],
+            'qty' => $validated['qty'],
+            'lot' => $validated['lot'] ?? null,
+            'satuan' => $validated['satuan'],
             'order' => $lastOrder + 1,
         ]);
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($data, 'Created!');
         }
 
@@ -359,27 +332,18 @@ class BastController extends Controller
     {
         $data = $detail_bast->load('product');
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($data);
         }
 
         return redirect()->back();
     }
 
-    public function detailUpdate(Request $request, DetailBast $detail_bast)
+    public function detailUpdate(UpdateDetailBastRequest $request, DetailBast $detail_bast)
     {
-        $this->validate($request, [
-            'qty' => 'required',
-            'lot' => 'nullable',
-            'satuan' => 'required|in:Pcs,Pck,Unit,EA,Box,Btl,Vial',
-        ]);
-        $detail_bast->update([
-            'qty' => $request->qty,
-            'lot' => $request->lot,
-            'satuan' => $request->satuan,
-        ]);
+        $detail_bast->update($request->validated());
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($detail_bast, 'Updated!');
         }
 
@@ -390,18 +354,15 @@ class BastController extends Controller
     {
         $detail_bast->delete();
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($detail_bast, 'Deleted!');
         }
 
         return redirect()->back()->with('success', 'Deleted!');
     }
 
-    public function detailOrder(Request $request, DetailBast $detail_bast)
+    public function detailOrder(ReorderDetailBastRequest $request, DetailBast $detail_bast)
     {
-        $this->validate($request, [
-            'type' => 'required|in:up,down',
-        ]);
 
         try {
             DB::beginTransaction();
@@ -449,19 +410,20 @@ class BastController extends Controller
 
             DB::commit();
 
-            if ($request->wantsJson()) {
+            if ($this->isApi($request)) {
                 return $this->sendResponse($detail_bast->load('product'), 'Order updated!');
             }
 
             return redirect()->back()->with('success', 'Order updated!');
         } catch (\Throwable $th) {
             DB::rollBack();
+            Log::error('Bast detailOrder gagal', ['bast_id' => $bastId, 'message' => $th->getMessage()]);
 
-            if ($request->wantsJson()) {
-                return $this->sendError($th->getMessage());
+            if ($this->isApi($request)) {
+                return $this->sendError('Gagal memperbarui urutan. Silakan coba lagi.');
             }
 
-            return redirect()->back()->with('error', $th->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui urutan. Silakan coba lagi.');
         }
     }
 
@@ -478,7 +440,7 @@ class BastController extends Controller
             'pic' => Kargan::getDefaultPicAttribute(),
         ]);
 
-        if ($request->wantsJson()) {
+        if ($this->isApi($request)) {
             return $this->sendResponse($newkargan, 'Kargan created!');
         }
 

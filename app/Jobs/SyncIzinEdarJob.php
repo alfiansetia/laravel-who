@@ -52,6 +52,7 @@ class SyncIzinEdarJob implements ShouldQueue
             if ($this->isStopRequested($syncService)) {
                 Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori}.");
                 $syncService->updateGlobalStatus('stopped');
+
                 return;
             }
 
@@ -61,8 +62,8 @@ class SyncIzinEdarJob implements ShouldQueue
                 Log::error("[SyncIzinEdar] Failed downloading {$kategori}: {$e->getMessage()}");
 
                 $syncService->updateCategory($kategori, [
-                    'status'      => 'failed',
-                    'error'       => $e->getMessage(),
+                    'status' => 'failed',
+                    'error' => $e->getMessage(),
                     'finished_at' => now()->toIso8601String(),
                 ]);
 
@@ -74,7 +75,7 @@ class SyncIzinEdarJob implements ShouldQueue
             $syncService->markCompleted();
             Log::info('[SyncIzinEdar] All files downloaded successfully!');
         } else {
-            $msg = 'Failed downloads: ' . implode(', ', $failedCategories);
+            $msg = 'Failed downloads: '.implode(', ', $failedCategories);
             $syncService->markFailed($msg);
             Log::error("[SyncIzinEdar] {$msg}");
         }
@@ -86,6 +87,7 @@ class SyncIzinEdarJob implements ShouldQueue
     protected function isStopRequested(IzinEdarSyncService $syncService): bool
     {
         $log = $syncService->readLog();
+
         return ($log['stop_requested'] ?? false) === true;
     }
 
@@ -97,15 +99,15 @@ class SyncIzinEdarJob implements ShouldQueue
         Log::info("[SyncIzinEdar] Downloading {$kategori}...");
 
         $syncService->updateCategory($kategori, [
-            'status'     => 'downloading',
+            'status' => 'downloading',
             'started_at' => now()->toIso8601String(),
         ]);
 
         $filePath = $this->downloadFile($kategori, $config['url']);
 
         $syncService->updateCategory($kategori, [
-            'status'      => 'downloaded',
-            'size'        => File::size($filePath),
+            'status' => 'downloaded',
+            'size' => File::size($filePath),
             'finished_at' => now()->toIso8601String(),
         ]);
 
@@ -117,10 +119,10 @@ class SyncIzinEdarJob implements ShouldQueue
      */
     protected function downloadFile(string $kategori, string $url): string
     {
-        $destDir  = storage_path('app/izin_edar');
+        $destDir = storage_path('app/izin_edar');
         File::makeDirectory($destDir, 0755, true, true);
 
-        $filePath = $destDir . DIRECTORY_SEPARATOR . IzinEdarSyncService::CATEGORIES[$kategori]['file'];
+        $filePath = $destDir.DIRECTORY_SEPARATOR.IzinEdarSyncService::CATEGORIES[$kategori]['file'];
 
         $ch = curl_init($url);
         $fp = fopen($filePath, 'w');
@@ -130,14 +132,14 @@ class SyncIzinEdarJob implements ShouldQueue
         }
 
         curl_setopt_array($ch, [
-            CURLOPT_FILE           => $fp,
+            CURLOPT_FILE => $fp,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_TIMEOUT        => 600,   // 10 minutes max per file
+            CURLOPT_TIMEOUT => 600,   // 10 minutes max per file
             CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            CURLOPT_NOPROGRESS     => false,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            CURLOPT_NOPROGRESS => false,
         ]);
 
         $success = curl_exec($ch);
@@ -146,7 +148,7 @@ class SyncIzinEdarJob implements ShouldQueue
         curl_close($ch);
         fclose($fp);
 
-        if (!$success || $httpCode < 200 || $httpCode >= 400) {
+        if (! $success || $httpCode < 200 || $httpCode >= 400) {
             File::delete($filePath);
             throw new \RuntimeException(
                 "Download failed for {$kategori} (HTTP {$httpCode}): {$error}"
@@ -154,7 +156,7 @@ class SyncIzinEdarJob implements ShouldQueue
         }
 
         $size = File::size($filePath);
-        Log::info("[SyncIzinEdar] {$kategori} file size: " . number_format($size) . ' bytes');
+        Log::info("[SyncIzinEdar] {$kategori} file size: ".number_format($size).' bytes');
 
         return $filePath;
     }

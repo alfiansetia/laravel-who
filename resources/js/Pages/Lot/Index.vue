@@ -117,8 +117,9 @@ async function searchProduct(keyword) {
         const res = await api.get('/products/search', { params: { q }, silent: true });
         const body = res.data?.data ?? [];
         productOptions.value = body.map((p) => ({ label: `[${p.code}] ${p.name}`, value: p.code ?? p.id }));
-    } catch {
+    } catch (e) {
         productOptions.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal mencari product.');
     } finally {
         searchingProduct.value = false;
     }
@@ -132,7 +133,7 @@ async function openTrace(row) {
     traceTable.setRows([]);
     traceTable.loading.value = true;
     try {
-        const res = await api.get(`/lot/${encodeURIComponent(row.id)}/trace`, { silent: true });
+        const res = await api.get(`/lot/${encodeURIComponent(row.id)}/trace`, { silent: true, block: true });
         const body = res.data?.data ?? res.data;
         traceHtml.value = body?.html ?? (typeof body === 'string' ? body : '');
         traceTable.setRows(parseTraceHtml(traceHtml.value));

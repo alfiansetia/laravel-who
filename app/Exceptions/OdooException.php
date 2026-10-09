@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class OdooException extends Exception
 {
     protected $statusCode;
+
     protected $responseBody;
 
     public function __construct($message = 'Odoo Error!', $statusCode = 500, $responseBody = null)
@@ -38,10 +39,10 @@ class OdooException extends Exception
 
     public function report(): void
     {
-        // Log::error('OdooException', [
-        //     'message' => $this->getMessage(),
-        //     'status' => $this->statusCode,
-        //     'body' => $this->responseBody,
-        // ]);
+        Log::error('OdooException', [
+            'message' => $this->getMessage(),
+            'status' => $this->statusCode,
+            'body' => $this->responseBody,
+        ]);
     }
 }

@@ -167,8 +167,9 @@ async function fetchExisting() {
         const body = res.data?.data ?? res.data;
         const list = Array.isArray(body) ? body : (body.data ?? []);
         existingUploads.value = list.filter((img) => String(img.product_id) === String(uploadProduct.value));
-    } catch {
+    } catch (e) {
         existingUploads.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat gambar product.');
     } finally {
         existingLoading.value = false;
     }
@@ -260,8 +261,7 @@ async function deleteProduct(group) {
             const fd = new FormData();
             fd.append('product_id', group.product_id);
             fd.append('_method', 'DELETE');
-            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            await fetch('/product_images-batch', { method: 'POST', body: fd, headers: token ? { 'X-CSRF-TOKEN': token } : {} });
+            await api.post('/product_images-batch', fd, { block: true });
             toast.success('Gambar product dihapus.');
             load();
         } catch (e2) {
