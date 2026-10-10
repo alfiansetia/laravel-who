@@ -26,4 +26,10 @@ export default defineConfig({
             '@': path.resolve(dirname, 'resources/js'),
         },
     },
+    build: {
+        // exceljs (~930 kB, gzip ~256 kB) sudah lazy-load via import() di
+        // resources/js/lib/excel.js, jadi hanya diunduh saat user import .xlsx.
+        // Naikkan limit agar warning 500 kB default tidak false-positive.
+        chunkSizeWarningLimit: 1024,
+    },
 });

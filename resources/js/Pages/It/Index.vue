@@ -247,8 +247,8 @@ query.fetch();
             <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 40) }}</template>
             <template #cell-note_itr="{ row }">{{ truncate(row.note_itr, 40) }}</template>
             <template #cell-aksi="{ row }">
-                <div class="flex justify-center gap-1">
-                    <Button variant="outline" size="sm" title="Print IT" @click="printIt(row)"><Printer /></Button>
+                <div class="flex justify-center gap-1" @click.stop>
+                    <Button variant="outline" size="sm" title="Print IT" @click.stop="printIt(row)"><Printer /></Button>
                 </div>
             </template>
         </DataTable>

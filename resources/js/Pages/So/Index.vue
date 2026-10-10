@@ -200,10 +200,10 @@ query.fetch();
             <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 40) }}</template>
             <template #cell-delivery_count="{ row }">{{ row.delivery_count ?? 0 }}</template>
             <template #cell-aksi="{ row }">
-                <div class="flex justify-center gap-1">
-                    <Button variant="outline" size="sm" title="Print SO" @click="printSo(row)"><Printer /></Button>
-                    <Button variant="outline" size="sm" title="Mark As Print" :disabled="isPrinted(row.note_to_wh)" @click="markPrint(row, false)"><Check /></Button>
-                    <Button variant="outline" size="sm" title="Mark As Unprint" :disabled="!isPrinted(row.note_to_wh)" @click="markPrint(row, true)"><X /></Button>
+                <div class="flex justify-center gap-1" @click.stop>
+                    <Button variant="outline" size="sm" title="Print SO" @click.stop="printSo(row)"><Printer /></Button>
+                    <Button variant="outline" size="sm" title="Mark As Print" :disabled="isPrinted(row.note_to_wh)" @click.stop="markPrint(row, false)"><Check /></Button>
+                    <Button variant="outline" size="sm" title="Mark As Unprint" :disabled="!isPrinted(row.note_to_wh)" @click.stop="markPrint(row, true)"><X /></Button>
                 </div>
             </template>
         </DataTable>

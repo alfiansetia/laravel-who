@@ -54,6 +54,13 @@ function toggleOne(id, e) {
 function onRowClick(row, e) {
     // Klik pada elemen interaktif (tombol aksi, checkbox, link) tidak boleh
     // ikut memicu row-click — mencegah double trigger (aksi jalan + modal detail kebuka).
+    // Cek composedPath dulu supaya klik pada <svg>/<path> di dalam Button tetap terdeteksi.
+    const path = typeof e?.composedPath === 'function' ? e.composedPath() : [];
+    for (const el of path) {
+        if (el?.closest?.('button, a, input, select, textarea, [data-no-row-click]')) {
+            return;
+        }
+    }
     if (e?.target?.closest?.('button, a, input, select, textarea, [data-no-row-click]')) {
         return;
     }
@@ -97,7 +104,7 @@ function onRowClick(row, e) {
                     </tr>
                     <template v-else-if="rows.length > 0">
                         <tr v-for="row in rows" :key="row[rowKey] ?? row.id" class="border-b transition-colors last:border-0 hover:bg-slate-50" :class="clickable && 'cursor-pointer'" :title="clickable ? 'Klik untuk detail' : undefined" @click="clickable && onRowClick(row, $event)">
-                            <td v-if="selectable" class="px-3 py-2">
+                            <td v-if="selectable" class="px-3 py-2" @click.stop>
                                 <input
                                     type="checkbox"
                                     :checked="selected.map(String).includes(String(row[rowKey] ?? row.id))"

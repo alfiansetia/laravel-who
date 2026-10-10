@@ -203,9 +203,9 @@ query.fetch();
             @row-click="openDetail"
         >
             <template #cell-aksi="{ row }">
-                <div class="flex justify-center gap-1">
-                    <Button variant="outline" size="sm" title="On Hand" @click="openStock(row, 'onhand')"><Eye /></Button>
-                    <Button variant="outline" size="sm" title="Move" @click="openStock(row, 'move')"><Move /></Button>
+                <div class="flex justify-center gap-1" @click.stop>
+                    <Button variant="outline" size="sm" title="On Hand" @click.stop="openStock(row, 'onhand')"><Eye /></Button>
+                    <Button variant="outline" size="sm" title="Move" @click.stop="openStock(row, 'move')"><Move /></Button>
                 </div>
             </template>
             <template #cell-default_code="{ row }">{{ row.default_code ?? '-' }}</template>

@@ -248,9 +248,9 @@ query.fetch();
             <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
             <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 40) }}</template>
             <template #cell-aksi="{ row }">
-                <div class="flex justify-center gap-1">
-                    <Button variant="outline" size="sm" title="Print DO" @click="printDo(row, false)"><Printer /></Button>
-                    <Button variant="outline" size="sm" title="Print Lot" @click="printDo(row, true)">Lot</Button>
+                <div class="flex justify-center gap-1" @click.stop>
+                    <Button variant="outline" size="sm" title="Print DO" @click.stop="printDo(row, false)"><Printer /></Button>
+                    <Button variant="outline" size="sm" title="Print Lot" @click.stop="printDo(row, true)">Lot</Button>
                 </div>
             </template>
         </DataTable>
