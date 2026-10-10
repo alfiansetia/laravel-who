@@ -18,7 +18,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { copyRows, copyText } from '@/lib/export';
-import { loadExcelWorkbook, sheetToMatrix } from '@/lib/excel';
+import { getSheetMatrix, loadExcelWorkbook, workbookSheetNames } from '@/lib/excel';
 
 const props = defineProps({
     title: { type: String, default: 'Data Izin Edar' },
@@ -440,7 +440,7 @@ async function deleteAll() {
     query.fetch();
 }
 
-// ── Upload Excel (ExcelJS, batch 500, samakan _upload.blade.php) ──
+// ── Upload Excel (SheetJS xlsx, batch 500, samakan _upload.blade.php) ──
 const HEADER_TRANSLATION = {
     NOMOR: 'nomor_izin_edar', 'TGL TERBIT': 'tgl_terbit', 'TGL EXP': 'tgl_exp', MERK: 'merk',
     'JENIS PRODUK': 'jenis_produk', PENDAFTAR: 'pendaftar', 'ALAMAT PENDAFTAR': 'alamat_pendaftar',
@@ -532,12 +532,12 @@ async function doUpload() {
         uploadPct.value = 5;
         uploadText.value = 'Mem-parse file Excel...';
         const workbook = await loadExcelWorkbook(buf);
-        const ws = workbook.worksheets[0];
-        if (!ws) {
+        const names = workbookSheetNames(workbook);
+        if (names.length === 0) {
             throw new Error('Sheet tidak ditemukan dalam file Excel.');
         }
         uploadPct.value = 10;
-        const allRows = sheetToMatrix(ws);
+        const allRows = await getSheetMatrix(workbook, names[0]);
         if (allRows.length === 0) {
             throw new Error('File Excel kosong.');
         }

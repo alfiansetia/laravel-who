@@ -1,8 +1,8 @@
 {
     "id": "/",
-    "name": "ASA WHO",
+    "name": "MAP WHO",
     "short_name": "WHO",
-    "description": "ASA WHO — Warehouse & Order",
+    "description": "MAP WHO — Warehouse & Order",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",

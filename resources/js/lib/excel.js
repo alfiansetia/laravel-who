@@ -1,3 +1,13 @@
+// Reader .xlsx berbasis SheetJS (xlsx), lazy-loaded agar tidak masuk bundle awal.
+// API disengaja mirip pemakaian lama (ExcelJS) supaya caller hampir tidak berubah:
+//   const wb = await loadExcelWorkbook(buffer);
+//   const names = workbookSheetNames(wb);
+//   const matrix = await getSheetMatrix(wb, names[0]);
+
+async function loadXlsx() {
+    return await import('xlsx');
+}
+
 export function normalizeExcelValue(value) {
     if (value === null || value === undefined) {
         return null;
@@ -6,6 +16,7 @@ export function normalizeExcelValue(value) {
         return value;
     }
     if (typeof value === 'object') {
+        // Sisa kompatibilitas dengan bentuk sel ExcelJS (richText/hyperlink/formula).
         if (Array.isArray(value.richText)) {
             return value.richText.map((r) => r.text ?? '').join('') || null;
         }
@@ -21,27 +32,37 @@ export function normalizeExcelValue(value) {
 }
 
 export async function loadExcelWorkbook(buffer) {
-    const { default: ExcelJS } = await import('exceljs');
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
-    return workbook;
+    const XLSX = await loadXlsx();
+    // `buffer` adalah ArrayBuffer dari file.arrayBuffer().
+    // cellDates:true → sel tanggal jadi Date (didukung formatISO/excelDateToString di caller).
+    return XLSX.read(buffer, { type: 'array', cellDates: true, sheetStubs: false });
 }
 
 export function workbookSheetNames(workbook) {
-    return workbook.worksheets.map((ws) => ws.name);
+    return workbook?.SheetNames ?? [];
 }
 
-export function sheetToMatrix(worksheet) {
-    const matrix = [];
-    worksheet.eachRow({ includeEmpty: false }, (row) => {
-        const values = row.values ?? [];
-        const cells = [];
-        for (let c = 1; c < values.length; c++) {
-            cells.push(normalizeExcelValue(values[c]));
-        }
-        if (cells.some((v) => v !== null && String(v).trim() !== '')) {
-            matrix.push(cells);
-        }
+function isNonEmptyRow(row) {
+    return (
+        Array.isArray(row) &&
+        row.some((v) => v !== null && v !== undefined && String(v).trim() !== '')
+    );
+}
+
+export async function getSheetMatrix(workbook, nameOrIndex = 0) {
+    const XLSX = await loadXlsx();
+    const names = workbookSheetNames(workbook);
+    const name = typeof nameOrIndex === 'number' ? names[nameOrIndex] : nameOrIndex;
+    const ws = name ? workbook.Sheets[name] : undefined;
+    if (!ws) {
+        return [];
+    }
+    const aoa = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        raw: true,
+        defval: null,
+        blankrows: false,
     });
-    return matrix;
+    // Samakan perilaku lama: buang baris yang seluruh selnya kosong.
+    return (aoa ?? []).filter(isNonEmptyRow).map((row) => row.map(normalizeExcelValue));
 }

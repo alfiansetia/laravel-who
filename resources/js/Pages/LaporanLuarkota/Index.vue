@@ -19,7 +19,7 @@ import { useToast } from '@/composables/useToast';
 import { useBlock } from '@/composables/useBlock';
 import api from '@/lib/axios';
 import { formatNumber } from '@/lib/format';
-import { loadExcelWorkbook, sheetToMatrix, workbookSheetNames } from '@/lib/excel';
+import { getSheetMatrix, loadExcelWorkbook, workbookSheetNames } from '@/lib/excel';
 
 const props = defineProps({
     title: { type: String, default: 'Laporan Luar Kota' },
@@ -181,12 +181,11 @@ function loadSheet(name) {
         // Beri kesempatan overlay ter-render sebelum parse berat memblokir thread.
         await new Promise((r) => requestAnimationFrame(() => r()));
         activeSheet.value = name;
-        const sheet = workbook.value.getWorksheet(name);
-        if (!sheet) {
+        if (!workbookSheetNames(workbook.value).includes(name)) {
             toast.warning('Sheet tidak ditemukan.');
             return;
         }
-        const json = sheetToMatrix(sheet);
+        const json = await getSheetMatrix(workbook.value, name);
         const result = [];
         json.forEach((row) => {
             if (!Array.isArray(row) || !Number.isInteger(row[0])) {

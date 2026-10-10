@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="WHO" />
-    <title inertia>{{ config('app.name', 'ASA WHO') }}</title>
+    <title inertia>{{ config('app.name', 'MAP WHO') }}</title>
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js"></script>
     <script>
