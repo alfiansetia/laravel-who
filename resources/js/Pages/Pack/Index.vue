@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Download, FileDown, Pencil, Plus, Printer, RefreshCw, Trash2 } from '@lucide/vue';
+import { Copy, Download, FileDown, Pencil, Plus, Printer, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -305,7 +305,7 @@ query.fetch();
             </div>
             <template #footer>
                 <Button variant="ghost" @click="modalOpen = false">Tutup</Button>
-                <Button v-if="activeTab === 'edit'" @click="saveFlat">Simpan</Button>
+                <Button v-if="activeTab === 'edit'" @click="saveFlat"><Save /> Simpan</Button>
                 <Button v-else @click="goEdit(activeRow)">Edit Lengkap</Button>
             </template>
         </AppModal>
@@ -316,7 +316,7 @@ query.fetch();
             </FormField>
             <template #footer>
                 <Button variant="ghost" @click="changeOpen = false">Batal</Button>
-                <Button @click="saveChange">Simpan</Button>
+                <Button @click="saveChange"><Save /> Simpan</Button>
             </template>
         </AppModal>
     </AppLayout>

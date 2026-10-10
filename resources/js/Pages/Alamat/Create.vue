@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { ArrowLeft, Save } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import Button from '@/components/ui/Button.vue';
@@ -32,8 +33,8 @@ function onSaved(id) {
     <AppLayout>
         <PageHeader :title="title" description="Buat alamat pengiriman baru">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button size="sm" @click="save">Simpan</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button size="sm" @click="save"><Save /> Simpan</Button>
             </template>
         </PageHeader>
         <AlamatForm ref="formRef" mode="create" @saved="onSaved" />

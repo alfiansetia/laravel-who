@@ -84,6 +84,30 @@ class FirebaseServices
         Cache::forget(self::$cacheKey);
     }
 
+    /**
+     * Bangun payload data FCM. Key `url` HANYA diisi kalau so_id valid
+     * (> 0) agar notif tanpa SO (mis. so_id 0/false dari MonitorDo atau
+     * notif tes) tampil sebagai non-klik: klien tidak membuka tab baru.
+     *
+     * @return array<string, string>
+     */
+    private static function notifData(string $title, string $body, mixed $so_id): array
+    {
+        $soId = is_numeric($so_id) ? (int) $so_id : 0;
+        $data = [
+            'title' => (string) $title,
+            'body' => (string) $body,
+            'icon' => (string) asset('images/asa.png'),
+            'so_id' => (string) $soId,
+        ];
+
+        if ($soId > 0) {
+            $data['url'] = (string) route('so.print', $soId);
+        }
+
+        return $data;
+    }
+
     public static function send($title, $body, $so_id = 0)
     {
         try {
@@ -119,13 +143,7 @@ class FirebaseServices
                 try {
                     $param['message'] = [
                         'token' => $token,
-                        'data' => [
-                            'title' => (string) $title,
-                            'body' => (string) $body,
-                            'icon' => (string) asset('images/asa.png'),
-                            'so_id' => (string) $so_id,
-                            'url' => (string) route('so.print', $so_id),
-                        ],
+                        'data' => static::notifData($title, $body, $so_id),
                     ];
 
                     $headers = [
@@ -267,13 +285,7 @@ class FirebaseServices
 
             $param['message'] = [
                 'topic' => $topic,
-                'data' => [
-                    'title' => (string) $title,
-                    'body' => (string) $body,
-                    'icon' => (string) asset('images/asa.png'),
-                    'so_id' => (string) $so_id,
-                    'url' => (string) route('so.print', $so_id),
-                ],
+                'data' => static::notifData($title, $body, $so_id),
             ];
 
             $post = Http::timeout(10)
@@ -339,13 +351,7 @@ class FirebaseServices
 
             $param['message'] = [
                 'token' => $token,
-                'data' => [
-                    'title' => (string) $title,
-                    'body' => (string) $body,
-                    'icon' => (string) asset('images/asa.png'),
-                    'so_id' => (string) $so_id,
-                    'url' => (string) route('so.print', $so_id),
-                ],
+                'data' => static::notifData($title, $body, $so_id),
             ];
 
             $post = Http::timeout(10)

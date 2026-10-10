@@ -1,7 +1,8 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
-import { ArrowDown, ArrowUp, Calculator, Copy, Eraser, Pencil, Plus, Printer, RefreshCw, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, Calculator, Copy, Eraser, Pencil, Plus, Printer, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import AppModal from '@/components/AppModal.vue';
+import CurrencyInput from '@/components/CurrencyInput.vue';
 import DataTable from '@/components/DataTable.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -433,15 +434,14 @@ const itemColumns = [
 ];
 
 loadKolis();
+
+defineExpose({ openAddKoli });
 </script>
 
 <template>
     <div class="space-y-3">
         <div class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide">
             Daftar Koli &amp; Packing List ({{ kolis.length }})
-            <span class="ml-auto">
-                <Button size="sm" @click="openAddKoli"><Plus /> Tambah Koli</Button>
-            </span>
         </div>
         <div v-if="loading" class="space-y-2">
             <div v-for="n in 3" :key="n" class="h-16 animate-pulse rounded-lg bg-slate-100" />
@@ -487,7 +487,7 @@ loadKolis();
                         empty-message=""
                     >
                         <template #cell-idx="{ row }">{{ (koli.items ?? []).indexOf(row) + 1 }}</template>
-                        <template #cell-product="{ row }">[{{ row.product?.code ?? '-' }}] {{ row.product?.name ?? '' }}</template>
+                        <template #cell-product="{ row }"><span class="font-bold">[{{ row.product?.code ?? '-' }}]</span> {{ row.product?.name ?? '' }}</template>
                         <template #cell-desc="{ row }">{{ row.desc ?? '' }}</template>
                         <template #cell-qty="{ row }">{{ row.qty ?? '' }}</template>
                         <template #cell-lot="{ row }">{{ row.lot ?? '' }}</template>
@@ -504,11 +504,11 @@ loadKolis();
                     <div class="border-t bg-slate-50 p-2">
                         <div class="mb-2 flex items-center overflow-hidden rounded-md border bg-white text-sm">
                             <span class="border-r bg-white px-2 py-1.5">Nilai Rp.</span>
-                            <input
-                                :value="drafts[koli.id]?.nilai ?? ''"
-                                class="flex-1 px-2 py-1.5 outline-none"
+                            <CurrencyInput
+                                :model-value="drafts[koli.id]?.nilai ?? ''"
+                                class="h-auto flex-1 rounded-none border-0 px-2 py-1.5 shadow-none focus-visible:ring-0"
                                 placeholder="0"
-                                @input="drafts[koli.id].nilai = $event.target.value"
+                                @update:model-value="drafts[koli.id].nilai = $event"
                                 @change="saveInline(koli)"
                             />
                         </div>
@@ -529,7 +529,7 @@ loadKolis();
                     <Input v-model="koliForm.urutan" placeholder="Contoh: 1 atau 1-7" />
                 </FormField>
                 <FormField label="Nilai (Rp)">
-                    <Input v-model="koliForm.nilai" placeholder="0" />
+                    <CurrencyInput v-model="koliForm.nilai" placeholder="0" />
                 </FormField>
                 <div class="grid grid-cols-2 gap-2 border-t pt-3">
                     <label class="flex items-center gap-2 text-xs font-bold text-slate-500"><input v-model="koliForm.is_do" type="checkbox" /> SURAT JALAN/DO</label>
@@ -540,7 +540,7 @@ loadKolis();
             </div>
             <template #footer>
                 <Button variant="ghost" @click="koliModalOpen = false">Tutup</Button>
-                <Button @click="saveKoli">Simpan Koli</Button>
+                <Button @click="saveKoli"><Save /> Simpan Koli</Button>
             </template>
         </AppModal>
 
@@ -609,7 +609,7 @@ loadKolis();
             </div>
             <template #footer>
                 <Button variant="ghost" @click="editItemOpen = false">Batal</Button>
-                <Button @click="saveEditItem">Simpan Update</Button>
+                <Button @click="saveEditItem"><Save /> Simpan Update</Button>
             </template>
         </AppModal>
     </div>

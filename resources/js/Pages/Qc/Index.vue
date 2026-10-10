@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, Copy, Download, Eye, FileText, Minus, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { ArrowLeft, Ban, Check, ChevronDown, ChevronUp, CircleCheck, Copy, Download, Eraser, Eye, LoaderCircle, Minus, Package, PackagePlus, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -8,7 +8,10 @@ import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import Input from '@/components/ui/Input.vue';
+import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
+import TerlampirButton from './partials/TerlampirButton.vue';
+import QcRadioGroup from './partials/QcRadioGroup.vue';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { copyText } from '@/lib/export';
@@ -43,6 +46,7 @@ const REAGEN_DEFAULT = [
 const KEL_DEFAULT = ['Buku Manual Bahasa Indonesia', 'Kabel Power', 'SOP'];
 
 const toast = useToast();
+const { confirm } = useConfirm();
 
 function defaultDate() {
     if (props.defaultDate) {
@@ -79,7 +83,9 @@ const kelRows = ref(KEL_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' 
 const packModalOpen = ref(false);
 const packList = ref([]);
 const saving = ref(false);
+const getPlLoading = ref(false);
 const previewReady = ref(false);
+const previewTab = ref('lampiran');
 
 const picOptions = [
     { label: 'Karim', value: 'Karim A S' },
@@ -147,19 +153,55 @@ function setTerlampir(field) {
     generatePreview();
 }
 
-function resetFisik(allBaik) {
+function applyFisik(allBaik) {
     fisikRows.value = FISIK_DEFAULT.map((text) => ({ text, radio: allBaik ? 'yes' : 'other', desc: '' }));
     generatePreview();
 }
 
-function resetReagen() {
+function applyReagen() {
     reagenRows.value = REAGEN_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
     generatePreview();
 }
 
-function resetKel() {
+function applyKel() {
     kelRows.value = KEL_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
     generatePreview();
+}
+
+async function confirmResetFisik(allBaik) {
+    const ok = await confirm({
+        title: allBaik ? 'Tandai semua Baik?' : 'Reset Pemeriksaan Fisik?',
+        message: 'Isian pemeriksaan fisik akan diganti dengan bawaan.',
+        confirmText: 'Ya, lanjutkan',
+    });
+    if (!ok) {
+        return;
+    }
+    applyFisik(allBaik);
+}
+
+async function confirmResetReagen() {
+    const ok = await confirm({
+        title: 'Reset Fungsi dan Sistem?',
+        message: 'Isian fungsi dan sistem akan diganti dengan bawaan.',
+        confirmText: 'Ya, lanjutkan',
+    });
+    if (!ok) {
+        return;
+    }
+    applyReagen();
+}
+
+async function confirmResetKel() {
+    const ok = await confirm({
+        title: 'Reset Kelengkapan?',
+        message: 'Daftar kelengkapan aksesoris akan diganti dengan bawaan.',
+        confirmText: 'Ya, lanjutkan',
+    });
+    if (!ok) {
+        return;
+    }
+    applyKel();
 }
 
 function addKel(text = '', checked = false) {
@@ -176,6 +218,7 @@ async function getPL() {
         toast.warning('Pilih produk dulu.');
         return;
     }
+    getPlLoading.value = true;
     try {
         const res = await api.get(`/products/${selectedProduct.value}`, { silent: true, block: true });
         const packs = res.data?.data?.packs ?? [];
@@ -189,22 +232,33 @@ async function getPL() {
         }
     } catch (e) {
         toast.error(e.response?.data?.message ?? 'Gagal memuat Packing List.');
+    } finally {
+        getPlLoading.value = false;
     }
 }
 
 function addPackItems(pack) {
     (pack.items ?? []).forEach((it) => {
-        addKel(`${it.item} (${it.qty})`, true);
+        const qty = String(it.qty ?? '').trim();
+        addKel(qty ? `${it.item} (${qty})` : String(it.item ?? ''), true);
     });
     packModalOpen.value = false;
     generatePreview();
     toast.success(`Packing List "${pack.name ?? ''}" ditambahkan.`);
 }
 
-function resetAll() {
-    resetFisik(false);
-    resetReagen();
-    resetKel();
+async function confirmResetAll() {
+    const ok = await confirm({
+        title: 'Reset semua isian?',
+        message: 'Seluruh pemeriksaan (fisik, fungsi, kelengkapan) kembali ke bawaan.',
+        confirmText: 'Ya, reset semua',
+    });
+    if (!ok) {
+        return;
+    }
+    applyFisik(false);
+    applyReagen();
+    applyKel();
 }
 
 const rekapCat = computed(() => `${form.value.jenis === 'QC Ulang' ? 'Ulang' : 'Import'} (${form.value.qc_sebelumnya})`);
@@ -294,7 +348,7 @@ onMounted(() => {
         <Card class="p-4">
             <div class="flex items-center gap-3">
                 <h2 class="text-base font-bold text-primary">{{ props.title }}</h2>
-                <Button size="sm" variant="outline" @click="showDetail = !showDetail"><Eye /> Detail Form</Button>
+                <Button size="sm" variant="outline" @click="showDetail = !showDetail"><Eye /> {{ showDetail ? 'Sembunyikan' : 'Detail Form' }} <component :is="showDetail ? ChevronUp : ChevronDown" /></Button>
             </div>
             <hr class="my-2" />
             <div class="grid gap-3 sm:grid-cols-2">
@@ -309,7 +363,7 @@ onMounted(() => {
                             class="flex-1"
                             @update:model-value="pickProduct"
                         />
-                        <Button size="sm" class="ml-2 shrink-0" @click="pickProduct">Pilih</Button>
+                        <Button size="sm" class="ml-2 shrink-0" title="Terapkan produk terpilih" @click="pickProduct"><Check /> Pilih</Button>
                     </div>
                 </div>
                 <div class="space-y-1">
@@ -323,9 +377,9 @@ onMounted(() => {
                     <div class="grid grid-cols-[90px_1fr] items-center gap-2">
                         <label class="text-sm">NO</label>
                         <div class="flex gap-1">
-                            <Button variant="destructive" size="sm" @click="form.no = Math.max(1, Number(form.no) - 1)"><Minus /></Button>
+                            <Button variant="destructive" size="sm" title="Kurangi nomor" @click="form.no = Math.max(1, Number(form.no) - 1)"><Minus /></Button>
                             <Input v-model="form.no" type="number" min="1" class="h-8 text-center" />
-                            <Button size="sm" class="bg-green-600 text-white hover:bg-green-700" @click="form.no = Number(form.no) + 1"><Plus /></Button>
+                            <Button size="sm" title="Tambah nomor" @click="form.no = Number(form.no) + 1"><Plus /></Button>
                         </div>
                     </div>
                     <div class="grid grid-cols-[90px_1fr] items-center gap-2">
@@ -344,7 +398,7 @@ onMounted(() => {
                         <label class="text-sm">Tipe</label>
                         <div class="flex gap-1">
                             <Input v-model="form.type" class="h-8 flex-1" />
-                            <Button variant="outline" size="sm" title="Isi Terlampir" @click="setTerlampir('type')"><FileText /></Button>
+                            <TerlampirButton @apply="setTerlampir('type')" />
                         </div>
                     </div>
                 </div>
@@ -353,15 +407,15 @@ onMounted(() => {
                         <label class="text-sm">SN/Lot</label>
                         <div class="flex gap-1">
                             <Input v-model="form.sn_lot" class="h-8 flex-1" />
-                            <Button variant="outline" size="sm" title="Isi Terlampir" @click="setTerlampir('sn_lot')"><FileText /></Button>
-                            <Button variant="outline" size="sm" title="Tanpa Lot/SN" @click="form.sn_lot = 'Tanpa Lot/SN'">Tanpa SN</Button>
+                            <TerlampirButton @apply="setTerlampir('sn_lot')" />
+                            <Button variant="outline" size="sm" title="Tanpa Lot/SN" @click="form.sn_lot = 'Tanpa Lot/SN'"><Ban /> Tanpa SN</Button>
                         </div>
                     </div>
                     <div class="grid grid-cols-[90px_1fr] items-center gap-2">
                         <label class="text-sm">QTY</label>
                         <div class="flex gap-1">
                             <Input v-model="form.qty" class="h-8 flex-1" />
-                            <Button variant="outline" size="sm" title="Isi Terlampir" @click="setTerlampir('qty')"><FileText /></Button>
+                            <TerlampirButton @apply="setTerlampir('qty')" />
                         </div>
                     </div>
                     <div class="grid grid-cols-[90px_1fr] items-center gap-2">
@@ -382,19 +436,14 @@ onMounted(() => {
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">PEMERIKSAAN FISIK</h3>
                         <div class="flex gap-1">
-                            <Button variant="outline" size="sm" @click="resetFisik(false)"><RefreshCw /> Reset</Button>
-                            <Button variant="outline" size="sm" @click="resetFisik(true)">All Baik</Button>
+                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetFisik(false)"><RefreshCw /> Reset</Button>
+                            <Button size="sm" title="Tandai semua Baik" @click="confirmResetFisik(true)"><CircleCheck /> All Baik</Button>
                         </div>
                     </div>
                     <div class="space-y-2 px-2">
                         <div v-for="(row, i) in fisikRows" :key="i" class="grid items-center gap-2 sm:grid-cols-[4fr_4fr_4fr]">
                             <Input v-model="row.text" class="h-8 bg-slate-100" @input="generatePreview" />
-                            <div class="flex items-center justify-center gap-4">
-                                <label v-for="opt in fisikRadios" :key="opt.value" class="flex cursor-pointer items-center gap-1 text-xs" :class="opt.value === 'other' ? 'text-muted-foreground' : 'font-bold'">
-                                    <input v-model="row.radio" type="radio" :name="`fisik-${i}`" :value="opt.value" class="size-3.5 accent-primary" @change="generatePreview" />
-                                    {{ opt.label }}
-                                </label>
-                            </div>
+                            <QcRadioGroup v-model="row.radio" :options="fisikRadios" :name="`fisik-${i}`" @change="generatePreview" />
                             <Input v-model="row.desc" class="h-8" placeholder="Catatan/Keterangan" @input="generatePreview" />
                         </div>
                     </div>
@@ -403,17 +452,12 @@ onMounted(() => {
                 <div class="mt-2 sm:col-span-2">
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">FUNGSI DAN SISTEM</h3>
-                        <Button variant="outline" size="sm" @click="resetReagen"><RefreshCw /> Reset</Button>
+                        <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetReagen"><RefreshCw /> Reset</Button>
                     </div>
                     <div class="space-y-2 px-2">
                         <div v-for="(row, i) in reagenRows" :key="i" class="grid items-center gap-2 sm:grid-cols-[4fr_4fr_4fr]">
                             <Input v-model="row.text" class="h-8 bg-slate-100" @input="generatePreview" />
-                            <div class="flex items-center justify-center gap-4">
-                                <label v-for="opt in fisikRadios" :key="opt.value" class="flex cursor-pointer items-center gap-1 text-xs" :class="opt.value === 'other' ? 'text-muted-foreground' : 'font-bold'">
-                                    <input v-model="row.radio" type="radio" :name="`reagen-${i}`" :value="opt.value" class="size-3.5 accent-primary" @change="generatePreview" />
-                                    {{ opt.label }}
-                                </label>
-                            </div>
+                            <QcRadioGroup v-model="row.radio" :options="fisikRadios" :name="`reagen-${i}`" @change="generatePreview" />
                             <Input v-model="row.desc" class="h-8" placeholder="Catatan/Keterangan" @input="generatePreview" />
                         </div>
                     </div>
@@ -423,9 +467,9 @@ onMounted(() => {
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">KELENGKAPAN AKSESORIS</h3>
                         <div class="flex gap-1">
-                            <Button variant="outline" size="sm" @click="addKel()"><Plus /> Add</Button>
-                            <Button variant="outline" size="sm" @click="getPL">Get PL</Button>
-                            <Button variant="outline" size="sm" @click="resetKel"><RefreshCw /> Reset</Button>
+                            <Button variant="outline" size="sm" title="Tambah baris kelengkapan" @click="addKel()"><Plus /> Tambah</Button>
+                            <Button variant="secondary" size="sm" title="Ambil dari Packing List produk" :disabled="getPlLoading" @click="getPL"><component :is="getPlLoading ? LoaderCircle : PackagePlus" :class="getPlLoading ? 'animate-spin' : ''" /> {{ getPlLoading ? 'Memuat...' : 'Get PL' }}</Button>
+                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetKel"><RefreshCw /> Reset</Button>
                         </div>
                     </div>
                     <div class="space-y-2 px-2">
@@ -434,12 +478,7 @@ onMounted(() => {
                                 <Button variant="destructive" size="sm" title="Hapus baris" @click="delKel(i)"><Trash2 /></Button>
                                 <Input v-model="row.text" class="h-8 flex-1 bg-slate-100" @input="generatePreview" />
                             </div>
-                            <div class="flex items-center justify-center gap-4">
-                                <label v-for="opt in kelRadios" :key="opt.value" class="flex cursor-pointer items-center gap-1 text-xs" :class="opt.value === 'other' ? 'text-muted-foreground' : 'font-bold'">
-                                    <input v-model="row.radio" type="radio" :name="`kel-${i}`" :value="opt.value" class="size-3.5 accent-primary" @change="generatePreview" />
-                                    {{ opt.label }}
-                                </label>
-                            </div>
+                            <QcRadioGroup v-model="row.radio" :options="kelRadios" :name="`kel-${i}`" @change="generatePreview" />
                             <Input v-model="row.desc" class="h-8" placeholder="Keterangan" @input="generatePreview" />
                         </div>
                     </div>
@@ -448,13 +487,18 @@ onMounted(() => {
 
             <div class="mt-4 flex flex-wrap justify-center gap-2 border-t pt-4">
                 <Button size="sm" variant="secondary" as="a" :href="route('products.index')"><ArrowLeft /> Kembali</Button>
-                <Button size="sm" variant="outline" @click="resetAll"><RefreshCw /> Refresh</Button>
-                <Button size="sm" variant="outline" @click="generatePreview"><Eye /> Preview Tabel</Button>
-                <Button size="sm" :disabled="saving" @click="submitDownload"><Download /> {{ saving ? 'Memproses...' : 'SIMPAN & DOWNLOAD' }}</Button>
+                <Button size="sm" variant="outline" title="Kembalikan semua isian ke bawaan" @click="confirmResetAll"><Eraser /> Reset Semua</Button>
+                <Button size="sm" variant="outline" title="Perbarui tabel pratinjau" @click="generatePreview"><Eye /> Preview Tabel</Button>
+                <Button size="sm" title="Simpan dan unduh dokumen QC" :disabled="saving" @click="submitDownload"><Download /> {{ saving ? 'Memproses...' : 'Simpan & Unduh' }}</Button>
             </div>
         </Card>
 
         <Card class="mt-4 p-4">
+            <div class="mb-3 flex gap-2 border-b text-sm">
+                <button v-for="t in [['rekap', 'Rekap QC'], ['lampiran', 'Lampiran'], ['tabel', 'Table QC']]" :key="t[0]" class="px-3 py-2" :class="previewTab === t[0] ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="previewTab = t[0]">{{ t[1] }}</button>
+                <span class="ml-auto hidden items-center text-xs text-slate-500 sm:flex">PIC: {{ pic }}</span>
+            </div>
+            <div v-if="previewTab === 'rekap'">
             <h2 class="mb-2 text-sm font-semibold">Rekap QC: {{ pic }}</h2>
             <div class="overflow-x-auto rounded-md border">
                 <table class="w-full text-sm">
@@ -476,9 +520,8 @@ onMounted(() => {
                     </tbody>
                 </table>
             </div>
-        </Card>
-
-        <Card class="mt-4 p-4">
+            </div>
+            <div v-if="previewTab === 'lampiran'">
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-semibold">Preview Lampiran</h2>
                 <div class="flex gap-2">
@@ -506,9 +549,8 @@ onMounted(() => {
                     </table>
                 </div>
             </div>
-        </Card>
-
-        <Card class="mt-4 p-4">
+            </div>
+            <div v-if="previewTab === 'tabel'">
             <h2 class="mb-2 text-sm font-semibold">Preview Table QC</h2>
             <div class="overflow-x-auto rounded-md border">
                 <table class="w-full text-xs">
@@ -538,6 +580,7 @@ onMounted(() => {
                     </tbody>
                 </table>
             </div>
+            </div>
         </Card>
 
         <AppModal v-model:open="packModalOpen" title="Pilih Packing List" size="md">
@@ -549,7 +592,7 @@ onMounted(() => {
                     class="w-full justify-start"
                     @click="addPackItems(pack)"
                 >
-                    {{ pack.name ?? `Pack #${pack.id}` }} ({{ (pack.items ?? []).length }} item)
+                    <Package /> {{ pack.name ?? `Pack #${pack.id}` }} ({{ (pack.items ?? []).length }} item)
                 </Button>
             </div>
             <template #footer>

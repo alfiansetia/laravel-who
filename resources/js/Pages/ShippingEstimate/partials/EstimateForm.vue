@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Plus, Trash2 } from '@lucide/vue';
+import { ArrowLeft, Plus, Save, Trash2 } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -180,8 +180,8 @@ async function save() {
     <div class="space-y-4">
         <PageHeader :title="title" :description="isEdit ? `SO ${record?.no_so ?? ''}` : 'Buat estimasi ongkos kirim baru'">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button size="sm" :disabled="saving" @click="save">Simpan</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button size="sm" :disabled="saving" @click="save"><Save /> Simpan</Button>
             </template>
         </PageHeader>
 

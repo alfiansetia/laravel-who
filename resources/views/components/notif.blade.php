@@ -17,9 +17,30 @@
     // Naikkan manual setiap mengubah resources/views/sw.blade.php.
     // JANGAN pakai timestamp: URL baru tiap load bikin browser download
     // ulang & reinstall service worker di setiap halaman.
-    const FCM_SW_VERSION = '2';
+    const FCM_SW_VERSION = '3';
     const FCM_TOKEN_KEY = 'fcm_token';
+    const FCM_DEVICE_KEY = 'fcm_device_id';
     const FCM_ASKED_KEY = 'fcm_perm_asked';
+
+    // Browser ID stabil per origin: generate sekali (UUID v4), simpan di
+    // localStorage. Dipakai backend sebagai key upsert agar refresh token
+    // FCM tidak menumpuk baris.
+    function getOrCreateFcmDeviceId() {
+        let id = localStorage.getItem(FCM_DEVICE_KEY);
+        if (id && id.trim() !== '') {
+            return id;
+        }
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            id = crypto.randomUUID();
+        } else {
+            id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+        localStorage.setItem(FCM_DEVICE_KEY, id);
+        return id;
+    }
 
     function test_notif() {
         new Notification('Notifikasi masuk.', {
@@ -37,10 +58,10 @@
             icon,
             so_id,
             url
-        } = payload.data;
+        } = payload.data || {};
 
-        const notification = new Notification(title, {
-            body,
+        const notification = new Notification(title || 'Notifikasi Baru', {
+            body: body || '',
             icon,
             data: {
                 url: url
@@ -48,11 +69,15 @@
             vibrate: [200, 100, 200],
         });
 
-        notification.onclick = function(event) {
-            event.preventDefault();
-            window.open(this.data.url, '_blank');
-            notification.close();
-        };
+        // Hanya bisa diklik kalau server mengirim url (so_id valid).
+        // Tanpa url, notif tampil tapi klik tidak membuka tab baru.
+        if (url) {
+            notification.onclick = function(event) {
+                event.preventDefault();
+                window.open(this.data.url, '_blank');
+                notification.close();
+            };
+        }
     }
 
     // Kirim token ke backend HANYA kalau belum pernah / berubah.
@@ -67,7 +92,10 @@
         }
         messaging.getToken(options).then(token => {
             const cached = localStorage.getItem(FCM_TOKEN_KEY);
-            if (!force && cached && cached === token) {
+            // Migrasi prod: browser lama sudah punya token tapi belum punya
+            // device_id → wajib POST sekali agar server mengenalinya.
+            const needsDeviceId = !localStorage.getItem(FCM_DEVICE_KEY);
+            if (!force && !needsDeviceId && cached && cached === token) {
                 return; // sudah terdaftar, skip POST
             }
             localStorage.setItem(FCM_TOKEN_KEY, token);
@@ -78,6 +106,7 @@
                     },
                     body: JSON.stringify({
                         token: token,
+                        device_id: getOrCreateFcmDeviceId(),
                         topic: "general",
                         platform: navigator.platform || 'unknown',
                     })

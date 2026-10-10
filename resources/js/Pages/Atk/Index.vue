@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDownToLine, ArrowUpFromLine, Copy, Eye, Pencil, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { ArrowDownToLine, ArrowUpFromLine, Copy, Eye, Pencil, Plus, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -295,7 +295,7 @@ query.fetch();
             </div>
             <template #footer>
                 <Button variant="ghost" @click="formOpen = false">Batal</Button>
-                <Button @click="saveForm">Simpan</Button>
+                <Button @click="saveForm"><Save /> Simpan</Button>
             </template>
         </AppModal>
 
@@ -316,7 +316,7 @@ query.fetch();
             </div>
             <template #footer>
                 <Button variant="ghost" @click="trxOpen = false">Batal</Button>
-                <Button @click="saveTrx">Simpan</Button>
+                <Button @click="saveTrx"><Save /> Simpan</Button>
             </template>
         </AppModal>
 

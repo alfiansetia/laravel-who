@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-messaging-compat.js"></script>
     <script>
         // Naikkan setiap mengubah resources/views/sw.blade.php agar klien update.
-        const SW_VERSION = '2';
+        const SW_VERSION = '3';
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register(`/sw.js?v=${SW_VERSION}`).then(

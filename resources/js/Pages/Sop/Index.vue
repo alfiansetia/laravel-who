@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Download, FileDown, Pencil, Printer, RefreshCw, Trash2 } from '@lucide/vue';
+import { Copy, Download, FileDown, Pencil, Printer, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -219,7 +219,7 @@ query.fetch();
                 <Button variant="ghost" @click="modalOpen = false">Tutup</Button>
                 <Button variant="outline" @click="printSop()"><Printer /> Print</Button>
                 <Button variant="outline" @click="downloadSop()"><Download /> Excel</Button>
-                <Button v-if="activeTab === 'edit'" @click="saveSop">Simpan SOP</Button>
+                <Button v-if="activeTab === 'edit'" @click="saveSop"><Save /> Simpan SOP</Button>
             </template>
         </AppModal>
     </AppLayout>

@@ -218,6 +218,7 @@ class SettingController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('platform', 'like', "%{$search}%")
+                    ->orWhere('device_id', 'like', "%{$search}%")
                     ->orWhere('user_agent', 'like', "%{$search}%")
                     ->orWhere('ip', 'like', "%{$search}%")
                     ->orWhere('token', 'like', "%{$search}%")
@@ -230,7 +231,7 @@ class SettingController extends Controller
         // Ordering
         $orderColumnIndex = $request->input('order.0.column', 0);
         $orderDir = $request->input('order.0.dir', 'asc');
-        $columns = ['id', 'platform', 'user_agent', 'ip', 'token', 'last_status'];
+        $columns = ['id', 'platform', 'device_id', 'user_agent', 'ip', 'token', 'last_status'];
         $orderColumn = $columns[$orderColumnIndex] ?? 'id';
         $query->orderBy($orderColumn, $orderDir);
 
@@ -248,24 +249,57 @@ class SettingController extends Controller
     {
         $this->validate($request, [
             'token' => 'required',
+            'device_id' => 'nullable|string|max:64',
             'topic' => 'nullable',
             'platform' => 'nullable',
         ]);
         $userAgent = $request->userAgent();
         $ip = $request->ip();
         $topic = $request->input('topic', 'general') ?: 'general';
-        $token = FcmToken::query()->updateOrCreate(
-            [
-                'token' => $request->token,
-            ],
-            [
+        $deviceId = trim((string) $request->input('device_id', ''));
+
+        // Upsert per browser agar refresh token FCM tidak menumpuk baris.
+        // Klien lama tanpa device_id tetap di-upsert by token (backward-compatible).
+        if ($deviceId !== '') {
+            $token = FcmToken::query()->where('device_id', $deviceId)->first();
+
+            if (! $token) {
+                // Migrasi prod: adopsi baris lama (didaftarkan sebelum era
+                // device_id) yang tokennya sama agar tidak jadi duplikat.
+                $token = FcmToken::query()
+                    ->where('token', $request->token)
+                    ->whereNull('device_id')
+                    ->first();
+            }
+
+            $attributes = [
+                'device_id' => $deviceId,
                 'token' => $request->token,
                 'topic' => $topic,
                 'user_agent' => $userAgent,
                 'ip' => $ip,
                 'platform' => $request->platform,
-            ]
-        );
+            ];
+
+            if ($token) {
+                $token->fill($attributes)->save();
+            } else {
+                $token = FcmToken::create($attributes);
+            }
+        } else {
+            $token = FcmToken::query()->updateOrCreate(
+                [
+                    'token' => $request->token,
+                ],
+                [
+                    'token' => $request->token,
+                    'topic' => $topic,
+                    'user_agent' => $userAgent,
+                    'ip' => $ip,
+                    'platform' => $request->platform,
+                ]
+            );
+        }
 
         // Best-effort: daftarkan token ke topic agar sendToTopic() menjangkaunya.
         // Kegagalan subscribe tidak menggagalkan penyimpanan token.

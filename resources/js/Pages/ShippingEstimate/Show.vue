@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Pencil } from '@lucide/vue';
+import { ArrowLeft, Pencil } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -89,7 +89,7 @@ load();
     <AppLayout>
         <PageHeader :title="title" :description="estimate ? `${estimate.no_so} · ${estimate.customer_name}` : ''">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button size="sm" @click="goEdit"><Pencil /> Edit</Button>
             </template>
         </PageHeader>

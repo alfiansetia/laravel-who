@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Plus, Trash2 } from '@lucide/vue';
+import { ArrowLeft, Plus, Save, Trash2, X } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import FormField from '@/components/FormField.vue';
@@ -115,6 +115,10 @@ function goBack() {
     router.visit('/problems');
 }
 
+function closeTab() {
+    window.close();
+}
+
 async function save() {
     errors.value = {};
     if (items.value.length === 0) {
@@ -151,9 +155,9 @@ async function save() {
     <div class="space-y-4">
         <PageHeader :title="title" :description="isEdit ? `Problem ${record?.number ?? ''}` : 'Buat problem baru'">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button v-if="isEdit" variant="outline" size="sm" @click="() => window.close()">Tutup</Button>
-                <Button size="sm" :disabled="saving" @click="save">Simpan</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button v-if="isEdit" variant="outline" size="sm" @click="closeTab"><X /> Tutup</Button>
+                <Button size="sm" :disabled="saving" @click="save"><Save /> Simpan</Button>
             </template>
         </PageHeader>
 

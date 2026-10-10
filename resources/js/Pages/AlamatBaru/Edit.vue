@@ -1,5 +1,7 @@
 <script setup>
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { Copy, FileText, Plus, Printer, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import Button from '@/components/ui/Button.vue';
 import AlamatHeaderForm from './partials/AlamatHeaderForm.vue';
@@ -64,19 +66,26 @@ function printAll() {
 function goList() {
     router.visit('/alamat-baru');
 }
+
+const koliManagerRef = ref(null);
+
+function addKoli() {
+    koliManagerRef.value?.openAddKoli();
+}
 </script>
 
 <template>
     <AppLayout>
         <AlamatHeaderForm :title="title" mode="edit" :record="record" />
-        <div class="mt-3 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" @click="printAll">Print All</Button>
-            <Button variant="outline" size="sm" @click="duplicate">Duplikasi</Button>
-            <Button variant="outline" size="sm" @click="createBast">Buat BAST</Button>
-            <Button variant="ghost" size="sm" @click="goList">Tutup</Button>
+        <div class="mt-3 flex flex-wrap items-center justify-center gap-2 rounded-lg border bg-white p-3">
+            <Button variant="outline" size="sm" class="text-slate-600" @click="printAll"><Printer /> Print All</Button>
+            <Button variant="outline" size="sm" class="text-blue-600" @click="duplicate"><Copy /> Duplikasi</Button>
+            <Button variant="outline" size="sm" class="text-emerald-600" @click="createBast"><FileText /> Buat BAST</Button>
+            <Button size="sm" @click="addKoli"><Plus /> Tambah Koli</Button>
+            <Button variant="ghost" size="sm" class="text-slate-500" @click="goList"><X /> Tutup</Button>
         </div>
         <div class="mt-4">
-            <KoliManager :alamat-id="record.id" :products="products" />
+            <KoliManager ref="koliManagerRef" :alamat-id="record.id" :products="products" />
         </div>
     </AppLayout>
 </template>

@@ -8,7 +8,7 @@
 <script src="{{ asset('pwa-install.js') }}"></script>
 <script>
     // Naikkan setiap mengubah resources/views/sw.blade.php agar klien update.
-    const SW_VERSION = '2';
+    const SW_VERSION = '3';
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(`/sw.js?v=${SW_VERSION}`).then(
             () => console.log('Service worker PWA terdaftar'),

@@ -208,6 +208,7 @@ class ProductController extends Controller
 
         $data = Product::query()
             ->where('code', 'like', "%{$q}%")
+            ->orWhere('name', 'like', "%{$q}%")
             ->orderBy('code')
             ->limit(20)
             ->get(['id', 'code', 'name']);

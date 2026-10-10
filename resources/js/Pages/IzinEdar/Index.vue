@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue';
-import { CheckCircle2, Copy, Download, Eye, RefreshCw, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
+import { CheckCircle2, Copy, Download, Eye, RefreshCw, Save, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -789,7 +789,7 @@ loadProgress(true).then(() => {
             <p v-if="copyMsg" class="mt-2 rounded p-2 text-xs" :class="copyOk ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">{{ copyMsg }}</p>
             <template #footer>
                 <Button variant="ghost" @click="copyOpen = false">Batal</Button>
-                <Button :disabled="copying" @click="doCopy">Simpan ke AKL</Button>
+                <Button :disabled="copying" @click="doCopy"><Save /> Simpan ke AKL</Button>
             </template>
         </AppModal>
 

@@ -48,13 +48,28 @@ class AklFileStorage
         }
     }
 
+    public static function isS3Configured(): bool
+    {
+        return ! empty(config('filesystems.disks.s3.bucket'));
+    }
+
     public static function url(?string $filename): ?string
     {
         if (! $filename) {
             return null;
         }
 
-        return Storage::disk(self::DISK)->url(self::key($filename));
+        if (! self::isS3Configured()) {
+            return null;
+        }
+
+        try {
+            return Storage::disk(self::DISK)->url(self::key($filename));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     public static function delete(string $filename): void

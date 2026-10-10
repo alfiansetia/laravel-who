@@ -21,11 +21,14 @@ messaging.onBackgroundMessage((payload) => {
     const notificationOptions = {
         body: payload.data.body || "Anda memiliki pesan baru",
         icon: payload.data.icon || "/images/asa.png",
-        data: {
-            // PENTING: Masukkan url ke dalam objek data agar bisa dibaca saat diklik
-            url: payload.data.url || "/" 
-        }
+        data: {}
     };
+
+    // URL hanya diteruskan kalau server mengirimnya (so_id valid).
+    // Tanpa URL, notif jadi non-klik: klik tidak membuka tab baru.
+    if (payload.data.url) {
+        notificationOptions.data.url = payload.data.url;
+    }
 
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
@@ -36,16 +39,26 @@ self.addEventListener("notificationclick", (event) => {
     
     event.notification.close();
 
-    // Ambil URL dari event.notification.data yang kita set di atas
+    // Ambil URL dari event.notification.data yang kita set di atas.
+    // Notif tanpa URL (so_id tidak valid): jangan buka tab baru,
+    // cukup fokuskan tab aplikasi yang sudah terbuka, kalau ada.
     const urlToOpen = event.notification.data && event.notification.data.url 
                         ? event.notification.data.url 
-                        : "/";
+                        : null;
 
     event.waitUntil(
         clients.matchAll({
             type: 'window',
             includeUncontrolled: true
         }).then((windowClients) => {
+            if (!urlToOpen) {
+                for (let i = 0; i < windowClients.length; i++) {
+                    if ('focus' in windowClients[i]) {
+                        return windowClients[i].focus();
+                    }
+                }
+                return;
+            }
             // Cek jika ada tab yang sudah membuka URL tersebut, maka fokuskan
             for (let i = 0; i < windowClients.length; i++) {
                 const client = windowClients[i];

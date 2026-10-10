@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { ChevronDown, Download, Eraser, FileSpreadsheet, MessageCircle, RotateCcw, Trash2, Truck, Upload } from '@lucide/vue';
+import { ArrowLeft, ChevronDown, Download, Eraser, FileSpreadsheet, MessageCircle, RotateCcw, Trash2, Truck, Upload } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -410,7 +410,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="mt-3 flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" as="a" :href="route('index')">Kembali</Button>
+                    <Button variant="outline" size="sm" as="a" :href="route('index')"><ArrowLeft /> Kembali</Button>
                     <Button variant="secondary" size="sm" @click="resetImport"><RotateCcw /> Ulangi</Button>
                 </div>
             </Card>

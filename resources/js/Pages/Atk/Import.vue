@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Trash2 } from '@lucide/vue';
+import { ArrowLeft, Save, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -99,9 +99,9 @@ const tableRows = computed(() => table.rows.value);
     <AppLayout>
         <PageHeader :title="title" description="Import ATK dari CSV (Kode, Nama, Satuan)">
             <template #actions>
-                <Button variant="ghost" size="sm" @click="router.visit('/atk')">Kembali</Button>
+                <Button variant="ghost" size="sm" @click="router.visit('/atk')"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="rows = []; syncTable()">Hapus Data</Button>
-                <Button size="sm" @click="saveAll">Simpan Data ({{ rows.length }})</Button>
+                <Button size="sm" @click="saveAll"><Save /> Simpan Data ({{ rows.length }})</Button>
             </template>
         </PageHeader>
         <div class="space-y-4">

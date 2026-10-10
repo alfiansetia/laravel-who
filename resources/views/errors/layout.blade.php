@@ -2,6 +2,8 @@
 
 @push('css')
 <style>
+    /* Error page mengikuti bahasa visual aplikasi (template + navbar):
+       biru solid #2b6cb0, radius 12px, tanpa gradient. */
     .error-container {
         min-height: 60vh;
         display: flex;
@@ -10,9 +12,9 @@
     }
 
     .error-card {
-        border: none;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         overflow: hidden;
         max-width: 580px;
         width: 100%;
@@ -20,83 +22,70 @@
     }
 
     .error-card-body {
-        padding: 3rem 2.5rem;
+        padding: 2.5rem 2rem;
         text-align: center;
     }
 
     .error-icon-wrapper {
-        width: 100px;
-        height: 100px;
+        width: 84px;
+        height: 84px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1.5rem;
-        position: relative;
-    }
-
-    .error-icon-wrapper::before {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border-radius: 50%;
-        opacity: 0.15;
+        margin: 0 auto 1.25rem;
     }
 
     .error-icon-wrapper i {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .error-icon-wrapper.icon-404 {
-        background: #eff6ff;
+        background: #ebf8ff;
     }
-    .error-icon-wrapper.icon-404::before { background: #3b82f6; }
-    .error-icon-wrapper.icon-404 i { color: #3b82f6; }
+    .error-icon-wrapper.icon-404 i { color: #2b6cb0; }
 
     .error-icon-wrapper.icon-403 {
-        background: #fef3c7;
+        background: #fffff0;
+        border: 1px solid #ecc94b;
     }
-    .error-icon-wrapper.icon-403::before { background: #f59e0b; }
-    .error-icon-wrapper.icon-403 i { color: #f59e0b; }
+    .error-icon-wrapper.icon-403 i { color: #b7791f; }
 
     .error-icon-wrapper.icon-500 {
-        background: #fef2f2;
+        background: #fff5f5;
+        border: 1px solid #feb2b2;
     }
-    .error-icon-wrapper.icon-500::before { background: #ef4444; }
-    .error-icon-wrapper.icon-500 i { color: #ef4444; }
+    .error-icon-wrapper.icon-500 i { color: #c53030; }
 
     .error-icon-wrapper.icon-419 {
-        background: #f5f3ff;
+        background: #faf5ff;
+        border: 1px solid #d6bcfa;
     }
-    .error-icon-wrapper.icon-419::before { background: #8b5cf6; }
-    .error-icon-wrapper.icon-419 i { color: #8b5cf6; }
+    .error-icon-wrapper.icon-419 i { color: #6b46c1; }
 
     .error-icon-wrapper.icon-429 {
-        background: #fff7ed;
+        background: #fffaf0;
+        border: 1px solid #fbd38d;
     }
-    .error-icon-wrapper.icon-429::before { background: #f97316; }
-    .error-icon-wrapper.icon-429 i { color: #f97316; }
+    .error-icon-wrapper.icon-429 i { color: #c05621; }
 
     .error-icon-wrapper.icon-503 {
-        background: #f0fdf4;
+        background: #f0fff4;
+        border: 1px solid #9ae6b4;
     }
-    .error-icon-wrapper.icon-503::before { background: #22c55e; }
-    .error-icon-wrapper.icon-503 i { color: #22c55e; }
+    .error-icon-wrapper.icon-503 i { color: #276749; }
 
     .error-code {
-        font-size: 4rem;
+        font-size: 3.5rem;
         font-weight: 800;
         letter-spacing: -2px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #1a202c;
         line-height: 1;
         margin-bottom: 0.5rem;
     }
 
     .error-title {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: #1e293b;
         margin-bottom: 0.75rem;
@@ -106,7 +95,7 @@
         color: #64748b;
         font-size: 0.95rem;
         line-height: 1.6;
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
     }
 
     .error-actions {
@@ -117,46 +106,43 @@
     }
 
     .btn-error-primary {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        background: #2b6cb0;
         color: #fff;
         border: none;
-        border-radius: 10px;
-        padding: 0.65rem 1.5rem;
+        border-radius: 8px;
+        padding: 0.6rem 1.5rem;
         font-weight: 600;
         font-size: 0.9rem;
-        transition: all 0.2s;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        transition: background 0.2s;
     }
 
     .btn-error-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        background: #2c5282;
         color: #fff;
         text-decoration: none;
     }
 
     .btn-error-secondary {
         background: #f8fafc;
-        color: #64748b;
+        color: #4a5568;
         border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 0.65rem 1.5rem;
+        border-radius: 8px;
+        padding: 0.6rem 1.5rem;
         font-weight: 600;
         font-size: 0.9rem;
         transition: all 0.2s;
     }
 
     .btn-error-secondary:hover {
-        background: #eef2ff;
-        border-color: #6366f1;
-        color: #6366f1;
-        transform: translateY(-2px);
+        background: #ebf8ff;
+        border-color: #2b6cb0;
+        color: #2b6cb0;
         text-decoration: none;
     }
 
     .error-footer-text {
-        margin-top: 2rem;
-        padding-top: 1.5rem;
+        margin-top: 1.75rem;
+        padding-top: 1.25rem;
         border-top: 1px solid #f1f5f9;
     }
 
@@ -165,27 +151,27 @@
         font-size: 0.8rem;
     }
 
-    /* Decorative elements */
+    /* Aksen atas kartu mengikuti warna navbar active indicator. */
     .error-card::before {
         content: '';
         display: block;
         height: 4px;
-        background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa);
+        background: #3182ce;
     }
 
     @media (max-width: 576px) {
         .error-card-body {
-            padding: 2rem 1.5rem;
+            padding: 2rem 1.25rem;
         }
         .error-code {
-            font-size: 3rem;
+            font-size: 2.75rem;
         }
         .error-icon-wrapper {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
         }
         .error-icon-wrapper i {
-            font-size: 2rem;
+            font-size: 1.75rem;
         }
     }
 </style>

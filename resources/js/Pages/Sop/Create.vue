@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp, Download, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowLeft, ArrowUp, Download, Plus, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import AppModal from '@/components/AppModal.vue';
@@ -136,9 +136,9 @@ function goBack() {
     <AppLayout>
         <PageHeader :title="title" description="Tambah / kelola SOP QC per product">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" :disabled="!savedSopId" @click="downloadSaved"><Download /> Download</Button>
-                <Button size="sm" @click="save">Simpan</Button>
+                <Button size="sm" @click="save"><Save /> Simpan</Button>
             </template>
         </PageHeader>
         <div class="grid gap-4 lg:grid-cols-3">
@@ -193,7 +193,7 @@ function goBack() {
             </FormField>
             <template #footer>
                 <Button variant="ghost" @click="itemModalOpen = false">Batal</Button>
-                <Button @click="saveItemModal">Simpan</Button>
+                <Button @click="saveItemModal"><Save /> Simpan</Button>
             </template>
         </AppModal>
     </AppLayout>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { ArrowLeft, Save } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import Button from '@/components/ui/Button.vue';
@@ -72,9 +73,9 @@ async function duplicate() {
     <AppLayout>
         <PageHeader :title="title" :description="`DO ${record?.do ?? ''}`">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="detailRef?.openAdd()">Tambah Product</Button>
-                <Button size="sm" @click="savePrint">Simpan &amp; Print</Button>
+                <Button size="sm" @click="savePrint"><Save /> Simpan &amp; Print</Button>
                 <Button variant="outline" size="sm" @click="syncProduct">Sync Product</Button>
                 <Button variant="outline" size="sm" @click="duplicate">Duplikasi</Button>
                 <Button variant="outline" size="sm" @click="printNow">Print</Button>

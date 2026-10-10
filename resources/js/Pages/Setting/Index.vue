@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, KeyRound, Laptop, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi } from '@lucide/vue';
+import { ArrowLeft, Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, KeyRound, Laptop, LogOut, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi, Wrench, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -48,6 +48,7 @@ let deviceTimer = null;
 const detailOpen = ref(false);
 const detailRow = ref(null);
 const testingToken = ref('');
+const deletingId = ref('');
 
 const cekOpen = ref(false);
 const cekBusy = ref(false);
@@ -73,11 +74,13 @@ const expandedEntry = ref(null);
 let logTimer = null;
 
 const currentToken = (localStorage.getItem('fcm_token') ?? '').trim();
+const currentDeviceId = (localStorage.getItem('fcm_device_id') ?? '').trim();
 
 const deviceTotalPages = computed(() => Math.max(1, Math.ceil(deviceTotal.value / devicePerPage.value)));
 
 const deviceColumns = [
     { key: 'platform', label: 'Platform' },
+    { key: 'device_id', label: 'Device ID' },
     { key: 'user_agent', label: 'User Agent' },
     { key: 'ip', label: 'IP', align: 'center' },
     { key: 'token', label: 'Token' },
@@ -134,6 +137,10 @@ function levelBadge(level) {
 }
 
 function isCurrentDevice(row) {
+    const rowDeviceId = String(row.device_id ?? '').trim();
+    if (rowDeviceId !== '' && currentDeviceId !== '') {
+        return rowDeviceId === currentDeviceId;
+    }
     return currentToken !== '' && String(row.token ?? '').trim() === currentToken;
 }
 
@@ -460,6 +467,36 @@ function openDetail(row) {
     detailOpen.value = true;
 }
 
+async function deleteDevice(row) {
+    if (!row?.id) {
+        toast.warning('ID device tidak valid.');
+        return;
+    }
+    const label = row.device_id ? short(row.device_id, 8) : (row.platform || 'device ini');
+    const ok = await confirm({
+        title: 'Hapus device?',
+        message: `Device ${label} dihapus dari daftar dan dikeluarkan dari topic notifikasi.`,
+        confirmText: 'Ya, hapus',
+        tone: 'destructive',
+    });
+    if (!ok) {
+        return;
+    }
+    deletingId.value = row.id;
+    try {
+        const res = await api.delete(`/tokens/${row.id}`, { block: true });
+        toast.success(res.data?.message ?? 'Device dihapus.');
+        if (detailOpen.value && detailRow.value?.id === row.id) {
+            detailOpen.value = false;
+        }
+        fetchDevices();
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal menghapus device.');
+    } finally {
+        deletingId.value = '';
+    }
+}
+
 refreshSession();
 loadResource();
 fetchDevices();
@@ -484,7 +521,7 @@ fetchDevices();
                             Belum dicek
                         </span>
                         <Button variant="outline" size="sm" :disabled="sessionBusy" @click="refreshSession"><RefreshCw /> Refresh</Button>
-                        <Button variant="outline" size="sm" :disabled="sessionBusy" @click="fixSession">Fix Session</Button>
+                        <Button variant="outline" size="sm" :disabled="sessionBusy" @click="fixSession"><Wrench class="text-amber-600" /> <span class="text-amber-700">Fix Session</span></Button>
                     </div>
                 </div>
 
@@ -526,10 +563,10 @@ fetchDevices();
                 </FormField>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <Button size="sm" :disabled="sessionBusy" @click="saveSession"><Save /> Simpan</Button>
-                    <Button variant="outline" size="sm" :disabled="sessionBusy" @click="testNotif"><Bell /> Tes Notif</Button>
-                    <Button variant="outline" size="sm" :disabled="cekBusy" @click="cekOdoo"><Wifi /> {{ cekBusy ? 'Mengecek...' : 'Cek Odoo' }}</Button>
-                    <Button variant="outline" size="sm" @click="logout">Logout</Button>
-                    <Button variant="ghost" size="sm" as="a" :href="route('index')">Kembali</Button>
+                    <Button variant="outline" size="sm" :disabled="sessionBusy" @click="testNotif"><Bell class="text-amber-600" /> <span class="text-amber-700">Tes Notif</span></Button>
+                    <Button variant="outline" size="sm" :disabled="cekBusy" @click="cekOdoo"><Wifi class="text-blue-600" /> <span class="text-blue-700">{{ cekBusy ? 'Mengecek...' : 'Cek Odoo' }}</span></Button>
+                    <Button variant="outline" size="sm" @click="logout"><LogOut class="text-red-600" /> <span class="text-red-700">Logout</span></Button>
+                    <Button variant="ghost" size="sm" as="a" :href="route('index')"><ArrowLeft /> Kembali</Button>
                 </div>
             </Card>
 
@@ -631,6 +668,9 @@ fetchDevices();
                         {{ row.platform || '-' }}
                     </span>
                 </template>
+                <template #cell-device_id="{ row }">
+                    <span class="font-mono text-xs" :title="row.device_id">{{ short(row.device_id, 8) || '-' }}</span>
+                </template>
                 <template #cell-user_agent="{ row }">
                     <span :title="row.user_agent">{{ short(row.user_agent, 40) || '-' }}</span>
                 </template>
@@ -647,7 +687,10 @@ fetchDevices();
                         <Button variant="outline" size="sm" title="Tes notifikasi ke device ini" :disabled="testingToken === row.token" @click="testDevice(row)">
                             <Bell />
                         </Button>
-                        <Button variant="outline" size="sm" title="Detail" @click="openDetail(row)"><History /></Button>
+                        <Button variant="outline" size="sm" title="Detail" @click="openDetail(row)"><Eye class="text-slate-500" /></Button>
+                        <Button variant="outline" size="sm" title="Hapus device" :disabled="deletingId === row.id" @click="deleteDevice(row)">
+                            <Trash2 />
+                        </Button>
                     </div>
                 </template>
             </DataTable>
@@ -656,6 +699,7 @@ fetchDevices();
         <AppModal v-model:open="detailOpen" title="Detail Device" size="lg">
             <div v-if="detailRow" class="space-y-2 text-sm">
                 <p><b>Platform:</b> {{ detailRow.platform || '-' }}</p>
+                <p><b>Device ID:</b> <span class="break-all font-mono text-xs">{{ detailRow.device_id || '-' }}</span></p>
                 <p><b>IP:</b> {{ detailRow.ip || '-' }}</p>
                 <p><b>User Agent:</b> {{ detailRow.user_agent || '-' }}</p>
                 <p><b>Token:</b> <span class="break-all font-mono text-xs">{{ detailRow.token || '-' }}</span>
@@ -665,7 +709,8 @@ fetchDevices();
                 <p><b>Last Status At:</b> {{ detailRow.last_status_at || '-' }}</p>
             </div>
             <template #footer>
-                <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
+                <Button v-if="detailRow" variant="destructive" size="sm" :disabled="deletingId === detailRow.id" @click="deleteDevice(detailRow)"><Trash2 /> Hapus</Button>
+                <Button variant="ghost" @click="detailOpen = false"><X /> Tutup</Button>
             </template>
         </AppModal>
 
@@ -763,8 +808,8 @@ fetchDevices();
             </div>
             <p v-else class="text-sm text-muted-foreground">Belum ada hasil pemeriksaan.</p>
             <template #footer>
-                <Button v-if="cekOk === false" variant="outline" @click="cekOpen = false; fixSession()">Fix Session</Button>
-                <Button variant="ghost" @click="cekOpen = false">Tutup</Button>
+                <Button v-if="cekOk === false" variant="outline" @click="cekOpen = false; fixSession()"><Wrench class="text-amber-600" /> <span class="text-amber-700">Fix Session</span></Button>
+                <Button variant="ghost" @click="cekOpen = false"><X /> Tutup</Button>
             </template>
         </AppModal>
 
@@ -854,7 +899,7 @@ fetchDevices();
             <template #footer>
                 <Button variant="outline" @click="clearLogFile(logFile)"><History /> Kosongkan</Button>
                 <Button variant="destructive" @click="deleteLogFile(logFile)"><Trash2 /> Hapus</Button>
-                <Button variant="ghost" @click="logDetailOpen = false">Tutup</Button>
+                <Button variant="ghost" @click="logDetailOpen = false"><X /> Tutup</Button>
             </template>
         </AppModal>
 

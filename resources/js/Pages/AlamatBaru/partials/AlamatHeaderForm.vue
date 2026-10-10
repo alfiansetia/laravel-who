@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Search } from '@lucide/vue';
+import { ArrowLeft, Save, Search } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -246,8 +246,8 @@ defineExpose({ form, save });
     <div class="space-y-4">
         <PageHeader :title="title" :description="isEdit ? `DO ${record?.do ?? ''}` : 'Buat alamat pengiriman baru'">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button size="sm" @click="save">Simpan{{ isEdit ? '' : ' Data' }}</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button size="sm" @click="save"><Save /> Simpan{{ isEdit ? '' : ' Data' }}</Button>
             </template>
         </PageHeader>
         <div class="rounded-lg border bg-white p-4">
@@ -277,16 +277,19 @@ defineExpose({ form, save });
                 <FormField label="Tlp">
                     <Input v-model="form.tlp" placeholder="Tlp" />
                 </FormField>
-                <FormField label="No DO" required :error="errors.do?.[0]">
+                <FormField label="No DO" required class="sm:col-span-2" :error="errors.do?.[0]">
                     <Input v-model="form.do" placeholder="No DO" />
                 </FormField>
-                <FormField label="Epurchasing">
-                    <Input v-model="form.epur" placeholder="Epurchasing" />
-                    <div class="mt-2 flex gap-3 text-sm">
-                        <label class="flex items-center gap-1"><input v-model="epurKind" type="radio" value="PO" @change="onEpurKindChange" /> PO</label>
-                        <label class="flex items-center gap-1"><input v-model="epurKind" type="radio" value="REG" @change="onEpurKindChange" /> REG</label>
-                        <label class="flex items-center gap-1"><input v-model="epurKind" type="radio" value="NULL" @change="onEpurKindChange" /> NULL</label>
+                <FormField>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-sm font-medium">Epurchasing</span>
+                        <div class="flex gap-2 text-xs text-muted-foreground">
+                            <label class="flex cursor-pointer items-center gap-1"><input v-model="epurKind" type="radio" value="PO" @change="onEpurKindChange" /> PO</label>
+                            <label class="flex cursor-pointer items-center gap-1"><input v-model="epurKind" type="radio" value="REG" @change="onEpurKindChange" /> REG</label>
+                            <label class="flex cursor-pointer items-center gap-1"><input v-model="epurKind" type="radio" value="NULL" @change="onEpurKindChange" /> NULL</label>
+                        </div>
                     </div>
+                    <Input v-model="form.epur" placeholder="Epurchasing" />
                 </FormField>
                 <FormField label="Untuk">
                     <Input v-model="form.untuk" placeholder="Untuk" />

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { ArrowLeft, Save } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
@@ -98,8 +99,8 @@ refreshNumber();
                 </FormField>
             </div>
             <div class="mt-4 flex justify-end gap-2">
-                <Button variant="ghost" @click="goBack">Kembali</Button>
-                <Button :disabled="saving" @click="save">Simpan &amp; Lanjut ke Detail</Button>
+                <Button variant="ghost" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button :disabled="saving" @click="save"><Save /> Simpan &amp; Lanjut ke Detail</Button>
             </div>
         </Card>
     </AppLayout>

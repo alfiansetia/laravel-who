@@ -76,8 +76,9 @@ class PackController extends Controller
 
     public function create()
     {
+        // 50 pertama untuk opsi awal; sisanya via async search di form.
         $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
-        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->limit(50)->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
 
         return Inertia::render('Pack/Create', [
             'title' => 'Create Packing List',
@@ -89,8 +90,18 @@ class PackController extends Controller
     public function edit(Pack $pack)
     {
         $data = $pack->load(['product', 'vendor']);
+        // 50 pertama untuk opsi awal; sisanya via async search di form.
         $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
-        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->limit(50)->get();
+        $vendors = Vendor::query()->select('id', 'name')->orderBy('name')->get();
+
+        // Opsi dropdown awal dibatasi 50; pastikan product milik pack
+        // tetap terkirim agar terseleksi otomatis di form edit.
+        if ($pack->product_id && ! $products->contains('id', $pack->product_id)) {
+            $extraProduct = Product::query()->select('id', 'code', 'name')->find($pack->product_id);
+            if ($extraProduct) {
+                $products->push($extraProduct);
+            }
+        }
 
         return Inertia::render('Pack/Edit', [
             'title' => 'Edit Packing List',

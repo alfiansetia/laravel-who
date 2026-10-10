@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Check, Clock, Copy, Pencil, Trash2 } from '@lucide/vue';
+import { ArrowLeft, Check, Clock, Copy, Pencil, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -86,7 +86,7 @@ async function deleteRow() {
     <AppLayout>
         <PageHeader :title="title" :description="`Problem ${record?.number ?? ''}`">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goList">Kembali</Button>
+                <Button variant="outline" size="sm" @click="goList"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="goEdit"><Pencil /> Edit</Button>
                 <Button v-if="record?.status === 'pending'" variant="outline" size="sm" @click="setStatus('done')"><Check /> Selesai</Button>
                 <Button v-else variant="outline" size="sm" @click="setStatus('pending')"><Clock /> Pending</Button>

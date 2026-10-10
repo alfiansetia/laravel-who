@@ -1,9 +1,10 @@
 import api from '@/lib/axios';
 
 const TOKEN_KEY = 'fcm_token';
+const DEVICE_KEY = 'fcm_device_id';
 const ASKED_KEY = 'fcm_perm_asked';
 // Samakan dengan SW_VERSION di app.blade.php + resources/views/sw.blade.php.
-const SW_VERSION = '2';
+const SW_VERSION = '3';
 
 let initialized = false;
 let vapidKey = null;
@@ -17,6 +18,26 @@ function firebaseApp() {
 
 export function fcmToken() {
     return localStorage.getItem(TOKEN_KEY);
+}
+
+// Browser ID stabil per origin: generate sekali (UUID v4), simpan di
+// localStorage. Dipakai backend sebagai key upsert agar refresh token
+// FCM tidak menumpuk baris.
+export function fcmDeviceId() {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (id && id.trim() !== '') {
+        return id;
+    }
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        id = crypto.randomUUID();
+    } else {
+        id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
+    }
+    localStorage.setItem(DEVICE_KEY, id);
+    return id;
 }
 
 export function fcmSupported() {
@@ -100,12 +121,16 @@ function syncFcmToken(messaging, force = false, registration = null) {
         .getToken(options)
         .then((token) => {
             const cached = localStorage.getItem(TOKEN_KEY);
-            if (!force && cached && cached === token) {
+            // Migrasi prod: browser lama sudah punya token tapi belum punya
+            // device_id → wajib POST sekali agar server mengenalinya.
+            const needsDeviceId = !localStorage.getItem(DEVICE_KEY);
+            if (!force && !needsDeviceId && cached && cached === token) {
                 return;
             }
             localStorage.setItem(TOKEN_KEY, token);
             api.post(route('api.tokens.store'), {
                 token,
+                device_id: fcmDeviceId(),
                 topic: 'general',
                 platform: navigator.platform || 'unknown',
             }).catch((err) => {
@@ -119,15 +144,19 @@ function syncFcmToken(messaging, force = false, registration = null) {
 
 function handleForegroundMessage(payload) {
     const { title, body, icon, url } = payload.data ?? {};
-    const notification = new Notification(title, {
-        body,
+    const notification = new Notification(title || 'Notifikasi Baru', {
+        body: body || '',
         icon,
         data: { url },
         vibrate: [200, 100, 200],
     });
-    notification.onclick = function (event) {
-        event.preventDefault();
-        window.open(this.data.url, '_blank');
-        notification.close();
-    };
+    // Hanya bisa diklik kalau server mengirim url (so_id valid).
+    // Tanpa url, notif tampil tapi klik tidak membuka tab baru.
+    if (url) {
+        notification.onclick = function (event) {
+            event.preventDefault();
+            window.open(this.data.url, '_blank');
+            notification.close();
+        };
+    }
 }

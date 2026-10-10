@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowUp, ChevronDown, Download, FilePlus, Printer, RefreshCw, Stamp, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, Download, FilePlus, Printer, RefreshCw, Save, Search, Stamp, Trash2, X } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import AppModal from '@/components/AppModal.vue';
 import FormField from '@/components/FormField.vue';
@@ -134,6 +134,10 @@ async function saveHeader() {
 
 function goBack() {
     router.visit('/basts');
+}
+
+function closeTab() {
+    window.close();
 }
 
 // Items (edit only)
@@ -277,9 +281,9 @@ if (isEdit.value) {
     <div class="space-y-4">
         <PageHeader :title="title" :description="isEdit ? `DO ${bast?.do ?? ''}` : 'Buat BAST baru'">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
-                <Button v-if="isEdit" variant="outline" size="sm" @click="() => window.close()">Tutup</Button>
-                <Button v-if="!isEdit" size="sm" @click="saveHeader">Simpan & Lanjut ke Item</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button v-if="isEdit" variant="outline" size="sm" @click="closeTab"><X /> Tutup</Button>
+                <Button v-if="!isEdit" size="sm" @click="saveHeader"><Save /> Simpan & Lanjut ke Item</Button>
             </template>
         </PageHeader>
 
@@ -288,7 +292,7 @@ if (isEdit.value) {
                 <FormField label="Cari No DO">
                     <div class="flex gap-2">
                         <Input v-model="doKeyword" placeholder="CENT/OUT/" class="flex-1" @keyup.enter="searchDo(null, true)" />
-                        <Button variant="outline" size="sm" @click="searchDo(null, true)">GET DO</Button>
+                        <Button variant="outline" size="sm" @click="searchDo(null, true)"><Search /> GET DO</Button>
                     </div>
                 </FormField>
                 <FormField label="Pilih Hasil Pencarian">
@@ -330,7 +334,7 @@ if (isEdit.value) {
                     </span>
                     <Button variant="outline" size="sm" @click="downloadZip"><Download /> ZIP</Button>
                     <Button variant="outline" size="sm" @click="syncOdoo"><RefreshCw /> Sync Odoo</Button>
-                    <Button size="sm" @click="saveHeader">Simpan</Button>
+                    <Button size="sm" @click="saveHeader"><Save /> Simpan</Button>
                 </span>
             </div>
             <div v-if="itemsLoading" class="space-y-2 p-3">
@@ -373,7 +377,7 @@ if (isEdit.value) {
             </div>
             <template #footer>
                 <Button variant="ghost" @click="itemModalOpen = false">Batal</Button>
-                <Button @click="saveItem">Simpan</Button>
+                <Button @click="saveItem"><Save /> Simpan</Button>
             </template>
         </AppModal>
     </div>

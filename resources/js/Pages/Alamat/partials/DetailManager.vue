@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowUp, Pencil, Plus, Save, Trash2 } from '@lucide/vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import FormField from '@/components/FormField.vue';
@@ -183,7 +183,7 @@ defineExpose({ reload, openAdd });
         </div>
         <template #footer>
             <Button variant="ghost" @click="modalOpen = false">Batal</Button>
-            <Button @click="saveItem">Simpan</Button>
+            <Button @click="saveItem"><Save /> Simpan</Button>
         </template>
     </AppModal>
 </template>

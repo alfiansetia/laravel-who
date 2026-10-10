@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Download } from '@lucide/vue';
+import { ArrowLeft, Copy, Download, Save, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
@@ -40,6 +40,10 @@ const picSelectOptions = computed(() => props.picOptions.map((p) => ({ value: p,
 
 function goBack() {
     router.visit('/kargans');
+}
+
+function closeTab() {
+    window.close();
 }
 
 async function save() {
@@ -111,9 +115,9 @@ function download() {
                 </FormField>
             </div>
             <div class="mt-4 flex flex-wrap justify-end gap-2">
-                <Button variant="ghost" @click="goBack">Kembali</Button>
-                <Button variant="outline" @click="() => window.close()">Tutup</Button>
-                <Button :disabled="saving" @click="save">Simpan</Button>
+                <Button variant="ghost" @click="goBack"><ArrowLeft /> Kembali</Button>
+                <Button variant="outline" @click="closeTab"><X /> Tutup</Button>
+                <Button :disabled="saving" @click="save"><Save /> Simpan</Button>
             </div>
         </Card>
     </AppLayout>

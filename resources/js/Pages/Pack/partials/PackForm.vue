@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Download, Hash, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Download, Hash, Plus, RefreshCw, Save, Trash2 } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -37,9 +37,47 @@ const rows = ref([]);
 const importText = ref('');
 const templates = ref([]);
 
-const productOptions = computed(() => props.products.map((p) => ({ label: `[${p.code}] ${p.name}`, value: String(p.id) })));
+const baseProductOptions = computed(() => props.products.map((p) => ({ label: `[${p.code}] ${p.name}`, value: String(p.id) })));
 const vendorOptions = computed(() => props.vendors.map((v) => ({ label: v.name, value: String(v.id) })));
-const productName = computed(() => props.products.find((p) => String(p.id) === String(form.value.product_id))?.name ?? '');
+// Opsi product awal (50 + milik pack saat edit); hasil async search
+// diingat agar label pilihan tidak hilang saat kata kunci berubah.
+const knownProductOptions = ref(new Map(baseProductOptions.value.map((o) => [o.value, o])));
+const productOptions = ref([...knownProductOptions.value.values()]);
+const searchingProduct = ref(false);
+const productName = computed(() => knownProductOptions.value.get(String(form.value.product_id))?.label ?? props.products.find((p) => String(p.id) === String(form.value.product_id))?.name ?? '');
+
+function rememberProductOptions(list) {
+    list.forEach((o) => knownProductOptions.value.set(String(o.value), o));
+}
+
+function withCurrentSelection(list) {
+    const current = knownProductOptions.value.get(String(form.value.product_id));
+    if (current && !list.some((o) => String(o.value) === String(current.value))) {
+        return [current, ...list];
+    }
+    return list;
+}
+
+async function searchProduct(keyword) {
+    const q = (keyword ?? '').trim();
+    if (q.length < 1) {
+        productOptions.value = withCurrentSelection(baseProductOptions.value);
+        return;
+    }
+    searchingProduct.value = true;
+    try {
+        const res = await api.get('/products/search', { params: { q }, silent: true });
+        const body = res.data?.data ?? [];
+        const found = body.map((p) => ({ label: `[${p.code}] ${p.name}`, value: String(p.id) }));
+        rememberProductOptions(found);
+        productOptions.value = withCurrentSelection(found);
+    } catch (e) {
+        productOptions.value = withCurrentSelection(baseProductOptions.value);
+        toast.error(e.response?.data?.message ?? 'Gagal mencari product.');
+    } finally {
+        searchingProduct.value = false;
+    }
+}
 
 function blankRow(isGroup = false) {
     return { item: '', qty: '', is_group: isGroup, show_number: true, children: [] };
@@ -274,13 +312,13 @@ loadTemplates();
     <div class="space-y-4">
         <PageHeader :title="title" description="Editor packing list 2 level (grup + anak)">
             <template #actions>
-                <Button variant="outline" size="sm" @click="goBack">Kembali</Button>
+                <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <template v-if="isEdit">
                     <Button variant="outline" size="sm" @click="loadItems"><RefreshCw /> Muat Ulang Item</Button>
                     <Button variant="outline" size="sm" @click="downloadCurrent"><Download /> Excel</Button>
                     <Button variant="outline" size="sm" @click="printCurrent">Print</Button>
                 </template>
-                <Button size="sm" @click="save">Simpan</Button>
+                <Button size="sm" @click="save"><Save /> Simpan</Button>
             </template>
         </PageHeader>
 
@@ -290,7 +328,7 @@ loadTemplates();
                     <SearchableSelect v-model="form.vendor_id" :options="vendorOptions" placeholder="Pilih vendor..." />
                 </FormField>
                 <FormField label="Product" required :error="errors.product_id?.[0]">
-                    <SearchableSelect :model-value="form.product_id" :options="productOptions" placeholder="Pilih product..." @update:model-value="onProductChange" />
+                    <SearchableSelect :model-value="form.product_id" :options="productOptions" :loading="searchingProduct" placeholder="Pilih product... (ketik kode/nama untuk cari semua)" @update:model-value="onProductChange" @search="searchProduct" />
                 </FormField>
                 <p v-if="productName" class="text-xs text-slate-500">{{ productName }}</p>
                 <FormField label="PL Name" required :error="errors.name?.[0]">

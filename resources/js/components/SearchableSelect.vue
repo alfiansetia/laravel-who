@@ -23,6 +23,7 @@ const open = ref(false);
 const keyword = ref('');
 const triggerEl = ref(null);
 const panelEl = ref(null);
+const searchInputEl = ref(null);
 const panelStyle = ref({});
 let searchTimer = null;
 
@@ -90,6 +91,7 @@ async function toggle() {
     if (open.value) {
         await nextTick();
         placePanel();
+        searchInputEl.value?.focus?.();
     }
 }
 
@@ -166,6 +168,7 @@ onBeforeUnmount(() => {
         <button
             ref="triggerEl"
             type="button"
+            data-searchable-select-trigger
             :disabled="disabled"
             class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm disabled:opacity-50"
             @click="toggle"
@@ -177,10 +180,12 @@ onBeforeUnmount(() => {
             <div
                 v-if="open"
                 ref="panelEl"
-                class="overflow-y-auto rounded-md border bg-white p-1 shadow-lg"
+                data-searchable-select-panel
+                class="pointer-events-auto overflow-y-auto rounded-md border bg-white p-1 shadow-lg"
                 :style="panelStyle"
             >
                 <input
+                    ref="searchInputEl"
                     :placeholder="searchPlaceholder"
                     class="mb-1 h-8 w-full rounded border px-2 text-sm"
                     @input="onSearch"

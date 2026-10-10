@@ -5,7 +5,7 @@ import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import api from '@/lib/axios';
-import { fcmSupported, fcmToken, refreshFcmToken, testLocalNotif } from '@/lib/fcm';
+import { fcmDeviceId, fcmSupported, fcmToken, refreshFcmToken, testLocalNotif } from '@/lib/fcm';
 
 const props = defineProps({
     envLoggedIn: { type: Boolean, default: false },
@@ -50,6 +50,20 @@ const tokenState = computed(() => {
         registered: !!token,
         short: token ? token.slice(0, 40) + (token.length > 40 ? '...' : '') : '',
         full: token ?? '',
+    };
+});
+
+const deviceState = computed(() => {
+    void refreshKey.value;
+    let id = '';
+    try {
+        id = fcmDeviceId() ?? '';
+    } catch {
+        id = '';
+    }
+    return {
+        short: id ? id.slice(0, 8) : '',
+        full: id,
     };
 });
 
@@ -141,6 +155,17 @@ const resultClasses = {
             <li class="flex items-center justify-between px-3 py-2 text-sm">
                 <span>Dukungan browser</span>
                 <StatusBadge :status="support.tone">{{ support.label }}</StatusBadge>
+            </li>
+            <li class="px-3 py-2 text-sm">
+                <div class="flex items-center justify-between">
+                    <span>Device ID perangkat ini</span>
+                    <StatusBadge :status="deviceState.full ? 'success' : 'secondary'">
+                        {{ deviceState.full ? deviceState.short : 'Belum ada' }}
+                    </StatusBadge>
+                </div>
+                <small class="block text-xs text-muted-foreground" :title="deviceState.full">
+                    Cocokkan dengan kolom Device ID di List Device (Server Config).
+                </small>
             </li>
             <li class="px-3 py-2 text-sm">
                 <div class="flex items-center justify-between">

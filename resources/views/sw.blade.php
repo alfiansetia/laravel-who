@@ -2,7 +2,7 @@
 // Naikkan SW_VERSION setiap mengubah file ini agar klien update.
 // Diregistrasi sebagai /sw.js?v=SW_VERSION dari template Blade, app Blade (SPA),
 // dan lib/fcm.js. SATU-SATUNYA SW scope root — jangan daftarkan SW lain.
-const SW_VERSION = '2';
+const SW_VERSION = '3';
 const CACHE_NAME = `who-offline-v${SW_VERSION}`;
 const PRECACHE = ['/offline.html', '/manifest.json', '/icons/icon-192.png'];
 
@@ -79,10 +79,14 @@ messaging.onBackgroundMessage((payload) => {
     const notificationOptions = {
         body: data.body || 'Anda memiliki pesan baru',
         icon: data.icon || '/icons/icon-192.png',
-        data: {
-            url: data.url || '/',
-        },
+        data: {},
     };
+
+    // URL hanya diteruskan kalau server mengirimnya (so_id valid).
+    // Tanpa URL, notif jadi non-klik: klik tidak membuka tab baru.
+    if (data.url) {
+        notificationOptions.data.url = data.url;
+    }
 
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
@@ -92,10 +96,20 @@ self.addEventListener('notificationclick', (event) => {
 
     const urlToOpen = event.notification.data && event.notification.data.url
         ? event.notification.data.url
-        : '/';
+        : null;
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+            // Notif tanpa URL (so_id tidak valid): jangan buka tab baru.
+            // Cukup fokuskan tab aplikasi yang sudah terbuka, kalau ada.
+            if (!urlToOpen) {
+                for (let i = 0; i < windowClients.length; i++) {
+                    if ('focus' in windowClients[i]) {
+                        return windowClients[i].focus();
+                    }
+                }
+                return;
+            }
             for (let i = 0; i < windowClients.length; i++) {
                 const client = windowClients[i];
                 if (client.url === urlToOpen && 'focus' in client) {

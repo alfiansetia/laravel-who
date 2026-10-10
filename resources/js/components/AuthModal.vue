@@ -1,7 +1,7 @@
 <script setup>
 import { router } from '@inertiajs/vue3';
 import { Lock } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import AppModal from '@/components/AppModal.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -19,6 +19,9 @@ watch(isOpen, (open) => {
     if (open) {
         password.value = '';
         error.value = '';
+        nextTick(() => {
+            document.getElementById('envPassword')?.focus();
+        });
     }
 });
 
