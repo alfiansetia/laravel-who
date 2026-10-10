@@ -21,7 +21,7 @@ const sizes = {
     sm: 'sm:max-w-sm',
     md: 'sm:max-w-lg',
     lg: 'sm:max-w-2xl',
-    xl: 'sm:max-w-4xl',
+    xl: 'sm:max-w-6xl',
 };
 
 // Dialog dijalankan non-modal: panel SearchableSelect di-teleport ke body
@@ -37,20 +37,24 @@ function isInsideSearchablePanel(target) {
     return target?.closest?.('[data-searchable-select-panel]') != null;
 }
 
+function isClipboardFallback(target) {
+    return target?.closest?.('[data-clipboard-fallback]') != null;
+}
+
 function handlePointerDownOutside(e) {
-    if (isInsideSearchablePanel(e.target)) {
+    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
         e.preventDefault();
     }
 }
 
 function handleFocusOutside(e) {
-    if (isInsideSearchablePanel(e.target)) {
+    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
         e.preventDefault();
     }
 }
 
 function handleInteractOutside(e) {
-    if (isInsideSearchablePanel(e.target)) {
+    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
         e.preventDefault();
     }
 }
@@ -91,7 +95,7 @@ onBeforeUnmount(() => {
                 @click="close"
             />
             <DialogContent
-                :class="cn('fixed left-1/2 top-1/2 z-50 grid max-h-[90vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-white p-6 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95', sizes[size] ?? sizes.md)"
+                :class="cn('fixed left-1/2 top-1/2 z-50 grid max-h-[90vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border bg-white p-6 shadow-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 [&>*]:min-w-0', sizes[size] ?? sizes.md)"
                 @pointer-down-outside="handlePointerDownOutside"
                 @focus-outside="handleFocusOutside"
                 @interact-outside="handleInteractOutside"

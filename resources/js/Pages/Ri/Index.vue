@@ -5,6 +5,8 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import ModalTabs from '@/components/ModalTabs.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -41,6 +43,10 @@ const productTable = useClientTable(null, {
 const lotTable = useClientTable(null, {
     searchKeys: ['product_id', 'akl_id', 'lot_id', 'lot_name', 'expired_date', 'qty_done'],
 });
+const detailTabs = computed(() => [
+    { value: 'product', label: 'Product', count: productTable.total.value },
+    { value: 'lot', label: 'Product Lot', count: lotTable.total.value },
+]);
 
 const activeCount = computed(() => (query.search.value ? 1 : 0));
 
@@ -227,11 +233,12 @@ query.fetch();
             <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 50) }}</template>
             <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" :title="`List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
-            <div class="mb-2 flex gap-1 border-b">
-                <Button :variant="detailTab === 'product' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'product'">Product</Button>
-                <Button :variant="detailTab === 'lot' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'lot'">Product Lot</Button>
-            </div>
+        <AppModal v-model:open="detailOpen" size="xl">
+            <template #title>
+                {{ `List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}` }}
+                <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No RI" />
+            </template>
+            <ModalTabs v-model="detailTab" :tabs="detailTabs" class="mb-2" />
             <div v-if="detailTab === 'product'">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                     <Input :model-value="productSearchBox" type="search" placeholder="Cari code / nama..." class="max-w-xs" @input="onProductSearchInput" />
@@ -298,8 +305,8 @@ query.fetch();
                 </DataTable>
             </div>
             <div class="mt-2 space-y-1 border-t pt-2 text-sm">
-                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }}</p>
-                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }}</p>
+                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }} <CopyButton :text="detail?.origin ?? ''" label="Origin/PO" /></p>
+                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Notes" /></p>
             </div>
         </AppModal>
     </AppLayout>

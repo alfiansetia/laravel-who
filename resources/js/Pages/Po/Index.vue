@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
@@ -143,7 +144,11 @@ query.fetch();
             <template #cell-notes="{ row }">{{ truncate(row.notes, 40) }}</template>
             <template #cell-picking_count="{ row }">{{ row.picking_count ?? 0 }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" :title="`List Item PO No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
+        <AppModal v-model:open="detailOpen" size="xl">
+            <template #title>
+                {{ `List Item PO No : ${detail?.name ?? activeRow?.name ?? ''}` }}
+                <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No PO" />
+            </template>
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'], 'item PO')"><Copy /> Salin</Button>
@@ -173,7 +178,7 @@ query.fetch();
                 <template #cell-qty_received="{ row }">{{ row.qty_received ?? 0 }}</template>
                 <template #cell-qty_sisa="{ row }">{{ Number(row.product_qty ?? 0) - Number(row.qty_received ?? 0) }}</template>
             </DataTable>
-            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.notes ?? '-' }}</p>
+            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.notes ?? '-' }} <CopyButton :text="detail?.notes ?? ''" label="Notes" /></p>
         </AppModal>
     </AppLayout>
 </template>

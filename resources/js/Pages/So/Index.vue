@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -206,7 +207,11 @@ query.fetch();
                 </div>
             </template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" :title="`Item SO: ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
+        <AppModal v-model:open="detailOpen" size="xl">
+            <template #title>
+                {{ `Item SO: ${detail?.name ?? activeRow?.name ?? ''}` }}
+                <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No SO" />
+            </template>
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <Button size="sm" @click="printSo(activeRow)"><Printer /> Print</Button>
                 <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
@@ -234,7 +239,7 @@ query.fetch();
                 <template #cell-product_id="{ row }">{{ odooName(row.product_id) }}</template>
                 <template #cell-unit_price1="{ row }">{{ row.unit_price1 ?? '-' }}</template>
             </DataTable>
-            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.note_to_wh ?? detail?.note ?? '-' }}</p>
+            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.note_to_wh ?? detail?.note ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? detail?.note ?? ''" label="Notes" /></p>
         </AppModal>
     </AppLayout>
 </template>

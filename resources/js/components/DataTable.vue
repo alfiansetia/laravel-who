@@ -53,7 +53,7 @@ function toggleOne(id, e) {
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-lg border bg-white">
+    <div class="max-w-full overflow-hidden rounded-lg border bg-white">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>

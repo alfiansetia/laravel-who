@@ -5,6 +5,8 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import ModalTabs from '@/components/ModalTabs.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -38,6 +40,10 @@ const onhandTitle = ref('');
 const activeRow = ref(null);
 const detailTab = ref('product');
 const lotCodeFilter = ref('');
+const detailTabs = computed(() => [
+    { value: 'product', label: 'Product', count: productLines.value.length },
+    { value: 'lot', label: 'Product Lot', count: filteredLots.value.length },
+]);
 
 const activeCount = computed(() => (query.search.value ? 1 : 0));
 
@@ -208,11 +214,12 @@ query.fetch();
             <template #cell-x_studio_valid_to_akl="{ row }">{{ row.x_studio_valid_to_akl ?? '-' }}</template>
             <template #cell-qty_available="{ row }">{{ formatQtyUS(row.qty_available) }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" :title="`List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}`" size="xl">
-            <div class="mb-2 flex gap-1 border-b">
-                <Button :variant="detailTab === 'product' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'product'">Product</Button>
-                <Button :variant="detailTab === 'lot' ? 'default' : 'ghost'" size="sm" @click="detailTab = 'lot'">Product Lot</Button>
-            </div>
+        <AppModal v-model:open="detailOpen" size="xl">
+            <template #title>
+                {{ `List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}` }}
+                <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No RI" />
+            </template>
+            <ModalTabs v-model="detailTab" :tabs="detailTabs" class="mb-2" />
             <div v-if="detailTab === 'product'">
                 <DataTable :columns="productColumns" :rows="productLines" :loading="detailLoading" :total="productLines.length" :total-pages="1" empty-title="Item tidak ditemukan">
                     <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
@@ -240,8 +247,8 @@ query.fetch();
                 </DataTable>
             </div>
             <div class="mt-2 space-y-1 border-t pt-2 text-sm">
-                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }}</p>
-                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }}</p>
+                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }} <CopyButton :text="detail?.origin ?? ''" label="Origin/PO" /></p>
+                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Notes" /></p>
             </div>
         </AppModal>
         <AppModal v-model:open="onhandOpen" :title="onhandTitle" size="xl">

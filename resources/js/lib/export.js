@@ -18,14 +18,20 @@ export async function copyRows(rows, columns, label = 'data') {
     try {
         await navigator.clipboard.writeText(text);
     } catch {
+        const active = document.activeElement;
         const ta = document.createElement('textarea');
         ta.value = text;
+        ta.setAttribute('data-clipboard-fallback', '');
         ta.style.position = 'fixed';
         ta.style.left = '-9999px';
+        ta.style.top = '0';
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
+        if (active && typeof active.focus === 'function') {
+            active.focus({ preventScroll: true });
+        }
     }
     toast.success(`${rows.length} baris ${label} disalin ke clipboard.`, undefined, { id: 'copy', duration: 2000 });
     return true;
@@ -40,14 +46,20 @@ export async function copyText(text, successMessage = 'Berhasil disalin ke clipb
     try {
         await navigator.clipboard.writeText(text);
     } catch {
+        const active = document.activeElement;
         const ta = document.createElement('textarea');
         ta.value = text;
+        ta.setAttribute('data-clipboard-fallback', '');
         ta.style.position = 'fixed';
         ta.style.left = '-9999px';
+        ta.style.top = '0';
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
+        if (active && typeof active.focus === 'function') {
+            active.focus({ preventScroll: true });
+        }
     }
     toast.success(successMessage, undefined, { id: 'copy', duration: 2000 });
     return true;
