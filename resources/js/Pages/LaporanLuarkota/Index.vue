@@ -19,12 +19,12 @@ import { useToast } from '@/composables/useToast';
 import { useBlock } from '@/composables/useBlock';
 import api from '@/lib/axios';
 import { formatNumber } from '@/lib/format';
+import { loadExcelWorkbook, sheetToMatrix, workbookSheetNames } from '@/lib/excel';
 
 const props = defineProps({
     title: { type: String, default: 'Laporan Luar Kota' },
 });
 
-const XLSX_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 const TRACK_BATCH = 20;
 const TEMPLATE_KEY = 'luarkota-template';
 
@@ -83,10 +83,18 @@ const tableColumns = computed(() => visibleCols.value.map((c) => ({ key: c, labe
 
 const columnOptions = computed(() => COLUMNS.map((c) => ({ label: COLUMN_LABELS[c] ?? c, value: c })));
 
-function excelDateToString(serial) {
-    if (serial === null || serial === undefined || serial === '') {
+function excelDateToString(value) {
+    if (value === null || value === undefined || value === '') {
         return '';
     }
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) {
+            return '';
+        }
+        const pad = (v) => String(v).padStart(2, '0');
+        return `${pad(value.getDate())}/${pad(value.getMonth() + 1)}/${value.getFullYear()}`;
+    }
+    const serial = value;
     if (typeof serial === 'string' && Number.isNaN(Number(serial))) {
         return serial;
     }
@@ -120,20 +128,6 @@ function parseDecimal(value) {
     return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-            resolve();
-            return;
-        }
-        const el = document.createElement('script');
-        el.src = src;
-        el.onload = () => resolve();
-        el.onerror = () => reject(new Error(`Gagal memuat pustaka: ${src}`));
-        document.head.appendChild(el);
-    });
-}
-
 function applyView() {
     const list = tglFilter.value ? rawRows.value.filter((r) => r.tgl_kirim === tglFilter.value) : rawRows.value;
     table.setRows(list);
@@ -143,17 +137,16 @@ async function handleFile(file) {
     if (!file) {
         return;
     }
-    if (!/\.(xlsx|xls)$/i.test(file.name)) {
-        toast.warning('Hanya berkas Excel (.xlsx/.xls).');
+    if (!/\.xlsx$/i.test(file.name)) {
+        toast.warning('Simpan sebagai .xlsx dulu, file .xls tidak didukung.');
         return;
     }
     importing.value = true;
     try {
         await withBlock(async () => {
-            await loadScript(XLSX_SRC);
             const buffer = await file.arrayBuffer();
-            workbook.value = window.XLSX.read(buffer, { type: 'array' });
-            sheetNames.value = workbook.value.SheetNames;
+            workbook.value = await loadExcelWorkbook(buffer);
+            sheetNames.value = workbookSheetNames(workbook.value);
         });
         showSheets.value = true;
         activeSheet.value = '';
@@ -188,8 +181,12 @@ function loadSheet(name) {
         // Beri kesempatan overlay ter-render sebelum parse berat memblokir thread.
         await new Promise((r) => requestAnimationFrame(() => r()));
         activeSheet.value = name;
-        const sheet = workbook.value.Sheets[name];
-        const json = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, blankrows: false });
+        const sheet = workbook.value.getWorksheet(name);
+        if (!sheet) {
+            toast.warning('Sheet tidak ditemukan.');
+            return;
+        }
+        const json = sheetToMatrix(sheet);
         const result = [];
         json.forEach((row) => {
             if (!Array.isArray(row) || !Number.isInteger(row[0])) {
@@ -393,9 +390,9 @@ onBeforeUnmount(() => {
                 >
                     <Upload class="size-6 text-muted-foreground" />
                     <p class="text-sm font-medium">Seret Excel ke sini atau klik</p>
-                    <p class="text-xs text-muted-foreground">.xlsx / .xls • {{ importing ? 'membaca...' : 'maks 1 berkas' }}</p>
+                    <p class="text-xs text-muted-foreground">.xlsx • {{ importing ? 'membaca...' : 'maks 1 berkas' }}</p>
                 </div>
-                <input ref="excelInput" type="file" accept=".xlsx,.xls" class="hidden" @change="onFileChange" />
+                <input ref="excelInput" type="file" accept=".xlsx" class="hidden" @change="onFileChange" />
 
                 <div v-if="showSheets" class="mt-3 space-y-2">
                     <p class="text-sm font-medium">Pilih sheet:</p>

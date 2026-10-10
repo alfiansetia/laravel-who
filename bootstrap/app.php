@@ -24,7 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // request()->secure() dan url()/route() menghasilkan https (anti mixed content).
         $middleware->trustProxies(at: '*');
 
-        $middleware->append([
+        // Grup stateful untuk seluruh route api.php (butuh session cookie:
+        // auth + controller ber-middleware env_auth). Tanpa CSRF agar
+        // kompatibel dengan AJAX Blade lama yang tidak mengirim X-CSRF-TOKEN.
+        // JANGAN append EncryptCookies/StartSession secara global: web group
+        // bawaan Laravel sudah memilikinya, dobel = cookie terdekripsi 2x
+        // (jadi null) dan session selalu baru tiap request web.
+        $middleware->group('stateful', [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,

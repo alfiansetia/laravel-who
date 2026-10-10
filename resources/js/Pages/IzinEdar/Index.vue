@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue';
 import { CheckCircle2, Copy, Download, Eye, RefreshCw, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
-import * as XLSX from 'xlsx';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -19,6 +18,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { copyRows, copyText } from '@/lib/export';
+import { loadExcelWorkbook, sheetToMatrix } from '@/lib/excel';
 
 const props = defineProps({
     title: { type: String, default: 'Data Izin Edar' },
@@ -440,7 +440,7 @@ async function deleteAll() {
     query.fetch();
 }
 
-// ── Upload Excel (SheetJS, batch 500, samakan _upload.blade.php) ──
+// ── Upload Excel (ExcelJS, batch 500, samakan _upload.blade.php) ──
 const HEADER_TRANSLATION = {
     NOMOR: 'nomor_izin_edar', 'TGL TERBIT': 'tgl_terbit', 'TGL EXP': 'tgl_exp', MERK: 'merk',
     'JENIS PRODUK': 'jenis_produk', PENDAFTAR: 'pendaftar', 'ALAMAT PENDAFTAR': 'alamat_pendaftar',
@@ -473,8 +473,8 @@ function onPickFile() {
         return;
     }
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['xlsx', 'xls'].includes(ext)) {
-        toast.error('Format file tidak valid. Gunakan .xlsx atau .xls');
+    if (ext !== 'xlsx') {
+        toast.error('Simpan sebagai .xlsx dulu, file .xls tidak didukung.');
         uploadFile.value.value = '';
         uploadName.value = '';
         return;
@@ -531,13 +531,13 @@ async function doUpload() {
         }
         uploadPct.value = 5;
         uploadText.value = 'Mem-parse file Excel...';
-        const wb = XLSX.read(buf, { type: 'array', cellDates: true, raw: false });
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        const workbook = await loadExcelWorkbook(buf);
+        const ws = workbook.worksheets[0];
         if (!ws) {
             throw new Error('Sheet tidak ditemukan dalam file Excel.');
         }
         uploadPct.value = 10;
-        const allRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: false });
+        const allRows = sheetToMatrix(ws);
         if (allRows.length === 0) {
             throw new Error('File Excel kosong.');
         }
@@ -800,7 +800,7 @@ loadProgress(true).then(() => {
                         <Button v-for="k in ['AKD', 'AKL', 'PKD', 'PKL']" :key="k" :variant="uploadKategori === k ? 'default' : 'outline'" size="sm" @click="uploadKategori = k">{{ k }}</Button>
                     </div>
                 </FormField>
-                <FormField label="File (.xlsx/.xls, maks 200MB)" required>
+                <FormField label="File (.xlsx, maks 200MB)" required>
                     <div
                         class="cursor-pointer rounded-lg border-2 border-dashed p-6 text-center text-sm"
                         :class="uploadName ? 'border-green-300 bg-green-50/50' : 'border-slate-200 hover:border-slate-300'"
@@ -808,7 +808,7 @@ loadProgress(true).then(() => {
                         @dragover.prevent
                         @drop="onDrop"
                     >
-                        <input ref="uploadFile" type="file" accept=".xlsx,.xls" class="hidden" @change="onPickFile" @click.stop />
+                        <input ref="uploadFile" type="file" accept=".xlsx" class="hidden" @change="onPickFile" @click.stop />
                         <Upload class="mx-auto mb-1 size-6 text-muted-foreground" />
                         <p v-if="uploadName"><b>{{ uploadName }}</b> ({{ uploadSize }})</p>
                         <p v-else class="text-muted-foreground">Klik atau seret file ke sini</p>

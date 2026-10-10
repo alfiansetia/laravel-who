@@ -27,7 +27,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::middleware('throttle:api')->group(function () {
+Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::get('do', [DoController::class, 'index'])->name('api.do.index');
     Route::get('do/{id}', [DoController::class, 'detail'])->name('api.do.detail');
 
