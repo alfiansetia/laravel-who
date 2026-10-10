@@ -72,7 +72,7 @@ const lotSummary = computed(() => {
     const snParts = [];
     let total = 0;
     lotTable.filtered.value.forEach((item) => {
-        const lotLabel = item.lot || 'Tanpa Lot/Sn';
+        const lotLabel = item.lot || 'Tanpa Lot/SN';
         const expired = item.expired && item.expired !== 'False' ? `/${item.expired}` : '';
         const qty = Number(item.quantity ?? 0);
         lotParts.push(`${lotLabel}${expired} = ${qty} ea`);

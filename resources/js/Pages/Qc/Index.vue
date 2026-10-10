@@ -8,7 +8,6 @@ import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import Input from '@/components/ui/Input.vue';
-import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
 import TerlampirButton from './partials/TerlampirButton.vue';
 import QcRadioGroup from './partials/QcRadioGroup.vue';
@@ -46,7 +45,6 @@ const REAGEN_DEFAULT = [
 const KEL_DEFAULT = ['Buku Manual Bahasa Indonesia', 'Kabel Power', 'SOP'];
 
 const toast = useToast();
-const { confirm } = useConfirm();
 
 function defaultDate() {
     if (props.defaultDate) {
@@ -69,7 +67,7 @@ const form = ref({
     name: '',
     merk: '',
     type: '',
-    sn_lot: 'Tanpa Lot/Sn',
+    sn_lot: 'Tanpa Lot/SN',
     qty: '1 Unit',
     jenis: 'QC Import',
     qc_sebelumnya: new Date().getFullYear(),
@@ -158,49 +156,19 @@ function applyFisik(allBaik) {
     generatePreview();
 }
 
-function applyReagen() {
-    reagenRows.value = REAGEN_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
+function applyReagen(allBaik = false) {
+    reagenRows.value = REAGEN_DEFAULT.map((text) => ({ text, radio: allBaik ? 'yes' : 'other', desc: '' }));
     generatePreview();
 }
 
-function applyKel() {
-    kelRows.value = KEL_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
+function applyKel(allAda = false) {
+    kelRows.value = KEL_DEFAULT.map((text) => ({ text, radio: allAda ? 'yes' : 'other', desc: '' }));
     generatePreview();
 }
 
-async function confirmResetFisik(allBaik) {
-    const ok = await confirm({
-        title: allBaik ? 'Tandai semua Baik?' : 'Reset Pemeriksaan Fisik?',
-        message: 'Isian pemeriksaan fisik akan diganti dengan bawaan.',
-        confirmText: 'Ya, lanjutkan',
-    });
-    if (!ok) {
-        return;
-    }
-    applyFisik(allBaik);
-}
-
-async function confirmResetReagen() {
-    const ok = await confirm({
-        title: 'Reset Fungsi dan Sistem?',
-        message: 'Isian fungsi dan sistem akan diganti dengan bawaan.',
-        confirmText: 'Ya, lanjutkan',
-    });
-    if (!ok) {
-        return;
-    }
+function resetAll() {
+    applyFisik(false);
     applyReagen();
-}
-
-async function confirmResetKel() {
-    const ok = await confirm({
-        title: 'Reset Kelengkapan?',
-        message: 'Daftar kelengkapan aksesoris akan diganti dengan bawaan.',
-        confirmText: 'Ya, lanjutkan',
-    });
-    if (!ok) {
-        return;
-    }
     applyKel();
 }
 
@@ -245,20 +213,6 @@ function addPackItems(pack) {
     packModalOpen.value = false;
     generatePreview();
     toast.success(`Packing List "${pack.name ?? ''}" ditambahkan.`);
-}
-
-async function confirmResetAll() {
-    const ok = await confirm({
-        title: 'Reset semua isian?',
-        message: 'Seluruh pemeriksaan (fisik, fungsi, kelengkapan) kembali ke bawaan.',
-        confirmText: 'Ya, reset semua',
-    });
-    if (!ok) {
-        return;
-    }
-    applyFisik(false);
-    applyReagen();
-    applyKel();
 }
 
 const rekapCat = computed(() => `${form.value.jenis === 'QC Ulang' ? 'Ulang' : 'Import'} (${form.value.qc_sebelumnya})`);
@@ -436,8 +390,8 @@ onMounted(() => {
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">PEMERIKSAAN FISIK</h3>
                         <div class="flex gap-1">
-                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetFisik(false)"><RefreshCw /> Reset</Button>
-                            <Button size="sm" title="Tandai semua Baik" @click="confirmResetFisik(true)"><CircleCheck /> All Baik</Button>
+                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="applyFisik(false)"><RefreshCw /> Reset</Button>
+                            <Button size="sm" title="Tandai semua Baik" @click="applyFisik(true)"><CircleCheck /> All Baik</Button>
                         </div>
                     </div>
                     <div class="space-y-2 px-2">
@@ -452,7 +406,10 @@ onMounted(() => {
                 <div class="mt-2 sm:col-span-2">
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">FUNGSI DAN SISTEM</h3>
-                        <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetReagen"><RefreshCw /> Reset</Button>
+                        <div class="flex gap-1">
+                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="applyReagen(false)"><RefreshCw /> Reset</Button>
+                            <Button size="sm" title="Tandai semua Baik" @click="applyReagen(true)"><CircleCheck /> All Baik</Button>
+                        </div>
                     </div>
                     <div class="space-y-2 px-2">
                         <div v-for="(row, i) in reagenRows" :key="i" class="grid items-center gap-2 sm:grid-cols-[4fr_4fr_4fr]">
@@ -469,7 +426,8 @@ onMounted(() => {
                         <div class="flex gap-1">
                             <Button variant="outline" size="sm" title="Tambah baris kelengkapan" @click="addKel()"><Plus /> Tambah</Button>
                             <Button variant="secondary" size="sm" title="Ambil dari Packing List produk" :disabled="getPlLoading" @click="getPL"><component :is="getPlLoading ? LoaderCircle : PackagePlus" :class="getPlLoading ? 'animate-spin' : ''" /> {{ getPlLoading ? 'Memuat...' : 'Get PL' }}</Button>
-                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="confirmResetKel"><RefreshCw /> Reset</Button>
+                            <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="applyKel(false)"><RefreshCw /> Reset</Button>
+                            <Button size="sm" title="Tandai semua Ada" @click="applyKel(true)"><CircleCheck /> All Ada</Button>
                         </div>
                     </div>
                     <div class="space-y-2 px-2">
@@ -487,7 +445,7 @@ onMounted(() => {
 
             <div class="mt-4 flex flex-wrap justify-center gap-2 border-t pt-4">
                 <Button size="sm" variant="secondary" as="a" :href="route('products.index')"><ArrowLeft /> Kembali</Button>
-                <Button size="sm" variant="outline" title="Kembalikan semua isian ke bawaan" @click="confirmResetAll"><Eraser /> Reset Semua</Button>
+                <Button size="sm" variant="outline" title="Kembalikan semua isian ke bawaan" @click="resetAll"><Eraser /> Reset Semua</Button>
                 <Button size="sm" variant="outline" title="Perbarui tabel pratinjau" @click="generatePreview"><Eye /> Preview Tabel</Button>
                 <Button size="sm" title="Simpan dan unduh dokumen QC" :disabled="saving" @click="submitDownload"><Download /> {{ saving ? 'Memproses...' : 'Simpan & Unduh' }}</Button>
             </div>

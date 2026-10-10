@@ -91,7 +91,7 @@ async function toggle() {
     if (open.value) {
         await nextTick();
         placePanel();
-        searchInputEl.value?.focus?.();
+        searchInputEl.value?.focus?.({ preventScroll: true });
     }
 }
 
