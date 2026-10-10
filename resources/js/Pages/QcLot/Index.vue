@@ -157,7 +157,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Pengecekan lot QC per product">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['product', 'lot', 'ed', 'date', 'qc_by', 'note'], 'qc-lot')"><Copy /> Salin</Button>

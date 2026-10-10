@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Ekstraksi teks dari gambar dan PDF. Diproses lokal di browser." />
+        <PageHeader :title="props.title" />
 
         <div class="grid gap-4 xl:grid-cols-[7fr_5fr]">
             <Card class="p-4 sm:p-6">

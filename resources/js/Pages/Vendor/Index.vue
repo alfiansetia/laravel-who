@@ -93,7 +93,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Daftar vendor (supplier) Odoo">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['name', 'phone', 'email', 'city'], 'vendor')"><Copy /> Salin</Button>

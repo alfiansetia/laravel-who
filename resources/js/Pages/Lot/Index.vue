@@ -158,7 +158,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Daftar Lot / SN">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(query.rows.value, ['name', 'product_qty1'])"><Copy /> Salin</Button>

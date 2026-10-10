@@ -308,7 +308,7 @@ load();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Daftar product + PLTBB, SOP, PL, image">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['code', 'name', 'akl', 'akl_exp', 'pltbb', 'images', 'pl', 'sop'], 'product')"><Copy /> Salin</Button>

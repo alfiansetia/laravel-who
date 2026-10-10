@@ -164,7 +164,7 @@ watch([tableSearch], () => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Kumpulkan serial number: generate sekuens atau impor dari teks" />
+        <PageHeader :title="props.title" />
 
         <div class="grid gap-4 lg:grid-cols-[8fr_4fr]">
             <div class="space-y-4">

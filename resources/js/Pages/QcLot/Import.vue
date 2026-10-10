@@ -142,7 +142,7 @@ const tableRows = computed(() => table.rows.value);
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Import QC Lot dari Excel atau teks tab-separated">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="ghost" size="sm" @click="router.visit('/qc-lots')"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="clearAll">Hapus Data</Button>

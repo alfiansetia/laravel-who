@@ -88,7 +88,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Master data kontak (tersinkron Odoo)">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['name', 'street', 'phone'], 'kontak')"><Copy /> Salin</Button>

@@ -163,7 +163,7 @@ watch([tableSearch], () => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Susun manifest ekspedisi: cari DO lalu kumpulkan barisnya" />
+        <PageHeader :title="props.title" />
 
         <div class="mb-3 grid gap-2 sm:grid-cols-[1fr_2fr]">
             <FormField label="Kata kunci DO">

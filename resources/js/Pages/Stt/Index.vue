@@ -133,7 +133,7 @@ onBeforeUnmount(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Ucapkan kalimat Bahasa Indonesia, hasilnya tertulis otomatis" />
+        <PageHeader :title="props.title" />
 
         <Card class="p-4 sm:p-6">
             <div v-if="!supported" class="mb-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">

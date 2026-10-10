@@ -7,7 +7,8 @@
 | Komponen | Ganti Blade apa | Pakai di |
 |---|---|---|
 | `AppLayout.vue` | `template.blade.php` + `components/nav` + `components/breadcumb` + `#notif` | Semua `Pages/*` |
-| `PageHeader.vue` | `.card-header.d-flex` + breadcrumb | Judul + aksi kanan (Tambah/Export/Filter) |
+| `Breadcrumb.vue` | `components/breadcumb.blade.php` (typo lama) | Murni frontend, tanpa history/localStorage. Props: `items` (`{label,href?,current?}`), `homeHref` (`/`), `showHome`. Separator `ChevronRight` + ikon `House`, item aktif = `span aria-current`. Isi default dari `lib/breadcrumbs.js` (`resolveBreadcrumbs({url, title})` → peta label index + fallback humanize, ID numerik diabaikan) via `PageHeader`; prop `breadcrumbs` di `PageHeader` hanya untuk override eksplisit. Backend Inertia tidak kirim breadcrumb (`App\Services\Breadcrumb` hanya untuk Blade print/export yang belum migrasi). |
+| `PageHeader.vue` | `.card-header.d-flex` + breadcrumb | Breadcrumb + aksi kanan (Tambah/Export/Filter). Tanpa judul/deskripsi (judul = crumb terakhir). Prop `title` tetap wajib (sumber label crumb via resolver). |
 | `FilterPanel.vue` | `div.mb-3.grid` blok filter mentah per page | Wajib untuk semua filter page: Card TERTUTUP secara default (hemat tempat, klik untuk membuka) + badge jumlah filter aktif + tombol Reset bawaan. Isi hanya `FormField` + aksi `Terapkan`. Dilarang blok filter mentah di `Pages/`. |
 | `FilterBar.vue` | `.input-group` search + select status di header card | Deprecated untuk page baru — pakai `FilterPanel`. Dipertahankan hanya untuk kompatibilitas. |
 | `lib/menuIcons.js` | `data-lucide` + `lucide.createIcons()` di Blade | Registry ikon dinamis (string → komponen). Tambah ikon baru = named import di file ini, bukan `icons` map. |

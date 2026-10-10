@@ -134,7 +134,7 @@ function goBack() {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Tambah / kelola SOP QC per product">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" :disabled="!savedSopId" @click="downloadSaved"><Download /> Download</Button>

@@ -210,7 +210,7 @@ fetchData();
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Pencarian file berbasis index JSON">
+        <PageHeader :title="props.title">
             <template #actions>
                 <Button variant="outline" size="sm" as="a" href="/tools/file-search/download-script"><Download /> Script</Button>
                 <Button size="sm" @click="openUpload"><Upload /> Update Index</Button>

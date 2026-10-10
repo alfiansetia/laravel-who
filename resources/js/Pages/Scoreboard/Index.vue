@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
         <Head>
             <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@400;700;900&display=swap" />
         </Head>
-        <PageHeader :title="props.title" description="Papan skor digital dua tim dengan timer" />
+        <PageHeader :title="props.title" />
 
         <div class="rounded-2xl bg-[#0c0d12] p-4 text-white sm:p-8">
             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">

@@ -504,7 +504,7 @@ fetchDevices();
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Kelola session Odoo, resource, device, dan log" />
+        <PageHeader :title="props.title" />
 
         <div class="grid gap-4 lg:grid-cols-[8fr_4fr]">
             <Card class="p-4">

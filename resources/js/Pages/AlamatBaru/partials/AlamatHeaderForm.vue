@@ -244,7 +244,7 @@ defineExpose({ form, save });
 
 <template>
     <div class="space-y-4">
-        <PageHeader :title="title" :description="isEdit ? `DO ${record?.do ?? ''}` : 'Buat alamat pengiriman baru'">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button size="sm" @click="save"><Save /> Simpan{{ isEdit ? '' : ' Data' }}</Button>

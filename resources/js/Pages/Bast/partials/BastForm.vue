@@ -279,7 +279,7 @@ if (isEdit.value) {
 
 <template>
     <div class="space-y-4">
-        <PageHeader :title="title" :description="isEdit ? `DO ${bast?.do ?? ''}` : 'Buat BAST baru'">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button v-if="isEdit" variant="outline" size="sm" @click="closeTab"><X /> Tutup</Button>

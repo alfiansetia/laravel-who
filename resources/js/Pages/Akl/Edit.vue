@@ -11,7 +11,7 @@ const props = defineProps({
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`Edit lampiran ${record?.reg_no ?? ''}`" />
+        <PageHeader :title="title" />
         <AklForm mode="edit" :record="record" />
     </AppLayout>
 </template>

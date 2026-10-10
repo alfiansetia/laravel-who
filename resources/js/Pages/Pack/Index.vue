@@ -217,7 +217,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Packing list per product + vendor">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['code', 'name', 'pl', 'desc', 'vendor', 'vendor_desc'], 'packing list')"><Copy /> Salin</Button>

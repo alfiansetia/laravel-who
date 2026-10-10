@@ -159,7 +159,7 @@ load();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Pantau stok barang (snapshot Odoo)">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(table.filtered.value, ['code', 'name', 'quantity'])"><Copy /> Salin</Button>

@@ -310,7 +310,7 @@ loadTemplates();
 
 <template>
     <div class="space-y-4">
-        <PageHeader :title="title" description="Editor packing list 2 level (grup + anak)">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <template v-if="isEdit">

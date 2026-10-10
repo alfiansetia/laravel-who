@@ -224,7 +224,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Inventaris alat tulis kantor + kartu stok">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['code', 'name', 'satuan', 'stok'], 'atk')"><Copy /> Salin</Button>

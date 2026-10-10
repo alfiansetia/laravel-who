@@ -37,11 +37,11 @@ const resultCount = computed(() => filteredSections.value.reduce((n, section) =>
     <AppLayout>
         <div class="mx-auto max-w-6xl space-y-8">
             <div class="space-y-3">
-                <div>
+                <div class="text-center">
                     <h1 class="text-xl font-semibold tracking-tight">Selamat Datang Kembali</h1>
                     <p class="mt-1 text-sm text-muted-foreground">Akses cepat ke {{ totalMenus }} modul dan peralatan kerja Anda</p>
                 </div>
-                <div class="relative max-w-xl">
+                <div class="relative mx-auto max-w-xl">
                     <Search class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         v-model="keyword"
@@ -51,7 +51,7 @@ const resultCount = computed(() => filteredSections.value.reduce((n, section) =>
                         class="h-11 rounded-full pl-11"
                     />
                 </div>
-                <p v-if="keyword.trim()" class="text-xs text-muted-foreground">
+                <p v-if="keyword.trim()" class="text-center text-xs text-muted-foreground">
                     Menampilkan {{ resultCount }} hasil untuk &ldquo;{{ keyword.trim() }}&rdquo;
                 </p>
             </div>

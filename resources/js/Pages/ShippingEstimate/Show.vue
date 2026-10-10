@@ -87,7 +87,7 @@ load();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="estimate ? `${estimate.no_so} · ${estimate.customer_name}` : ''">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button size="sm" @click="goEdit"><Pencil /> Edit</Button>

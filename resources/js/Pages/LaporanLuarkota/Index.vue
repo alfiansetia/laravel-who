@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Impor Excel kiriman luar kota, kirim WA konfirmasi, tracking TIKI" />
+        <PageHeader :title="props.title" />
 
         <div class="grid gap-4 lg:grid-cols-[5fr_7fr]">
             <Card class="p-4">

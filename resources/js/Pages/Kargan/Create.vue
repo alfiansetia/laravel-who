@@ -79,7 +79,7 @@ refreshNumber();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Buat kartu garansi baru" />
+        <PageHeader :title="title" />
         <Card class="p-4">
             <div class="grid gap-4 sm:grid-cols-2">
                 <FormField label="Nomor" required :error="errors.number?.[0]" :hint="`Terakhir: ${lastNumber}`">

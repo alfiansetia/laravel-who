@@ -12,7 +12,7 @@ defineProps({
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Upload lampiran AKL baru (reg_no boleh sama untuk perpanjangan)" />
+        <PageHeader :title="title" />
         <AklForm mode="create" :record="null" />
     </AppLayout>
 </template>

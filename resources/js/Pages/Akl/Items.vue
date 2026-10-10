@@ -187,7 +187,7 @@ loadItems();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`Item ${record.reg_no} — ${record.reg_name ?? ''}`">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="ghost" size="sm" @click="router.visit('/akls')">Kembali ke AKL</Button>
             </template>

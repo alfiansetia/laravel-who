@@ -306,7 +306,7 @@ onBeforeUnmount(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Ekstrak gambar resi dari Excel lalu cetak massal">
+        <PageHeader :title="props.title">
             <template #actions>
                 <Button variant="outline" size="sm" as="a" :href="route('index')"><ArrowLeft /> Kembali</Button>
             </template>

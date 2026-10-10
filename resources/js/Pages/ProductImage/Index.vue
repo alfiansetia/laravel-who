@@ -284,7 +284,7 @@ load();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Gallery foto product + upload + collage">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
                 <Button size="sm" @click="openUpload"><Upload /> Upload</Button>

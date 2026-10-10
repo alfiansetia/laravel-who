@@ -104,7 +104,7 @@ function removeRow(id) {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Nilai total sebelum pajak dibagi rata per unit, dikali unit kirim, ditambah pajak">
+        <PageHeader :title="props.title">
             <template #actions>
                 <Button size="sm" @click="addRow"><Plus /> Tambah</Button>
             </template>

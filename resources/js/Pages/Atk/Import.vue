@@ -97,7 +97,7 @@ const tableRows = computed(() => table.rows.value);
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Import ATK dari CSV (Kode, Nama, Satuan)">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="ghost" size="sm" @click="router.visit('/atk')"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="rows = []; syncTable()">Hapus Data</Button>

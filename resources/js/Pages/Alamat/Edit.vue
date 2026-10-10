@@ -71,7 +71,7 @@ async function duplicate() {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`DO ${record?.do ?? ''}`">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="detailRef?.openAdd()">Tambah Product</Button>

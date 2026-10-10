@@ -84,7 +84,7 @@ async function deleteRow() {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`Problem ${record?.number ?? ''}`">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goList"><ArrowLeft /> Kembali</Button>
                 <Button variant="outline" size="sm" @click="goEdit"><Pencil /> Edit</Button>

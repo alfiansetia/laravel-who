@@ -31,7 +31,7 @@ function onSaved(id) {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Buat alamat pengiriman baru">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button size="sm" @click="save"><Save /> Simpan</Button>

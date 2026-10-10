@@ -90,7 +90,7 @@ function download() {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`Kargan ${record.number ?? ''}`">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="download"><Download /> Download</Button>
                 <Button variant="outline" size="sm" @click="duplicate"><Copy /> Duplicate</Button>

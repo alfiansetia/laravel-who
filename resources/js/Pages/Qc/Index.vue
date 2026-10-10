@@ -297,7 +297,7 @@ onMounted(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Isi pemeriksaan lalu unduh dokumen QC (.docx)" />
+        <PageHeader :title="props.title" />
 
         <Card class="p-4">
             <div class="flex items-center gap-3">

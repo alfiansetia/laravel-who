@@ -647,7 +647,7 @@ loadProgress(true).then(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Data izin edar produk + sync Kemenkes">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['kategori', 'nomor', 'terbit', 'exp', 'merk', 'jenis', 'pendaftar', 'pabrik'], 'izin-edar')"><Copy /> Salin</Button>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { Copy, Download, RefreshCw, Scale } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
@@ -61,7 +61,22 @@ const table = useClientTable(async () => {
     return { data: list.map(mapRow) };
 }, { perPage: 10, searchKeys: ['code', 'name'] });
 
-const rawAll = computed(() => table.allRows.value);
+const filteredAll = computed(() => {
+    let out = table.filtered.value;
+    if (statusFilter.value !== 'all') {
+        out = out.filter((r) => r.status === statusFilter.value);
+    }
+    return out;
+});
+
+const totalFiltered = computed(() => filteredAll.value.length);
+
+const pageRows = computed(() => {
+    const start = (table.page.value - 1) * table.perPage.value;
+    return filteredAll.value.slice(start, start + table.perPage.value);
+});
+
+const totalPagesFiltered = computed(() => Math.max(1, Math.ceil(totalFiltered.value / table.perPage.value)));
 
 function parseDecimal(value, decimals = 2) {
     if (value === null || value === undefined || value === '') {
@@ -90,16 +105,6 @@ function validationMessage(e, fallback) {
     return e.response?.data?.message ?? fallback;
 }
 
-function applyStatusFilter() {
-    if (statusFilter.value === 'all') {
-        table.setRows(rawAll.value);
-    } else {
-        table.setRows(rawAll.value.filter((r) => r.status === statusFilter.value));
-    }
-}
-
-watch(rawAll, () => applyStatusFilter());
-
 const columns = [
     { key: 'code', label: 'Kode', mono: true },
     { key: 'name', label: 'Nama Produk' },
@@ -125,24 +130,24 @@ const activeCount = computed(() => (table.search.value ? 1 : 0) + (statusFilter.
 
 function setStatusFilter(v) {
     statusFilter.value = v;
-    applyStatusFilter();
+    table.setPage(1);
 }
 
 function resetFilter() {
     searchBox.value = '';
     table.setSearch('', 0);
     statusFilter.value = 'all';
-    applyStatusFilter();
+    table.setPage(1);
 }
 
 const exportCols = ['code', 'name', 'uom', 'pltbbText', 'note', 'tgl'];
 
 function onCopy() {
-    copyRows(table.filtered.value, exportCols, 'PLTBB');
+    copyRows(filteredAll.value, exportCols, 'PLTBB');
 }
 
 function onDownload() {
-    downloadCsv('spreadsheet-pltbb.csv', table.filtered.value, exportCols);
+    downloadCsv('spreadsheet-pltbb.csv', filteredAll.value, exportCols);
 }
 
 async function syncRow(row) {
@@ -230,7 +235,7 @@ table.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" description="Sinkron dimensi PLTBB spreadsheet ke database produk">
+        <PageHeader :title="props.title">
             <template #actions>
                 <Button variant="outline" size="sm" :disabled="table.loading.value" @click="table.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="onCopy"><Copy /> Salin</Button>
@@ -250,12 +255,12 @@ table.fetch();
 
         <DataTable
             :columns="columns"
-            :rows="table.rows.value"
+            :rows="pageRows"
             :loading="table.loading.value"
             :error="table.error.value"
             :page="table.page.value"
-            :total-pages="table.totalPages.value"
-            :total="table.total.value"
+            :total-pages="totalPagesFiltered"
+            :total="totalFiltered"
             :per-page="table.perPage.value"
             :per-page-options="[10, 25, 50, 100]"
             row-key="code"

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Alamat;
 use App\Models\DetailAlamat;
 use App\Models\Product;
-use App\Services\Breadcrumb;
 use App\Services\DoServices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -52,10 +51,6 @@ class AlamatController extends Controller
             ]);
         }
 
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), false),
-        ]);
-
         return Inertia::render('Alamat/Index', [
             'title' => 'List Alamat',
             'filters' => $request->only(['search', 'page']),
@@ -71,10 +66,6 @@ class AlamatController extends Controller
 
     public function edit(Alamat $alamat)
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), true),
-            new Breadcrumb($alamat->do, route('alamats.edit', $alamat->id), false),
-        ]);
         $data = $alamat;
         $products = Product::query()
             ->select('id', 'code', 'name')

@@ -86,7 +86,7 @@ reload();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" :description="`Total : ${doCount} DO`">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="reload"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['no', 'tgl', 'no_do', 'no_so', 'item', 'qty', 'note'], 'monitor DO')"><Copy /> Salin</Button>

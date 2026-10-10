@@ -178,7 +178,7 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title" description="Arsip lampiran AKL + sinkron Izin Edar">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['reg_no', 'name', 'vendor', 'berlaku', 'expired'], 'akl')"><Copy /> Salin</Button>

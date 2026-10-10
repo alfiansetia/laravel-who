@@ -178,7 +178,7 @@ async function save() {
 
 <template>
     <div class="space-y-4">
-        <PageHeader :title="title" :description="isEdit ? `SO ${record?.no_so ?? ''}` : 'Buat estimasi ongkos kirim baru'">
+        <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
                 <Button size="sm" :disabled="saving" @click="save"><Save /> Simpan</Button>
