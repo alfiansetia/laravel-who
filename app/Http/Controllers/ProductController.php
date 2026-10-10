@@ -26,6 +26,15 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson()) {
+            // Mode ringan untuk dropdown/filter: hanya id, code, name sekaligus.
+            if ($request->boolean('compact')) {
+                $data = Product::query()
+                    ->orderBy('code', 'ASC')
+                    ->get(['id', 'code', 'name']);
+
+                return $this->sendResponse($data, 'Success!');
+            }
+
             $data = Product::query()
                 ->withCount(['images', 'packs'])
                 ->with(['pltbb:id,product_id,p,l,t,b', 'sop:id,product_id'])

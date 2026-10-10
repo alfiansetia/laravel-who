@@ -29,7 +29,7 @@ const query = useTableQuery((p) => api.get('/lot', { params: p }), {
     filters: { product: props.filters.product ?? '' },
 });
 const productOptions = ref([]);
-const searchingProduct = ref(false);
+const loadingProducts = ref(false);
 const traceOpen = ref(false);
 const traceHtml = ref('');
 const traceTable = useClientTable(null, {
@@ -106,22 +106,19 @@ function parseTraceHtml(html) {
 
 const perPageOptions = [10, 25, 50, 100, 500, 1000];
 
-async function searchProduct(keyword) {
-    const q = (keyword ?? '').trim();
-    if (q.length < 1) {
-        productOptions.value = [];
-        return;
-    }
-    searchingProduct.value = true;
+// Opsi produk dimuat sekali di awal (±3rb baris ringan via ?compact=1),
+// ketikan di dropdown difilter lokal oleh SearchableSelect tanpa request lagi.
+async function loadProductOptions() {
+    loadingProducts.value = true;
     try {
-        const res = await api.get('/products/search', { params: { q }, silent: true });
+        const res = await api.get('/products', { params: { compact: 1 }, silent: true });
         const body = res.data?.data ?? [];
         productOptions.value = body.map((p) => ({ label: `[${p.code}] ${p.name}`, value: p.code ?? p.id }));
     } catch (e) {
         productOptions.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal mencari product.');
+        toast.error(e.response?.data?.message ?? 'Gagal memuat daftar product.');
     } finally {
-        searchingProduct.value = false;
+        loadingProducts.value = false;
     }
 }
 
@@ -154,6 +151,7 @@ async function openTrace(row) {
 }
 
 query.fetch();
+loadProductOptions();
 </script>
 
 <template>
@@ -169,7 +167,7 @@ query.fetch();
                 <Input :model-value="searchBox" type="search" placeholder="Cari lot..." @input="onSearchInput" />
             </FormField>
             <FormField label="Produk">
-                <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="searchingProduct" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" @search="searchProduct" />
+                <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="loadingProducts" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" />
             </FormField>
         </FilterPanel>
         <DataTable
