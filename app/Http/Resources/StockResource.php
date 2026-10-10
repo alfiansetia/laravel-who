@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class StockResource extends JsonResource
@@ -9,8 +11,8 @@ class StockResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -19,11 +21,12 @@ class StockResource extends JsonResource
         $id = $pecah_code[0];
         $code = $pecah_code[1];
         $name = $pecah_code[2];
+
         return [
-            'id'        => $id,
-            'quantity'  => $this['quantity'],
-            'code'      => $code,
-            'name'      => $name,
+            'id' => $id,
+            'quantity' => $this['quantity'],
+            'code' => $code,
+            'name' => $name,
         ];
     }
 }

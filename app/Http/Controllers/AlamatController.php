@@ -3,44 +3,402 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alamat;
+use App\Models\DetailAlamat;
 use App\Models\Product;
-use App\Services\Breadcrumb;
+use App\Services\DoServices;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AlamatController extends Controller
 {
-
-    public function index()
+    public function __construct()
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), false),
+        $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
+    }
+
+    public function index(Request $request)
+    {
+        if ($request->wantsJson()) {
+            $perPage = min((int) $request->input('per_page', 25), 200);
+            $page = max((int) $request->input('page', 1), 1);
+
+            $query = Alamat::query();
+
+            if ($request->filled('search')) {
+                $keyword = $request->search;
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('do', 'like', "%{$keyword}%")
+                        ->orWhere('tujuan', 'like', "%{$keyword}%")
+                        ->orWhere('ekspedisi', 'like', "%{$keyword}%")
+                        ->orWhere('alamat', 'like', "%{$keyword}%")
+                        ->orWhere('up', 'like', "%{$keyword}%");
+                });
+            }
+
+            $total = (clone $query)->count();
+
+            $data = $query->orderBy('id', 'desc')
+                ->offset(($page - 1) * $perPage)
+                ->limit($perPage)
+                ->get(['id', 'do', 'tujuan', 'ekspedisi', 'koli', 'created_at']);
+
+            return response()->json([
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => (int) ceil($total / $perPage),
+            ]);
+        }
+
+        return Inertia::render('Alamat/Index', [
+            'title' => 'List Alamat',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        return view('alamat.index', compact(['bcms']))->with(['title' => 'List Alamat']);
     }
 
     public function create()
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), true),
-            new Breadcrumb('Create Alamat', route('alamats.create'), false),
+        return Inertia::render('Alamat/Create', [
+            'title' => 'Create Alamat',
         ]);
-        return view('alamat.create', compact(['bcms']))->with(['title' => 'Create Alamat']);
     }
 
     public function edit(Alamat $alamat)
     {
-        $bcms = collect([
-            new Breadcrumb('List Alamat', route('alamats.index'), true),
-            new Breadcrumb($alamat->do, route('alamats.edit', $alamat->id), false),
-        ]);
         $data = $alamat;
-        $products = Product::all();
-        return view('alamat.edit', compact(['data', 'products', 'bcms']))->with(['title' => 'Edit Alamat']);
+        $products = Product::query()
+            ->select('id', 'code', 'name')
+            ->orderBy('code')
+            ->get();
+
+        return Inertia::render('Alamat/Edit', [
+            'title' => 'Edit Alamat',
+            'record' => $data,
+            'products' => $products,
+        ]);
     }
 
-    public function show(Alamat $alamat)
+    public function show(Request $request, Alamat $alamat)
     {
+        if ($request->wantsJson()) {
+            $detail = $alamat->detail()->get();
+            foreach ($detail as $key => $item) {
+                $item->update(['order' => $key]);
+            }
+            $data = $alamat->load('detail.product');
+
+            return $this->sendResponse($data);
+        }
+
         $data = $alamat;
+
         return view('alamat.show', compact('data'))->with(['title' => 'Detail Alamat']);
+    }
+
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'tujuan' => 'required',
+            'alamat' => 'required',
+            'do' => 'required',
+            'is_do' => 'nullable|in:yes,no',
+            'is_pk' => 'nullable|in:yes,no',
+            'is_banting' => 'nullable|in:yes,no',
+            'is_last_koli' => 'nullable|in:yes,no',
+            'is_asuransi' => 'nullable|in:yes,no',
+        ]);
+
+        $param = [
+            'tujuan' => $request->tujuan,
+            'alamat' => $request->alamat,
+            'ekspedisi' => $request->ekspedisi,
+            'koli' => $request->koli,
+            'up' => $request->up,
+            'tlp' => $request->tlp,
+            'do' => $request->do,
+            'epur' => $request->epur,
+            'untuk' => $request->untuk,
+            'nilai' => $request->nilai,
+            'note' => $request->note,
+            'is_do' => $request->is_do ?? 'no',
+            'is_pk' => $request->is_pk ?? 'no',
+            'is_banting' => $request->is_banting ?? 'no',
+            'is_last_koli' => $request->is_last_koli ?? 'no',
+            'is_asuransi' => $request->is_asuransi ?? 'no',
+        ];
+        $alamat = Alamat::create($param);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($alamat->load('detail'), 'Created!');
+        }
+
+        return redirect()->route('alamats.index')->with('success', 'Created!');
+    }
+
+    public function update(Request $request, Alamat $alamat)
+    {
+        $this->validate($request, [
+            'tujuan' => 'required',
+            'alamat' => 'required',
+            'do' => 'required',
+            'is_do' => 'nullable|in:yes,no',
+            'is_pk' => 'nullable|in:yes,no',
+            'is_banting' => 'nullable|in:yes,no',
+            'is_last_koli' => 'nullable|in:yes,no',
+            'is_asuransi' => 'nullable|in:yes,no',
+            // 'detail'    => 'required|array|min:1',
+        ]);
+
+        $param = [
+            'tujuan' => $request->tujuan,
+            'alamat' => $request->alamat,
+            'ekspedisi' => $request->ekspedisi,
+            'koli' => $request->koli,
+            'up' => $request->up,
+            'tlp' => $request->tlp,
+            'do' => $request->do,
+            'epur' => $request->epur,
+            'untuk' => $request->untuk,
+            'nilai' => $request->nilai,
+            'note' => $request->note,
+            'is_do' => $request->is_do ?? 'no',
+            'is_pk' => $request->is_pk ?? 'no',
+            'is_banting' => $request->is_banting ?? 'no',
+            'is_last_koli' => $request->is_last_koli ?? 'no',
+            'is_asuransi' => $request->is_asuransi ?? 'no',
+        ];
+        $alamat->update($param);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($alamat->load('detail'), 'Updated!');
+        }
+
+        return redirect()->route('alamats.index')->with('success', 'Updated!');
+    }
+
+    public function destroy(Request $request, Alamat $alamat)
+    {
+        $alamat->delete();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($alamat, 'Deleted!');
+        }
+
+        return redirect()->route('alamats.index')->with('success', 'Deleted!');
+    }
+
+    public function duplicate(Request $request, Alamat $alamat)
+    {
+        $data = $alamat->replicate();
+        $data->save();
+        foreach ($alamat->detail as $item) {
+            $newItem = $item->replicate();
+            $newItem->alamat_id = $data->id;
+            $newItem->save();
+        }
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($data, 'Success Duplicate!');
+        }
+
+        return redirect()->route('alamats.index')->with('success', 'Success Duplicate!');
+    }
+
+    public function sync(Request $request, Alamat $alamat)
+    {
+        $id = 0;
+        $do = $alamat->do;
+        $json = DoServices::getAll($do);
+        if (count($json['records'] ?? []) > 0) {
+            $id = intval($json['records'][0]['id']);
+        }
+        $detail = DoServices::detail($id);
+        $pd_jd = [];
+
+        $last_key = 0;
+        $details = DetailAlamat::query()->where('alamat_id', $alamat->id)->orderBy('order')->get();
+        foreach ($details as $key => $item) {
+            $item->update([
+                'order' => $key,
+            ]);
+            $last_key++;
+        }
+        foreach (($detail['move_ids_detail'] ?? []) as $item) {
+            $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
+                if (isset($item['product_id'][0], $value['product_id'][0])) {
+                    return $item['product_id'][0] === $value['product_id'][0];
+                }
+            });
+
+            if ($lot->count() <= 2) {
+                $values = $lot->map(function ($item) {
+                    $lot = $item['lot_id'][1] ?? '';
+                    $ed = $item['expired_date_do'] ?? '';
+                    if ($lot && $ed) {
+                        $ed = odoo_datetime($ed, 'd/m/Y');
+
+                        return $lot.' Ed. '.$ed;
+                    } elseif ($lot) {
+                        return $lot;
+                    }
+                })->implode(', ');
+            } else {
+                $values = '';
+            }
+
+            preg_match('/\[(.*?)\]/', ($item['product_id'][1] ?? ''), $matches);
+            if (isset($matches[1])) {
+                $pro = Product::query()->where('code', $matches[1])->first();
+                if ($pro) {
+                    array_push($pd_jd, [
+                        'code' => $matches[1],
+                        'qty' => $item['quantity_done'].' Ea',
+                        'default' => $item['product_id'][1],
+                        'lot' => $values,
+                    ]);
+                    DetailAlamat::create([
+                        'product_id' => $pro->id,
+                        'alamat_id' => $alamat->id,
+                        'qty' => $item['quantity_done'].' Ea',
+                        'lot' => $values,
+                        'order' => $last_key,
+                    ]);
+                    $last_key++;
+                }
+            }
+        }
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
+        }
+
+        return redirect()->back()->with('success', 'Success!');
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:alamats,id',
+        ]);
+        $deleted = Alamat::whereIn('id', $request->ids)->delete();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse([
+                'deleted_count' => $deleted,
+            ], 'Alamat deleted successfully.');
+        }
+
+        return redirect()->route('alamats.index')->with('success', 'Alamat deleted successfully.');
+    }
+
+    public function detailStore(Request $request)
+    {
+        $this->validate($request, [
+            'alamat' => 'required|exists:alamats,id',
+            'product' => 'required|exists:products,id',
+            'qty' => 'required',
+            'lot' => 'nullable',
+            'desc' => 'nullable',
+        ]);
+        $last_order = (DetailAlamat::where('alamat_id', $request->alamat)->max('order') ?? 0) + 1;
+        $detail_alamat = DetailAlamat::create([
+            'alamat_id' => $request->alamat,
+            'product_id' => $request->product,
+            'qty' => $request->qty,
+            'lot' => $request->lot,
+            'desc' => $request->desc,
+            'order' => $last_order,
+        ]);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($detail_alamat, 'Created!');
+        }
+
+        return redirect()->back()->with('success', 'Created!');
+    }
+
+    public function detailUpdate(Request $request, DetailAlamat $detail_alamat)
+    {
+        $this->validate($request, [
+            'qty' => 'required',
+            'lot' => 'nullable',
+            'desc' => 'nullable',
+        ]);
+        $detail_alamat->update([
+            'qty' => $request->qty,
+            'lot' => $request->lot,
+            'desc' => $request->desc,
+        ]);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($detail_alamat, 'Updated!');
+        }
+
+        return redirect()->back()->with('success', 'Updated!');
+    }
+
+    public function detailDestroy(Request $request, DetailAlamat $detail_alamat)
+    {
+        $detail_alamat->delete();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($detail_alamat, 'Deleted!');
+        }
+
+        return redirect()->back()->with('success', 'Deleted!');
+    }
+
+    public function detailOrder(Request $request, DetailAlamat $detail_alamat)
+    {
+        $this->validate($request, [
+            'type' => 'required|in:up,down',
+        ]);
+        $totaldata = DetailAlamat::where('alamat_id', $detail_alamat->alamat_id)->count();
+        if ($totaldata < 2) {
+            if ($request->wantsJson()) {
+                return $this->sendResponse('No Change!');
+            }
+
+            return redirect()->back()->with('success', 'No Change!');
+        }
+
+        $currentOrder = $detail_alamat->order;
+
+        // Tentukan arah naik atau turun
+        if ($request->type == 'up') {
+            // Ambil data dengan order lebih kecil (di atas)
+            $swapTarget = DetailAlamat::where('alamat_id', $detail_alamat->alamat_id)
+                ->where('order', '<', $currentOrder)
+                ->orderByDesc('order')
+                ->first();
+        } else {
+            // Ambil data dengan order lebih besar (di bawah)
+            $swapTarget = DetailAlamat::where('alamat_id', $detail_alamat->alamat_id)
+                ->where('order', '>', $currentOrder)
+                ->orderBy('order', 'asc')
+                ->first();
+        }
+
+        // Jika ada data yang bisa ditukar
+        if ($swapTarget) {
+            // Tukar nilai order-nya
+            $temp = $detail_alamat->order;
+            $detail_alamat->update(['order' => $swapTarget->order]);
+            $swapTarget->update(['order' => $temp]);
+
+            if ($request->wantsJson()) {
+                return $this->sendResponse($detail_alamat->fresh(), 'Berhasil ditukar urutannya.');
+            }
+
+            return redirect()->back()->with('success', 'Berhasil ditukar urutannya.');
+        }
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse('No Change!');
+        }
+
+        return redirect()->back()->with('success', 'No Change!');
     }
 }

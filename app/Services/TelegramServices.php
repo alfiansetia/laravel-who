@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class TelegramServices
 {
@@ -30,13 +30,14 @@ class TelegramServices
     public static function sendToGroup($message)
     {
         $group_id = static::getGroupId();
+
         return static::send($group_id, $message);
     }
 
     public static function send($chat_id, $message)
     {
         try {
-            if (!static::getEnabled()) {
+            if (! static::getEnabled()) {
                 return true;
             }
 
@@ -44,15 +45,16 @@ class TelegramServices
 
             if (empty($token)) {
                 Log::warning('Telegram: Token tidak tersedia');
+
                 return false;
             }
 
-            $url = static::$base_url . "bot$token/sendMessage";
+            $url = static::$base_url."bot$token/sendMessage";
 
             // Kirim request dengan timeout 10 detik
             $post = Http::timeout(10)->post($url, [
                 'chat_id' => $chat_id,
-                'text'    => $message
+                'text' => $message,
             ]);
 
             // Cek apakah request berhasil
@@ -62,8 +64,9 @@ class TelegramServices
                 Log::warning('Telegram: Gagal mengirim pesan', [
                     'chat_id' => $chat_id,
                     'status_code' => $post->status(),
-                    'response' => $post->body()
+                    'response' => $post->body(),
                 ]);
+
                 return false;
             }
         } catch (Exception $e) {
@@ -71,8 +74,9 @@ class TelegramServices
             Log::error('Telegram: Exception saat mengirim pesan', [
                 'chat_id' => $chat_id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return false;
         }
     }

@@ -231,15 +231,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($pack->items as $index => $item)
+                    @php($prows = \App\Models\PackItem::flattenedFor($pack))
+                    @foreach ($prows as $r)
                         <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $item->item }}</td>
-                            <td class="text-center">{{ $item->qty }}</td>
+                            <td class="text-center">{{ $r['display_no'] }}</td>
+                            <td @if($r['model']->is_group) style="font-weight:bold;" @endif><span style="display:inline-block;padding-left:{{ $r['level'] * 22 }}px;">{{ $r['model']->item }}</span></td>
+                            <td class="text-center">{{ $r['model']->is_group ? '' : $r['model']->qty }}</td>
                             <td class="text-center">&nbsp;</td>
                         </tr>
                     @endforeach
-                    @for ($i = count($pack->items); $i < 1; $i++)
+                    @for ($i = count($prows); $i < 1; $i++)
                         <tr>
                             <td class="text-center">{{ $i + 1 }}</td>
                             <td>&nbsp;</td>

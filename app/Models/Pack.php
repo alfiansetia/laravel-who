@@ -20,6 +20,11 @@ class Pack extends Model
 
     public function items()
     {
-        return $this->hasMany(PackItem::class);
+        return $this->hasMany(PackItem::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function topItems()
+    {
+        return $this->hasMany(PackItem::class)->whereNull('parent_id')->orderBy('sort_order')->orderBy('id');
     }
 }

@@ -1,37 +1,20 @@
-<!-- Add this inside <body> -->
+<!-- PWA: tombol install + registrasi satu-satunya service worker (/sw.js). -->
 <button id="pwa-install-btn"
     style="display:none; position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 8px; z-index: 1000;"
     hidden>
-    <i class="fas fa-rocket mr-1"></i>Install App
+    <i data-lucide="download" class="mr-1"></i>Install App
 </button>
 
-<script>
-    let installPrompt = null;
-    const installButton = document.querySelector("#pwa-install-btn");
-
-    window.addEventListener("beforeinstallprompt", (event) => {
-        event.preventDefault();
-        installPrompt = event;
-        installButton.removeAttribute("hidden");
-    });
-</script>
-
 <script src="{{ asset('pwa-install.js') }}"></script>
-<script src="{{ asset('sw.js') }}"></script>
 <script>
-    if ("serviceWorker" in navigator) {
-        // Register a service worker hosted at the root of the
-        // site using the default scope.
-        navigator.serviceWorker.register("/sw.js").then(
-            (registration) => {
-                console.log("✅ Service worker pwa registration succeeded");
-                // console.log("Service worker registration succeeded:", registration);
-            },
-            (error) => {
-                console.error(`❌ Service worker pwa registration failed: ${error}`);
-            },
+    // Naikkan setiap mengubah resources/views/sw.blade.php agar klien update.
+    const SW_VERSION = '3';
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(`/sw.js?v=${SW_VERSION}`).then(
+            () => console.log('Service worker PWA terdaftar'),
+            (error) => console.error(`Service worker PWA gagal: ${error}`),
         );
     } else {
-        console.error("❌ Service workers are not supported.");
+        console.error('Service workers tidak didukung.');
     }
 </script>

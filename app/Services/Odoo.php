@@ -3,17 +3,21 @@
 namespace App\Services;
 
 use App\Exceptions\OdooException;
+use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Arr;
-use Exception;
 
 class Odoo
 {
     public static array $data_param = [];
+
     public static array $headers = [];
+
     public static bool $state_file = false;
+
     public static string $url_param = '';
+
     public static string $method = 'GET';
 
     public static function getBaseUrl()
@@ -43,50 +47,57 @@ class Odoo
 
     public static function getSession()
     {
-        $data  = OdooSession::getCurrentSession();
+        $data = OdooSession::getCurrentSession();
+
         return Arr::get($data, 'session_id', '');
     }
 
     public static function getUID()
     {
-        $data  = OdooSession::getCurrentSession();
+        $data = OdooSession::getCurrentSession();
+
         return Arr::get($data, 'uid', 0);
     }
 
     public static function setCookie()
     {
-        static::$headers['Cookie'] = 'session_id=' .  static::getSession();
+        static::$headers['Cookie'] = 'session_id='.static::getSession();
+
         return new static;
     }
 
     public static function withData(array $data)
     {
         static::$data_param = $data;
+
         return new static;
     }
 
     public static function withUrlParam(string $url_param)
     {
         static::$url_param = $url_param;
+
         return new static;
     }
 
     public static function method(string $method)
     {
         static::$method = $method;
+
         return new static;
     }
 
     public static function asJson()
     {
         static::$headers = [
-            'accept'            => 'application/json, text/javascript, */*; q=0.01',
-            'accept-language'   => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'content-type'      => 'application/json',
-            'x-requested-with'  => 'XMLHttpRequest',
-            'Accept-Encoding'   => 'gzip, deflate',
+            'accept' => 'application/json, text/javascript, */*; q=0.01',
+            'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'content-type' => 'application/json',
+            'x-requested-with' => 'XMLHttpRequest',
+            'Accept-Encoding' => 'gzip, deflate',
         ];
         static::setCookie();
+
         return new static;
     }
 
@@ -95,6 +106,7 @@ class Odoo
         static::$state_file = true;
         static::$headers = [];
         static::setCookie();
+
         return new static;
     }
 
@@ -108,7 +120,7 @@ class Odoo
             throw new OdooException('Odoo Base URL tidak dikonfigurasi', 500, []);
         }
 
-        $url = $base_url . static::$url_param;
+        $url = $base_url.static::$url_param;
 
         // HTTP request dengan timeout 15 detik
         $http = Http::timeout(15)->withHeaders(static::$headers);
@@ -121,19 +133,19 @@ class Odoo
             }
         } catch (Exception $e) {
             throw new OdooException(
-                "Koneksi ke Odoo Gagal: Odoo Error!",
+                'Koneksi ke Odoo Gagal: Odoo Error!',
                 500,
                 [
-                    'detail'    => $e->getMessage(),
+                    'detail' => $e->getMessage(),
                 ]
             );
         }
         $body = json_decode($response->body(), true);
         $json = $response->json();
 
-        if (!is_array($body)) {
+        if (! is_array($body)) {
             throw new OdooException(
-                "Invalid Odoo response: " . $response->body(),
+                'Invalid Odoo response: '.$response->body(),
                 $response->status(),
                 [
                     'status' => $response->status(),
@@ -145,12 +157,12 @@ class Odoo
         if (Arr::exists($body, 'error')) {
             $message = Arr::get($body, 'error.message', 'Unknown');
             throw new OdooException(
-                "Odoo Internal Error: " . $message,
+                'Odoo Internal Error: '.$message,
                 500,
                 $body
             );
         }
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new OdooException(
                 'Odoo API Error',
                 500,
@@ -161,44 +173,70 @@ class Odoo
         if (static::$state_file) {
             return $response;
         }
+
         return $json;
+    }
+
+    /**
+     * Ambil identitas pemilik session_id langsung dari Odoo.
+     * Tidak butuh uid tersimpan, jadi aman dipakai untuk memverifikasi
+     * session yang baru ditempel manual (uid file mungkin basi).
+     *
+     * @throws OdooException bila session kedaluwarsa/invalid.
+     */
+    public static function getSessionInfo(?string $sessionId = null)
+    {
+        static::$state_file = false;
+        static::asJson()
+            ->withUrlParam('/web/session/get_session_info')
+            ->withData([
+                'jsonrpc' => '2.0',
+                'method' => 'call',
+                'params' => [],
+            ])
+            ->method('POST');
+        if ($sessionId !== null && $sessionId !== '') {
+            static::$headers['Cookie'] = 'session_id='.$sessionId;
+        }
+
+        return static::get();
     }
 
     public static function getProfile()
     {
         $param = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "args" => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
                     [
-                        static::getUID()
+                        static::getUID(),
                     ],
                     [
-                        "image",
-                        "__last_update",
-                        "name",
-                        "lang",
-                        "tz",
-                        "tz_offset",
-                        "company_id",
-                        "notification_type",
-                        "odoobot_state",
-                        "email",
-                        "signature",
-                        "display_name"
-                    ]
+                        'image',
+                        '__last_update',
+                        'name',
+                        'lang',
+                        'tz',
+                        'tz_offset',
+                        'company_id',
+                        'notification_type',
+                        'odoobot_state',
+                        'email',
+                        'signature',
+                        'display_name',
+                    ],
                 ],
-                "model" => "res.users",
-                "method" => "read",
-                "kwargs" => [
-                    "context" => [
-                        "lang" => "en_US",
-                        "tz" => "Asia/Jakarta",
-                        "uid" => 192,
-                        "bin_size" => true
-                    ]
-                ]
+                'model' => 'res.users',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        'lang' => 'en_US',
+                        'tz' => 'Asia/Jakarta',
+                        'uid' => 192,
+                        'bin_size' => true,
+                    ],
+                ],
             ],
         ];
         $res = static::asJson()
@@ -206,6 +244,7 @@ class Odoo
             ->withData($param)
             ->method('POST')
             ->get();
+
         return $res;
     }
 }

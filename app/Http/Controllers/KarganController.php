@@ -4,46 +4,206 @@ namespace App\Http\Controllers;
 
 use App\Models\Kargan;
 use App\Models\Product;
-use App\Services\Breadcrumb;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Inertia\Inertia;
+use Inertia\Response;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class KarganController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        $bcms = collect([
-            new Breadcrumb('List Kargan', route('kargans.index'), false),
-        ]);
-        return view('kargan.index', compact('bcms'))->with(['title' => 'List Kargan']);
+        $this->middleware('env_auth')->only(['destroy', 'destroy_batch']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request)
     {
-        $bcms = collect([
-            new Breadcrumb('List Kargan', route('kargans.index'), true),
-            new Breadcrumb('Create Kargan', route('kargans.create'), false),
+        if ($request->wantsJson()) {
+            $perPage = min((int) $request->input('per_page', 25), 200);
+            $page = max((int) $request->input('page', 1), 1);
+
+            $query = Kargan::query()->with('product');
+
+            if ($request->filled('search')) {
+                $keyword = $request->search;
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('number', 'like', "%{$keyword}%")
+                        ->orWhere('sn', 'like', "%{$keyword}%")
+                        ->orWhereHas('product', function ($q2) use ($keyword) {
+                            $q2->where('code', 'like', "%{$keyword}%")
+                                ->orWhere('name', 'like', "%{$keyword}%");
+                        });
+                });
+            }
+
+            $total = (clone $query)->count();
+
+            $data = $query->orderBy('id', 'desc')
+                ->offset(($page - 1) * $perPage)
+                ->limit($perPage)
+                ->get();
+
+            return response()->json([
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_pages' => (int) ceil($total / $perPage),
+            ]);
+        }
+
+        return Inertia::render('Kargan/Index', [
+            'title' => 'List Kargan',
+            'filters' => $request->only(['search', 'page']),
         ]);
-        $products = Product::all();
+    }
+
+    public function create(): Response
+    {
         $last = Kargan::latest()->first();
-        $new_number = Kargan::generateNumber();
-        $last_number = $last ? $last->number : '-';
-        return view('kargan.create', compact('products', 'bcms', 'new_number', 'last_number'))->with(['title' => 'Create Kargan']);
+
+        return Inertia::render('Kargan/Create', [
+            'title' => 'Create Kargan',
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name']),
+            'newNumber' => Kargan::generateNumber(),
+            'lastNumber' => $last ? $last->number : '-',
+            'defaultDate' => now()->format('Y-m-d'),
+            'picOptions' => ['Karim Ash Shidik', 'Sofyan Saputra'],
+        ]);
     }
 
-    public function edit(Kargan $kargan)
+    public function store(Request $request)
     {
-        $products = Product::all();
-        $data = $kargan->load('product');
-        $bcms = collect([
-            new Breadcrumb('List Kargan', route('kargans.index'), true),
-            new Breadcrumb($data->number, route('kargans.edit', $data->id), false),
+        $this->validate($request, [
+            'product_id' => 'required|exists:products,id',
+            'date' => 'date_format:Y-m-d',
+            'number' => 'required|string|max:200',
+            'sn' => 'nullable|string|max:200',
+            'pic' => 'required|string|max:200',
         ]);
+        $masa = Kargan::getDefaultMasaAttribute();
+        $kargan = Kargan::create([
+            'product_id' => $request->product_id,
+            'date' => $request->date,
+            'number' => $request->number,
+            'sn' => $request->sn,
+            'pic' => $request->pic,
+            'masa' => $masa,
+        ]);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($kargan, 'Created!');
+        }
+
+        return redirect()->back()->with('success', 'Created!');
+    }
+
+    public function show(Request $request, Kargan $kargan)
+    {
+        if ($request->wantsJson()) {
+            return $this->sendResponse($kargan->load('product'), 'Success!');
+        }
+
+        return redirect()->back();
+    }
+
+    public function edit(Kargan $kargan): Response
+    {
         $last = Kargan::whereNot('id', $kargan->id)->latest()->first();
-        $last_number = $last ? $last->number : '-';
-        return view('kargan.edit', compact(['data', 'products', 'bcms', 'last_number']))->with(['title' => 'Edit Kargan']);
+
+        return Inertia::render('Kargan/Edit', [
+            'title' => 'Edit Kargan',
+            'record' => $kargan->load('product:id,code,name'),
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name']),
+            'lastNumber' => $last ? $last->number : '-',
+            'picOptions' => ['Karim Ash Shidik', 'Sofyan Saputra'],
+        ]);
+    }
+
+    public function update(Request $request, Kargan $kargan)
+    {
+        $this->validate($request, [
+            'product_id' => 'required|exists:products,id',
+            'date' => 'date_format:Y-m-d',
+            'number' => 'required|string|max:200',
+            'sn' => 'nullable|string|max:200',
+            'pic' => 'required|string|max:200',
+        ]);
+        $masa = Kargan::getDefaultMasaAttribute();
+        $kargan->update([
+            'product_id' => $request->product_id,
+            'date' => $request->date,
+            'number' => $request->number,
+            'sn' => $request->sn,
+            'pic' => $request->pic,
+            'masa' => $masa,
+        ]);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($kargan, 'Updated!');
+        }
+
+        return redirect()->back()->with('success', 'Updated!');
+    }
+
+    public function destroy(Request $request, Kargan $kargan)
+    {
+        $kargan->delete();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($kargan, 'Deleted!');
+        }
+
+        return redirect()->back()->with('success', 'Deleted!');
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:kargans,id',
+        ]);
+        $deleted = Kargan::whereIn('id', $request->ids)->delete();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse([
+                'deleted_count' => $deleted,
+            ], 'Kargan deleted successfully.');
+        }
+
+        return redirect()->back()->with('success', 'Kargan deleted successfully.');
+    }
+
+    public function duplicate(Request $request, Kargan $kargan)
+    {
+        $data = $kargan->replicate();
+        $data->save();
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($data, 'Success Duplicate!');
+        }
+
+        return redirect()->back()->with('success', 'Success Duplicate!');
+    }
+
+    public function download(Kargan $kargan)
+    {
+        $file = public_path('master/kargan.docx');
+        Carbon::setLocale('id');
+        $date = Carbon::parse($kargan->date)->translatedFormat('d F Y');
+        $template = new TemplateProcessor($file);
+        $template->setValue('prod_name', htmlspecialchars($kargan->product->name));
+        $template->setValue('prod_code', htmlspecialchars($kargan->product->code));
+        $template->setValue('date', htmlspecialchars($date));
+        $template->setValue('number', htmlspecialchars($kargan->number));
+        $template->setValue('sn', htmlspecialchars($kargan->sn));
+        $template->setValue('masa', htmlspecialchars($kargan->masa));
+        $template->setValue('pic', htmlspecialchars($kargan->pic));
+        $name = Kargan::generateNameFile($kargan->number);
+        $path = storage_path('app/'.$name.'.docx');
+        $template->saveAs($path);
+
+        return response()->download($path)->deleteFileAfterSend();
     }
 }

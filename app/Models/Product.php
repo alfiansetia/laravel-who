@@ -12,8 +12,8 @@ class Product extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'id'        => 'integer',
-        'odoo_id'   => 'integer',
+        'id' => 'integer',
+        'odoo_id' => 'integer',
     ];
 
     public function packs()

@@ -67,6 +67,11 @@ class ProductImageStorage
         }
     }
 
+    public static function isS3Configured(): bool
+    {
+        return ! empty(config('filesystems.disks.s3.bucket'));
+    }
+
     /**
      * URL publik TANPA network call ke S3.
      *
@@ -77,6 +82,7 @@ class ProductImageStorage
      * Aturan:
      * - Selama file local masih ada -> serve local (masa transisi aman).
      * - Setelah sync --delete-local / upload baru (hanya ada di S3) -> URL S3.
+     * - Kalau bucket S3 belum dikonfigurasi / error -> null (jangan 500).
      */
     public static function url(?string $filename): ?string
     {
@@ -88,7 +94,17 @@ class ProductImageStorage
             return asset('storage/products/'.$filename);
         }
 
-        return Storage::disk(self::DISK)->url(self::key($filename));
+        if (! self::isS3Configured()) {
+            return null;
+        }
+
+        try {
+            return Storage::disk(self::DISK)->url(self::key($filename));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     public static function delete(string $filename): void

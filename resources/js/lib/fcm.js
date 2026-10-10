@@ -1,0 +1,162 @@
+import api from '@/lib/axios';
+
+const TOKEN_KEY = 'fcm_token';
+const DEVICE_KEY = 'fcm_device_id';
+const ASKED_KEY = 'fcm_perm_asked';
+// Samakan dengan SW_VERSION di app.blade.php + resources/views/sw.blade.php.
+const SW_VERSION = '3';
+
+let initialized = false;
+let vapidKey = null;
+
+function firebaseApp() {
+    if (typeof window.firebase === 'undefined' || typeof window.firebase.messaging === 'undefined') {
+        return null;
+    }
+    return window.firebase;
+}
+
+export function fcmToken() {
+    return localStorage.getItem(TOKEN_KEY);
+}
+
+// Browser ID stabil per origin: generate sekali (UUID v4), simpan di
+// localStorage. Dipakai backend sebagai key upsert agar refresh token
+// FCM tidak menumpuk baris.
+export function fcmDeviceId() {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (id && id.trim() !== '') {
+        return id;
+    }
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        id = crypto.randomUUID();
+    } else {
+        id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
+    }
+    localStorage.setItem(DEVICE_KEY, id);
+    return id;
+}
+
+export function fcmSupported() {
+    try {
+        return 'Notification' in window && !!firebaseApp()?.messaging.isSupported();
+    } catch {
+        return false;
+    }
+}
+
+export function initFcm(config) {
+    if (initialized || !('Notification' in window) || !('serviceWorker' in navigator)) {
+        return;
+    }
+    const fb = firebaseApp();
+    if (!fb || !fcmSupported()) {
+        return;
+    }
+    initialized = true;
+    vapidKey = config.vapidKey || null;
+    if (!vapidKey) {
+        console.log('FCM: FIREBASE_VAPID_KEY belum diisi — token push tidak akan terbit.');
+    }
+    // Satu-satunya SW scope root (offline + FCM). Jangan daftarkan SW lain.
+    navigator.serviceWorker
+        .register(`/sw.js?v=${SW_VERSION}`)
+        .then((registration) => {
+            if (fb.apps.length === 0) {
+                fb.initializeApp(config);
+            }
+            const messaging = fb.messaging();
+            messaging.onMessage(handleForegroundMessage);
+            if (Notification.permission === 'granted') {
+                syncFcmToken(messaging, false, registration);
+            } else if (Notification.permission === 'default' && !localStorage.getItem(ASKED_KEY)) {
+                localStorage.setItem(ASKED_KEY, '1');
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        syncFcmToken(messaging, false, registration);
+                    }
+                });
+            }
+        })
+        .catch((err) => {
+            console.log('Service Worker gagal:', err);
+        });
+}
+
+export function refreshFcmToken() {
+    if (!('Notification' in window) || !fcmSupported()) {
+        return false;
+    }
+    const messaging = firebaseApp().messaging();
+    if (Notification.permission === 'granted') {
+        navigator.serviceWorker.ready.then((registration) => syncFcmToken(messaging, true, registration));
+        return true;
+    }
+    Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+            navigator.serviceWorker.ready.then((registration) => syncFcmToken(messaging, true, registration));
+        }
+    });
+    return true;
+}
+
+export function testLocalNotif() {
+    new Notification('Notifikasi lokal aktif', {
+        body: 'Ini tes notifikasi dari aplikasi.',
+        icon: '/images/asa.png',
+        vibrate: [200, 100, 200],
+    });
+}
+
+function syncFcmToken(messaging, force = false, registration = null) {
+    // VAPID wajib untuk Web Push (dari shared props `firebase`, backend).
+    const options = registration ? { serviceWorkerRegistration: registration } : {};
+    if (vapidKey) {
+        options.vapidKey = vapidKey;
+    }
+    messaging
+        .getToken(options)
+        .then((token) => {
+            const cached = localStorage.getItem(TOKEN_KEY);
+            // Migrasi prod: browser lama sudah punya token tapi belum punya
+            // device_id → wajib POST sekali agar server mengenalinya.
+            const needsDeviceId = !localStorage.getItem(DEVICE_KEY);
+            if (!force && !needsDeviceId && cached && cached === token) {
+                return;
+            }
+            localStorage.setItem(TOKEN_KEY, token);
+            api.post(route('api.tokens.store'), {
+                token,
+                device_id: fcmDeviceId(),
+                topic: 'general',
+                platform: navigator.platform || 'unknown',
+            }).catch((err) => {
+                console.log('Gagal mengirim token:', err);
+            });
+        })
+        .catch((err) => {
+            console.log('Gagal mendapatkan token:', err);
+        });
+}
+
+function handleForegroundMessage(payload) {
+    const { title, body, icon, url } = payload.data ?? {};
+    const notification = new Notification(title || 'Notifikasi Baru', {
+        body: body || '',
+        icon,
+        data: { url },
+        vibrate: [200, 100, 200],
+    });
+    // Hanya bisa diklik kalau server mengirim url (so_id valid).
+    // Tanpa url, notif tampil tapi klik tidak membuka tab baru.
+    if (url) {
+        notification.onclick = function (event) {
+            event.preventDefault();
+            window.open(this.data.url, '_blank');
+            notification.close();
+        };
+    }
+}

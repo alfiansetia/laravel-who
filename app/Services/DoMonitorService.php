@@ -4,7 +4,6 @@ namespace App\Services;
 
 class DoMonitorService extends Odoo
 {
-
     public static function getAll()
     {
         $tesparam = [
@@ -16,31 +15,31 @@ class DoMonitorService extends Odoo
                     [
                         'picking_type_id',
                         '=',
-                        2
+                        2,
                     ],
                     '|',
                     '|',
                     [
                         'state',
                         '=',
-                        'draft'
+                        'draft',
                     ],
                     [
                         'state',
                         'in',
                         [
                             'confirmed',
-                            'waiting'
-                        ]
+                            'waiting',
+                        ],
                     ],
                     [
                         'state',
                         'in',
                         [
                             'assigned',
-                            'partially_available'
-                        ]
-                    ]
+                            'partially_available',
+                        ],
+                    ],
                 ],
                 'fields' => [
                     'name',
@@ -76,19 +75,19 @@ class DoMonitorService extends Odoo
                     'active_model' => 'stock.picking.type',
                     'active_id' => 2,
                     'active_ids' => [
-                        2
+                        2,
                     ],
                     'search_default_picking_type_id' => [
-                        2
+                        2,
                     ],
                     'default_picking_type_id' => 2,
                     'contact_display' => 'partner_address',
                     'search_default_available' => 1,
-                    'search_disable_custom_filters' => true
-                ]
+                    'search_disable_custom_filters' => true,
+                ],
             ],
         ];
-        $tes =  parent::asJson()
+        $tes = parent::asJson()
             ->withUrlParam('/web/dataset/search_read')
             ->method('POST')
             ->withData($tesparam)
@@ -106,76 +105,76 @@ class DoMonitorService extends Odoo
             ->flatten()
             ->all();
         $paramdetail = [
-            "jsonrpc" => "2.0",
-            "method" => "call",
-            "params" => [
-                "args" => [
+            'jsonrpc' => '2.0',
+            'method' => 'call',
+            'params' => [
+                'args' => [
                     $move_ids_without_package,
                     [
-                        "product_id",
-                        "name",
-                        "date_expected",
-                        "state",
-                        "picking_type_id",
-                        "location_id",
-                        "location_dest_id",
-                        "scrapped",
-                        "picking_code",
-                        "product_type",
-                        "show_details_visible",
-                        "show_reserved_availability",
-                        "show_operations",
-                        "additional",
-                        "has_move_lines",
-                        "is_locked",
-                        "x_studio_lot",
-                        "x_studio_field_X7gbX",
-                        "hs_code",
-                        "akl_id",
-                        "exp_date",
-                        "is_initial_demand_editable",
-                        "is_quantity_done_editable",
-                        "product_uom_qty",
-                        "reserved_availability",
-                        "quantity_done",
-                        "product_uom"
-                    ]
+                        'product_id',
+                        'name',
+                        'date_expected',
+                        'state',
+                        'picking_type_id',
+                        'location_id',
+                        'location_dest_id',
+                        'scrapped',
+                        'picking_code',
+                        'product_type',
+                        'show_details_visible',
+                        'show_reserved_availability',
+                        'show_operations',
+                        'additional',
+                        'has_move_lines',
+                        'is_locked',
+                        'x_studio_lot',
+                        'x_studio_field_X7gbX',
+                        'hs_code',
+                        'akl_id',
+                        'exp_date',
+                        'is_initial_demand_editable',
+                        'is_quantity_done_editable',
+                        'product_uom_qty',
+                        'reserved_availability',
+                        'quantity_done',
+                        'product_uom',
+                    ],
                 ],
-                "model" => "stock.move",
-                "method" => "read",
-                "kwargs" => [
-                    "context" => [
-                        "lang" => "en_US",
-                        "tz" => "Asia/Jakarta",
-                        "uid" => 192,
-                        "active_id" => 2,
-                        "active_ids" => [
-                            2
+                'model' => 'stock.move',
+                'method' => 'read',
+                'kwargs' => [
+                    'context' => [
+                        'lang' => 'en_US',
+                        'tz' => 'Asia/Jakarta',
+                        'uid' => 192,
+                        'active_id' => 2,
+                        'active_ids' => [
+                            2,
                         ],
-                        "params" => [
-                            "action" => 384,
-                            "active_id" => 2,
-                            "model" => "stock.picking",
-                            "view_type" => "list",
-                            "menu_id" => 241
+                        'params' => [
+                            'action' => 384,
+                            'active_id' => 2,
+                            'model' => 'stock.picking',
+                            'view_type' => 'list',
+                            'menu_id' => 241,
                         ],
-                        "search_default_picking_type_id" => [
-                            2
+                        'search_default_picking_type_id' => [
+                            2,
                         ],
-                        "default_picking_type_id" => 2,
-                        "contact_display" => "partner_address",
-                        "search_default_available" => 1,
-                        "search_disable_custom_filters" => true,
-                        "picking_type_code" => "outgoing",
-                        "default_picking_id" => 19887,
-                        "form_view_ref" => "stock.view_move_picking_form",
-                        "address_in_id" => 36348,
-                        "default_location_id" => 12,
-                        "default_location_dest_id" => 9
-                    ]
-                ]
+                        'default_picking_type_id' => 2,
+                        'contact_display' => 'partner_address',
+                        'search_default_available' => 1,
+                        'search_disable_custom_filters' => true,
+                        'picking_type_code' => 'outgoing',
+                        'default_picking_id' => 19887,
+                        'form_view_ref' => 'stock.view_move_picking_form',
+                        'address_in_id' => 36348,
+                        'default_location_id' => 12,
+                        'default_location_dest_id' => 9,
+                    ],
+                ],
             ],
-            "id" => 748176687
+            'id' => 748176687,
         ];
         $res2 = parent::asJson()
             ->withUrlParam('/web/dataset/call_kw/stock.move/read')
@@ -190,8 +189,10 @@ class DoMonitorService extends Odoo
                 ->map(function ($id) use ($details) {
                     return $details->get($id);
                 })->filter()->values()->all();
+
             return $item;
         })->all();
+
         return $result;
     }
 }

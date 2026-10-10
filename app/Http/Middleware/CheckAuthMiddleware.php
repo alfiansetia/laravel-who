@@ -13,7 +13,7 @@ class CheckAuthMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -21,8 +21,14 @@ class CheckAuthMiddleware
             Log::info('CheckAuthMiddleware: unauthenticated or expired session');
 
             // Jika request dari API, return JSON
-            if ($request->expectsJson() || $request->is('api/*')) {
+            if ($request->expectsJson() || $request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['message' => 'Session expired or unauthorized.'], 401);
+            }
+
+            // Ingat halaman tujuan agar habis login bisa kembali otomatis
+            // (mis. dibuka lagi /settings, bukan nyangkut di /home).
+            if ($request->isMethodCacheable()) {
+                session()->put('url.intended', $request->fullUrl());
             }
 
             // Jika request dari web, redirect ke home dengan pesan

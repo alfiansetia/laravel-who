@@ -1,17 +1,21 @@
 name: Deploy to VPS
 
-# Auto-deploy: jalan otomatis setiap push ke main. Manual via tab Actions tetap bisa.
+# Auto-deploy: jalan otomatis setiap push ke master. Manual via tab Actions tetap bisa.
 on:
   push:
     branches: [master]
   workflow_dispatch: {}
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.1
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT || 22 }}
@@ -22,7 +26,9 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             git fetch origin master
             git reset --hard origin/master
-            # --build wajib: source ikut di-bake ke image (COPY . .),
+            # Backup DB sebelum migrate (jangan migrate tanpa jaring pengaman).
+            if [ -f database/database.sqlite ]; then cp database/database.sqlite "database/database.sqlite.bak-$(date +%Y%m%d%H%M%S)"; fi
+            # --build wajib: source + vite build ikut di-bake ke image (COPY . .),
             # tanpa ini container jalan dengan kode lama.
             # who-web/worker/scheduler ikut ter-recreate otomatis karena satu image.
             docker compose up -d --build --remove-orphans

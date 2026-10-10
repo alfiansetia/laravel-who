@@ -16,15 +16,15 @@ class AtkResource extends JsonResource
     {
         // return parent::toArray($request);
         return [
-            'id'            => $this->id,
-            'code'          => $this->code,
-            'name'          => $this->name,
-            'satuan'        => $this->satuan,
-            'desc'          => $this->desc,
-            'stok'          => $this->stok,
-            'created_at'    => $this->created_at,
-            'updated_at'    => $this->updated_at,
-            'transactions'  => $this->whenLoaded('transactions'),
+            'id' => $this->id,
+            'code' => $this->code,
+            'name' => $this->name,
+            'satuan' => $this->satuan,
+            'desc' => $this->desc,
+            'stok' => $this->stok,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'transactions' => $this->whenLoaded('transactions'),
         ];
     }
 }

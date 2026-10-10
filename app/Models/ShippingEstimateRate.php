@@ -69,6 +69,7 @@ class ShippingEstimateRate extends Model
     public function getInsuranceCostAttribute(): float
     {
         $totalInvoice = $this->shippingEstimate->total_invoice_value;
+
         return $totalInvoice * ($this->insurance_percentage / 100);
     }
 

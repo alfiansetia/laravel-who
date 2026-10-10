@@ -9,8 +9,8 @@ class QcLot extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'id'            => 'integer',
-        'product_id'    => 'integer',
+        'id' => 'integer',
+        'product_id' => 'integer',
     ];
 
     public function product()

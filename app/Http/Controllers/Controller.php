@@ -4,12 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Arr;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+
+    /**
+     * Satu-satunya penentu request API/JSON (Inertia + Accept JSON tidak salah cabang).
+     */
+    protected function isApi(Request $request): bool
+    {
+        return $request->wantsJson() || $request->expectsJson() || $request->is('api/*');
+    }
 
     public function sendNotFound()
     {

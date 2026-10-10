@@ -207,7 +207,7 @@
                         $add[] = 'Tlp: ' . $phone;
                     }
                 @endphp
-                {{ $partner['name'] ?? '' }}<br>{!! implode(', ', $add) !!}
+                {{ $partner['name'] ?? '' }}<br>{{ implode(', ', $add) }}
             </div>
 
             <!-- Row 1 & 2, Col 3: DO Info Stack (Spans 2 rows) -->
@@ -271,14 +271,14 @@
                         $add[] = 'Tlp: ' . $phone;
                     }
                 @endphp
-                {!! implode(', ', $add) !!}
+                {{ implode(', ', $add) }}
             </div>
 
             <!-- Row 2, Col 2: Description -->
             <div class="address-box">
                 <div class="box-title">Description:</div>
                 <div style="font-size: 8pt;">
-                    {!! Arr::get($data, 'note_to_wh', '') !!}
+                    {!! nl2br(e(Arr::get($data, 'note_to_wh', ''))) !!}
                 </div>
             </div>
         </div>
@@ -326,8 +326,8 @@
                         $edp = collect($prod_lot)->pluck('ed')->filter()->unique()->implode(', ');
                     @endphp
                     <tr>
-                        <td style="vertical-align: top;">{!! $prod[1] !!}{!! $count < 3 ? '<br><br>' : '' !!}</td>
-                        <td style="vertical-align: top;">{!! $prod[2] !!}</td>
+                        <td style="vertical-align: top;">{{ $prod[1] }}{!! $count < 3 ? '<br><br>' : '' !!}</td>
+                        <td style="vertical-align: top;">{{ $prod[2] }}</td>
                         <td style="vertical-align: top;white-space: nowrap;" class="text-center">
                             {{ Arr::get($line, 'akl_id.1', '') }}</td>
                         <td style="vertical-align: top;" class="text-center">

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Kontak;
 use App\Models\Vendor;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class VendorSeeder extends Seeder

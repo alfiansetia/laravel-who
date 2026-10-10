@@ -11,7 +11,8 @@ use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 class ChunkReadFilter implements IReadFilter
 {
     private int $startRow = 1;
-    private int $endRow   = 100;
+
+    private int $endRow = 100;
 
     /**
      * Set the row range to read in the next load.
@@ -19,7 +20,7 @@ class ChunkReadFilter implements IReadFilter
     public function setRows(int $startRow, int $chunkSize): void
     {
         $this->startRow = $startRow;
-        $this->endRow   = $startRow + $chunkSize;
+        $this->endRow = $startRow + $chunkSize;
     }
 
     /**

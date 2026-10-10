@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Schedule;
 //     $this->comment(Inspiring::quote());
 // })->purpose('Display an inspiring quote')->hourly();
 
-
 Schedule::command('app:monitor-do')
     ->everyMinute()
     ->weekdays()
@@ -19,7 +18,6 @@ Schedule::command('app:monitor-do')
     })->onFailure(function () {
         // Log::error('Cronjob Monitor DO Gagal dijalankan');
     });
-
 
 Schedule::command('app:odoo-login')
     ->hourly()

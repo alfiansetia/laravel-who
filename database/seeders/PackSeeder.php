@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Pack;
 use App\Models\PackingList;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PackSeeder extends Seeder
@@ -19,9 +18,9 @@ class PackSeeder extends Seeder
         foreach ($plGroups as $productId => $items) {
             // Buat satu pack per product_id
             $pack = Pack::create([
-                'product_id'    => $productId,
-                'name'          => 'Default',
-                'vendor_id'     => null,
+                'product_id' => $productId,
+                'name' => 'Default',
+                'vendor_id' => null,
             ]);
 
             // Tambahkan item-item ke pack
@@ -29,7 +28,7 @@ class PackSeeder extends Seeder
                 $items->map(function ($item) {
                     return [
                         'item' => $item->item,
-                        'qty'  => $item->qty,
+                        'qty' => $item->qty,
                     ];
                 })->toArray()
             );

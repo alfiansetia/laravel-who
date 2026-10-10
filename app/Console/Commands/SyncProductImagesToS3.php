@@ -45,6 +45,7 @@ class SyncProductImagesToS3 extends Command
             $filename = $img->name;
             if (! $filename) {
                 $stats['missing_local']++;
+
                 continue;
             }
 
@@ -66,12 +67,14 @@ class SyncProductImagesToS3 extends Command
             if (! $existsLocal) {
                 $stats['missing_local']++;
                 $missing[] = "#{$img->id} {$filename}";
+
                 continue;
             }
 
             if ($dryRun) {
                 $this->line("  would upload: {$filename}");
                 $stats['uploaded']++;
+
                 continue;
             }
 
