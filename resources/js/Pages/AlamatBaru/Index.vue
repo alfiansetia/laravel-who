@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Pencil, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { Copy, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -122,9 +122,6 @@ query.fetch();
             <template #cell-tujuan="{ row }">{{ row.tujuan ?? '-' }}</template>
             <template #cell-ekspedisi="{ row }">{{ row.ekspedisi ?? '-' }}</template>
             <template #cell-koli="{ row }">{{ row.total_koli ?? '-' }} Koli</template>
-            <template #actions="{ row }">
-                <Button variant="outline" size="sm" title="Edit" @click="goEdit(row)"><Pencil /></Button>
-            </template>
         </DataTable>
     </AppLayout>
 </template>
