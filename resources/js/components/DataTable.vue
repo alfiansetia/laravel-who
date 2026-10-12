@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { ChevronLeft, ChevronRight, ChevronsUpDown } from '@lucide/vue';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ChevronsUpDown } from '@lucide/vue';
 import Button from '@/components/ui/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { cn } from '@/lib/utils';
@@ -147,13 +147,19 @@ function onRowClick(row, e) {
                 </select>
                 <span>{{ total > 0 ? `Menampilkan ${start}–${end} dari ${Number(total).toLocaleString('id-ID')} data` : 'Tidak ada data' }}</span>
             </div>
-            <div v-if="totalPages > 1" class="flex items-center gap-2">
-                <Button variant="outline" size="sm" :disabled="page <= 1" @click="emit('update:page', page - 1)">
-                    <ChevronLeft class="size-4" /> <span class="hidden sm:inline">Sebelumnya</span>
+            <div v-if="totalPages > 1" class="flex items-center gap-1">
+                <Button variant="outline" size="icon" title="Halaman pertama" :disabled="page <= 1" @click="emit('update:page', 1)">
+                    <ChevronsLeft />
                 </Button>
-                <span class="text-xs text-muted-foreground">Halaman {{ page }} dari {{ totalPages }}</span>
-                <Button variant="outline" size="sm" :disabled="page >= totalPages" @click="emit('update:page', page + 1)">
-                    <span class="hidden sm:inline">Berikutnya</span> <ChevronRight class="size-4" />
+                <Button variant="outline" size="icon" title="Sebelumnya" :disabled="page <= 1" @click="emit('update:page', page - 1)">
+                    <ChevronLeft />
+                </Button>
+                <span class="px-1 text-xs text-muted-foreground">Halaman {{ page }} dari {{ totalPages }}</span>
+                <Button variant="outline" size="icon" title="Berikutnya" :disabled="page >= totalPages" @click="emit('update:page', page + 1)">
+                    <ChevronRight />
+                </Button>
+                <Button variant="outline" size="icon" title="Halaman terakhir" :disabled="page >= totalPages" @click="emit('update:page', totalPages)">
+                    <ChevronsRight />
                 </Button>
             </div>
         </div>

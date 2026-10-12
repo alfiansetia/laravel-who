@@ -17,7 +17,7 @@
 
 | Komponen | Spesifikasi |
 |---|---|
-| `DataTable.vue` | Wrapper `@tanstack/vue-table` dengan dua mode. Props: `mode ('server'\\|'client')`, `query (useTableQuery)` untuk server / `table (useClientTable)` untuk client, `columns`, `rowKey`, `selectable`, `actions`. Fitur baku dua mode: skeleton loading, `EmptyState`, pagination SIMPLE (`Sebelumnya` + `Halaman X dari Y` + `Berikutnya`, tanpa nomor ellipsis), per-page `[10,25,50,100]`, info `Menampilkan A–B dari C`, seleksi massal (pengganti `multiCheck()` + `chk-parent`), slot `cell-*`. Dilarang pagination custom bernomor di `Pages/`. |
+| `DataTable.vue` | Wrapper `@tanstack/vue-table` dengan dua mode. Props: `mode ('server'\\|'client')`, `query (useTableQuery)` untuk server / `table (useClientTable)` untuk client, `columns`, `rowKey`, `selectable`, `actions`. Fitur baku dua mode: skeleton loading, `EmptyState`, pagination ikon 4 tombol (`ChevronsLeft` awal + `ChevronLeft` + `Halaman X dari Y` + `ChevronRight` + `ChevronsRight` akhir, tanpa nomor ellipsis), per-page `[10,25,50,100]`, info `Menampilkan A–B dari C`, seleksi massal (pengganti `multiCheck()` + `chk-parent`), slot `cell-*`. Dilarang pagination custom bernomor di `Pages/`. |
 | `TablePagination.vue` | Dipakai di dalam `DataTable`, dilarang dipakai langsung di `Pages/`.
 | `useClientTable.js` | Pasangan `useTableQuery` untuk mode client (pengganti `serverSide: false` + `table.search().draw()`). Fetch sekali per konteks filter (mis. lokasi stock), sisanya paging/search/sort lokal. |
 | `SearchableSelect.vue` | Pengganti Select2. Wajib searchable + async (`useSearchable`). Lihat `frontend-standards.md §4`. |
