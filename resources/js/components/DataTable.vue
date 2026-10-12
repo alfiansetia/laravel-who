@@ -82,6 +82,7 @@ function onRowClick(row, e) {
                             :key="col.key"
                             class="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                             :class="[(col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : ''), col.wrap ? '' : 'whitespace-nowrap']"
+                            :style="col.width ? { width: col.width } : undefined"
                         >
                             <button
                                 v-if="sortable && col.sortable !== false"
@@ -116,7 +117,7 @@ function onRowClick(row, e) {
                                 :key="col.key"
                                 class="px-3 py-2"
                                 :class="cn(col.align === 'center' && 'text-center', col.align === 'right' && 'text-right', col.mono && 'font-mono text-xs', col.wrap ? 'whitespace-normal break-words' : 'whitespace-nowrap')"
-                                :style="col.wrap && col.maxWidth ? { maxWidth: col.maxWidth } : undefined"
+                                :style="col.wrap && col.maxWidth ? { maxWidth: col.maxWidth } : col.width ? { width: col.width } : undefined"
                             >
                                 <slot :name="'cell-' + col.key" :row="row" :value="row[col.key]">
                                     {{ row[col.key] ?? '-' }}
