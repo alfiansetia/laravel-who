@@ -7,6 +7,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
+import api from '@/lib/axios';
 
 const props = defineProps({
     title: { type: String, default: 'Print Resi' },
@@ -29,6 +30,7 @@ const cols = ref(2);
 const rows = ref(2);
 const cropOpen = ref(false);
 const cropIndex = ref(-1);
+const statusText = ref('Sedang mengekstrak gambar...');
 let cropper = null;
 let seq = 0;
 
@@ -96,89 +98,160 @@ function applyExcelCrop(url, crop) {
     });
 }
 
+/**
+ * Resolve Target relasi drawing (xl/drawings/_rels/*.rels) ke path dalam ZIP.
+ * Target standar OOXML itu relatif terhadap xl/drawings/ (mis. ../media/x.png).
+ */
+function resolveMediaPath(target) {
+    let t = String(target ?? '').trim();
+    if (t === '') {
+        return '';
+    }
+    if (t.startsWith('/')) {
+        t = t.slice(1);
+    }
+    if (t.startsWith('xl/')) {
+        return t;
+    }
+    // Nama berkas polos tanpa folder → anggap di xl/media/ (perilaku lama).
+    if (!t.includes('/')) {
+        return `xl/media/${t}`;
+    }
+    const parts = [];
+    for (const seg of `xl/drawings/${t}`.split('/')) {
+        if (seg === '..') {
+            parts.pop();
+        } else if (seg !== '.' && seg !== '') {
+            parts.push(seg);
+        }
+    }
+    const p = parts.join('/');
+    return p.startsWith('xl/') ? p : `xl/media/${p.split('/').pop()}`;
+}
+
+async function extractMediaFallback(zip) {
+    const mediaNames = Object.keys(zip.files).filter((n) => /^xl\/media\//.test(n) && !zip.files[n].dir);
+    for (const mPath of mediaNames) {
+        const blob = await zip.files[mPath].async('blob');
+        addImage(URL.createObjectURL(blob), blob, mPath.split('/').pop());
+    }
+}
+
 async function handleFile(file) {
     if (!file) {
         return;
     }
-    if (!/\.xlsx$/i.test(file.name)) {
-        toast.warning('Simpan sebagai .xlsx dulu, file .xls tidak didukung.');
+    if (!/\.xlsx?$/i.test(file.name)) {
+        toast.warning('Hanya file Excel .xlsx / .xls yang didukung.');
         return;
     }
     extracting.value = true;
     extractFailed.value = false;
     try {
-        await ensureLibs();
-        const zip = await window.JSZip.loadAsync(file);
-        const drawingNames = Object.keys(zip.files).filter((n) => /^xl\/drawings\/drawing\d+\.xml$/.test(n));
-        const drawings = [];
-        for (const dName of drawingNames) {
-            const num = dName.match(/drawing(\d+)\.xml/)[1];
-            const relsName = `xl/drawings/_rels/drawing${num}.xml.rels`;
-            const dXml = new DOMParser().parseFromString(await zip.files[dName].async('string'), 'application/xml');
-            const relsFile = zip.files[relsName];
-            const relsXml = relsFile ? new DOMParser().parseFromString(await relsFile.async('string'), 'application/xml') : null;
-            const relMap = {};
-            if (relsXml) {
-                relsXml.querySelectorAll('Relationship').forEach((rel) => {
-                    relMap[rel.getAttribute('Id')] = rel.getAttribute('Target').replace(/^\.\.\//, 'xl/drawings/').replace(/^\//, '');
-                });
-            }
-            dXml.getElementsByTagNameNS('*', 'pic').forEach((pic) => {
-                const blip = pic.getElementsByTagNameNS('*', 'blip')[0];
-                const embed = blip?.getAttribute('r:embed') ?? blip?.getAttribute('embed');
-                let mediaPath = relMap[embed] ?? '';
-                if (mediaPath.startsWith('xl/drawings/../media/')) {
-                    mediaPath = mediaPath.replace('xl/drawings/../media/', 'xl/media/');
-                } else if (!mediaPath.startsWith('xl/')) {
-                    mediaPath = `xl/media/${mediaPath.split('/').pop()}`;
-                }
-                const srcRect = pic.getElementsByTagNameNS('*', 'srcRect')[0];
-                const crop = srcRect
-                    ? {
-                        l: (Number(srcRect.getAttribute('l') ?? 0)) / 100000,
-                        t: (Number(srcRect.getAttribute('t') ?? 0)) / 100000,
-                        r: (Number(srcRect.getAttribute('r') ?? 0)) / 100000,
-                        b: (Number(srcRect.getAttribute('b') ?? 0)) / 100000,
-                    }
-                    : { l: 0, t: 0, r: 0, b: 0 };
-                drawings.push({ mediaPath, crop });
-            });
+        let xlsxFile = file;
+        // .xls legacy (OLE/BIFF) bukan ZIP → konversi dulu di server.
+        if (/\.xls$/i.test(file.name) && !/\.xlsx$/i.test(file.name)) {
+            statusText.value = 'Mengonversi .xls ke .xlsx di server...';
+            xlsxFile = await convertXls(file);
+            toast.info('Konversi selesai, mengekstrak gambar...');
         }
-        if (drawings.length === 0) {
-            const mediaNames = Object.keys(zip.files).filter((n) => /^xl\/media\//.test(n) && !zip.files[n].dir);
-            for (const mPath of mediaNames) {
-                const blob = await zip.files[mPath].async('blob');
-                addImage(URL.createObjectURL(blob), blob, mPath.split('/').pop());
-            }
-        } else {
-            for (const d of drawings) {
-                const zf = zip.files[d.mediaPath];
-                if (!zf) {
-                    continue;
-                }
-                const blob = await zf.async('blob');
-                const rawUrl = URL.createObjectURL(blob);
-                if (d.crop.l + d.crop.r + d.crop.t + d.crop.b > 0) {
-                    const { url, blob: cropped } = await applyExcelCrop(rawUrl, d.crop);
-                    if (url !== rawUrl) {
-                        URL.revokeObjectURL(rawUrl);
-                    }
-                    addImage(url, cropped ?? blob, d.mediaPath.split('/').pop());
-                } else {
-                    addImage(rawUrl, blob, d.mediaPath.split('/').pop());
-                }
-            }
-        }
-        if (images.value.length === 0) {
-            toast.warning('Tidak ada resi ditemukan dalam file Excel.');
-        } else {
-            toast.success(`${images.value.length} gambar resi diekstrak.`);
-        }
+        statusText.value = 'Sedang mengekstrak gambar...';
+        await extractFromXlsx(xlsxFile);
     } catch (e) {
         extractFailed.value = true;
         toast.error(e.message ?? 'Ekstraksi gagal.');
     } finally {
         extracting.value = false;
+    }
+}
+
+async function convertXls(file) {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    try {
+        const res = await api.post('/print-resi/convert', form, { responseType: 'blob', block: true, silent: true });
+        const name = file.name.replace(/\.xls$/i, '.xlsx');
+        return new File([res.data], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    } catch (e) {
+        let message = 'Konversi .xls gagal.';
+        try {
+            const text = await e.response?.data?.text?.();
+            const body = text ? JSON.parse(text) : null;
+            if (body?.message) {
+                message = body.message;
+            } else if (body?.errors?.file?.[0]) {
+                message = body.errors.file[0];
+            }
+        } catch {
+            // pakai pesan bawaan
+        }
+        throw new Error(message);
+    }
+}
+
+async function extractFromXlsx(file) {
+    await ensureLibs();
+    const zip = await window.JSZip.loadAsync(file);
+    const drawingNames = Object.keys(zip.files).filter((n) => /^xl\/drawings\/drawing\d+\.xml$/.test(n));
+    const drawings = [];
+    for (const dName of drawingNames) {
+        const num = dName.match(/drawing(\d+)\.xml/)[1];
+        const relsName = `xl/drawings/_rels/drawing${num}.xml.rels`;
+        const dXml = new DOMParser().parseFromString(await zip.files[dName].async('string'), 'application/xml');
+        const relsFile = zip.files[relsName];
+        const relsXml = relsFile ? new DOMParser().parseFromString(await relsFile.async('string'), 'application/xml') : null;
+        const relMap = {};
+        if (relsXml) {
+            relsXml.querySelectorAll('Relationship').forEach((rel) => {
+                relMap[rel.getAttribute('Id')] = resolveMediaPath(rel.getAttribute('Target'));
+            });
+        }
+        Array.from(dXml.getElementsByTagNameNS('*', 'pic')).forEach((pic) => {
+            const blip = pic.getElementsByTagNameNS('*', 'blip')[0];
+            const embed = blip?.getAttribute('r:embed') ?? blip?.getAttribute('embed');
+            const mediaPath = relMap[embed] ?? '';
+            const srcRect = pic.getElementsByTagNameNS('*', 'srcRect')[0];
+            const crop = srcRect
+                ? {
+                    l: (Number(srcRect.getAttribute('l') ?? 0)) / 100000,
+                    t: (Number(srcRect.getAttribute('t') ?? 0)) / 100000,
+                    r: (Number(srcRect.getAttribute('r') ?? 0)) / 100000,
+                    b: (Number(srcRect.getAttribute('b') ?? 0)) / 100000,
+                }
+                : { l: 0, t: 0, r: 0, b: 0 };
+            drawings.push({ mediaPath, crop });
+        });
+    }
+    if (drawings.length === 0) {
+        await extractMediaFallback(zip);
+    } else {
+        for (const d of drawings) {
+            const zf = zip.files[d.mediaPath];
+            if (!zf) {
+                continue;
+            }
+            const blob = await zf.async('blob');
+            const rawUrl = URL.createObjectURL(blob);
+            if (d.crop.l + d.crop.r + d.crop.t + d.crop.b > 0) {
+                const { url, blob: cropped } = await applyExcelCrop(rawUrl, d.crop);
+                if (url !== rawUrl) {
+                    URL.revokeObjectURL(rawUrl);
+                }
+                addImage(url, cropped ?? blob, d.mediaPath.split('/').pop());
+            } else {
+                addImage(rawUrl, blob, d.mediaPath.split('/').pop());
+            }
+        }
+    }
+    const before = images.value.length;
+    if (before === 0 && drawings.length > 0) {
+        // Relasi drawing tak terpetakan (format tak umum) → sapu semua media.
+        await extractMediaFallback(zip);
+    }
+    if (images.value.length === 0) {
+        toast.warning('Tidak ada resi ditemukan dalam file Excel.');
+    } else {
+        toast.success(`${images.value.length} gambar resi diekstrak.`);
     }
 }
 
@@ -325,9 +398,9 @@ onBeforeUnmount(() => {
         >
             <Upload class="size-8 text-muted-foreground" />
             <p class="text-sm font-medium">Seret file Excel ke sini atau klik untuk memilih</p>
-            <p class="text-xs text-muted-foreground">Hanya berkas .xlsx</p>
+            <p class="text-xs text-muted-foreground">Berkas .xlsx / .xls (file .xls dikonversi otomatis)</p>
         </div>
-        <input ref="excelInput" type="file" accept=".xlsx" class="hidden" @change="onFileChange" />
+        <input ref="excelInput" type="file" accept=".xlsx,.xls" class="hidden" @change="onFileChange" />
 
         <div class="mt-4 flex flex-wrap items-end gap-3">
             <div class="space-y-1">
@@ -346,7 +419,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div v-if="extracting" class="mt-6 flex items-center justify-center gap-2 rounded-lg border p-8 text-sm text-muted-foreground">
-            <Loader2 class="size-5 animate-spin" /> Sedang mengekstrak gambar...
+            <Loader2 class="size-5 animate-spin" /> {{ statusText }}
         </div>
         <div v-else-if="extractFailed" class="mt-6 rounded-lg border p-8 text-center text-sm font-medium text-red-600">
             Ekstraksi gagal. Coba lagi dengan file lain.

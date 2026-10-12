@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\PltbbServices;
 use App\Services\TikiServices;
+use App\Services\XlsDrawingCropService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ToolController extends Controller
 {
@@ -74,6 +77,60 @@ class ToolController extends Controller
         return Inertia::render('PrintResi/Index', [
             'title' => 'Print Resi',
         ]);
+    }
+
+    /**
+     * POST /api/print-resi/convert
+     *
+     * Konversi .xls legacy (OLE/BIFF) ke .xlsx agar bisa diekstrak
+     * gambarnya di browser (JSZip hanya bisa membaca .xlsx).
+     * Gambar embedded dipertahankan oleh PhpSpreadsheet (Escher → xl/media).
+     */
+    public function printResiConvert(Request $request): BinaryFileResponse|JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|extensions:xls|max:20480',
+        ], [
+            'file.required' => 'File wajib diisi.',
+            'file.extensions' => 'Hanya file .xls yang perlu dikonversi.',
+            'file.max' => 'Ukuran file maksimal 20MB.',
+        ]);
+
+        $file = $request->file('file');
+
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'File .xls tidak bisa dibaca atau rusak.',
+            ], 422);
+        }
+
+        // PhpSpreadsheet mengabaikan crop gambar .xls → potong pikselnya
+        // dulu agar hasil .xlsx sesuai tampilan crop di Excel.
+        (new XlsDrawingCropService)->applyCrop($file->getRealPath(), $spreadsheet);
+
+        $base = tempnam(sys_get_temp_dir(), 'resi_');
+        $out = $base.'.xlsx';
+        @unlink($base);
+
+        try {
+            IOFactory::createWriter($spreadsheet, 'Xlsx')->save($out);
+        } catch (\Throwable $e) {
+            $spreadsheet->disconnectWorksheets();
+
+            return response()->json([
+                'message' => 'Gagal mengonversi file ke .xlsx.',
+            ], 500);
+        }
+
+        $spreadsheet->disconnectWorksheets();
+
+        $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME).'.xlsx';
+
+        return response()->download($out, $name, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     public function spreadsheetIndex(): JsonResponse

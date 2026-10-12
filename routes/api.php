@@ -124,6 +124,9 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     // TIKI Tracking (digabung ke ToolController)
     Route::get('tiki/track', [ToolController::class, 'tikiTrack'])->name('api.tiki.track');
 
+    // Print Resi: konversi .xls legacy ke .xlsx (gambar dipertahankan)
+    Route::post('print-resi/convert', [ToolController::class, 'printResiConvert'])->name('api.print_resi.convert');
+
     Route::get('products/search', [ProductController::class, 'search'])
         ->name('api.products.search');
     Route::get('products/{product}/download-zip', [ProductController::class, 'downloadZip'])
