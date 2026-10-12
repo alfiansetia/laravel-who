@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, Head, usePage } from '@inertiajs/vue3';
 import { Toaster } from 'vue-sonner';
 import {
     Bell,
@@ -62,6 +62,7 @@ async function installPwa() {
 
 const envLoggedIn = computed(() => page.props.auth?.envLoggedIn ?? false);
 const flash = computed(() => page.props.flash ?? {});
+const docTitle = computed(() => page.props.title ?? '');
 
 const mainLinks = [
     { label: 'Product', route: 'products.index', match: 'products.*', icon: Package },
@@ -134,6 +135,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="min-h-screen">
+        <Head v-if="docTitle" :title="docTitle" />
         <Toaster position="top-right" rich-colors close-button :gap="8" :expand="false" offset="64px" :visible-toasts="3" />
 
         <header class="sticky top-0 z-40 border-b bg-muted/60 backdrop-blur">
