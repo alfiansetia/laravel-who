@@ -163,32 +163,43 @@ function detailPairs() {
 }
 
 // Copy text full (samakan Blade: semua field "Key: value" per baris)
-function copyRowFull(row) {
+// Kolom list ramping → ambil detail penuh dulu bila field alamat belum ada.
+async function copyRowFull(row) {
     const r = row ?? {};
+    let full = r;
+    if (r.id && (r.alamat_pendaftar === undefined || r.alamat_pabrik === undefined)) {
+        try {
+            const res = await api.get(`/izin-edars/${r.id}`, { silent: true });
+            full = res.data?.data ?? res.data ?? r;
+        } catch {
+            full = r;
+        }
+    }
+    const f = full ?? {};
     const fields = [
-        ['Kategori', r.kategori ?? '-'], ['No. Izin Edar', r.nomor_izin_edar ?? '-'],
-        ['Tgl Terbit', formatDateDMY(r.tgl_terbit)], ['Tgl Expired', formatDateDMY(r.tgl_exp)],
-        ['Merk', r.merk ?? '-'], ['Jenis Produk', r.jenis_produk ?? '-'],
-        ['Pendaftar', r.pendaftar ?? '-'], ['Alamat Pendaftar', r.alamat_pendaftar ?? '-'],
-        ['Pabrik', r.pabrik ?? '-'], ['Alamat Pabrik', r.alamat_pabrik ?? '-'],
+        ['Kategori', f.kategori ?? '-'], ['No. Izin Edar', f.nomor_izin_edar ?? '-'],
+        ['Tgl Terbit', formatDateDMY(f.tgl_terbit)], ['Tgl Expired', formatDateDMY(f.tgl_exp)],
+        ['Merk', f.merk ?? '-'], ['Jenis Produk', f.jenis_produk ?? '-'],
+        ['Pendaftar', f.pendaftar ?? '-'], ['Alamat Pendaftar', f.alamat_pendaftar ?? '-'],
+        ['Pabrik', f.pabrik ?? '-'], ['Alamat Pabrik', f.alamat_pabrik ?? '-'],
     ];
-    if (r.sub_kategori) {
-        fields.push(['Sub Kategori', r.sub_kategori]);
+    if (f.sub_kategori) {
+        fields.push(['Sub Kategori', f.sub_kategori]);
     }
-    if (r.kelompok_produk) {
-        fields.push(['Kelompok Produk', r.kelompok_produk]);
+    if (f.kelompok_produk) {
+        fields.push(['Kelompok Produk', f.kelompok_produk]);
     }
-    if (r.tipe) {
-        fields.push(['Tipe', r.tipe]);
+    if (f.tipe) {
+        fields.push(['Tipe', f.tipe]);
     }
-    if (r.kelas) {
-        fields.push(['Kelas', r.kelas]);
+    if (f.kelas) {
+        fields.push(['Kelas', f.kelas]);
     }
-    if (r.kelas_resiko) {
-        fields.push(['Kelas Resiko', r.kelas_resiko]);
+    if (f.kelas_resiko) {
+        fields.push(['Kelas Resiko', f.kelas_resiko]);
     }
-    if (r.pabrik2) {
-        fields.push(['Pabrik 2', r.pabrik2]);
+    if (f.pabrik2) {
+        fields.push(['Pabrik 2', f.pabrik2]);
     }
     copyText(fields.map(([k, v]) => `${k}: ${v}`).join('\n'), 'Data disalin ke clipboard.');
 }

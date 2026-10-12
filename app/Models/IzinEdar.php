@@ -26,8 +26,9 @@ class IzinEdar extends Model
     ];
 
     protected $casts = [
-        'tgl_terbit' => 'date',
-        'tgl_exp' => 'date',
+        // Serialisasi Y-m-d saja (tanpa T00:00:00) agar payload list ringan.
+        'tgl_terbit' => 'date:Y-m-d',
+        'tgl_exp' => 'date:Y-m-d',
     ];
 
     /**

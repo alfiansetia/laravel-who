@@ -47,6 +47,8 @@ class IzinEdarController extends Controller
 
             $total = (clone $query)->count();
 
+            // Kolom list sengaja ramping (tanpa TEXT alamat + kolom jarang tampil)
+            // agar scan LIKE 100rb+ baris tetap ringan; detail lengkap via show().
             $data = $query->orderBy('id', 'desc')
                 ->offset(($page - 1) * $perPage)
                 ->limit($perPage)
@@ -60,14 +62,6 @@ class IzinEdarController extends Controller
                     'jenis_produk',
                     'pendaftar',
                     'pabrik',
-                    'alamat_pendaftar',
-                    'alamat_pabrik',
-                    'sub_kategori',
-                    'kelompok_produk',
-                    'tipe',
-                    'kelas',
-                    'kelas_resiko',
-                    'pabrik2',
                 ]);
 
             return response()->json([
