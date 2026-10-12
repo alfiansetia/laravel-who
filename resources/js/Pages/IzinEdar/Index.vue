@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -18,6 +19,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { copyRows, copyText } from '@/lib/export';
+import { formatDateDMY } from '@/lib/format';
 import { getSheetMatrix, loadExcelWorkbook, workbookSheetNames } from '@/lib/excel';
 
 const props = defineProps({
@@ -96,8 +98,8 @@ const exportRows = computed(() =>
     query.rows.value.map((r) => ({
         kategori: r.kategori ?? '',
         nomor: r.nomor_izin_edar ?? '',
-        terbit: r.tgl_terbit ?? '',
-        exp: r.tgl_exp ?? '',
+        terbit: formatDateDMY(r.tgl_terbit),
+        exp: formatDateDMY(r.tgl_exp),
         merk: r.merk ?? '',
         jenis: r.jenis_produk ?? '',
         pendaftar: r.pendaftar ?? '',
@@ -126,53 +128,67 @@ async function openDetail(row) {
 }
 function detailPairs() {
     const d = detail.value ?? {};
+    const val = (v) => (v === null || v === undefined || String(v).trim() === '' ? '-' : String(v));
     const pairs = [
-        ['Kategori', d.kategori], ['No. Izin Edar', d.nomor_izin_edar], ['Tgl Terbit', d.tgl_terbit],
-        ['Tgl Expired', d.tgl_exp], ['Merk', d.merk], ['Jenis Produk', d.jenis_produk],
-        ['Pendaftar', d.pendaftar], ['Alamat Pendaftar', d.alamat_pendaftar], ['Pabrik', d.pabrik],
-        ['Alamat Pabrik', d.alamat_pabrik],
+        { label: 'Kategori', value: val(d.kategori), copy: val(d.kategori) },
+        { label: 'No. Izin Edar', value: val(d.nomor_izin_edar), copy: val(d.nomor_izin_edar) },
+        { label: 'Tgl Terbit', value: formatDateDMY(d.tgl_terbit), copy: formatDateDMY(d.tgl_terbit) },
+        { label: 'Tgl Expired', value: formatDateDMY(d.tgl_exp), copy: formatDateDMY(d.tgl_exp) },
+        { label: 'Merk', value: val(d.merk), copy: val(d.merk) },
+        { label: 'Jenis Produk', value: val(d.jenis_produk), copy: val(d.jenis_produk) },
+        { label: 'Pendaftar', value: val(d.pendaftar), copy: val(d.pendaftar) },
+        { label: 'Alamat Pendaftar', value: val(d.alamat_pendaftar), copy: val(d.alamat_pendaftar) },
+        { label: 'Pabrik', value: val(d.pabrik), copy: val(d.pabrik) },
+        { label: 'Alamat Pabrik', value: val(d.alamat_pabrik), copy: val(d.alamat_pabrik) },
     ];
     if (d.sub_kategori) {
-        pairs.push(['Sub Kategori', d.sub_kategori]);
+        pairs.push({ label: 'Sub Kategori', value: val(d.sub_kategori), copy: val(d.sub_kategori) });
     }
     if (d.kelompok_produk) {
-        pairs.push(['Kelompok Produk', d.kelompok_produk]);
+        pairs.push({ label: 'Kelompok Produk', value: val(d.kelompok_produk), copy: val(d.kelompok_produk) });
     }
     if (d.tipe) {
-        pairs.push(['Tipe', d.tipe]);
+        pairs.push({ label: 'Tipe', value: val(d.tipe), copy: val(d.tipe) });
     }
     if (d.kelas) {
-        pairs.push(['Kelas', d.kelas]);
+        pairs.push({ label: 'Kelas', value: val(d.kelas), copy: val(d.kelas) });
     }
     if (d.kelas_resiko) {
-        pairs.push(['Kelas Resiko', d.kelas_resiko]);
+        pairs.push({ label: 'Kelas Resiko', value: val(d.kelas_resiko), copy: val(d.kelas_resiko) });
+    }
+    if (d.pabrik2) {
+        pairs.push({ label: 'Pabrik 2', value: val(d.pabrik2), copy: val(d.pabrik2) });
     }
     return pairs;
 }
 
 // Copy text full (samakan Blade: semua field "Key: value" per baris)
 function copyRowFull(row) {
+    const r = row ?? {};
     const fields = [
-        ['Kategori', row.kategori], ['No. Izin Edar', row.nomor_izin_edar],
-        ['Tgl Terbit', row.tgl_terbit ?? '-'], ['Tgl Expired', row.tgl_exp ?? '-'],
-        ['Merk', row.merk], ['Jenis Produk', row.jenis_produk ?? '-'],
-        ['Pendaftar', row.pendaftar], ['Alamat Pendaftar', row.alamat_pendaftar ?? '-'],
-        ['Pabrik', row.pabrik ?? '-'], ['Alamat Pabrik', row.alamat_pabrik ?? '-'],
+        ['Kategori', r.kategori ?? '-'], ['No. Izin Edar', r.nomor_izin_edar ?? '-'],
+        ['Tgl Terbit', formatDateDMY(r.tgl_terbit)], ['Tgl Expired', formatDateDMY(r.tgl_exp)],
+        ['Merk', r.merk ?? '-'], ['Jenis Produk', r.jenis_produk ?? '-'],
+        ['Pendaftar', r.pendaftar ?? '-'], ['Alamat Pendaftar', r.alamat_pendaftar ?? '-'],
+        ['Pabrik', r.pabrik ?? '-'], ['Alamat Pabrik', r.alamat_pabrik ?? '-'],
     ];
-    if (row.sub_kategori) {
-        fields.push(['Sub Kategori', row.sub_kategori]);
+    if (r.sub_kategori) {
+        fields.push(['Sub Kategori', r.sub_kategori]);
     }
-    if (row.kelompok_produk) {
-        fields.push(['Kelompok Produk', row.kelompok_produk]);
+    if (r.kelompok_produk) {
+        fields.push(['Kelompok Produk', r.kelompok_produk]);
     }
-    if (row.tipe) {
-        fields.push(['Tipe', row.tipe]);
+    if (r.tipe) {
+        fields.push(['Tipe', r.tipe]);
     }
-    if (row.kelas) {
-        fields.push(['Kelas', row.kelas]);
+    if (r.kelas) {
+        fields.push(['Kelas', r.kelas]);
     }
-    if (row.kelas_resiko) {
-        fields.push(['Kelas Resiko', row.kelas_resiko]);
+    if (r.kelas_resiko) {
+        fields.push(['Kelas Resiko', r.kelas_resiko]);
+    }
+    if (r.pabrik2) {
+        fields.push(['Pabrik 2', r.pabrik2]);
     }
     copyText(fields.map(([k, v]) => `${k}: ${v}`).join('\n'), 'Data disalin ke clipboard.');
 }
@@ -740,8 +756,8 @@ loadProgress(true).then(() => {
             >
                 <template #cell-kategori="{ row }"><span :class="`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-bold ${katClass(row.kategori)}`">{{ row.kategori }}</span></template>
                 <template #cell-nomor_izin_edar="{ row }"><b>{{ row.nomor_izin_edar }}</b></template>
-                <template #cell-tgl_terbit="{ row }">{{ row.tgl_terbit ?? '-' }}</template>
-                <template #cell-tgl_exp="{ row }"><span :class="expClass(row.tgl_exp)">{{ row.tgl_exp ?? '-' }}</span></template>
+                <template #cell-tgl_terbit="{ row }">{{ formatDateDMY(row.tgl_terbit) }}</template>
+                <template #cell-tgl_exp="{ row }"><span :class="expClass(row.tgl_exp)">{{ formatDateDMY(row.tgl_exp) }}</span></template>
                 <template #cell-merk="{ row }">{{ row.merk ?? '-' }}</template>
                 <template #cell-jenis_produk="{ row }">{{ row.jenis_produk ?? '-' }}</template>
                 <template #cell-pendaftar="{ row }">{{ row.pendaftar ?? '-' }}</template>
@@ -766,10 +782,14 @@ loadProgress(true).then(() => {
                 <div v-for="n in 8" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
             </div>
             <div v-else class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-                <p v-for="[k, v] in detailPairs()" :key="k"><b>{{ k }}:</b> {{ v ?? '-' }}</p>
+                <div v-for="item in detailPairs()" :key="item.label" class="flex items-start justify-between gap-2 py-0.5">
+                    <p class="min-w-0"><b>{{ item.label }}:</b> {{ item.value }}</p>
+                    <CopyButton v-if="item.value && item.value !== '-'" :text="item.copy" :label="item.label" />
+                </div>
             </div>
             <template #footer>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
+                <Button variant="outline" @click="copyRowFull(detail)"><Copy /> Salin Detail</Button>
                 <Button variant="outline" @click="() => { detailOpen = false; openCopy(detail); }"><Share /> Copy ke AKL</Button>
             </template>
         </AppModal>
@@ -780,11 +800,11 @@ loadProgress(true).then(() => {
                 Kunci duplikat: <b>Reg No + Tgl Expired</b> — kalau pasangan itu sudah ada di AKL, copy ditolak.
             </div>
             <div class="mt-2 space-y-1 text-sm">
-                <p><b>Reg No:</b> {{ copyRow?.nomor_izin_edar }}</p>
+                <p class="flex items-center gap-1"><b>Reg No:</b> {{ copyRow?.nomor_izin_edar }} <CopyButton v-if="copyRow?.nomor_izin_edar" :text="copyRow.nomor_izin_edar" label="Reg No" /></p>
                 <p><b>Nama:</b> {{ copyRow?.merk ?? copyRow?.jenis_produk }}</p>
                 <p><b>Vendor:</b> {{ copyRow?.pendaftar ?? copyRow?.pabrik }}</p>
-                <p><b>Berlaku Dari:</b> {{ copyRow?.tgl_terbit ?? '-' }}</p>
-                <p><b>Expired:</b> {{ copyRow?.tgl_exp ?? '-' }}</p>
+                <p><b>Berlaku Dari:</b> {{ formatDateDMY(copyRow?.tgl_terbit) }}</p>
+                <p><b>Expired:</b> {{ formatDateDMY(copyRow?.tgl_exp) }}</p>
             </div>
             <p v-if="copyMsg" class="mt-2 rounded p-2 text-xs" :class="copyOk ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'">{{ copyMsg }}</p>
             <template #footer>

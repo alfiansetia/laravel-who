@@ -83,6 +83,33 @@ const tableColumns = computed(() => visibleCols.value.map((c) => ({ key: c, labe
 
 const columnOptions = computed(() => COLUMNS.map((c) => ({ label: COLUMN_LABELS[c] ?? c, value: c })));
 
+function isValidDateCell(v) {
+    if (v instanceof Date) {
+        return !Number.isNaN(v.getTime());
+    }
+    // Serial Excel ala SheetJS lama (integer) maupun ber-waktu (float).
+    if (typeof v === 'number' && Number.isFinite(v)) {
+        return true;
+    }
+    if (typeof v === 'string') {
+        const s = v.trim();
+        if (s === '') {
+            return false;
+        }
+        if (/^\d{1,2}[/-]\d{1,2}[/-]\d{2,4}$/.test(s)) {
+            return true;
+        }
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+            return true;
+        }
+        const d = new Date(s);
+        if (!Number.isNaN(d.getTime())) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function excelDateToString(value) {
     if (value === null || value === undefined || value === '') {
         return '';
@@ -188,10 +215,16 @@ function loadSheet(name) {
         const json = await getSheetMatrix(workbook.value, name);
         const result = [];
         json.forEach((row) => {
-            if (!Array.isArray(row) || !Number.isInteger(row[0])) {
+            if (!Array.isArray(row)) {
                 return;
             }
-            if (row[0] === null || row[1] === null || row[2] === null || row[3] === null) {
+            // Kolom 0 = tgl_kirim. View lama (SheetJS) berisi serial integer;
+            // reader baru (ExcelJS) mengembalikan Date untuk sel tanggal.
+            // Terima keduanya + string tanggal agar tidak "Tidak ada data valid".
+            if (!isValidDateCell(row[0])) {
+                return;
+            }
+            if (![0, 1, 2, 3].every((i) => row[i] !== null && row[i] !== undefined && String(row[i]).trim() !== '')) {
                 return;
             }
             rowSeq += 1;
@@ -310,7 +343,7 @@ function statusColor(status) {
 }
 
 async function trackTiki() {
-    const eligible = table.filtered.filter((r) => String(r.ekspedisi ?? '').toUpperCase() === 'TIKI' && String(r.no_resi ?? '').trim() !== '');
+    const eligible = table.filtered.value.filter((r) => String(r.ekspedisi ?? '').toUpperCase() === 'TIKI' && String(r.no_resi ?? '').trim() !== '');
     if (eligible.length === 0) {
         toast.error('Tidak ada data TIKI dengan No Resi.');
         return;
