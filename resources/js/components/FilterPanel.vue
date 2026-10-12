@@ -8,6 +8,7 @@ const props = defineProps({
     title: { type: String, default: 'Filter' },
     activeCount: { type: Number, default: 0 },
     defaultOpen: { type: Boolean, default: false },
+    gridClass: { type: String, default: 'grid gap-3 md:grid-cols-2 xl:grid-cols-3' },
 });
 
 const emit = defineEmits(['reset']);
@@ -38,7 +39,7 @@ function toggle() {
             <ChevronDown class="ml-auto size-4 text-muted-foreground transition-transform" :class="open && 'rotate-180'" />
         </button>
         <div v-show="open" class="border-t px-3 py-3">
-            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div :class="gridClass">
                 <slot />
             </div>
             <div v-if="$slots.actions" class="mt-3 flex flex-wrap items-center gap-2">

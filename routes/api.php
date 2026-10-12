@@ -171,6 +171,8 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
         ->only(['index', 'show', 'destroy']);
 
     // Izin Edar API Routes
+    Route::get('izin-edars/options', [IzinEdarController::class, 'options'])
+        ->name('api.izin_edars.options');
     Route::get('izin-edars/{izinEdar}', [IzinEdarController::class, 'show'])
         ->name('api.izin_edars.show');
     Route::get('izin-edars', [IzinEdarController::class, 'index'])

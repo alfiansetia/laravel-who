@@ -21,6 +21,11 @@ class IzinEdarController extends Controller
     public function __construct(IzinEdarSyncService $syncService)
     {
         $this->syncService = $syncService;
+        // Tulis/hapus wajib login (env_auth): baca (index/show/progress/files/download) tetap publik.
+        $this->middleware('env_auth')->only([
+            'sync', 'syncStop', 'syncReset',
+            'importBatch', 'deleteByKategori', 'deleteFile',
+        ]);
     }
 
     public function index(Request $request): Response|JsonResponse
@@ -33,6 +38,14 @@ class IzinEdarController extends Controller
 
             if ($request->filled('kategori')) {
                 $query->where('kategori', $request->kategori);
+            }
+
+            if ($request->filled('pendaftar')) {
+                $query->where('pendaftar', $request->pendaftar);
+            }
+
+            if ($request->filled('pabrik')) {
+                $query->where('pabrik', $request->pabrik);
             }
 
             if ($request->filled('search')) {
@@ -75,8 +88,51 @@ class IzinEdarController extends Controller
 
         return Inertia::render('IzinEdar/Index', [
             'title' => 'Data Izin Edar',
-            'filters' => $request->only(['search', 'page', 'kategori']),
+            'filters' => $request->only(['search', 'page', 'kategori', 'pendaftar', 'pabrik']),
             'kategoriList' => ['AKD', 'AKL', 'PKD', 'PKL', 'Lainnya'],
+        ]);
+    }
+
+    /**
+     * Distinct options untuk filter searchable (pendaftar / pabrik).
+     * GET /api/izin-edars/options?field=pendaftar&q=...&kategori=AKD&limit=50
+     */
+    public function options(Request $request): JsonResponse
+    {
+        $field = $request->input('field', 'pendaftar');
+
+        if (! in_array($field, ['pendaftar', 'pabrik'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Field tidak valid. Pilihan: pendaftar, pabrik.',
+            ], 422);
+        }
+
+        $q = trim((string) $request->input('q', ''));
+        $limit = min(max((int) $request->input('limit', 50), 1), 100);
+
+        $query = IzinEdar::query()
+            ->whereNotNull($field)
+            ->where($field, '!=', '');
+
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        if ($q !== '') {
+            $query->where($field, 'like', "%{$q}%");
+        }
+
+        $values = $query->select($field)->distinct()
+            ->orderBy($field)
+            ->limit($limit)
+            ->pluck($field)
+            ->filter(fn ($v) => trim((string) $v) !== '')
+            ->unique()
+            ->values();
+
+        return response()->json([
+            'data' => $values->map(fn ($v) => ['value' => $v, 'label' => $v]),
         ]);
     }
 

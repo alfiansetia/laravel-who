@@ -18,6 +18,8 @@ class ProductController extends Controller
     public function __construct(ExcelService $excelService)
     {
         $this->excelService = $excelService;
+        // Sync massal dari Odoo wajib login; baca (index/show/search/dll) tetap publik.
+        $this->middleware('env_auth')->only(['sync']);
     }
 
     /**

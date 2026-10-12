@@ -16,6 +16,12 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ToolController extends Controller
 {
+    public function __construct()
+    {
+        // Tulis massal pltbb wajib login; baca + halaman Inertia tetap publik.
+        $this->middleware('env_auth')->only(['spreadsheetSyncAll', 'spreadsheetSyncProduct']);
+    }
+
     public function stt(Request $request): Response
     {
         return Inertia::render('Stt/Index', [

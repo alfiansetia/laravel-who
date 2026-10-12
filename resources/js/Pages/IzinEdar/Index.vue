@@ -32,12 +32,21 @@ const toast = useToast();
 const { confirm } = useConfirm();
 const { withBlock } = useBlock();
 const query = useTableQuery(
-    (p) => api.get('/izin-edars', { params: { ...p, kategori: kategoriBox.value || undefined } }),
+    (p) => api.get('/izin-edars', {
+        params: {
+            ...p,
+            kategori: kategoriBox.value || undefined,
+            pendaftar: pendaftarBox.value || undefined,
+            pabrik: pabrikBox.value || undefined,
+        },
+    }),
     { search: props.filters.search ?? '', page: Number(props.filters.page ?? 1) },
 );
 
 const searchBox = ref(props.filters.search ?? '');
 const kategoriBox = ref(props.filters.kategori ?? '');
+const pendaftarBox = ref(props.filters.pendaftar ?? '');
+const pabrikBox = ref(props.filters.pabrik ?? '');
 function onSearchInput(e) {
     searchBox.value = e.target.value;
     query.setSearch(e.target.value, 400);
@@ -45,13 +54,105 @@ function onSearchInput(e) {
 function onKategori(v) {
     kategoriBox.value = v;
     query.fetch();
+    searchPendaftar(pendaftarSearchKey.value);
+    searchPabrik(pabrikSearchKey.value);
+}
+function onPendaftar(v) {
+    pendaftarBox.value = v;
+    query.fetch();
+}
+function onPabrik(v) {
+    pabrikBox.value = v;
+    query.fetch();
 }
 function resetFilter() {
     searchBox.value = '';
     kategoriBox.value = '';
+    pendaftarBox.value = '';
+    pabrikBox.value = '';
     query.setSearch('', 0);
+    searchPendaftar('');
+    searchPabrik('');
 }
-const activeCount = computed(() => (query.search.value ? 1 : 0) + (kategoriBox.value ? 1 : 0));
+const activeCount = computed(
+    () =>
+        (query.search.value ? 1 : 0)
+        + (kategoriBox.value ? 1 : 0)
+        + (pendaftarBox.value ? 1 : 0)
+        + (pabrikBox.value ? 1 : 0),
+);
+
+// ── Options async unique dari DB (distinct + limit 50) ──
+const pendaftarOptions = ref([]);
+const pabrikOptions = ref([]);
+const loadingPendaftar = ref(false);
+const loadingPabrik = ref(false);
+const pendaftarSearchKey = ref('');
+const pabrikSearchKey = ref('');
+const knownPendaftar = ref(new Map());
+const knownPabrik = ref(new Map());
+
+function withCurrentPendaftar(list) {
+    const cur = pendaftarBox.value ? knownPendaftar.value.get(String(pendaftarBox.value)) : null;
+    if (cur && !list.some((o) => String(o.value) === String(cur.value))) {
+        return [cur, ...list];
+    }
+    return list;
+}
+
+function withCurrentPabrik(list) {
+    const cur = pabrikBox.value ? knownPabrik.value.get(String(pabrikBox.value)) : null;
+    if (cur && !list.some((o) => String(o.value) === String(cur.value))) {
+        return [cur, ...list];
+    }
+    return list;
+}
+
+async function searchPendaftar(keyword) {
+    const q = (keyword ?? '').trim();
+    pendaftarSearchKey.value = q;
+    if (pendaftarBox.value) {
+        knownPendaftar.value.set(String(pendaftarBox.value), { value: pendaftarBox.value, label: pendaftarBox.value });
+    }
+    loadingPendaftar.value = true;
+    try {
+        const res = await api.get('/izin-edars/options', {
+            params: { field: 'pendaftar', q, kategori: kategoriBox.value || undefined },
+            silent: true,
+        });
+        const body = res.data?.data ?? [];
+        const found = body.map((o) => ({ value: o.value ?? o, label: o.label ?? o }));
+        found.forEach((o) => knownPendaftar.value.set(String(o.value), o));
+        pendaftarOptions.value = withCurrentPendaftar(found);
+    } catch {
+        pendaftarOptions.value = withCurrentPendaftar([]);
+    } finally {
+        loadingPendaftar.value = false;
+    }
+}
+
+async function searchPabrik(keyword) {
+    const q = (keyword ?? '').trim();
+    pabrikSearchKey.value = q;
+    if (pabrikBox.value) {
+        knownPabrik.value.set(String(pabrikBox.value), { value: pabrikBox.value, label: pabrikBox.value });
+    }
+    loadingPabrik.value = true;
+    try {
+        const res = await api.get('/izin-edars/options', {
+            params: { field: 'pabrik', q, kategori: kategoriBox.value || undefined },
+            silent: true,
+        });
+        const body = res.data?.data ?? [];
+        const found = body.map((o) => ({ value: o.value ?? o, label: o.label ?? o }));
+        found.forEach((o) => knownPabrik.value.set(String(o.value), o));
+        pabrikOptions.value = withCurrentPabrik(found);
+    } catch {
+        pabrikOptions.value = withCurrentPabrik([]);
+    } finally {
+        loadingPabrik.value = false;
+    }
+}
 
 const columns = [
     { key: 'kategori', label: 'Kategori', align: 'center' },
@@ -689,6 +790,8 @@ onBeforeUnmount(() => {
     clearTimeout(hideTimer);
 });
 query.fetch();
+searchPendaftar(pendaftarBox.value);
+searchPabrik(pabrikBox.value);
 loadProgress(true).then(() => {
     if (syncLog.value?.is_running) {
         syncVisible.value = true;
@@ -764,12 +867,18 @@ loadProgress(true).then(() => {
                 </div>
             </Card>
 
-            <FilterPanel title="Filter Izin Edar" :active-count="activeCount" @reset="resetFilter">
+            <FilterPanel title="Filter Izin Edar" :active-count="activeCount" grid-class="grid gap-3 md:grid-cols-2 xl:grid-cols-4" @reset="resetFilter">
                 <FormField label="Pencarian">
                     <Input :model-value="searchBox" type="search" placeholder="Cari nomor izin, merk, pendaftar..." @input="onSearchInput" />
                 </FormField>
                 <FormField label="Kategori">
                     <SearchableSelect :model-value="kategoriBox" :options="kategoriOptions" placeholder="Semua Kategori" @update:model-value="onKategori" />
+                </FormField>
+                <FormField label="Pendaftar">
+                    <SearchableSelect :model-value="pendaftarBox" :options="pendaftarOptions" :loading="loadingPendaftar" placeholder="Semua Pendaftar" search-placeholder="Ketik nama pendaftar..." @update:model-value="onPendaftar" @search="searchPendaftar" />
+                </FormField>
+                <FormField label="Pabrik">
+                    <SearchableSelect :model-value="pabrikBox" :options="pabrikOptions" :loading="loadingPabrik" placeholder="Semua Pabrik" search-placeholder="Ketik nama pabrik..." @update:model-value="onPabrik" @search="searchPabrik" />
                 </FormField>
             </FilterPanel>
 

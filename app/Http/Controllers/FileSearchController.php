@@ -9,6 +9,12 @@ use Inertia\Response;
 
 class FileSearchController extends Controller
 {
+    public function __construct()
+    {
+        // Overwrite file-index.json wajib login; baca + halaman tetap publik.
+        $this->middleware('env_auth')->only(['upload']);
+    }
+
     public function index(): Response
     {
         $title = 'File Search Manager';
