@@ -1,12 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowLeft, Save } from '@lucide/vue';
+import { ArrowLeft, Save, Upload, X } from '@lucide/vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import Card from '@/components/ui/Card.vue';
 import { useToast } from '@/composables/useToast';
+import { formatFileSize } from '@/lib/format';
 
 const props = defineProps({
     mode: { type: String, default: 'create' },
@@ -25,20 +26,54 @@ const form = ref({
 const fileInput = ref(null);
 const errors = ref({});
 const saving = ref(false);
+const dragging = ref(false);
 
+const MAX_FILE = 20 * 1024 * 1024;
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf'];
+
+const newFile = ref(null);
 const newPreviewUrl = ref('');
 const newIsPdf = ref(false);
-function onFileChange() {
-    const f = fileInput.value?.files?.[0];
+
+function setFile(f) {
+    if (!f) {
+        return;
+    }
+    const okType = ACCEPTED_TYPES.includes(f.type) || /\.pdf$/i.test(f.name);
+    if (!okType) {
+        toast.warning('Tipe file tidak didukung (jpg/png/webp/pdf).');
+        return;
+    }
+    if (f.size > MAX_FILE) {
+        toast.warning('Ukuran file maksimal 20MB.');
+        return;
+    }
+    clearNewFile();
+    newFile.value = f;
+    newPreviewUrl.value = URL.createObjectURL(f);
+    newIsPdf.value = (f.type === 'application/pdf') || /\.pdf$/i.test(f.name);
+}
+
+function clearNewFile() {
     if (newPreviewUrl.value.startsWith('blob:')) {
         URL.revokeObjectURL(newPreviewUrl.value);
     }
-    if (!f) {
-        newPreviewUrl.value = '';
-        return;
+    newFile.value = null;
+    newPreviewUrl.value = '';
+    newIsPdf.value = false;
+    if (fileInput.value) {
+        fileInput.value.value = '';
     }
-    newPreviewUrl.value = URL.createObjectURL(f);
-    newIsPdf.value = (f.type === 'application/pdf') || /\.pdf$/i.test(f.name);
+}
+
+function onFilePicked(e) {
+    setFile(e.target.files?.[0]);
+    e.target.value = '';
+}
+
+function onDrop(e) {
+    dragging.value = false;
+    setFile(e.dataTransfer?.files?.[0]);
 }
 
 const oldUrl = computed(() => (props.record?.id ? `/akls/${props.record.id}` : ''));
@@ -62,7 +97,7 @@ function save() {
     fd.append('vendor', form.value.vendor ?? '');
     fd.append('date_from', form.value.date_from ?? '');
     fd.append('date_expired', form.value.date_expired ?? '');
-    const f = fileInput.value?.files?.[0];
+    const f = newFile.value;
     if (f) {
         fd.append('file', f);
     }
@@ -108,7 +143,26 @@ function save() {
                         <Input v-model="form.date_expired" type="date" />
                     </FormField>
                     <FormField label="File (jpg/png/webp/pdf, maks 20MB)" :error="errors.file?.[0]" class="sm:col-span-2">
-                        <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="w-full text-sm" @change="onFileChange" />
+                        <div
+                            role="button"
+                            tabindex="0"
+                            class="flex min-h-32 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed p-6 text-center transition-colors"
+                            :class="dragging ? 'border-primary bg-primary/5' : 'border-input hover:border-primary'"
+                            @click="fileInput?.click()"
+                            @keydown.enter="fileInput?.click()"
+                            @dragover.prevent="dragging = true"
+                            @dragleave="dragging = false"
+                            @drop.prevent="onDrop"
+                        >
+                            <Upload class="size-6 text-muted-foreground" />
+                            <p class="text-sm font-medium">Tarik &amp; letakkan file di sini, atau <span class="text-primary underline">klik untuk pilih</span></p>
+                            <p class="text-xs text-muted-foreground">jpg / png / webp / pdf • maks 20MB</p>
+                            <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden" @change="onFilePicked" />
+                        </div>
+                        <div v-if="newFile" class="mt-2 flex items-center justify-between gap-2 rounded-md border bg-slate-50 px-2 py-1.5 text-xs">
+                            <span class="min-w-0 truncate font-medium">{{ newFile.name }} <span class="text-muted-foreground">({{ formatFileSize(newFile.size) }})</span></span>
+                            <button type="button" title="Hapus file" class="shrink-0 rounded p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground" @click="clearNewFile"><X class="size-3.5" /></button>
+                        </div>
                         <p v-if="record?.file && !newPreviewUrl" class="mt-1 text-xs text-muted-foreground">File saat ini: {{ record.file }} — <a :href="oldUrl" target="_blank" class="underline">buka tab baru</a>. Pilih file baru untuk mengganti (lama dihapus dari S3).</p>
                     </FormField>
                 </div>

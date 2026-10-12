@@ -70,3 +70,13 @@ export function truncate(text, length = 40) {
     const s = String(text ?? '');
     return s.length > length ? s.slice(0, length) + '...' : s;
 }
+
+export function formatFileSize(bytes) {
+    const n = Number(bytes ?? 0);
+    if (!Number.isFinite(n) || n <= 0) {
+        return '-';
+    }
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1);
+    return `${(n / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
