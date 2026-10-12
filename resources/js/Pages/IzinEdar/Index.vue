@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { CheckCircle2, Copy, Download, Eye, RefreshCw, Save, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -260,6 +260,7 @@ function statusClass(s) {
 const syncLog = ref(null);
 const syncVisible = ref(false);
 const syncStarting = ref(false);
+const POLL_INTERVAL_MS = 15000;
 let pollTimer = null;
 let hideTimer = null;
 
@@ -315,13 +316,29 @@ async function loadProgress(silent = true) {
 function startPolling() {
     stopPolling();
     loadProgress(true);
-    pollTimer = setInterval(() => loadProgress(true), 10000);
+    pollTimer = setInterval(() => loadProgress(true), POLL_INTERVAL_MS);
 }
 function stopPolling() {
     if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
     }
+}
+// Hemat request: hentikan polling saat tab hidden, lanjutkan saat visible.
+function handleVisibilityChange() {
+    if (document.hidden) {
+        stopPolling();
+        return;
+    }
+    if (!syncVisible.value) {
+        return;
+    }
+    loadProgress(true).then(() => {
+        if (syncLog.value?.is_running && !pollTimer) {
+            stopPolling();
+            pollTimer = setInterval(() => loadProgress(true), POLL_INTERVAL_MS);
+        }
+    });
 }
 function syncBusyToast() {
     toast.warning('Download sedang berjalan. Gunakan Cancel / Reset di kartu Sync untuk memaksa berhenti.');
@@ -517,6 +534,9 @@ function onPickFile() {
 }
 function onDrop(e) {
     e.preventDefault();
+    if (uploading.value) {
+        return;
+    }
     const files = e.dataTransfer?.files;
     if (files?.length && uploadFile.value) {
         uploadFile.value.files = files;
@@ -659,7 +679,12 @@ function importingReset() {
     uploadText.value = '';
 }
 
+onMounted(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+});
+
 onBeforeUnmount(() => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
     stopPolling();
     clearTimeout(hideTimer);
 });
@@ -824,18 +849,18 @@ loadProgress(true).then(() => {
             </template>
         </AppModal>
 
-        <AppModal v-model:open="uploadOpen" title="Upload File Excel" size="md">
+        <AppModal v-model:open="uploadOpen" title="Upload File Excel" size="md" :persistent="uploading">
             <div class="space-y-3">
                 <FormField label="Kategori" required>
                     <div class="flex flex-wrap gap-2">
-                        <Button v-for="k in ['AKD', 'AKL', 'PKD', 'PKL']" :key="k" :variant="uploadKategori === k ? 'default' : 'outline'" size="sm" @click="uploadKategori = k">{{ k }}</Button>
+                        <Button v-for="k in ['AKD', 'AKL', 'PKD', 'PKL']" :key="k" :variant="uploadKategori === k ? 'default' : 'outline'" size="sm" :disabled="uploading" @click="uploadKategori = k">{{ k }}</Button>
                     </div>
                 </FormField>
                 <FormField label="File (.xlsx, maks 200MB)" required>
                     <div
-                        class="cursor-pointer rounded-lg border-2 border-dashed p-6 text-center text-sm"
-                        :class="uploadName ? 'border-green-300 bg-green-50/50' : 'border-slate-200 hover:border-slate-300'"
-                        @click="uploadFile?.click()"
+                        class="rounded-lg border-2 border-dashed p-6 text-center text-sm"
+                        :class="[uploadName ? 'border-green-300 bg-green-50/50' : 'border-slate-200 hover:border-slate-300', uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer']"
+                        @click="() => { if (!uploading) uploadFile?.click(); }"
                         @dragover.prevent
                         @drop="onDrop"
                     >
@@ -853,7 +878,7 @@ loadProgress(true).then(() => {
                 </div>
             </div>
             <template #footer>
-                <Button variant="ghost" @click="uploadOpen = false">Tutup</Button>
+                <Button variant="ghost" :disabled="uploading" @click="uploadOpen = false">Tutup</Button>
                 <Button v-if="uploading" variant="outline" @click="cancelUpload">Batalkan</Button>
                 <Button :disabled="uploading || !uploadKategori || !uploadName" @click="doUpload"><Upload /> Parse &amp; Import</Button>
             </template>

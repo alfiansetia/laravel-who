@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 const props = defineProps({
     title: { type: String, default: '' },
     size: { type: String, default: 'md' },
+    persistent: { type: Boolean, default: false },
 });
 
 const open = defineModel('open', { type: Boolean, default: false });
@@ -60,7 +61,23 @@ function handleInteractOutside(e) {
 }
 
 function close() {
+    if (props.persistent) {
+        return;
+    }
     open.value = false;
+}
+
+function handleOpenChange(value) {
+    if (!value && props.persistent) {
+        return;
+    }
+    open.value = value;
+}
+
+function handleEscapeKeyDown(e) {
+    if (props.persistent) {
+        e.preventDefault();
+    }
 }
 
 let scrollLockCount = 0;
@@ -87,7 +104,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <DialogRoot v-model:open="open" :modal="false">
+    <DialogRoot :open="open" @update:open="handleOpenChange" :modal="false">
         <DialogPortal>
             <div
                 v-if="open"
@@ -99,12 +116,14 @@ onBeforeUnmount(() => {
                 @pointer-down-outside="handlePointerDownOutside"
                 @focus-outside="handleFocusOutside"
                 @interact-outside="handleInteractOutside"
+                @escape-key-down="handleEscapeKeyDown"
             >
                 <div class="flex items-center justify-between gap-2">
                     <DialogTitle class="text-base font-semibold">
                         <slot name="title">{{ title }}</slot>
                     </DialogTitle>
                     <DialogClose
+                        v-if="!persistent"
                         class="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         aria-label="Tutup"
                     >
