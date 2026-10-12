@@ -9,6 +9,7 @@ import {
 } from 'radix-vue';
 import { X } from '@lucide/vue';
 import { cn } from '@/lib/utils';
+import { useConfirmState } from '@/composables/useConfirm';
 
 const props = defineProps({
     title: { type: String, default: '' },
@@ -42,40 +43,53 @@ function isClipboardFallback(target) {
     return target?.closest?.('[data-clipboard-fallback]') != null;
 }
 
+// Klik di dalam ConfirmDialog (yang di-render di luar DialogContent, z-150)
+// juga dianggap "outside" oleh DismissableLayer — abaikan agar modal pemilik
+// tidak ikut tertutup saat user menjawab konfirmasi.
+function isInsideConfirmDialog(target) {
+    return target?.closest?.('[data-confirm-dialog]') != null;
+}
+
+function isProtectedOutside(target) {
+    return isInsideSearchablePanel(target) || isClipboardFallback(target) || isInsideConfirmDialog(target);
+}
+
 function handlePointerDownOutside(e) {
-    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
+    if (isProtectedOutside(e.target)) {
         e.preventDefault();
     }
 }
 
 function handleFocusOutside(e) {
-    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
+    if (isProtectedOutside(e.target)) {
         e.preventDefault();
     }
 }
 
 function handleInteractOutside(e) {
-    if (isInsideSearchablePanel(e.target) || isClipboardFallback(e.target)) {
+    if (isProtectedOutside(e.target)) {
         e.preventDefault();
     }
 }
 
+const { state: confirmState } = useConfirmState();
+
 function close() {
-    if (props.persistent) {
+    if (props.persistent || confirmState.value.open) {
         return;
     }
     open.value = false;
 }
 
 function handleOpenChange(value) {
-    if (!value && props.persistent) {
+    if (!value && (props.persistent || confirmState.value.open)) {
         return;
     }
     open.value = value;
 }
 
 function handleEscapeKeyDown(e) {
-    if (props.persistent) {
+    if (props.persistent || confirmState.value.open) {
         e.preventDefault();
     }
 }

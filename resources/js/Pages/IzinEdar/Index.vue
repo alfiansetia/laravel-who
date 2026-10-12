@@ -922,7 +922,7 @@ loadProgress(true).then(() => {
             </div>
         </div>
 
-        <AppModal v-model:open="detailOpen" :title="`Izin Edar ${detail?.nomor_izin_edar ?? ''}`" size="lg">
+        <AppModal v-model:open="detailOpen" :title="`Izin Edar ${detail?.nomor_izin_edar ?? ''}`" size="lg" persistent>
             <div v-if="detailLoading" class="space-y-2">
                 <div v-for="n in 8" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
             </div>
@@ -939,7 +939,7 @@ loadProgress(true).then(() => {
             </template>
         </AppModal>
 
-        <AppModal v-model:open="copyOpen" title="Copy ke AKL" size="md">
+        <AppModal v-model:open="copyOpen" title="Copy ke AKL" size="md" persistent>
             <div class="rounded-md border border-sky-200 bg-sky-50 p-2 text-xs">
                 Data ini akan dibuat sebagai <b>baris baru di tabel AKL</b> (tanpa lampiran).
                 Kunci duplikat: <b>Reg No + Tgl Expired</b> — kalau pasangan itu sudah ada di AKL, copy ditolak.

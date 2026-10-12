@@ -696,7 +696,7 @@ fetchDevices();
             </DataTable>
         </div>
 
-        <AppModal v-model:open="detailOpen" title="Detail Device" size="lg">
+        <AppModal v-model:open="detailOpen" title="Detail Device" size="lg" persistent>
             <div v-if="detailRow" class="space-y-2 text-sm">
                 <p><b>Platform:</b> {{ detailRow.platform || '-' }}</p>
                 <p><b>Device ID:</b> <span class="break-all font-mono text-xs">{{ detailRow.device_id || '-' }}</span></p>
@@ -714,7 +714,7 @@ fetchDevices();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="cekOpen" title="Status Koneksi Odoo" size="xl">
+        <AppModal v-model:open="cekOpen" title="Status Koneksi Odoo" size="xl" persistent>
             <div v-if="cekResult" class="space-y-3">
                 <div
                     class="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm"
@@ -813,7 +813,7 @@ fetchDevices();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="logDetailOpen" :title="`Log: ${logFile ?? ''}`" size="xl">
+        <AppModal v-model:open="logDetailOpen" :title="`Log: ${logFile ?? ''}`" size="xl" persistent>
             <div v-if="logMeta" class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span class="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium text-slate-600">{{ logMeta.parse }}</span>
                 <span>{{ logMeta.modified }}</span>

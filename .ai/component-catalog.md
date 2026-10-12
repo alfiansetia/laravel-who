@@ -31,11 +31,11 @@
 
 | Komponen / Composable | Ganti fungsi Blade | Aturan |
 |---|---|---|
-| `AppModal.vue` | `vendor/modal.blade.php` dkk + `.modal-content` | Ukuran `sm/md/lg/xl`, fokus trap, tutup via Esc/X, footer baku Batal + Simpan. |
+| `AppModal.vue` | `vendor/modal.blade.php` dkk + `.modal-content` | Ukuran `sm/md/lg/xl`, fokus trap, tutup via Esc/X, footer baku Batal + Simpan. Modal berisi aksi/form WAJIB `persistent` (klik backdrop + Esc tidak menutup, cegah konteks hilang karena klik nyasar); modal info murni boleh tidak. Interaksi `ConfirmDialog` tidak menutup modal pemilik. |
 | `AuthModal.vue` | `components/auth.blade.php` + `#authModal` | Dibuka dari tombol Login di `AppLayout` + otomatis saat API 401 (interceptor `lib/axios.js` via `useAuthModal`). Sukses → `router.reload()`. |
 | `NotifModal.vue` | `components/notif-modal.blade.php` + `#notifModal` | Dibuka dari tombol lonceng. Status via `StatusBadge`, aksi: Aktifkan/Tes Lokal/Tes FCM/Broadcast (broadcast hanya bila login). Hasil inline di modal, bukan toast. |
 | `useAuthModal()` | `$('#authModal').modal('show')` global | Singleton `isOpen` — satu-satunya cara membuka modal login dari mana saja (termasuk interceptor 401). |
-| `ConfirmDialog.vue` + `useConfirm()` | `confirmation()` iziToast | `await confirm({...})`, tone destructive untuk hapus. |
+| `ConfirmDialog.vue` + `useConfirm()` | `confirmation()` iziToast | `await confirm({...})`, tone destructive untuk hapus. Selalu di atas modal (`z-[150]`, tangga: modal 50 < block 100 < confirm 150 < panel SearchableSelect 200); Esc = Batal. |
 | `useToast()` (`vue-sonner`) | `show_message()`, `danger()`, `success()` | Satu-satunya cara toast. Jangan panggil `iziToast` langsung. `vue-sonner` hanya boleh diimpor di 2 file: `composables/useToast.js` (bungkus `success/error/warning/info` + `duration 4000` + `closeButton`) dan `AppLayout.vue` (`Toaster`). `lib/axios.js`, `lib/export.js`, dan semua `Pages/` WAJIB lewat `useToast()`. Dilarang `window.alert`, `toast` langsung dari `vue-sonner` di luar 2 file itu. |
 | `useBlock()` + `BlockOverlay` | `bloc()/unbloc()`, `$.blockUI` | Overlay global (mount sekali di `AppLayout`, dilarang per-page). Axios: `block: true` per request user tanpa indikator inline; non-axios: `withBlock()`. Jangan block autocomplete/polling. |
 | `useTableQuery.js` | `loadData()` + `renderPagination()` manual (`alamat`, `do`) | Mode server: state page/per_page/search/sort/filter, cancel request basi, sinkron URL. |
