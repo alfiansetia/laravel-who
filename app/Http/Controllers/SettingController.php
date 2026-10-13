@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FcmToken;
+use App\Models\NotificationHistory;
 use App\Services\FirebaseServices;
 use App\Services\Odoo;
 use App\Services\OdooSession;
@@ -107,6 +108,20 @@ class SettingController extends Controller
     public function test_notif(Request $request): JsonResponse|RedirectResponse
     {
         FirebaseServices::sendToTopic('⚠️ Test!', 'Eh yaampun ini cuma test notif 😁✌️!');
+
+        try {
+            NotificationHistory::create([
+                'type' => 'test',
+                'title' => '⚠️ Test!',
+                'body' => 'Eh yaampun ini cuma test notif 😁✌️!',
+                'topic' => 'general',
+                'channel' => 'fcm_topic',
+                'status' => 'success',
+                'source' => 'manual',
+                'sent_at' => now(),
+            ]);
+        } catch (\Throwable) {
+        }
 
         if ($request->wantsJson()) {
             return $this->sendResponse('Success kirim notif via topic ke semua perangkat!');

@@ -600,6 +600,14 @@ fetchDevices();
         </div>
 
         <Card class="mt-4 p-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><History class="size-4 text-amber-500" /> History Notifikasi DO</h2>
+                <p class="w-full text-xs text-muted-foreground">Catatan pengiriman push Monitor DO via Firebase, lengkap dengan waktu kirim, status, dan tombol blast ulang.</p>
+                <Button variant="outline" size="sm" as="a" :href="route('notif_histories.index')"><History /> Buka History</Button>
+            </div>
+        </Card>
+
+        <Card class="mt-4 p-4">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-sm font-semibold">
                     <FileText class="size-4 text-slate-500" /> File Log

@@ -9,6 +9,7 @@ const props = defineProps({
 
 const map = {
     success: { classes: 'bg-green-50 text-green-700 border-green-200', icon: CircleCheck },
+    failed: { classes: 'bg-red-50 text-red-700 border-red-200', icon: CircleX },
     danger: { classes: 'bg-red-50 text-red-700 border-red-200', icon: CircleX },
     warning: { classes: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
     secondary: { classes: 'bg-slate-100 text-slate-600 border-slate-200', icon: Minus },

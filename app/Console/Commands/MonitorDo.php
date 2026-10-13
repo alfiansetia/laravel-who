@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\NotificationHistory;
 use App\Services\DoServices;
 use App\Services\FirebaseServices;
 use App\Services\TelegramServices;
@@ -58,7 +59,8 @@ class MonitorDo extends Command
                     if ($old_length > 0) {
                         $title = '⚠️ Ada '.$selisih.' DO Baru!';
                         $message = $title;
-                        FirebaseServices::sendToTopic($title, $message);
+                        $ok = FirebaseServices::sendToTopic($title, $message);
+                        $this->recordHistory('do_bulk', $title, $message, 0, null, $ok);
                         TelegramServices::sendToGroup($message);
                         $this->info($message);
                     } else {
@@ -85,7 +87,9 @@ class MonitorDo extends Command
 
                         $doName = Arr::get($value, 'name', '-');
                         $so_id = Arr::get($value, 'sale_id.0', '0');
-                        FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, '.$doName, $message, $so_id);
+                        $origin = Arr::get($value, 'origin', '');
+                        $ok = FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, '.$doName, $message, $so_id);
+                        $this->recordHistory('do_baru', '⚠️ Ada DO Baru!, '.$doName, $message, $so_id, $value, $ok);
                         TelegramServices::sendToGroup('⚠️ Ada DO Baru!, '.$doName.$message);
                     }
                 }
@@ -180,6 +184,33 @@ class MonitorDo extends Command
                 'length' => 0,
                 'last_error' => Carbon::now()->subHour(),
             ];
+        }
+    }
+
+    private function recordHistory(string $type, string $title, string $message, mixed $so_id, mixed $value, bool $ok): void
+    {
+        try {
+            $soId = is_numeric($so_id) ? (int) $so_id : null;
+
+            NotificationHistory::create([
+                'type' => $type,
+                'title' => $title,
+                'body' => $message,
+                'topic' => 'general',
+                'do_name' => is_array($value) ? Arr::get($value, 'name') : null,
+                'so_id' => $soId > 0 ? $soId : null,
+                'origin' => is_array($value) ? Arr::get($value, 'origin') : null,
+                'partner' => is_array($value) ? get_name($value['partner_id'] ?? null) : null,
+                'payload' => is_array($value) ? $value : null,
+                'channel' => 'fcm_topic',
+                'status' => $ok ? 'success' : 'failed',
+                'source' => 'scheduler',
+                'sent_at' => now(),
+            ]);
+        } catch (Exception $e) {
+            Log::warning('MonitorDo: Gagal mencatat history notifikasi', [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

@@ -43,6 +43,7 @@ const INDEX = {
     product_images: { label: 'Product Images', href: '/product_images' },
     settings: { label: 'App Setting', href: '/settings' },
     'monitor-do': { label: 'Monitor DO', href: '/monitor-do' },
+    'notif-histories': { label: 'History Notifikasi', href: '/notif-histories' },
     'shipping-estimate': { label: 'Shipping Estimate', href: '/shipping-estimate' },
     'tools/stt': { label: 'Speech To Text', href: '/tools/stt' },
     'tools/kalkulator': { label: 'Kalkulator Nilai', href: '/tools/kalkulator' },

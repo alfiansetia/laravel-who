@@ -14,6 +14,7 @@ use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\LotController;
+use App\Http\Controllers\NotificationHistoryController;
 use App\Http\Controllers\PackController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProblemController;
@@ -47,6 +48,9 @@ Route::get('monitor-do', function () {
         'title' => 'Monitor DO',
     ]);
 })->name('monitor.do');
+
+Route::get('notif-histories', [NotificationHistoryController::class, 'index'])->name('notif_histories.index');
+Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])->name('notif_histories.resend');
 
 // NOTE: `problems/*` (plural, Blade pages) vs `problem/*` (singular, JSON)
 // sengaja beda path agar kontrak Blade lama + API tidak tabrakan.

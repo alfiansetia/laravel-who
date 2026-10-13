@@ -10,6 +10,7 @@ use App\Http\Controllers\DoController;
 use App\Http\Controllers\ItController;
 use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\LotController;
+use App\Http\Controllers\NotificationHistoryController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductOdooController;
@@ -148,6 +149,12 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::get('/auth/status', [AuthController::class, 'status'])->name('auth.status');
 
     Route::middleware('env_auth')->group(function () {
+        Route::get('notif-histories', [NotificationHistoryController::class, 'index'])
+            ->name('api.notif_histories.index');
+        Route::get('notif-histories/{notifHistory}', [NotificationHistoryController::class, 'show'])
+            ->name('api.notif_histories.show');
+        Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])
+            ->name('api.notif_histories.resend');
         Route::get('/resources/logs/{file}', [SettingController::class, 'logShow'])
             ->where('file', '[A-Za-z0-9._-]+')
             ->name('api.resources.log_show');
