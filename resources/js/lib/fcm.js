@@ -162,6 +162,13 @@ function syncFcmToken(messaging, force = false, registration = null) {
 }
 
 function handleForegroundMessage(payload) {
+    // Multi-tab: tiap tab terbuka menerima onMessage sendiri. Hanya tab yang
+    // sedang terlihat yang boleh tampil; tab hidden diam (kalau semua hidden,
+    // SW yang tampil via onBackgroundMessage). tag di bawah jadi pengaman
+    // sisa (dual-monitor, race) agar tetap 1.
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+    }
     const { title, body, icon, so_id, url } = payload.data ?? {};
     // tag: push yang sama (retry / multi-tab) menimpa, bukan menumpuk.
     const tag = (so_id && so_id !== '0' ? `who-so-${so_id}` : `who-${title || ''}|${body || ''}`).slice(0, 100);

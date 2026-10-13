@@ -51,6 +51,13 @@
     }
 
     function handleForegroundMessage(payload) {
+        // Multi-tab: tiap tab terbuka menerima onMessage sendiri. Hanya tab
+        // yang sedang terlihat yang boleh tampil; tab hidden diam (kalau
+        // semua hidden, SW yang tampil via onBackgroundMessage). tag di bawah
+        // jadi pengaman sisa (dual-monitor, race) agar tetap 1.
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+            return;
+        }
         console.log("Notifikasi diterima (foreground):", payload);
         const {
             title,
