@@ -3,6 +3,10 @@ import api from '@/lib/axios';
 const TOKEN_KEY = 'fcm_token';
 const DEVICE_KEY = 'fcm_device_id';
 const ASKED_KEY = 'fcm_perm_asked';
+const SYNC_KEY = 'fcm_sync_v';
+// Naikkan setiap ada perubahan skema sync (mis. device_id) agar browser lama
+// yang tokennya sama tetap POST sekali + subscribe ulang ke topic.
+const SYNC_VERSION = '2';
 // Samakan dengan SW_VERSION di app.blade.php + resources/views/sw.blade.php.
 const SW_VERSION = '3';
 
@@ -123,11 +127,15 @@ function syncFcmToken(messaging, force = false, registration = null) {
             const cached = localStorage.getItem(TOKEN_KEY);
             // Migrasi prod: browser lama sudah punya token tapi belum punya
             // device_id → wajib POST sekali agar server mengenalinya.
+            // SYNC_VERSION: paksa POST sekali walau token sama (mis. agar
+            // token lama yang belum subscribe ke topic bisa didaftarkan).
             const needsDeviceId = !localStorage.getItem(DEVICE_KEY);
-            if (!force && !needsDeviceId && cached && cached === token) {
+            const needsVersionSync = localStorage.getItem(SYNC_KEY) !== SYNC_VERSION;
+            if (!force && !needsDeviceId && !needsVersionSync && cached && cached === token) {
                 return;
             }
             localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(SYNC_KEY, SYNC_VERSION);
             api.post(route('api.tokens.store'), {
                 token,
                 device_id: fcmDeviceId(),

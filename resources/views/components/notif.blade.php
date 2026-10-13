@@ -82,6 +82,9 @@
 
     // Kirim token ke backend HANYA kalau belum pernah / berubah.
     // Mencegah updateOrCreate ke DB di setiap page load.
+    // SYNC_VERSION: naikkan setiap ada perubahan skema sync (mis. device_id)
+    // agar browser lama yang tokennya sama tetap POST sekali + subscribe ulang.
+    const FCM_SYNC_VERSION = '2';
     function syncFcmToken(messaging, force = false, registration = null) {
         // VAPID wajib untuk Web Push (isi FIREBASE_VAPID_KEY di .env).
         const options = registration ? {
@@ -94,11 +97,16 @@
             const cached = localStorage.getItem(FCM_TOKEN_KEY);
             // Migrasi prod: browser lama sudah punya token tapi belum punya
             // device_id → wajib POST sekali agar server mengenalinya.
+            // SYNC_VERSION: paksa POST sekali walau token sama (mis. agar
+            // token lama yang belum subscribe ke topic bisa didaftarkan).
             const needsDeviceId = !localStorage.getItem(FCM_DEVICE_KEY);
-            if (!force && !needsDeviceId && cached && cached === token) {
+            const syncedVersion = localStorage.getItem('fcm_sync_v');
+            const needsVersionSync = syncedVersion !== FCM_SYNC_VERSION;
+            if (!force && !needsDeviceId && !needsVersionSync && cached && cached === token) {
                 return; // sudah terdaftar, skip POST
             }
             localStorage.setItem(FCM_TOKEN_KEY, token);
+            localStorage.setItem('fcm_sync_v', FCM_SYNC_VERSION);
             fetch("{{ route('api.tokens.store') }}", {
                     method: "POST",
                     headers: {

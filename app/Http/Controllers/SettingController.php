@@ -275,15 +275,21 @@ class SettingController extends Controller
 
         // Upsert per browser agar refresh token FCM tidak menumpuk baris.
         // Klien lama tanpa device_id tetap di-upsert by token (backward-compatible).
+        // Baris lama (device_id NULL) yang belum subscribe topic TIDAK akan
+        // terjangkau sendToTopic() sampai mereka buka ulang app / backfill
+        // app:subscribe-fcm-topic dijalankan di server.
         if ($deviceId !== '') {
             $token = FcmToken::query()->where('device_id', $deviceId)->first();
+            $oldTokenString = $token?->token;
 
             if (! $token) {
                 // Migrasi prod: adopsi baris lama (didaftarkan sebelum era
                 // device_id) yang tokennya sama agar tidak jadi duplikat.
+                // Cari by token tanpa filter device_id: mencakup baris yang
+                // sudah punya device_id lain (mis. localStorage di-clear
+                // lalu device_id baru digenerate dengan FCM token yang sama).
                 $token = FcmToken::query()
                     ->where('token', $request->token)
-                    ->whereNull('device_id')
                     ->first();
             }
 
@@ -301,6 +307,19 @@ class SettingController extends Controller
             } else {
                 $token = FcmToken::create($attributes);
             }
+
+            // Rotasi FCM: token lama di device yang sama sudah tidak valid.
+            // Keluarkan dari topic agar tidak jadi ghost subscriber.
+            if (! empty($oldTokenString) && $oldTokenString !== $token->token) {
+                FirebaseServices::unsubscribeTopic($oldTokenString, $token->topic ?? $topic);
+            }
+
+            // Bersihkan duplikat token yang sama di device_id lain (mis.
+            // localStorage di-clear lalu device baru memakai token identik).
+            FcmToken::query()
+                ->where('token', $token->token)
+                ->where('id', '<>', $token->id)
+                ->delete();
         } else {
             $token = FcmToken::query()->updateOrCreate(
                 [

@@ -28,3 +28,8 @@ Schedule::command('app:odoo-login')
     })->onFailure(function () {
         // Log::error('Cronjob Monitor DO Gagal dijalankan');
     });
+
+// Idempotent: pastikan token lama / yang subscribe-nya gagal diam-diam tetap
+// terdaftar ke topic agar sendToTopic() menjangkau semua perangkat.
+Schedule::command('app:subscribe-fcm-topic')
+    ->dailyAt('05:30');
