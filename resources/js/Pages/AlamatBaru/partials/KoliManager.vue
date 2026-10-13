@@ -29,6 +29,10 @@ const { withBlock } = useBlock();
 const kolis = ref([]);
 const loading = ref(false);
 const drafts = reactive({});
+const savingKoli = ref(false);
+const savingItem = ref(false);
+const savingEdit = ref(false);
+const addingLine = ref(false);
 
 function initDraft(koli) {
     drafts[koli.id] = {
@@ -103,10 +107,14 @@ function openAddKoli() {
 }
 
 async function saveKoli() {
+    if (savingKoli.value) {
+        return;
+    }
     if (!String(koliForm.value.urutan ?? '').trim()) {
         toast.error('Nomor koli wajib diisi.');
         return;
     }
+    savingKoli.value = true;
     await withBlock(async () => {
         try {
             const res = await web.post('/koli', {
@@ -123,6 +131,8 @@ async function saveKoli() {
             loadKolis();
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menambah koli.');
+        } finally {
+            savingKoli.value = false;
         }
     });
 }
@@ -317,10 +327,14 @@ function openAddItem(koli) {
 }
 
 async function saveManualItem() {
+    if (savingItem.value) {
+        return;
+    }
     if (!manualForm.value.product) {
         toast.error('Pilih produk!');
         return;
     }
+    savingItem.value = true;
     await withBlock(async () => {
         try {
             const res = await web.post('/koli-item', { koli_id: activeKoli.value.id, product_id: Number(manualForm.value.product), qty: manualForm.value.qty, desc: manualForm.value.desc, lot: manualForm.value.lot }, { block: true });
@@ -329,6 +343,8 @@ async function saveManualItem() {
             loadKolis();
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menambah barang.');
+        } finally {
+            savingItem.value = false;
         }
     });
 }
@@ -337,6 +353,10 @@ function codeOf(line) {
     return line.product_code ?? getCode(line.product ?? '');
 }
 async function pickDoLine(line) {
+    if (addingLine.value) {
+        return;
+    }
+    addingLine.value = true;
     await withBlock(async () => {
         try {
             const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
@@ -344,10 +364,16 @@ async function pickDoLine(line) {
             loadKolis();
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menambah barang dari DO.');
+        } finally {
+            addingLine.value = false;
         }
     });
 }
 async function pickItLine(line) {
+    if (addingLine.value) {
+        return;
+    }
+    addingLine.value = true;
     await withBlock(async () => {
         try {
             const res = await web.post('/koli-item/from-do-it', { koli_id: activeKoli.value.id, product_code: codeOf(line), product: line.product ?? '', qty: line.qty ?? '', lot: line.lot ?? '', id: line.id }, { block: true });
@@ -355,6 +381,8 @@ async function pickItLine(line) {
             loadKolis();
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menambah barang dari IT.');
+        } finally {
+            addingLine.value = false;
         }
     });
 }
@@ -377,6 +405,10 @@ async function openEditItem(item) {
     });
 }
 async function saveEditItem() {
+    if (savingEdit.value) {
+        return;
+    }
+    savingEdit.value = true;
     await withBlock(async () => {
         try {
             const res = await web.put(`/koli-item/${editingItem.value.id}`, editItemForm.value, { block: true });
@@ -385,6 +417,8 @@ async function saveEditItem() {
             loadKolis();
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menyimpan item.');
+        } finally {
+            savingEdit.value = false;
         }
     });
 }
@@ -540,7 +574,7 @@ defineExpose({ openAddKoli });
             </div>
             <template #footer>
                 <Button variant="ghost" @click="koliModalOpen = false">Tutup</Button>
-                <Button @click="saveKoli"><Save /> Simpan Koli</Button>
+                <Button :disabled="savingKoli" @click="saveKoli"><Save /> {{ savingKoli ? 'Menyimpan...' : 'Simpan Koli' }}</Button>
             </template>
         </AppModal>
 
@@ -561,7 +595,7 @@ defineExpose({ openAddKoli });
                 </FormField>
                 <div class="flex justify-end gap-2">
                     <Button variant="ghost" @click="itemModalOpen = false">Batal</Button>
-                    <Button @click="saveManualItem"><Plus /> Tambahkan Barang</Button>
+                    <Button :disabled="savingItem" @click="saveManualItem"><Plus /> {{ savingItem ? 'Menambah...' : 'Tambahkan Barang' }}</Button>
                 </div>
             </div>
             <div v-if="itemTab === 'do'" class="space-y-3">
@@ -574,7 +608,7 @@ defineExpose({ openAddKoli });
                     <div class="flex gap-2 bg-slate-50 px-2 py-1.5 font-semibold"><span class="flex-1">Produk</span><span class="w-32">Lot/ED</span><span class="w-20 text-center">Qty</span><span class="w-16 text-center">#</span></div>
                     <div v-for="(l, i) in doLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
                         <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot ?? '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
-                        <span class="w-16 text-center"><Button size="sm" @click="pickDoLine(l)">Pilih</Button></span>
+                        <span class="w-16 text-center"><Button size="sm" :disabled="addingLine" @click="pickDoLine(l)">Pilih</Button></span>
                     </div>
                 </div>
                 <div class="flex justify-end"><Button variant="ghost" @click="itemModalOpen = false">Tutup</Button></div>
@@ -594,7 +628,7 @@ defineExpose({ openAddKoli });
                     <div class="flex gap-2 bg-slate-50 px-2 py-1.5 font-semibold"><span class="flex-1">Produk</span><span class="w-32">Lot/ED</span><span class="w-20 text-center">Qty</span><span class="w-16 text-center">#</span></div>
                     <div v-for="(l, i) in itLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
                         <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot ?? '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
-                        <span class="w-16 text-center"><Button size="sm" @click="pickItLine(l)">Pilih</Button></span>
+                        <span class="w-16 text-center"><Button size="sm" :disabled="addingLine" @click="pickItLine(l)">Pilih</Button></span>
                     </div>
                 </div>
                 <div class="flex justify-end"><Button variant="ghost" @click="itemModalOpen = false">Tutup</Button></div>
@@ -609,7 +643,7 @@ defineExpose({ openAddKoli });
             </div>
             <template #footer>
                 <Button variant="ghost" @click="editItemOpen = false">Batal</Button>
-                <Button @click="saveEditItem"><Save /> Simpan Update</Button>
+                <Button :disabled="savingEdit" @click="saveEditItem"><Save /> {{ savingEdit ? 'Menyimpan...' : 'Simpan Update' }}</Button>
             </template>
         </AppModal>
     </div>

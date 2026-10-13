@@ -20,12 +20,17 @@ const props = defineProps({
 const toast = useToast();
 const { confirm } = useConfirm();
 const { withBlock } = useBlock();
+const acting = ref(false);
 
 async function duplicate() {
+    if (acting.value) {
+        return;
+    }
     const ok = await confirm({ title: 'Duplikasi alamat?', message: `DO ${props.record.do ?? ''}`, confirmText: 'Ya, duplikasi' });
     if (!ok) {
         return;
     }
+    acting.value = true;
     await withBlock(async () => {
         try {
             const res = await api.post(`/alamat-baru/${props.record.id}/duplicate`, {}, { block: true });
@@ -36,15 +41,21 @@ async function duplicate() {
             }
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal menduplikasi alamat.');
+        } finally {
+            acting.value = false;
         }
     });
 }
 
 async function createBast() {
+    if (acting.value) {
+        return;
+    }
     const ok = await confirm({ title: 'Buat BAST?', message: `Dari DO ${props.record.do ?? ''}`, confirmText: 'Ya, lanjutkan' });
     if (!ok) {
         return;
     }
+    acting.value = true;
     await withBlock(async () => {
         try {
             const res = await api.post(`/alamat-baru/${props.record.id}/bast`, {}, { block: true });
@@ -56,6 +67,8 @@ async function createBast() {
             }
         } catch (e) {
             toast.error(e.response?.data?.message ?? 'Gagal membuat BAST.');
+        } finally {
+            acting.value = false;
         }
     });
 }
@@ -79,8 +92,8 @@ function addKoli() {
         <AlamatHeaderForm :title="title" mode="edit" :record="record" />
         <div class="mt-3 flex flex-wrap items-center justify-center gap-2 rounded-lg border bg-white p-3">
             <Button variant="outline" size="sm" class="text-slate-600" @click="printAll"><Printer /> Print All</Button>
-            <Button variant="outline" size="sm" class="text-blue-600" @click="duplicate"><Copy /> Duplikasi</Button>
-            <Button variant="outline" size="sm" class="text-emerald-600" @click="createBast"><FileText /> Buat BAST</Button>
+            <Button variant="outline" size="sm" class="text-blue-600" :disabled="acting" @click="duplicate"><Copy /> Duplikasi</Button>
+            <Button variant="outline" size="sm" class="text-emerald-600" :disabled="acting" @click="createBast"><FileText /> Buat BAST</Button>
             <Button size="sm" @click="addKoli"><Plus /> Tambah Koli</Button>
             <Button variant="ghost" size="sm" class="text-slate-500" @click="goList"><X /> Tutup</Button>
         </div>

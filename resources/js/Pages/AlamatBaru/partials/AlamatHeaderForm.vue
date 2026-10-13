@@ -43,6 +43,7 @@ const epurKind = ref(
 );
 const errors = ref({});
 const noteWhHtml = ref('');
+const saving = ref(false);
 
 const doSearchText = ref(props.record?.do ?? 'CENT/OUT/');
 const doOptions = ref([]);
@@ -198,6 +199,9 @@ function onEpurKindChange() {
 }
 
 async function save() {
+    if (saving.value) {
+        return;
+    }
     errors.value = {};
     if (!form.value.tujuan.trim() || !form.value.alamat.trim() || !form.value.do.trim()) {
         toast.error('Tujuan, alamat, dan DO wajib diisi.');
@@ -215,9 +219,10 @@ async function save() {
         untuk: form.value.untuk,
         note: form.value.note,
     };
+    saving.value = true;
     await withBlock(async () => {
         try {
-            if (isEdit.value) {
+            if (isEdit) {
                 await web.put(`/alamat-baru/${props.record.id}`, payload, { block: true });
                 toast.success('Alamat disimpan.');
                 emit('saved', props.record.id);
@@ -231,6 +236,8 @@ async function save() {
             if (e.response?.status === 422) {
                 errors.value = e.response.data?.errors ?? {};
             }
+        } finally {
+            saving.value = false;
         }
     });
 }
@@ -247,7 +254,7 @@ defineExpose({ form, save });
         <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="goBack"><ArrowLeft /> Kembali</Button>
-                <Button size="sm" @click="save"><Save /> Simpan{{ isEdit ? '' : ' Data' }}</Button>
+                <Button size="sm" :disabled="saving" @click="save"><Save /> {{ saving ? 'Menyimpan...' : (isEdit ? 'Simpan' : 'Simpan Data') }}</Button>
             </template>
         </PageHeader>
         <div class="rounded-lg border bg-white p-4">
