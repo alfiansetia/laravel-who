@@ -7,6 +7,21 @@ export function odooName(value) {
     return value ?? '-';
 }
 
+/**
+ * Ambil ID relasi many2one Odoo ([id, nama]).
+ * Odoo mengembalikan `false` bila relasi kosong, jadi cek array dulu.
+ * Return 0 bila tidak ada ID valid.
+ */
+export function odooId(value) {
+    if (Array.isArray(value)) {
+        const id = Number(value[0]);
+        if (Number.isInteger(id) && id > 0) {
+            return id;
+        }
+    }
+    return 0;
+}
+
 export function truncate(text, length = 40) {
     const s = String(text ?? '');
     if (!s) {

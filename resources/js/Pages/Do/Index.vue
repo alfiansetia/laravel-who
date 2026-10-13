@@ -17,7 +17,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyRows, downloadCsv } from '@/lib/export';
-import { formatExpDate, formatOdooDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
+import { formatExpDate, formatOdooDate, getCode, getDesc, odooId, odooName, truncate } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'DO' },
@@ -207,6 +207,19 @@ function printDo(row, withLot = false) {
     window.open(`/do/${row.id}/print${withLot ? '?with_lot=true' : ''}`, '_blank');
 }
 
+function soIdOf(row) {
+    return odooId(row.sale_id);
+}
+
+function printSo(row) {
+    const soId = soIdOf(row);
+    if (soId <= 0) {
+        toast.warning('DO ini tidak terikat SO.');
+        return;
+    }
+    window.open(`/so/${soId}/print`, '_blank');
+}
+
 query.fetch();
 </script>
 
@@ -251,6 +264,7 @@ query.fetch();
                 <div class="flex justify-center gap-1" @click.stop>
                     <Button variant="outline" size="sm" title="Print DO" @click.stop="printDo(row, false)"><Printer /></Button>
                     <Button variant="outline" size="sm" title="Print Lot" @click.stop="printDo(row, true)">Lot</Button>
+                    <Button v-if="soIdOf(row) > 0" variant="outline" size="sm" title="Print SO" @click.stop="printSo(row)">SO</Button>
                 </div>
             </template>
         </DataTable>
