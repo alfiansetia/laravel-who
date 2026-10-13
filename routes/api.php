@@ -159,6 +159,10 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
             ->name('api.notif_histories.show');
         Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])
             ->name('api.notif_histories.resend');
+        Route::delete('notif-histories', [NotificationHistoryController::class, 'destroy_batch'])
+            ->name('api.notif_histories.destroy_batch');
+        Route::delete('notif-histories/{notifHistory}', [NotificationHistoryController::class, 'destroy'])
+            ->name('api.notif_histories.destroy');
         Route::get('/resources/logs/{file}', [SettingController::class, 'logShow'])
             ->where('file', '[A-Za-z0-9._-]+')
             ->name('api.resources.log_show');

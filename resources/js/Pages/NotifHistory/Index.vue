@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Eye, RefreshCw, Send } from '@lucide/vue';
+import { Eye, RefreshCw, Send, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -46,6 +46,8 @@ const dateToBox = ref(props.filters.date_to ?? '');
 const detailOpen = ref(false);
 const detailRow = ref(null);
 const resendingId = ref(null);
+const deletingId = ref(null);
+const selected = ref([]);
 
 const statusOptions = [
     { label: 'Semua Status', value: '' },
@@ -105,6 +107,55 @@ function resetFilter() {
     query.setFilters({ status: '', type: '', date_from: '', date_to: '' });
 }
 
+async function deleteRow(row) {
+    const ok = await confirm({
+        title: 'Hapus history ini?',
+        message: 'Catatan notifikasi yang dihapus tidak dapat dikembalikan.',
+        confirmText: 'Ya, hapus',
+        tone: 'destructive',
+    });
+    if (!ok) {
+        return;
+    }
+    deletingId.value = row.id;
+    try {
+        await api.delete(`/notif-histories/${row.id}`, { block: true });
+        toast.success('History dihapus.');
+        if (detailOpen.value && detailRow.value?.id === row.id) {
+            detailOpen.value = false;
+        }
+        query.fetch();
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal menghapus history.');
+    } finally {
+        deletingId.value = null;
+    }
+}
+
+async function deleteBatch() {
+    if (selected.value.length === 0) {
+        toast.warning('Pilih minimal 1 history untuk dihapus.');
+        return;
+    }
+    const ok = await confirm({
+        title: `Hapus ${selected.value.length} history?`,
+        message: 'Catatan notifikasi yang dihapus tidak dapat dikembalikan.',
+        confirmText: 'Ya, hapus',
+        tone: 'destructive',
+    });
+    if (!ok) {
+        return;
+    }
+    try {
+        await api.delete('/notif-histories', { data: { ids: selected.value }, block: true });
+        toast.success('History dihapus.');
+        selected.value = [];
+        query.fetch();
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal menghapus history.');
+    }
+}
+
 function formatDateTime(value) {
     if (!value) {
         return '-';
@@ -150,6 +201,7 @@ query.fetch();
         <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+                <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
             </template>
         </PageHeader>
         <FilterPanel title="Filter History Notifikasi" :active-count="activeCount" @reset="resetFilter">
@@ -179,10 +231,13 @@ query.fetch();
             :total="query.total.value"
             :per-page="query.perPage.value"
             clickable
+            :selected="selected"
+            selectable
             empty-title="History tidak ditemukan"
             empty-message="Belum ada notifikasi tercatat atau ubah filter tanggal."
             @update:page="query.setPage"
             @update:per-page="query.setPerPage"
+            @update:selected="selected = $event"
             @row-click="openDetail"
         >
             <template #cell-sent_at="{ row }">{{ formatDateTime(row.sent_at) }}</template>
@@ -200,6 +255,7 @@ query.fetch();
                 <div class="flex justify-end gap-1" @click.stop>
                     <Button variant="outline" size="sm" title="Detail" @click.stop="openDetail(row)"><Eye /></Button>
                     <Button variant="outline" size="sm" title="Blast ulang via Firebase" :disabled="resendingId === row.id" @click.stop="resend(row)"><Send /></Button>
+                    <Button variant="outline" size="sm" title="Hapus history" :disabled="deletingId === row.id" @click.stop="deleteRow(row)"><Trash2 /></Button>
                 </div>
             </template>
         </DataTable>
@@ -218,6 +274,7 @@ query.fetch();
                 </details>
             </div>
             <template #footer>
+                <Button v-if="detailRow" variant="destructive" size="sm" :disabled="deletingId === detailRow.id" @click="deleteRow(detailRow)"><Trash2 /> Hapus</Button>
                 <Button v-if="detailRow" variant="outline" :disabled="resendingId === detailRow.id" @click="resend(detailRow)"><Send /> Blast Ulang</Button>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
             </template>

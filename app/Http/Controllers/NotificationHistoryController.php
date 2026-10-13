@@ -125,4 +125,30 @@ class NotificationHistoryController extends Controller
 
         return back()->with('success', 'Notifikasi berhasil di-blast ulang.');
     }
+
+    public function destroy(Request $request, NotificationHistory $notifHistory)
+    {
+        $notifHistory->delete();
+
+        if ($this->isApi($request)) {
+            return $this->sendResponse($notifHistory, 'History notifikasi dihapus.');
+        }
+
+        return back()->with('success', 'History notifikasi dihapus.');
+    }
+
+    public function destroy_batch(Request $request)
+    {
+        $this->validate($request, [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:notification_histories,id',
+        ]);
+        $deleted = NotificationHistory::whereIn('id', $request->ids)->delete();
+
+        if ($this->isApi($request)) {
+            return $this->sendResponse(['deleted_count' => $deleted], 'History notifikasi dihapus.');
+        }
+
+        return back()->with('success', 'History notifikasi dihapus.');
+    }
 }

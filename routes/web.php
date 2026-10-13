@@ -50,7 +50,9 @@ Route::get('monitor-do', function () {
 })->name('monitor.do');
 
 Route::get('notif-histories', [NotificationHistoryController::class, 'index'])->name('notif_histories.index');
+Route::delete('notif-histories', [NotificationHistoryController::class, 'destroy_batch'])->name('notif_histories.destroy_batch');
 Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])->name('notif_histories.resend');
+Route::delete('notif-histories/{notifHistory}', [NotificationHistoryController::class, 'destroy'])->name('notif_histories.destroy');
 
 // NOTE: `problems/*` (plural, Blade pages) vs `problem/*` (singular, JSON)
 // sengaja beda path agar kontrak Blade lama + API tidak tabrakan.
