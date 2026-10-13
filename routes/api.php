@@ -103,6 +103,10 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
         ->name('api.settings.reload');
     Route::delete('settings/', [SettingController::class, 'test_notif'])
         ->name('api.settings.test_notif');
+    Route::get('settings/monitor', [SettingController::class, 'monitorShow'])
+        ->name('api.settings.monitor.show');
+    Route::put('settings/monitor', [SettingController::class, 'monitorUpdate'])
+        ->name('api.settings.monitor.update');
 
     Route::post('spreadsheet/sync-all', [ToolController::class, 'spreadsheetSyncAll'])
         ->name('api.spreadsheet.sync_all');

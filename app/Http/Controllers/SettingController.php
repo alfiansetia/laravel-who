@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -128,6 +129,85 @@ class SettingController extends Controller
         }
 
         return back()->with('success', 'Success kirim notif via topic ke semua perangkat!');
+    }
+
+    /**
+     * Tampilkan state Monitor DO (storage/app/monitor.json): length terakhir
+     * yang dibaca scheduler + kapan error terakhir. Read-only.
+     */
+    public function monitorShow(Request $request): JsonResponse|RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            return $this->sendResponse($this->readMonitorState());
+        }
+
+        return redirect()->route('settings.index');
+    }
+
+    /**
+     * Ubah length Monitor DO. Scheduler (app:monitor-do) menghitung selisih
+     * odoo_length - length tiap menit; menurunkan length memicu notif ulang
+     * untuk DO selisihnya pada run berikutnya. last_error dipertahankan.
+     */
+    public function monitorUpdate(Request $request): JsonResponse|RedirectResponse
+    {
+        $this->validate($request, [
+            'length' => 'required|integer|min:0',
+        ]);
+
+        $length = (int) $request->input('length');
+        $current = $this->readMonitorState();
+        $state = $this->writeMonitorState($length, $current['last_error']);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($state, "Monitor length diubah menjadi {$length}.");
+        }
+
+        return back()->with('success', "Monitor length diubah menjadi {$length}.");
+    }
+
+    /**
+     * @return array{length: ?int, last_error: ?string, exists: bool, valid: bool}
+     */
+    private function readMonitorState(): array
+    {
+        $path = storage_path('app/monitor.json');
+
+        if (! is_file($path)) {
+            return ['length' => null, 'last_error' => null, 'exists' => false, 'valid' => false];
+        }
+
+        $decoded = json_decode((string) @file_get_contents($path), true);
+
+        if (! is_array($decoded) || ! isset($decoded['length']) || ! is_numeric($decoded['length'])) {
+            return ['length' => null, 'last_error' => null, 'exists' => true, 'valid' => false];
+        }
+
+        $lastError = $decoded['last_error'] ?? null;
+
+        return [
+            'length' => (int) $decoded['length'],
+            'last_error' => is_string($lastError) ? $lastError : null,
+            'exists' => true,
+            'valid' => true,
+        ];
+    }
+
+    /**
+     * @return array{length: int, last_error: string, exists: bool, valid: bool}
+     */
+    private function writeMonitorState(int $length, ?string $lastError): array
+    {
+        if (! is_string($lastError) || $lastError === '') {
+            $lastError = now()->toJSON();
+        }
+
+        File::put(
+            storage_path('app/monitor.json'),
+            json_encode(['length' => $length, 'last_error' => $lastError], JSON_PRETTY_PRINT)
+        );
+
+        return ['length' => $length, 'last_error' => $lastError, 'exists' => true, 'valid' => true];
     }
 
     public function cek_odoo(Request $request): JsonResponse|RedirectResponse

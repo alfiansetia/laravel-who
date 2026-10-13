@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowLeft, Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, KeyRound, Laptop, LogOut, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi, Wrench, X } from '@lucide/vue';
+import { ArrowLeft, Activity, Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, KeyRound, Laptop, LogOut, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi, Wrench, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -75,6 +75,11 @@ let logTimer = null;
 
 const currentToken = (localStorage.getItem('fcm_token') ?? '').trim();
 const currentDeviceId = (localStorage.getItem('fcm_device_id') ?? '').trim();
+
+const monitor = ref(null);
+const monitorInput = ref('');
+const monitorBusy = ref(false);
+const monitorError = ref('');
 
 const deviceTotalPages = computed(() => Math.max(1, Math.ceil(deviceTotal.value / devicePerPage.value)));
 
@@ -253,6 +258,63 @@ async function cekOdoo() {
 
 async function copySessionId() {
     await copyText(odooEnv.value, 'Session ID disalin ke clipboard.');
+}
+
+async function fetchMonitor() {
+    monitorBusy.value = true;
+    monitorError.value = '';
+    try {
+        const res = await api.get('/settings/monitor', { silent: true });
+        monitor.value = res.data?.data ?? null;
+        if (monitorInput.value === '' && monitor.value?.length !== null && monitor.value?.length !== undefined) {
+            monitorInput.value = String(monitor.value.length);
+        }
+    } catch (e) {
+        monitorError.value = e.response?.data?.message ?? 'Gagal memuat state monitor.';
+    } finally {
+        monitorBusy.value = false;
+    }
+}
+
+async function saveMonitorLength(next) {
+    const value = Number(next);
+    if (!Number.isInteger(value) || value < 0) {
+        toast.warning('Length harus bilangan bulat >= 0.');
+        return;
+    }
+    const ok = await confirm({
+        title: `Ubah monitor length ke ${value}?`,
+        message: 'Scheduler menghitung selisih jumlah DO terhadap length ini tiap menit dan mengirim notif untuk selisihnya. Menurunkan length memicu notif ulang.',
+        confirmText: 'Ya, ubah',
+        tone: 'destructive',
+    });
+    if (!ok) {
+        return;
+    }
+    monitorBusy.value = true;
+    try {
+        const res = await api.put('/settings/monitor', { length: value }, { block: true });
+        monitor.value = res.data?.data ?? monitor.value;
+        monitorInput.value = String(monitor.value?.length ?? value);
+        toast.success(res.data?.message ?? 'Monitor length diperbarui.');
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal memperbarui monitor length.');
+    } finally {
+        monitorBusy.value = false;
+    }
+}
+
+async function rewindMonitor() {
+    const current = Number(monitor.value?.length);
+    if (!Number.isInteger(current)) {
+        toast.warning('State monitor belum valid, muat ulang dulu.');
+        return;
+    }
+    if (current <= 0) {
+        toast.warning('Length sudah 0, tidak bisa dikurangi.');
+        return;
+    }
+    await saveMonitorLength(current - 1);
 }
 
 async function logout() {
@@ -500,6 +562,7 @@ async function deleteDevice(row) {
 refreshSession();
 loadResource();
 fetchDevices();
+fetchMonitor();
 </script>
 
 <template>
@@ -604,6 +667,42 @@ fetchDevices();
                 <h2 class="flex items-center gap-2 text-sm font-semibold"><History class="size-4 text-amber-500" /> History Notifikasi DO</h2>
                 <p class="w-full text-xs text-muted-foreground">Catatan pengiriman push Monitor DO via Firebase, lengkap dengan waktu kirim, status, dan tombol blast ulang.</p>
                 <Button variant="outline" size="sm" as="a" :href="route('notif_histories.index')"><History /> Buka History</Button>
+            </div>
+        </Card>
+
+        <Card class="mt-4 p-4">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><Activity class="size-4 text-emerald-500" /> Monitor DO</h2>
+                <Button variant="outline" size="sm" :disabled="monitorBusy" @click="fetchMonitor"><RefreshCw /> Refresh</Button>
+            </div>
+            <p class="text-xs text-muted-foreground">State scheduler <span class="font-mono">storage/app/monitor.json</span> — jumlah DO terakhir yang dibaca. Scheduler (Senin–Jumat 06:00–18:00, tiap menit) mengirim notif untuk selisihnya. Kurangi length untuk mengulangi notif ke belakang, mis. −1 untuk 1 notif terakhir.</p>
+            <div v-if="monitorBusy && !monitor" class="mt-3 space-y-2">
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+            </div>
+            <p v-else-if="monitorError" class="mt-3 text-sm text-red-600">{{ monitorError }}</p>
+            <div v-else-if="monitor" class="mt-3 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-lg border p-3">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Length</p>
+                    <p class="mt-1 font-mono text-2xl font-bold">{{ monitor.length ?? '-' }}</p>
+                    <span v-if="!monitor.exists" class="mt-1 inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-1.5 py-px text-[11px] font-medium text-amber-700">File belum ada</span>
+                    <span v-else-if="!monitor.valid" class="mt-1 inline-flex items-center rounded-md border border-red-200 bg-red-50 px-1.5 py-px text-[11px] font-medium text-red-700">Isi file tidak valid</span>
+                </div>
+                <div class="rounded-lg border p-3">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Last Error</p>
+                    <p class="mt-1 text-sm font-medium">{{ monitor.last_error ? formatDateTime(monitor.last_error) : '-' }}</p>
+                    <p class="mt-1 break-all font-mono text-[11px] text-muted-foreground">{{ monitor.last_error ?? '' }}</p>
+                </div>
+                <div class="rounded-lg border p-3">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Ubah Length</p>
+                    <div class="mt-2 flex gap-2">
+                        <Input v-model="monitorInput" type="number" min="0" step="1" class="font-mono" placeholder="cth. 17520" />
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <Button size="sm" :disabled="monitorBusy" @click="saveMonitorLength(monitorInput)"><Save /> Simpan</Button>
+                        <Button variant="outline" size="sm" :disabled="monitorBusy" @click="rewindMonitor">−1 (ulangi 1)</Button>
+                    </div>
+                </div>
             </div>
         </Card>
 
