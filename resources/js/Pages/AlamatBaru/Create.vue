@@ -7,9 +7,9 @@ defineProps({
 });
 
 function onSaved(id) {
-    // Detail masih Blade (alamat_baru.show): pindah full-page ke sana.
+    // Habis create buka edit di tab baru; halaman create dibiarkan.
     if (id) {
-        window.location.href = `/alamat-baru/${id}`;
+        window.open(`/alamat-baru/${id}/edit`, '_blank');
     }
 }
 </script>
