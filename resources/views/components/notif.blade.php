@@ -17,7 +17,7 @@
     // Naikkan manual setiap mengubah resources/views/sw.blade.php.
     // JANGAN pakai timestamp: URL baru tiap load bikin browser download
     // ulang & reinstall service worker di setiap halaman.
-    const FCM_SW_VERSION = '3';
+    const FCM_SW_VERSION = '4';
     const FCM_TOKEN_KEY = 'fcm_token';
     const FCM_DEVICE_KEY = 'fcm_device_id';
     const FCM_ASKED_KEY = 'fcm_perm_asked';
@@ -60,7 +60,11 @@
             url
         } = payload.data || {};
 
+        // tag: push yang sama (retry / multi-tab) menimpa, bukan menumpuk.
+        const tag = (so_id && so_id !== '0') ? `who-so-${so_id}` : `who-${title || ''}|${body || ''}`.slice(0, 100);
         const notification = new Notification(title || 'Notifikasi Baru', {
+            tag,
+            renotify: false,
             body: body || '',
             icon,
             data: {
@@ -156,6 +160,19 @@
             }
             if (!firebase.messaging.isSupported()) {
                 return;
+            }
+            // Bersihkan SW legacy agar tidak dobel: dulu FCM auto-pakai
+            // /firebase-messaging-sw.js, sekarang satu-satunya /sw.js.
+            // Tanpa ini browser yang pernah kunjungi versi lama bisa punya
+            // 2 SW aktif → 1 push tampil 2x.
+            if (navigator.serviceWorker.getRegistrations) {
+                navigator.serviceWorker.getRegistrations().then((regs) => {
+                    regs.forEach((r) => {
+                        if (r.active && r.active.scriptURL.indexOf('firebase-messaging-sw') !== -1) {
+                            r.unregister();
+                        }
+                    });
+                }).catch(() => {});
             }
             // Satu-satunya SW scope root (offline + FCM). Jangan daftarkan SW lain.
             navigator.serviceWorker.register('/sw.js?v=' + FCM_SW_VERSION)

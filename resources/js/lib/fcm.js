@@ -8,7 +8,7 @@ const SYNC_KEY = 'fcm_sync_v';
 // yang tokennya sama tetap POST sekali + subscribe ulang ke topic.
 const SYNC_VERSION = '2';
 // Samakan dengan SW_VERSION di app.blade.php + resources/views/sw.blade.php.
-const SW_VERSION = '3';
+const SW_VERSION = '4';
 
 let initialized = false;
 let vapidKey = null;
@@ -61,6 +61,17 @@ export function initFcm(config) {
         return;
     }
     initialized = true;
+    // Bersihkan SW legacy agar tidak dobel: dulu FCM auto-pakai
+    // /firebase-messaging-sw.js, sekarang satu-satunya /sw.js.
+    if (navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((r) => {
+                if (r.active && r.active.scriptURL.indexOf('firebase-messaging-sw') !== -1) {
+                    r.unregister();
+                }
+            });
+        }).catch(() => {});
+    }
     vapidKey = config.vapidKey || null;
     if (!vapidKey) {
         console.log('FCM: FIREBASE_VAPID_KEY belum diisi — token push tidak akan terbit.');
@@ -151,8 +162,12 @@ function syncFcmToken(messaging, force = false, registration = null) {
 }
 
 function handleForegroundMessage(payload) {
-    const { title, body, icon, url } = payload.data ?? {};
+    const { title, body, icon, so_id, url } = payload.data ?? {};
+    // tag: push yang sama (retry / multi-tab) menimpa, bukan menumpuk.
+    const tag = (so_id && so_id !== '0' ? `who-so-${so_id}` : `who-${title || ''}|${body || ''}`).slice(0, 100);
     const notification = new Notification(title || 'Notifikasi Baru', {
+        tag,
+        renotify: false,
         body: body || '',
         icon,
         data: { url },

@@ -2,7 +2,7 @@
 // Naikkan SW_VERSION setiap mengubah file ini agar klien update.
 // Diregistrasi sebagai /sw.js?v=SW_VERSION dari template Blade, app Blade (SPA),
 // dan lib/fcm.js. SATU-SATUNYA SW scope root — jangan daftarkan SW lain.
-const SW_VERSION = '3';
+const SW_VERSION = '4';
 const CACHE_NAME = `who-offline-v${SW_VERSION}`;
 const PRECACHE = ['/offline.html', '/manifest.json', '/icons/icon-192.png'];
 
@@ -76,7 +76,13 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
     const data = payload.data ?? {};
     const notificationTitle = data.title || 'Notifikasi Baru';
+    // tag: push yang sama menimpa, bukan menumpuk 2x.
+    const tag = (data.so_id && data.so_id !== '0')
+        ? `who-so-${data.so_id}`
+        : `who-${notificationTitle}|${data.body || ''}`.slice(0, 100);
     const notificationOptions = {
+        tag,
+        renotify: false,
         body: data.body || 'Anda memiliki pesan baru',
         icon: data.icon || '/icons/icon-192.png',
         data: {},
