@@ -152,6 +152,13 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/auth/status', [AuthController::class, 'status'])->name('auth.status');
 
+    // Polling ringan untuk aplikasi desktop: public + rate-limit ketat (5x/menit).
+    // Ditaruh di luar grup env_auth agar tidak butuh login, dan sebelum
+    // route {notifHistory} agar "poll" tidak ditangkap sebagai ID.
+    Route::get('notif-histories/poll', [NotificationHistoryController::class, 'poll'])
+        ->middleware('throttle:5,1')
+        ->name('api.notif_histories.poll');
+
     Route::middleware('env_auth')->group(function () {
         Route::get('notif-histories', [NotificationHistoryController::class, 'index'])
             ->name('api.notif_histories.index');

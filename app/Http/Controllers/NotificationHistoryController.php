@@ -13,7 +13,40 @@ class NotificationHistoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('env_auth');
+        $this->middleware('env_auth')->except(['poll']);
+    }
+
+    /**
+     * Endpoint polling ringan untuk aplikasi desktop.
+     * Public (tanpa env_auth) + rate-limit ketat di route.
+     * GET /api/notif-histories/poll?since_id=0&limit=20
+     */
+    public function poll(Request $request)
+    {
+        $validated = $request->validate([
+            'since_id' => ['nullable', 'integer', 'min:0'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $sinceId = (int) ($validated['since_id'] ?? 0);
+        $limit = (int) ($validated['limit'] ?? 20);
+
+        $rows = NotificationHistory::query()
+            ->select(['id', 'type', 'title', 'body', 'do_name', 'so_id', 'origin', 'partner', 'status', 'sent_at'])
+            ->where('id', '>', $sinceId)
+            ->orderBy('id')
+            ->limit($limit + 1)
+            ->get();
+
+        $hasMore = $rows->count() > $limit;
+        $data = $hasMore ? $rows->slice(0, $limit)->values() : $rows->values();
+
+        return response()->json([
+            'data' => $data,
+            'latest_id' => $data->isNotEmpty() ? $data->max('id') : $sinceId,
+            'count' => $data->count(),
+            'has_more' => $hasMore,
+        ]);
     }
 
     public function index(Request $request)
