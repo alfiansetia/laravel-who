@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Eye, RefreshCw, Send, Trash2 } from '@lucide/vue';
+import { Bell, Eye, RefreshCw, Send, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
@@ -46,6 +46,7 @@ const dateToBox = ref(props.filters.date_to ?? '');
 const detailOpen = ref(false);
 const detailRow = ref(null);
 const resendingId = ref(null);
+const pushingNtfyId = ref(null);
 const deletingId = ref(null);
 const selected = ref([]);
 
@@ -193,6 +194,27 @@ async function resend(row) {
     }
 }
 
+async function pushNtfy(row) {
+    const ok = await confirm({
+        title: 'Push ke ntfy?',
+        message: `Teruskan "${(row.title ?? '').slice(0, 60)}" ke topic ntfy?`,
+        confirmText: 'Ya, push',
+    });
+    if (!ok) {
+        return;
+    }
+    pushingNtfyId.value = row.id;
+    try {
+        const res = await api.post(`/notif-histories/${row.id}/push-ntfy`, {}, { block: true });
+        toast.success(res.data?.message ?? 'Notifikasi diteruskan ke ntfy.');
+        query.fetch();
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal push ke ntfy.');
+    } finally {
+        pushingNtfyId.value = null;
+    }
+}
+
 query.fetch();
 </script>
 
@@ -255,6 +277,7 @@ query.fetch();
                 <div class="flex justify-end gap-1" @click.stop>
                     <Button variant="outline" size="sm" title="Detail" @click.stop="openDetail(row)"><Eye /></Button>
                     <Button variant="outline" size="sm" title="Blast ulang via Firebase" :disabled="resendingId === row.id" @click.stop="resend(row)"><Send /></Button>
+                    <Button variant="outline" size="sm" title="Push ke ntfy" :disabled="pushingNtfyId === row.id" @click.stop="pushNtfy(row)"><Bell /></Button>
                     <Button variant="outline" size="sm" title="Hapus history" :disabled="deletingId === row.id" @click.stop="deleteRow(row)"><Trash2 /></Button>
                 </div>
             </template>
@@ -276,6 +299,7 @@ query.fetch();
             <template #footer>
                 <Button v-if="detailRow" variant="destructive" size="sm" :disabled="deletingId === detailRow.id" @click="deleteRow(detailRow)"><Trash2 /> Hapus</Button>
                 <Button v-if="detailRow" variant="outline" :disabled="resendingId === detailRow.id" @click="resend(detailRow)"><Send /> Blast Ulang</Button>
+                <Button v-if="detailRow" variant="outline" :disabled="pushingNtfyId === detailRow.id" @click="pushNtfy(detailRow)"><Bell /> Push ntfy</Button>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
             </template>
         </AppModal>

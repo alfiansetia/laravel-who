@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\NotificationHistory;
 use App\Services\DoServices;
 use App\Services\FirebaseServices;
+use App\Services\NtfyServices;
 use App\Services\TelegramServices;
 use Carbon\Carbon;
 use Exception;
@@ -62,6 +63,7 @@ class MonitorDo extends Command
                         $ok = FirebaseServices::sendToTopic($title, $message);
                         $this->recordHistory('do_bulk', $title, $message, 0, null, $ok);
                         TelegramServices::sendToGroup($message);
+                        NtfyServices::send($title, $message);
                         $this->info($message);
                     } else {
                         TelegramServices::sendToGroup('Program Started!');
@@ -91,6 +93,7 @@ class MonitorDo extends Command
                         $ok = FirebaseServices::sendToTopic('⚠️ Ada DO Baru!, '.$doName, $message, $so_id);
                         $this->recordHistory('do_baru', '⚠️ Ada DO Baru!, '.$doName, $message, $so_id, $value, $ok);
                         TelegramServices::sendToGroup('⚠️ Ada DO Baru!, '.$doName.$message);
+                        NtfyServices::send('⚠️ Ada DO Baru!, '.$doName, $message);
                     }
                 }
             } else {

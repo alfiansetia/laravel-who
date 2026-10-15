@@ -81,6 +81,12 @@ const monitorInput = ref('');
 const monitorBusy = ref(false);
 const monitorError = ref('');
 
+const ntfy = ref(null);
+const ntfyServerInput = ref('');
+const ntfyTopicInput = ref('');
+const ntfyBusy = ref(false);
+const ntfyError = ref('');
+
 const deviceTotalPages = computed(() => Math.max(1, Math.ceil(deviceTotal.value / devicePerPage.value)));
 
 const deviceColumns = [
@@ -315,6 +321,63 @@ async function rewindMonitor() {
         return;
     }
     await saveMonitorLength(current - 1);
+}
+
+async function fetchNtfy() {
+    ntfyBusy.value = true;
+    ntfyError.value = '';
+    try {
+        const res = await api.get('/settings/ntfy', { silent: true });
+        ntfy.value = res.data?.data ?? null;
+        if (ntfyServerInput.value === '') {
+            ntfyServerInput.value = ntfy.value?.server ?? '';
+        }
+        if (ntfyTopicInput.value === '') {
+            ntfyTopicInput.value = ntfy.value?.topic ?? '';
+        }
+    } catch (e) {
+        ntfyError.value = e.response?.data?.message ?? 'Gagal memuat config ntfy.';
+    } finally {
+        ntfyBusy.value = false;
+    }
+}
+
+async function saveNtfy() {
+    const topic = ntfyTopicInput.value.trim();
+    if (!topic) {
+        toast.warning('Topic ntfy wajib diisi.');
+        return;
+    }
+    ntfyBusy.value = true;
+    try {
+        const res = await api.put('/settings/ntfy', { server: ntfyServerInput.value.trim(), topic }, { block: true });
+        ntfy.value = res.data?.data ?? ntfy.value;
+        toast.success(res.data?.message ?? 'Config ntfy diperbarui.');
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal memperbarui config ntfy.');
+    } finally {
+        ntfyBusy.value = false;
+    }
+}
+
+async function testNtfy() {
+    const ok = await confirm({
+        title: 'Kirim test ke ntfy?',
+        message: `Pesan test dikirim ke topic ${ntfyTopicInput.value.trim() || '-'}. Cek hasilnya di perangkat subscriber.`,
+        confirmText: 'Ya, kirim',
+    });
+    if (!ok) {
+        return;
+    }
+    ntfyBusy.value = true;
+    try {
+        const res = await api.post('/settings/ntfy/test', {}, { block: true });
+        toast.success(res.data?.message ?? 'Test ntfy dikirim.');
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal mengirim test ntfy.');
+    } finally {
+        ntfyBusy.value = false;
+    }
 }
 
 async function logout() {
@@ -563,6 +626,7 @@ refreshSession();
 loadResource();
 fetchDevices();
 fetchMonitor();
+fetchNtfy();
 </script>
 
 <template>
@@ -703,6 +767,31 @@ fetchMonitor();
                         <Button variant="outline" size="sm" :disabled="monitorBusy" @click="rewindMonitor">−1 (ulangi 1)</Button>
                     </div>
                 </div>
+            </div>
+        </Card>
+
+        <Card class="mt-4 p-4">
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><Bell class="size-4 text-orange-500" /> ntfy</h2>
+                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="fetchNtfy"><RefreshCw /> Refresh</Button>
+            </div>
+            <p class="text-xs text-muted-foreground">Push notifikasi DO Baru ke topic ntfy (<span class="font-mono">storage/app/ntfy.json</span>). Monitor DO otomatis push ke topic ini setiap ada DO baru.</p>
+            <div v-if="ntfyBusy && !ntfy" class="mt-3 space-y-2">
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+            </div>
+            <p v-else-if="ntfyError" class="mt-3 text-sm text-red-600">{{ ntfyError }}</p>
+            <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
+                <FormField label="Server" hint="Contoh: https://ntfy.sh">
+                    <Input v-model="ntfyServerInput" placeholder="https://ntfy.sh" class="font-mono text-xs" />
+                </FormField>
+                <FormField label="Topic" required hint="Huruf, angka, underscore, dash. Maks 64 karakter.">
+                    <Input v-model="ntfyTopicInput" placeholder="cth. who-do-x7k9p2m4" class="font-mono text-xs" />
+                </FormField>
+            </div>
+            <div v-if="!ntfyBusy || ntfy" class="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" :disabled="ntfyBusy" @click="saveNtfy"><Save /> Simpan</Button>
+                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="testNtfy"><Bell class="text-orange-600" /> <span class="text-orange-700">Tes Topic</span></Button>
             </div>
         </Card>
 

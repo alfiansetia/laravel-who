@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NotificationHistory;
 use App\Services\FirebaseServices;
+use App\Services\NtfyServices;
 use App\Services\OdooSession;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -157,6 +158,42 @@ class NotificationHistoryController extends Controller
         }
 
         return back()->with('success', 'Notifikasi berhasil di-blast ulang.');
+    }
+
+    /**
+     * Push ulang satu history ke topic ntfy. Fire-and-forget:
+     * kegagalan pengiriman hanya tercatat di log.
+     */
+    public function pushNtfy(Request $request, NotificationHistory $notifHistory)
+    {
+        NtfyServices::send($notifHistory->title, $notifHistory->body);
+
+        $session = OdooSession::getCurrentSession();
+        $ntfy = NtfyServices::getConfig();
+
+        $log = NotificationHistory::create([
+            'type' => $notifHistory->type,
+            'title' => $notifHistory->title,
+            'body' => $notifHistory->body,
+            'topic' => $ntfy['topic'] !== '' ? $ntfy['topic'] : 'ntfy',
+            'do_name' => $notifHistory->do_name,
+            'so_id' => $notifHistory->so_id,
+            'origin' => $notifHistory->origin,
+            'partner' => $notifHistory->partner,
+            'payload' => $notifHistory->payload,
+            'channel' => 'ntfy',
+            'status' => 'success',
+            'source' => 'manual',
+            'triggered_by' => trim(($session['name'] ?? '').' ('.($session['uid'] ?? '-').')'),
+            'parent_id' => $notifHistory->id,
+            'sent_at' => now(),
+        ]);
+
+        if ($this->isApi($request)) {
+            return $this->sendResponse($log, 'Notifikasi diteruskan ke ntfy.');
+        }
+
+        return back()->with('success', 'Notifikasi diteruskan ke ntfy.');
     }
 
     public function destroy(Request $request, NotificationHistory $notifHistory)

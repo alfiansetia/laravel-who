@@ -107,6 +107,12 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
         ->name('api.settings.monitor.show');
     Route::put('settings/monitor', [SettingController::class, 'monitorUpdate'])
         ->name('api.settings.monitor.update');
+    Route::get('settings/ntfy', [SettingController::class, 'ntfyShow'])
+        ->name('api.settings.ntfy.show');
+    Route::put('settings/ntfy', [SettingController::class, 'ntfyUpdate'])
+        ->name('api.settings.ntfy.update');
+    Route::post('settings/ntfy/test', [SettingController::class, 'ntfyTest'])
+        ->name('api.settings.ntfy.test');
 
     Route::post('spreadsheet/sync-all', [ToolController::class, 'spreadsheetSyncAll'])
         ->name('api.spreadsheet.sync_all');
@@ -166,6 +172,8 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
             ->name('api.notif_histories.show');
         Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])
             ->name('api.notif_histories.resend');
+        Route::post('notif-histories/{notifHistory}/push-ntfy', [NotificationHistoryController::class, 'pushNtfy'])
+            ->name('api.notif_histories.push_ntfy');
         Route::delete('notif-histories', [NotificationHistoryController::class, 'destroy_batch'])
             ->name('api.notif_histories.destroy_batch');
         Route::delete('notif-histories/{notifHistory}', [NotificationHistoryController::class, 'destroy'])

@@ -52,6 +52,7 @@ Route::get('monitor-do', function () {
 Route::get('notif-histories', [NotificationHistoryController::class, 'index'])->name('notif_histories.index');
 Route::delete('notif-histories', [NotificationHistoryController::class, 'destroy_batch'])->name('notif_histories.destroy_batch');
 Route::post('notif-histories/{notifHistory}/resend', [NotificationHistoryController::class, 'resend'])->name('notif_histories.resend');
+Route::post('notif-histories/{notifHistory}/push-ntfy', [NotificationHistoryController::class, 'pushNtfy'])->name('notif_histories.push_ntfy');
 Route::delete('notif-histories/{notifHistory}', [NotificationHistoryController::class, 'destroy'])->name('notif_histories.destroy');
 
 // NOTE: `problems/*` (plural, Blade pages) vs `problem/*` (singular, JSON)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FcmToken;
 use App\Models\NotificationHistory;
 use App\Services\FirebaseServices;
+use App\Services\NtfyServices;
 use App\Services\Odoo;
 use App\Services\OdooSession;
 use App\Services\ProductImageStorage;
@@ -208,6 +209,66 @@ class SettingController extends Controller
         );
 
         return ['length' => $length, 'last_error' => $lastError, 'exists' => true, 'valid' => true];
+    }
+
+    /**
+     * Tampilkan config ntfy (storage/app/ntfy.json): server + topic.
+     */
+    public function ntfyShow(Request $request): JsonResponse|RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            return $this->sendResponse(NtfyServices::getConfig());
+        }
+
+        return redirect()->route('settings.index');
+    }
+
+    /**
+     * Simpan server + topic ntfy ke storage/app/ntfy.json.
+     */
+    public function ntfyUpdate(Request $request): JsonResponse|RedirectResponse
+    {
+        $this->validate($request, [
+            'server' => 'nullable|url|max:255',
+            'topic' => ['required', 'string', 'max:64', 'regex:/^[-_A-Za-z0-9]+$/'],
+        ], [
+            'topic.regex' => 'Topic ntfy hanya boleh huruf, angka, underscore, dan dash.',
+        ]);
+
+        $server = trim((string) $request->input('server', ''));
+        $topic = trim((string) $request->input('topic', ''));
+        $state = NtfyServices::saveConfig($server, $topic);
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($state, "Topic ntfy diubah menjadi {$topic}.");
+        }
+
+        return back()->with('success', "Topic ntfy diubah menjadi {$topic}.");
+    }
+
+    /**
+     * Kirim pesan tes ke topic ntfy yang tersimpan. Fire-and-forget:
+     * kegagalan hanya tercatat di log, cek hasilnya di perangkat subscriber.
+     */
+    public function ntfyTest(Request $request): JsonResponse|RedirectResponse
+    {
+        $config = NtfyServices::getConfig();
+
+        if ($config['topic'] === '') {
+            if ($request->wantsJson()) {
+                return $this->sendError('Topic ntfy belum dikonfigurasi.', 422);
+            }
+
+            return back()->with('error', 'Topic ntfy belum dikonfigurasi.');
+        }
+
+        NtfyServices::send('⚠️ Test ntfy!', 'Eh yaampun ini cuma test notif ntfy!');
+
+        if ($request->wantsJson()) {
+            return $this->sendResponse($config, 'Perintah test dikirim ke topic ntfy, cek di perangkat subscriber.');
+        }
+
+        return back()->with('success', 'Perintah test dikirim ke topic ntfy, cek di perangkat subscriber.');
     }
 
     public function cek_odoo(Request $request): JsonResponse|RedirectResponse

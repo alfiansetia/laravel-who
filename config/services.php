@@ -62,6 +62,9 @@ return [
         'group' => env('TELE_GROUP_ID'),
         'enabled' => env('TELEGRAM_ENABLED', false),
     ],
+    'ntfy' => [
+        'server' => env('NTFY_SERVER', 'https://ntfy.sh'),
+    ],
     'spreadsheet_url' => env('SPREADSHEET_URL'),
     'tiki_api_url' => env('TIKI_API_URL', 'https://tiki.alfilab.my.id/api'),
     'tiki_api_key' => env('TIKI_API_KEY', null),
