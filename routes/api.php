@@ -8,6 +8,7 @@ use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoController;
 use App\Http\Controllers\ItController;
+use App\Http\Controllers\ITRController;
 use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\LotController;
 use App\Http\Controllers\NotificationHistoryController;
@@ -39,6 +40,9 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
 
     Route::get('it', [ItController::class, 'index'])->name('api.it.index');
     Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
+
+    Route::get('itr', [ITRController::class, 'index'])->name('api.itr.index');
+    Route::get('itr/{id}', [ITRController::class, 'detail'])->name('api.itr.detail');
 
     Route::post('detail_alamat/{detail_alamat}/order', [AlamatController::class, 'detailOrder'])->name('api.detail_alamat.order');
     Route::post('detail_alamat', [AlamatController::class, 'detailStore'])->name('api.detail_alamat.store');

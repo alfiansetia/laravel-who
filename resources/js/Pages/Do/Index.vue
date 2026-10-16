@@ -166,9 +166,11 @@ function sistemOf(row) {
     return s && s !== '-' ? s : '';
 }
 
+let detailSeq = 0;
+
 async function openDetail(row) {
+    const seq = ++detailSeq;
     activeRow.value = row;
-    detailOpen.value = true;
     detailTab.value = 'product';
     lotCodeFilter.value = '';
     productSearchBox.value = '';
@@ -177,29 +179,28 @@ async function openDetail(row) {
     lotTable.setSearch('', 0);
     productTable.setRows([]);
     lotTable.setRows([]);
-    productTable.loading.value = true;
-    lotTable.loading.value = true;
+    productTable.error.value = '';
+    lotTable.error.value = '';
     try {
         const res = await api.get(`/do/${row.id}`, { silent: true, block: true });
+        if (seq !== detailSeq) {
+            return;
+        }
         const body = res.data?.data ?? res.data;
         detail.value = body;
         productLines.value = body.move_ids_detail ?? [];
         lotLines.value = body.move_line_detail ?? [];
         productTable.setRows(productLines.value);
         applyLotCodeFilter();
+        detailOpen.value = true;
     } catch (e) {
-        detail.value = row;
-        productLines.value = [];
-        lotLines.value = [];
-        productTable.setRows([]);
-        lotTable.setRows([]);
+        if (seq !== detailSeq) {
+            return;
+        }
         const message = e.response?.data?.message ?? 'Gagal memuat detail DO.';
         productTable.error.value = message;
         lotTable.error.value = message;
         toast.error(message);
-    } finally {
-        productTable.loading.value = false;
-        lotTable.loading.value = false;
     }
 }
 

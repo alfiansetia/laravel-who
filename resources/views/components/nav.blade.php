@@ -197,6 +197,8 @@
                                 class="fas fa-truck mr-1 text-warning"></i>Delivery Order (DO)</a>
                         <a class="dropdown-item" href="{{ route('it.index') }}"><i
                                 class="fas fa-exchange-alt mr-1 text-secondary"></i>Internal Transfer (IT)</a>
+                        <a class="dropdown-item" href="{{ route('itr.index') }}"><i
+                                class="fas fa-clipboard-list mr-1 text-primary"></i>IT Request (ITR)</a>
                     </div>
                 </li>
             </ul>

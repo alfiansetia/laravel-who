@@ -6,6 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
@@ -30,6 +31,7 @@ const query = useTableQuery((p) => api.get('/po', { params: p }), {
 const detailOpen = ref(false);
 const detail = ref(null);
 const activeRow = ref(null);
+const selectedItems = ref([]);
 const itemTable = useClientTable(null, {
     searchKeys: ['product_id', 'akl', 'product_qty', 'qty_received'],
 });
@@ -82,28 +84,47 @@ const itemExportRows = computed(() => itemTable.filtered.value.map((row) => ({
     qty_sisa: Number(row.product_qty ?? 0) - Number(row.qty_received ?? 0),
 })));
 
+const labelItems = computed(() => {
+    const picked = new Set((selectedItems.value ?? []).map(String));
+    return itemTable.filtered.value
+        .filter((row) => picked.size === 0 || picked.has(String(row.id ?? '')))
+        .map((row) => ({
+            code: getCode(odooName(row.product_id)),
+            name: getDesc(odooName(row.product_id)),
+            qty: Number(row.product_qty ?? 0),
+        }));
+});
+
+const labelTitle = computed(() => `Label PO ${detail?.value?.name ?? activeRow?.value?.name ?? ''}`);
+
 const perPageOptions = [10, 25, 50, 100, 500, 1000];
 
+let detailSeq = 0;
+
 async function openDetail(row) {
+    const seq = ++detailSeq;
     activeRow.value = row;
-    detailOpen.value = true;
     itemSearchBox.value = '';
+    selectedItems.value = [];
     itemTable.setSearch('', 0);
     itemTable.setRows([]);
-    itemTable.loading.value = true;
+    itemTable.error.value = '';
     try {
         const res = await api.get(`/po/${encodeURIComponent(row.id)}`, { silent: true, block: true });
+        if (seq !== detailSeq) {
+            return;
+        }
         const body = res.data?.data ?? res.data;
         detail.value = body;
         itemTable.setRows(body.order_line_detail ?? []);
+        detailOpen.value = true;
     } catch (e) {
-        detail.value = row;
-        itemTable.setRows([]);
+        if (seq !== detailSeq) {
+            return;
+        }
         const message = e.response?.data?.message ?? 'Gagal memuat detail PO.';
         itemTable.error.value = message;
         toast.error(message);
-    } finally {
-        itemTable.loading.value = false;
     }
 }
 
@@ -153,6 +174,7 @@ query.fetch();
                 <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'], 'item PO')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv(`po-${detail?.name ?? activeRow?.name ?? 'detail'}`, itemExportRows, ['code', 'desc', 'origin', 'akl', 'qty', 'qty_received', 'qty_sisa'])"><Download /> CSV</Button>
+                <LabelPrint :items="labelItems" :title="labelTitle" />
             </div>
             <DataTable
                 :columns="itemColumns"
@@ -163,11 +185,14 @@ query.fetch();
                 :total-pages="itemTable.totalPages.value"
                 :total="itemTable.total.value"
                 :per-page="itemTable.perPage.value"
+                :selected="selectedItems"
                 sortable
+                selectable
                 empty-title="Item tidak ditemukan"
-                empty-message="Ubah kata kunci pencarian."
+                empty-message="Ubah kata kunci pencarian. Centang baris bila hanya sebagian item yang mau dicetak."
                 @update:page="itemTable.setPage"
                 @update:per-page="itemTable.setPerPage"
+                @update:selected="selectedItems = $event"
                 @sort="itemTable.toggleSort"
             >
                 <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>

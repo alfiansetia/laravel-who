@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import MultiSelect from '@/components/MultiSelect.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -185,6 +186,14 @@ const detail = ref(null);
 const detailLoading = ref(false);
 const activeRow = ref(null);
 const activeTab = ref('sop');
+const labelQty = ref(1);
+
+const labelItems = computed(() => [{
+    code: detail.value?.code ?? activeRow.value?.code ?? '',
+    name: detail.value?.name ?? activeRow.value?.name ?? '',
+    qty: labelQty.value,
+}]);
+const labelTitle = computed(() => `Label ${detail.value?.code ?? activeRow.value?.code ?? ''}`);
 
 async function openDetail(row) {
     activeRow.value = row;
@@ -192,6 +201,7 @@ async function openDetail(row) {
     detailOpen.value = true;
     detailLoading.value = true;
     activeTab.value = 'sop';
+    labelQty.value = 1;
     await withBlock(async () => {
         try {
             const res = await api.get(`/products/${row.id}`, { block: true, silent: true });
@@ -389,10 +399,15 @@ load();
             </div>
             <div v-else class="space-y-3">
                 <p class="text-sm italic text-slate-600">{{ detail?.desc ?? activeRow?.desc ?? '-' }}</p>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" @click="downloadZip"><FileArchive /> Unduh ZIP</Button>
                     <Button variant="outline" size="sm" :disabled="!detail?.sop" @click="printSop"><Printer /> Print SOP</Button>
                     <Button variant="outline" size="sm" :disabled="!(detail?.images?.length > 0)" @click="printCollage"><Images /> Collage</Button>
+                    <div class="flex items-center gap-1.5">
+                        <label class="text-xs text-muted-foreground" title="Jumlah label yang dicetak">Jumlah</label>
+                        <Input v-model="labelQty" type="number" min="0" max="1000" class="h-8 w-16 px-2 text-xs" />
+                        <LabelPrint :items="labelItems" :title="labelTitle" />
+                    </div>
                 </div>
                 <div class="flex gap-2 border-b text-sm">
                     <button v-for="t in [['sop', 'SOP QC'], ['pl', 'Packing List'], ['images', 'Images'], ['pltbb', 'PLTBB']]" :key="t[0]" class="px-3 py-2" :class="activeTab === t[0] ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="activeTab = t[0]">{{ t[1] }}</button>

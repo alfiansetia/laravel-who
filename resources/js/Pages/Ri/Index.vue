@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import ModalTabs from '@/components/ModalTabs.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -33,6 +34,7 @@ const detailOpen = ref(false);
 const detail = ref(null);
 const productLines = ref([]);
 const lotLines = ref([]);
+const selectedProducts = ref([]);
 const activeRow = ref(null);
 const detailTab = ref('product');
 const lotCodeFilter = ref('');
@@ -141,8 +143,20 @@ const productExportRows = computed(() => productTable.filtered.value.map((row) =
     qty_sisa: Number(row.product_uom_qty ?? 0) - Number(row.quantity_done ?? 0),
 })));
 
-const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {
-    const pid = Array.isArray(row.product_id) ? row.product_id[0] : -1;
+const labelItems = computed(() => {
+    const picked = new Set((selectedProducts.value ?? []).map(String));
+    return productTable.filtered.value
+        .filter((row) => picked.size === 0 || picked.has(String(row.id ?? '')))
+        .map((row) => ({
+            code: getCode(odooName(row.product_id)),
+            name: getDesc(odooName(row.product_id)) || row.name || '',
+            qty: Number(row.product_uom_qty ?? 0),
+        }));
+});
+
+const labelTitle = computed(() => `Label RI ${detail?.value?.name ?? activeRow?.value?.name ?? ''}`);
+
+const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {    const pid = Array.isArray(row.product_id) ? row.product_id[0] : -1;
     return {
         code: getCode(odooName(row.product_id)),
         desc: getDesc(odooName(row.product_id)),
@@ -159,40 +173,42 @@ function lotLabel(row) {
     return exp ? `${lot}/${exp}` : (lot || '');
 }
 
+let detailSeq = 0;
+
 async function openDetail(row) {
+    const seq = ++detailSeq;
     activeRow.value = row;
-    detailOpen.value = true;
     detailTab.value = 'product';
     lotCodeFilter.value = '';
     productSearchBox.value = '';
     lotSearchBox.value = '';
+    selectedProducts.value = [];
     productTable.setSearch('', 0);
     lotTable.setSearch('', 0);
     productTable.setRows([]);
     lotTable.setRows([]);
-    productTable.loading.value = true;
-    lotTable.loading.value = true;
+    productTable.error.value = '';
+    lotTable.error.value = '';
     try {
         const res = await api.get(`/ri/${encodeURIComponent(row.id)}`, { silent: true, block: true });
+        if (seq !== detailSeq) {
+            return;
+        }
         const body = res.data?.data ?? res.data;
         detail.value = body;
         productLines.value = body.move_without_package_detail ?? [];
         lotLines.value = body.move_line_ids_without_package_detail ?? [];
         productTable.setRows(productLines.value);
         applyLotCodeFilter();
+        detailOpen.value = true;
     } catch (e) {
-        detail.value = row;
-        productLines.value = [];
-        lotLines.value = [];
-        productTable.setRows([]);
-        lotTable.setRows([]);
+        if (seq !== detailSeq) {
+            return;
+        }
         const message = e.response?.data?.message ?? 'Gagal memuat detail RI.';
         productTable.error.value = message;
         lotTable.error.value = message;
         toast.error(message);
-    } finally {
-        productTable.loading.value = false;
-        lotTable.loading.value = false;
     }
 }
 
@@ -244,6 +260,7 @@ query.fetch();
                     <Input :model-value="productSearchBox" type="search" placeholder="Cari code / nama..." class="max-w-xs" @input="onProductSearchInput" />
                     <Button variant="outline" size="sm" @click="copyRows(productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'], 'item RI')"><Copy /> Salin</Button>
                     <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-product`, productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'])"><Download /> CSV</Button>
+                    <LabelPrint :items="labelItems" :title="labelTitle" />
                 </div>
                 <DataTable
                     :columns="productColumns"
@@ -254,11 +271,14 @@ query.fetch();
                     :total-pages="productTable.totalPages.value"
                     :total="productTable.total.value"
                     :per-page="productTable.perPage.value"
+                    :selected="selectedProducts"
                     sortable
+                    selectable
                     empty-title="Item tidak ditemukan"
-                    empty-message="Ubah kata kunci pencarian."
+                    empty-message="Ubah kata kunci pencarian. Centang baris bila hanya sebagian item yang mau dicetak."
                     @update:page="productTable.setPage"
                     @update:per-page="productTable.setPerPage"
+                    @update:selected="selectedProducts = $event"
                     @sort="productTable.toggleSort"
                 >
                     <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>

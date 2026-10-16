@@ -10,6 +10,7 @@ use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\FileSearchController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItController;
+use App\Http\Controllers\ITRController;
 use App\Http\Controllers\IzinEdarController;
 use App\Http\Controllers\KarganController;
 use App\Http\Controllers\KontakController;
@@ -110,6 +111,8 @@ Route::get('do/{id}/print', [DoController::class, 'print'])->name('do.print')->w
 
 Route::get('it', [ItController::class, 'index'])->name('it.index');
 Route::get('it/{id}/print', [ItController::class, 'print'])->name('it.print')->whereNumber('id');
+
+Route::get('itr', [ITRController::class, 'index'])->name('itr.index');
 
 // NEW ROUTE
 Route::get('tools/stt', [ToolController::class, 'stt'])->name('tools.stt');

@@ -29,6 +29,7 @@ const INDEX = {
     so: { label: 'SO', href: '/so' },
     do: { label: 'DO', href: '/do' },
     it: { label: 'IT', href: '/it' },
+    itr: { label: 'ITR', href: '/itr' },
     packs: { label: 'Packing List', href: '/packs' },
     basts: { label: 'List BAST', href: '/basts' },
     sops: { label: 'SOP QC', href: '/sops' },

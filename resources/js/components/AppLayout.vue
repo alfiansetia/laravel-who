@@ -83,6 +83,7 @@ const odooLinks = [
     { label: 'Sales Order (SO)', route: 'so.index', match: 'so.*' },
     { label: 'Delivery Order (DO)', route: 'do.index', match: 'do.*' },
     { label: 'Internal Transfer (IT)', route: 'it.index', match: 'it.*' },
+    { label: 'IT Request (ITR)', route: 'itr.index', match: 'itr.*' },
     { label: 'Monitor DO', route: 'monitor.do', match: 'monitor.*' },
 ];
 

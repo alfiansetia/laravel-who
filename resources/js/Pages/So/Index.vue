@@ -111,29 +111,34 @@ function customerOf(row) {
     return String(odooName(row.partner_id)).substring(0, 30);
 }
 
+let detailSeq = 0;
+
 async function openDetail(row) {
+    const seq = ++detailSeq;
     activeRow.value = row;
-    detailOpen.value = true;
     itemSearchBox.value = '';
     itemTable.setSearch('', 0);
     itemTable.setRows([]);
-    itemTable.loading.value = true;
+    itemTable.error.value = '';
     try {
         const res = await api.get(`/so/${row.id}`, { silent: true, block: true });
+        if (seq !== detailSeq) {
+            return;
+        }
         const body = res.data?.data ?? res.data;
         detail.value = body;
         itemTable.setRows(body.order_line_detail ?? body.order_line ?? []);
         if (itemTable.total.value === 0) {
             toast.info('SO tidak memiliki item order.');
         }
+        detailOpen.value = true;
     } catch (e) {
-        detail.value = row;
-        itemTable.setRows([]);
+        if (seq !== detailSeq) {
+            return;
+        }
         const message = e.response?.data?.message ?? 'Gagal memuat detail SO.';
         itemTable.error.value = message;
         toast.error(message);
-    } finally {
-        itemTable.loading.value = false;
     }
 }
 
