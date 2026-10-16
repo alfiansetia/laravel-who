@@ -9,7 +9,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
-import EditableCell from './partials/EditableCell.vue';
+import EditableCell from '@/components/EditableCell.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { printDusLabels } from '@/lib/labelPrint';

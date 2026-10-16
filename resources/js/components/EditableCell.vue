@@ -2,6 +2,8 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import Input from '@/components/ui/Input.vue';
 
+// Sel tabel yang bisa diklik-untuk-ubah: tampil sebagai teks,
+// berubah jadi input saat aktif. Commit saat blur/Enter, batal via Esc.
 const props = defineProps({
     value: { type: [String, Number], default: '' },
     display: { type: [String, Number], default: null },

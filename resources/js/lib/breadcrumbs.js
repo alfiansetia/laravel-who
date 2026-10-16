@@ -56,6 +56,7 @@ const INDEX = {
     'tools/spreadsheet': { label: 'Spreadsheet PLTBB', href: '/tools/spreadsheet' },
     'tools/print-resi': { label: 'Print Resi', href: '/tools/print-resi' },
     'tools/tempelan-dus': { label: 'Tempelan Dus', href: '/tools/tempelan-dus' },
+    'tools/tempelan-akl-unit': { label: 'Tempelan AKL Unit', href: '/tools/tempelan-akl-unit' },
     'tools/file-search': { label: 'File Search Manager', href: '/tools/file-search' },
 };
 

@@ -152,6 +152,127 @@ export function printDusLabels({ labels = [], title = 'Tempelan Dus' } = {}) {
 }
 
 /**
+ * Cetak tempelan AKL unit: label kecil 4 baris, grid seperti label produk.
+ * Satu label per pcs sesuai qty. Isi per label:
+ *   AKL <akl> / ID : <sn> / <phone> / <company>.
+ * AKL / SN kosong otomatis jadi '-'.
+ * items = [{ kode, nama, akl, sn, qty }] — dikelompokkan per kode,
+ * tiap kelompok diawali note merah "AKL UTK : KODE (Nama)".
+ */
+export function printAklLabels({ items = [], cols = 5, title = 'Tempelan AKL Unit', fillRows = false, fontPt = 0, phone = '', company = '' } = {}) {
+    const toast = useToast();
+    const safeCols = Math.min(10, Math.max(1, Math.floor(Number(cols) || 5)));
+
+    // Kelompokkan per produk (kode) agar tiap kelompok dapat note merah
+    // "AKL UTK : KODE (Nama)" di luar label — penempel tidak tertukar.
+    const groups = [];
+    const byCode = new Map();
+    let total = 0;
+    let truncated = false;
+    for (const item of items ?? []) {
+        const qty = Math.max(0, Math.floor(Number(item?.qty ?? 0)));
+        if (qty === 0) {
+            continue;
+        }
+        const kode = String(item?.kode ?? '').trim();
+        const nama = String(item?.nama ?? '').trim();
+        const akl = String(item?.akl ?? '').trim() || '-';
+        const sn = String(item?.sn ?? '').trim() || '-';
+        let g = byCode.get(kode);
+        if (!g) {
+            g = { kode, nama, labels: [] };
+            byCode.set(kode, g);
+            groups.push(g);
+        }
+        const count = fillRows ? Math.ceil(qty / safeCols) * safeCols : qty;
+        for (let i = 0; i < count; i++) {
+            if (total >= MAX_LABELS) {
+                truncated = true;
+                break;
+            }
+            g.labels.push({ akl, sn });
+            total += 1;
+        }
+        if (truncated) {
+            break;
+        }
+    }
+
+    if (total === 0) {
+        toast.warning('Tidak ada label untuk dicetak (qty nol).');
+        return false;
+    }
+    if (truncated) {
+        toast.warning(`Qty melebihi ${MAX_LABELS} label, hanya ${MAX_LABELS} pertama yang dicetak.`);
+    }
+
+    const fixedPt = Math.min(48, Math.max(8, Math.floor(Number(fontPt) || 0)));
+    const basePt = fixedPt > 0 ? fixedPt : codeFontPt(safeCols);
+    // Semua baris label satu ukuran font yang sama (tanpa bold).
+    const labelPt = Math.min(basePt, 20);
+    const minPx = Math.max(10, Math.round(labelPt * 1.333 * 0.4));
+    const safePhone = String(phone ?? '').trim();
+    const safeCompany = String(company ?? '').trim();
+    const groupsJson = JSON.stringify(groups).replace(/</g, '\\u003c');
+    const phoneJson = JSON.stringify(safePhone).replace(/</g, '\\u003c');
+    const companyJson = JSON.stringify(safeCompany).replace(/</g, '\\u003c');
+
+    const win = window.open('', '_blank');
+    if (!win) {
+        toast.error('Popup diblokir browser. Izinkan popup untuk mencetak.');
+        return false;
+    }
+    win.document.write(
+        `<html><head><title>${escapeHtml(title)}</title><style>` +
+            `@page{size:A4 portrait;margin:0}` +
+            `*{box-sizing:border-box}` +
+            `body{margin:0;font-family:Calibri,Arial,sans-serif}` +
+            `.page{width:210mm;min-height:296mm;padding:6mm;page-break-after:always}` +
+            `.page:last-child{page-break-after:auto}` +
+            `.grid{display:grid;grid-template-columns:repeat(${safeCols},1fr);gap:0}` +
+            `.note{grid-column:1/-1;color:#c00;font-size:8pt;line-height:1;` +
+            `padding:0.3mm 0;margin:0.3mm 0 0;page-break-inside:avoid;page-break-after:avoid;word-break:break-word}` +
+            `.label{border:0.4mm dashed #999;display:flex;flex-direction:column;align-items:flex-start;` +
+            `justify-content:center;text-align:left;padding:0 0 0 1mm;` +
+            `margin:0 -0.4mm -0.4mm 0;page-break-inside:avoid;overflow:hidden}` +
+            `.akl,.id,.phone,.comp{font-size:${labelPt}pt;line-height:1;word-break:break-word}` +
+            `.akl{white-space:nowrap}` +
+            `.phone,.comp{color:#222}` +
+            `#measure{position:absolute;left:-9999mm;top:0;width:198mm;visibility:hidden}` +
+            `@media print{.label{border-color:#333}.note{color:#c00}#measure{display:none}}` +
+            `</style></head><body onload="doPrint()">` +
+            `<div id="root"></div>` +
+            `<div id="measure"><div class="grid" id="mgrid"></div></div>` +
+            `<script>` +
+            `var GROUPS=${groupsJson};var COLS=${safeCols};var MINPX=${minPx};var MAXH=Math.round(284*96/25.4);` +
+            `var PHONE=${phoneJson};var COMPANY=${companyJson};` +
+            `function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}` +
+            `function note(g){var t='AKL UTK : '+g.kode+(g.nama?' ('+g.nama+')':'');return '<div class="note" data-t="n">'+esc(t)+'</div>';}` +
+            `function cell(l){return '<div class="label" data-t="l"><div class="akl">'+esc(l.akl)+'</div><div class="id">ID : '+esc(l.sn)+'</div><div class="phone">'+esc(PHONE)+'</div><div class="comp">'+esc(COMPANY)+'</div></div>';}` +
+            `function fit(scope){var els=scope.querySelectorAll('.akl');for(var i=0;i<els.length;i++){var el=els[i];var size=parseFloat(window.getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth&&size>MINPX){size-=1;el.style.fontSize=size+'px';}}}` +
+            `function doPrint(){` +
+            `window.onafterprint=function(){window.close();};` +
+            `var mgrid=document.getElementById('mgrid');` +
+            `var html='';for(var gi=0;gi<GROUPS.length;gi++){html+=note(GROUPS[gi]);for(var li=0;li<GROUPS[gi].labels.length;li++){html+=cell(GROUPS[gi].labels[li]);}}` +
+            `mgrid.innerHTML=html;fit(mgrid);` +
+            `var root=document.getElementById('root');` +
+            `var nodes=Array.prototype.slice.call(mgrid.children);` +
+            `var page=null,pgrid=null,acc=0,row=[],rowH=0;` +
+            `function newPage(){page=document.createElement('div');page.className='page';pgrid=document.createElement('div');pgrid.className='grid';page.appendChild(pgrid);root.appendChild(page);acc=0;}` +
+            `function putRow(){if(page&&acc+rowH>MAXH){page=null;}if(!page){newPage();}for(var q=0;q<row.length;q++){pgrid.appendChild(row[q]);}acc+=rowH;row=[];rowH=0;}` +
+            `for(var n=0;n<nodes.length;n++){var nd=nodes[n];` +
+            `if(nd.getAttribute('data-t')==='n'){if(row.length){putRow();}var nh=nd.offsetHeight;if(page&&acc+nh>MAXH){page=null;}if(!page){newPage();}pgrid.appendChild(nd);acc+=nh;}` +
+            `else{row.push(nd);if(nd.offsetHeight>rowH){rowH=nd.offsetHeight;}if(row.length>=COLS){putRow();}}}` +
+            `if(row.length){putRow();}` +
+            `var meas=document.getElementById('measure');meas.parentNode.removeChild(meas);` +
+            `window.focus();window.print();}` +
+            `<\/script></body></html>`,
+    );
+    win.document.close();
+    return true;
+}
+
+/**
  * Cetak label tempelan: kode barang besar di atas, nama barang kecil di bawah.
  * Satu label per pcs sesuai qty. Jumlah kolom selembar bisa diatur.
  */
