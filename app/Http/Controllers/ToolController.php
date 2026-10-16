@@ -85,6 +85,15 @@ class ToolController extends Controller
         ]);
     }
 
+    public function tempelanDus(): Response
+    {
+        return Inertia::render('TempelanDus/Index', [
+            'title' => 'Tempelan Dus',
+            // Katalog kecil (ribuan baris) → preload sekali, pencarian filter lokal.
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name', 'akl']),
+        ]);
+    }
+
     /**
      * POST /api/print-resi/convert
      *

@@ -55,6 +55,7 @@ const INDEX = {
     'tools/ocr': { label: 'OCR Tool', href: '/tools/ocr' },
     'tools/spreadsheet': { label: 'Spreadsheet PLTBB', href: '/tools/spreadsheet' },
     'tools/print-resi': { label: 'Print Resi', href: '/tools/print-resi' },
+    'tools/tempelan-dus': { label: 'Tempelan Dus', href: '/tools/tempelan-dus' },
     'tools/file-search': { label: 'File Search Manager', href: '/tools/file-search' },
 };
 

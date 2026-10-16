@@ -130,6 +130,7 @@ Route::get('tools/file-search/download-script', [FileSearchController::class, 'd
 Route::post('tools/file-search/upload', [FileSearchController::class, 'upload'])->name('tools.file_search.upload');
 
 Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('tools.print_resi');
+Route::get('tools/tempelan-dus', [ToolController::class, 'tempelanDus'])->name('tools.tempelan_dus');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 

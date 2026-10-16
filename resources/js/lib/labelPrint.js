@@ -78,6 +78,80 @@ export function countLabelTotal(items, cols = 1, fillRows = false) {
 }
 
 /**
+ * Cetak tempelan dus: 3 label per lembar A4 portrait.
+ * Satu label = { noCtn, kode, nama, po, docType ('RI'/'IT'), docNo,
+ *   docDate (string tanggal sudah diformat), qty, akl, lotEd }.
+ */
+export function printDusLabels({ labels = [], title = 'Tempelan Dus' } = {}) {
+    const toast = useToast();
+    const list = (labels ?? []).filter(Boolean);
+    if (list.length === 0) {
+        toast.warning('Belum ada tempelan untuk dicetak. Isi form dulu.');
+        return false;
+    }
+
+    const MAX_LABELS = 120;
+    const truncated = list.length > MAX_LABELS;
+    const shown = truncated ? list.slice(0, MAX_LABELS) : list;
+    if (truncated) {
+        toast.warning(`Maksimal ${MAX_LABELS} tempelan sekali cetak, sisanya diabaikan.`);
+    }
+
+    function row(label, value, big = false, cls = '') {
+        return `<div class="row${big ? ' big' : ''}${cls ? ` ${cls}` : ''}"><div class="k">${escapeHtml(label)}</div>` +
+            `<div class="c">:</div><div class="v">${escapeHtml(value) || '&nbsp;'}</div></div>`;
+    }
+    function dus(l) {
+        const doc = l.docType === 'IT' ? 'IT' : 'RI';
+        return `<div class="dus">` +
+            `<div class="ctn"><span class="t">NO CTN&nbsp;&nbsp;:</span><span class="v">${escapeHtml(l.noCtn) || '&nbsp;'}</span></div>` +
+            row('KODE BARANG', l.kode, true) +
+            row('NAMA BARANG', l.nama) +
+            row('PO', l.po) +
+            row(doc, l.docNo) +
+            row(`TGL ${doc}`, l.docDatePrint || l.docDate) +
+            row('QTY', l.qty) +
+            row('AKL / SUKET', l.akl) +
+            row('LOT & ED', l.lotEd) +
+            `</div>`;
+    }
+
+    let pages = '';
+    for (let i = 0; i < shown.length; i += 3) {
+        pages += `<div class="page">${shown.slice(i, i + 3).map(dus).join('')}</div>`;
+    }
+
+    const win = window.open('', '_blank');
+    if (!win) {
+        toast.error('Popup diblokir browser. Izinkan popup untuk mencetak.');
+        return false;
+    }
+    win.document.write(
+        `<html><head><title>${escapeHtml(title)}</title><style>` +
+            `@page{size:A4 portrait;margin:0}` +
+            `*{box-sizing:border-box}` +
+            `body{margin:0;font-family:Calibri,Arial,sans-serif;color:#000}` +
+            `.page{width:210mm;min-height:297mm;padding:5mm 6mm;page-break-after:always}` +
+            `.page:last-child{page-break-after:auto}` +
+            `.dus{border:0.5mm dashed #333;min-height:93mm;padding:1mm 3mm 1mm;page-break-inside:avoid;margin-bottom:2mm}` +
+            `.dus:last-child{margin-bottom:0}` +
+            `.ctn{display:flex;align-items:baseline;gap:2mm;color:#f00;border-bottom:0.3mm solid #000;padding-bottom:0.5mm}` +
+            `.ctn .t{font-weight:800;font-size:17pt;white-space:nowrap}` +
+            `.ctn .v{font-weight:800;font-size:26pt;flex:1;word-break:break-word;line-height:1.1}` +
+            `.row{display:flex;align-items:baseline;border-bottom:0.3mm solid #000;padding:0.75mm 0}` +
+            `.row:last-child{border-bottom:none}` +
+            `.row .k{width:34mm;flex:none;font-size:13pt;white-space:nowrap}` +
+            `.row .c{width:3mm;flex:none;font-size:13pt;text-align:center}` +
+            `.row .v{flex:1;font-weight:700;font-size:17pt;word-break:break-word;line-height:1.15}` +
+            `.row.big .v{font-size:24pt}` +
+            `@media print{.dus{border-color:#000}}` +
+            `</style></head><body onload="window.onafterprint=function(){window.close()};window.focus();window.print();setTimeout(function(){window.close()},800)">${pages}</body></html>`,
+    );
+    win.document.close();
+    return true;
+}
+
+/**
  * Cetak label tempelan: kode barang besar di atas, nama barang kecil di bawah.
  * Satu label per pcs sesuai qty. Jumlah kolom selembar bisa diatur.
  */

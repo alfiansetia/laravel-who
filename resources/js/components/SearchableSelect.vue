@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
             class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm disabled:opacity-50"
             @click="toggle"
         >
-            <span class="truncate" :class="selectedLabel ? '' : 'text-muted-foreground'">{{ selectedLabel || placeholder }}</span>
+            <span class="min-w-0 flex-1 truncate text-left" :class="selectedLabel ? '' : 'text-muted-foreground'" :title="selectedLabel || placeholder">{{ selectedLabel || placeholder }}</span>
             <ChevronsUpDown class="size-4 shrink-0 text-muted-foreground" />
         </button>
         <Teleport to="body">
@@ -209,8 +209,8 @@ onBeforeUnmount(() => {
                         class="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-sm hover:bg-accent"
                         @click="choose(opt)"
                     >
-                        <span class="truncate">{{ opt[labelKey] ?? opt.label ?? opt.name }}</span>
-                        <Check v-if="String(opt[valueKey] ?? opt.value ?? opt.id) === String(modelValue)" class="size-4" />
+                        <span class="min-w-0 flex-1 truncate" :title="opt[labelKey] ?? opt.label ?? opt.name">{{ opt[labelKey] ?? opt.label ?? opt.name }}</span>
+                        <Check v-if="String(opt[valueKey] ?? opt.value ?? opt.id) === String(modelValue)" class="size-4 shrink-0" />
                     </button>
                     <p v-if="filtered.length === 0" class="px-2 py-3 text-center text-xs text-muted-foreground">Data tidak ditemukan.</p>
                 </div>
