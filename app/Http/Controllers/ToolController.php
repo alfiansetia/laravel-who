@@ -103,6 +103,15 @@ class ToolController extends Controller
         ]);
     }
 
+    public function tempelanAklKemasan(): Response
+    {
+        return Inertia::render('TempelanAklKemasan/Index', [
+            'title' => 'Tempelan AKL Kemasan',
+            // Katalog kecil (ribuan baris) → preload sekali, pencarian filter lokal.
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name', 'akl']),
+        ]);
+    }
+
     /**
      * POST /api/print-resi/convert
      *

@@ -132,6 +132,7 @@ Route::post('tools/file-search/upload', [FileSearchController::class, 'upload'])
 Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('tools.print_resi');
 Route::get('tools/tempelan-dus', [ToolController::class, 'tempelanDus'])->name('tools.tempelan_dus');
 Route::get('tools/tempelan-akl-unit', [ToolController::class, 'tempelanAklUnit'])->name('tools.tempelan_akl_unit');
+Route::get('tools/tempelan-akl-kemasan', [ToolController::class, 'tempelanAklKemasan'])->name('tools.tempelan_akl_kemasan');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 

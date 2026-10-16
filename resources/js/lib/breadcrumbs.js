@@ -57,6 +57,7 @@ const INDEX = {
     'tools/print-resi': { label: 'Print Resi', href: '/tools/print-resi' },
     'tools/tempelan-dus': { label: 'Tempelan Dus', href: '/tools/tempelan-dus' },
     'tools/tempelan-akl-unit': { label: 'Tempelan AKL Unit', href: '/tools/tempelan-akl-unit' },
+    'tools/tempelan-akl-kemasan': { label: 'Tempelan AKL Kemasan', href: '/tools/tempelan-akl-kemasan' },
     'tools/file-search': { label: 'File Search Manager', href: '/tools/file-search' },
 };
 

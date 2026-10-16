@@ -80,6 +80,7 @@ class HomeController extends Controller
                     ['route' => 'tools.print_resi', 'icon' => 'Printer', 'title' => 'Print Resi', 'desc' => 'Cetak resi pengiriman'],
                     ['route' => 'tools.tempelan_dus', 'icon' => 'Box', 'title' => 'Tempelan Dus', 'desc' => 'Cetak label tempelan dus'],
                     ['route' => 'tools.tempelan_akl_unit', 'icon' => 'Barcode', 'title' => 'Tempelan AKL Unit', 'desc' => 'Cetak label AKL unit kecil'],
+                    ['route' => 'tools.tempelan_akl_kemasan', 'icon' => 'Package', 'title' => 'Tempelan AKL Kemasan', 'desc' => 'Cetak label AKL kemasan'],
                     ['route' => 'tools.spreadsheet', 'icon' => 'Table2', 'title' => 'PLTBB', 'desc' => 'Spreadsheet PLTBB'],
                     ['route' => 'settings.index', 'icon' => 'Settings', 'title' => 'Setting', 'desc' => 'Pengaturan aplikasi'],
                 ]),
