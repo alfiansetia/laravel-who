@@ -402,6 +402,117 @@ export function printAklKemasanLabels({ items = [], cols = 4, title = 'Tempelan 
 }
 
 /**
+ * Cetak stiker kartu stok: 1 strip sebaris per kode produk.
+ * Strip = 2 baris full-width:
+ *   baris 1: kode diulang kodeRepeat + "AKL <akl>" diulang aklRepeat
+ *   baris 2: nama diulang kodeRepeat + "AKL <akl>" diulang aklRepeat
+ * AKL dibuat atas-bawah agar bisa digunting terpisah untuk kartu stok.
+ * Font kecil mengikuti Excel: kode 8pt, desc 6pt, akl 7pt (bisa diatur).
+ * items = [{ kode, nama, akl, qty }] — qty = jumlah strip.
+ */
+export function printKartuStokLabels({ items = [], title = 'Stiker Kartu Stok', kodeRepeat = 4, aklRepeat = 3, kodePt = 8, descPt = 6, aklPt = 7, withAkl = true } = {}) {
+    const toast = useToast();
+    const safeKodeRepeat = Math.min(10, Math.max(1, Math.floor(Number(kodeRepeat) || 4)));
+    const safeAklRepeat = Math.min(10, Math.max(1, Math.floor(Number(aklRepeat) || 3)));
+    const safeKodePt = Math.min(24, Math.max(5, Number(kodePt) || 8));
+    const safeDescPt = Math.min(24, Math.max(5, Number(descPt) || 6));
+    const safeAklPt = Math.min(24, Math.max(5, Number(aklPt) || 7));
+    // Skip AKL → kolom AKL dipakai kode/desc (default 4 + 3 = 7 kolom).
+    const showAkl = withAkl !== false;
+    const effKode = showAkl ? safeKodeRepeat : safeKodeRepeat + safeAklRepeat;
+    const effAkl = showAkl ? safeAklRepeat : 0;
+    const totalCols = effKode + effAkl;
+
+    const strips = [];
+    let truncated = false;
+    for (const item of items ?? []) {
+        const qty = Math.max(0, Math.floor(Number(item?.qty ?? 0)));
+        if (qty === 0) {
+            continue;
+        }
+        const kode = String(item?.kode ?? '').trim() || '-';
+        const nama = String(item?.nama ?? '').trim() || '-';
+        const akl = String(item?.akl ?? '').trim() || '-';
+        for (let i = 0; i < qty; i++) {
+            if (strips.length >= MAX_LABELS) {
+                truncated = true;
+                break;
+            }
+            strips.push({ kode, nama, akl });
+        }
+        if (truncated) {
+            break;
+        }
+    }
+
+    if (strips.length === 0) {
+        toast.warning('Tidak ada stiker untuk dicetak (qty nol).');
+        return false;
+    }
+    if (truncated) {
+        toast.warning(`Qty melebihi ${MAX_LABELS} strip, hanya ${MAX_LABELS} pertama yang dicetak.`);
+    }
+
+    const minPx = 7;
+    const dataJson = JSON.stringify({ strips, kr: effKode, ar: effAkl }).replace(/</g, '\\u003c');
+
+    const win = window.open('', '_blank');
+    if (!win) {
+        toast.error('Popup diblokir browser. Izinkan popup untuk mencetak.');
+        return false;
+    }
+    win.document.write(
+        `<html><head><title>${escapeHtml(title)}</title><style>` +
+            `@page{size:A4 portrait;margin:0}` +
+            `*{box-sizing:border-box}` +
+            `body{margin:0;font-family:Calibri,Arial,sans-serif;color:#000}` +
+            `.page{width:210mm;min-height:296mm;padding:6mm;page-break-after:always}` +
+            `.page:last-child{page-break-after:auto}` +
+            `.strip{border:0.4mm dashed #999;margin:0 0 -0.4mm 0;page-break-inside:avoid;overflow:hidden}` +
+            `.row{display:grid;grid-template-columns:repeat(${totalCols},1fr);gap:0}` +
+            `.row+.row{border-top:0.25mm solid #777}` +
+            `.c{padding:0 0 0 1mm;overflow:hidden;white-space:nowrap;border-right:0.25mm solid #777}` +
+            `.c:last-child{border-right:none}` +
+            `.kode{font-size:${safeKodePt}pt;line-height:1.3}` +
+            `.desc{font-size:${safeDescPt}pt;line-height:1.3}` +
+            `.akl{font-size:${safeAklPt}pt;line-height:1.3}` +
+            `#measure{position:absolute;left:-9999mm;top:0;width:198mm;visibility:hidden}` +
+            `@media print{.strip{border-color:#333}#measure{display:none}}` +
+            `</style></head><body onload="doPrint()">` +
+            `<div id="root"></div>` +
+            `<div id="measure"><div id="mcol"></div></div>` +
+            `<script>` +
+            `var DATA=${dataJson};var MAXH=Math.round(284*96/25.4);var MINPX=${minPx};` +
+            `function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}` +
+            `function strip(s){var h='<div class="strip" data-t="s"><div class="row">';` +
+            `for(var i=0;i<DATA.kr;i++){h+='<div class="c kode">'+esc(s.kode)+'</div>';}` +
+            `for(var j=0;j<DATA.ar;j++){h+='<div class="c akl">'+esc(s.akl)+'</div>';}` +
+            `h+='</div><div class="row">';` +
+            `for(var k=0;k<DATA.kr;k++){h+='<div class="c desc">'+esc(s.nama)+'</div>';}` +
+            `for(var l=0;l<DATA.ar;l++){h+='<div class="c akl">'+esc(s.akl)+'</div>';}` +
+            `h+='</div></div>';return h;}` +
+            `function fit(scope){var els=scope.querySelectorAll('.kode,.akl');for(var i=0;i<els.length;i++){var el=els[i];var size=parseFloat(window.getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth&&size>MINPX){size-=1;el.style.fontSize=size+'px';}}}` +
+            `function doPrint(){` +
+            `window.onafterprint=function(){window.close();};` +
+            `var mcol=document.getElementById('mcol');` +
+            `var html='';for(var n=0;n<DATA.strips.length;n++){html+=strip(DATA.strips[n]);}` +
+            `mcol.innerHTML=html;fit(mcol);` +
+            `var root=document.getElementById('root');` +
+            `var nodes=Array.prototype.slice.call(mcol.children);` +
+            `var page=null,acc=0;` +
+            `function newPage(){page=document.createElement('div');page.className='page';root.appendChild(page);acc=0;}` +
+            `for(var m=0;m<nodes.length;m++){var nd=nodes[m];var nh=nd.offsetHeight;` +
+            `if(!page){newPage();}if(acc+nh>MAXH){newPage();}` +
+            `page.appendChild(nd);acc+=nh;}` +
+            `var meas=document.getElementById('measure');meas.parentNode.removeChild(meas);` +
+            `window.focus();window.print();}` +
+            `<\/script></body></html>`,
+    );
+    win.document.close();
+    return true;
+}
+
+/**
  * Cetak label tempelan: kode barang besar di atas, nama barang kecil di bawah.
  * Satu label per pcs sesuai qty. Jumlah kolom selembar bisa diatur.
  */

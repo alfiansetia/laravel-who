@@ -133,6 +133,7 @@ Route::get('tools/print-resi', [ToolController::class, 'print_resi'])->name('too
 Route::get('tools/tempelan-dus', [ToolController::class, 'tempelanDus'])->name('tools.tempelan_dus');
 Route::get('tools/tempelan-akl-unit', [ToolController::class, 'tempelanAklUnit'])->name('tools.tempelan_akl_unit');
 Route::get('tools/tempelan-akl-kemasan', [ToolController::class, 'tempelanAklKemasan'])->name('tools.tempelan_akl_kemasan');
+Route::get('tools/stiker-kartu-stok', [ToolController::class, 'stikerKartuStok'])->name('tools.stiker_kartu_stok');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 

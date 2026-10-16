@@ -112,6 +112,15 @@ class ToolController extends Controller
         ]);
     }
 
+    public function stikerKartuStok(): Response
+    {
+        return Inertia::render('StikerKartuStok/Index', [
+            'title' => 'Stiker Kartu Stok',
+            // Katalog kecil (ribuan baris) → preload sekali, pencarian filter lokal.
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name', 'akl']),
+        ]);
+    }
+
     /**
      * POST /api/print-resi/convert
      *
