@@ -4,10 +4,8 @@ import { ArrowDownUp, Copy, RefreshCw, Share } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -27,15 +25,6 @@ const query = useTableQuery((p) => api.get('/kontaks', { params: p }), {
 });
 
 const searchBox = ref(props.filters.search ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
-const activeCount = computed(() => (query.search.value ? 1 : 0));
 
 const columns = [
     { key: 'name', label: 'Nama' },
@@ -90,17 +79,14 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['name', 'street', 'phone'], 'kontak')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" @click="syncFromOdoo"><ArrowDownUp /> Sync from Odoo</Button>
             </template>
         </PageHeader>
         <div class="space-y-4">
-            <FilterPanel title="Filter Kontak" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari nama, alamat, phone..." @input="onSearchInput" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari nama, alamat, phone..." @search="query.setSearch">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            </TableToolbar>
             <DataTable
                 :columns="columns"
                 :rows="query.rows.value"

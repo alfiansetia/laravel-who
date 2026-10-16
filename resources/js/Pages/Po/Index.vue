@@ -7,8 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import { useClientTable } from '@/composables/useClientTable';
@@ -36,19 +35,7 @@ const itemTable = useClientTable(null, {
     searchKeys: ['product_id', 'akl', 'product_qty', 'qty_received'],
 });
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
-
 const searchBox = ref(props.filters.search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
 const columns = [
     { key: 'name', label: 'No PO', mono: true },
@@ -133,16 +120,10 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title">
-            <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-            </template>
-        </PageHeader>
-        <FilterPanel title="Filter PO" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari nomor PO..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <PageHeader :title="title" />
+        <TableToolbar v-model="searchBox" placeholder="Cari nomor PO..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

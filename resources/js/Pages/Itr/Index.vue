@@ -6,8 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -36,19 +35,7 @@ const itemTable = useClientTable(null, {
     searchKeys: ['nama_produk', 'qty', 'satuan'],
 });
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
-
 const searchBox = ref(props.filters.search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
 const columns = [
     { key: 'name', label: 'No ITR', mono: true },
@@ -131,16 +118,10 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title">
-            <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-            </template>
-        </PageHeader>
-        <FilterPanel title="Filter ITR" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari nomor ITR..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <PageHeader :title="title" />
+        <TableToolbar v-model="searchBox" placeholder="Cari nomor ITR..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

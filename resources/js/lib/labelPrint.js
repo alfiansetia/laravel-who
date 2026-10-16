@@ -35,16 +35,6 @@ function codeFontPt(cols) {
     return 13;
 }
 
-function labelMinHeightMm(cols) {
-    if (cols <= 2) {
-        return 24;
-    }
-    if (cols <= 4) {
-        return 16;
-    }
-    return 12;
-}
-
 /**
  * Kembangkan [{ code, name, qty }] menjadi [{ code, name }] per pcs.
  * Bila fillRows true, tiap item digenapkan ke baris penuh (kelipatan kolom):
@@ -91,7 +81,7 @@ export function countLabelTotal(items, cols = 1, fillRows = false) {
  * Cetak label tempelan: kode barang besar di atas, nama barang kecil di bawah.
  * Satu label per pcs sesuai qty. Jumlah kolom selembar bisa diatur.
  */
-export function printProductLabels({ items = [], cols = 5, title = 'Label Produk', fillRows = false, codeOnly = false } = {}) {
+export function printProductLabels({ items = [], cols = 5, title = 'Label Produk', fillRows = false, codeOnly = false, fontPt = 0 } = {}) {
     const toast = useToast();
     const safeCols = Math.min(10, Math.max(1, Math.floor(Number(cols) || 5)));
     const { labels, truncated } = expandLabelItems(items, safeCols, fillRows);
@@ -104,12 +94,12 @@ export function printProductLabels({ items = [], cols = 5, title = 'Label Produk
         toast.warning(`Qty melebihi ${MAX_LABELS} label, hanya ${MAX_LABELS} pertama yang dicetak.`);
     }
 
-    const codePt = codeFontPt(safeCols);
+    // fontPt > 0 = ukuran font dikunci manual (tidak ikut jumlah kolom).
+    const fixedPt = Math.min(48, Math.max(8, Math.floor(Number(fontPt) || 0)));
+    const codePt = fixedPt > 0 ? fixedPt : codeFontPt(safeCols);
     const namePt = Math.max(7, Math.round(codePt * 0.55));
-    // Mode kode saja: label dirampingkan (padding + tinggi minimum lebih kecil).
-    const minH = codeOnly
-        ? Math.max(7, Math.round(labelMinHeightMm(safeCols) * 0.6))
-        : labelMinHeightMm(safeCols);
+    // Tinggi label murni mengikuti isi (tanpa min-height) agar tidak ada
+    // ruang kosong saat font mengecil oleh auto-fit / opsi Font.
     const labelPadMm = codeOnly ? 0.5 : 1;
     const minPx = Math.max(10, Math.round(codePt * 1.333 * 0.4));
     // JSON aman disisipkan ke <script> dokumen print.
@@ -135,7 +125,7 @@ export function printProductLabels({ items = [], cols = 5, title = 'Label Produk
             `.page:last-child{page-break-after:auto}` +
             `.grid{display:grid;grid-template-columns:repeat(${safeCols},1fr);gap:0}` +
             `.label{border:0.4mm dashed #999;display:flex;flex-direction:column;align-items:center;` +
-            `justify-content:center;text-align:center;padding:${labelPadMm}mm;min-height:${minH}mm;` +
+            `justify-content:center;text-align:center;padding:${labelPadMm}mm;` +
             `margin:0 -0.4mm -0.4mm 0;page-break-inside:avoid;overflow:hidden}` +
             `.code{font-weight:800;font-size:${codePt}pt;line-height:1.15;white-space:nowrap}` +
             `.name{font-size:${namePt}pt;line-height:1.25;word-break:break-word;margin-top:1mm;color:#222}` +

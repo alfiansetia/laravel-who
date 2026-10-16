@@ -1,14 +1,12 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Eye, Pencil, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useClientTable } from '@/composables/useClientTable';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -36,16 +34,6 @@ const columns = [
     { key: 'total_weight', label: 'Total Berat', align: 'right' },
     { key: 'created_at', label: 'Tanggal', mono: true },
 ];
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    table.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    table.setSearch('', 0);
-}
 
 function goCreate() {
     router.visit('/shipping-estimate/create');
@@ -99,16 +87,13 @@ table.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="table.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah Data</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Shipping Estimate" :active-count="searchBox ? 1 : 0" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari no SO, customer..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari no SO, customer..." @search="table.setSearch">
+            <Button variant="outline" size="sm" @click="table.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="table.rows.value"

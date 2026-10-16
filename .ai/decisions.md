@@ -44,6 +44,11 @@
 - Alasan: 9 modul Odoo duplikasi pola filter yang sama; panel collapsible menghemat tempat, badge memberi sinyal filter aktif, reset terpusat. Diterapkan ke Stock, Lot, ProductOdoo, Po, Ri, So, Do, It, Vendor.
 - Revisi: default TERTUTUP (`defaultOpen: false`); debounce search/filter teks 1000ms (`useTableQuery.setSearch/setFilters(v, ms)`, `useClientTable.setSearch`), input pakai ref lokal agar ketikan tidak tertimpa; select instan. Gagal buka detail wajib toast error (jangan `catch` diam).
 
+## ADR-011: TableToolbar — search di luar filter, tombol filter ikon sejajar Refresh
+- Dipilih: `TableToolbar.vue` (search selalu terlihat + tombol filter ikon-saja di baris toolbar sejajar Refresh + panel filter tambahan default tersembunyi + badge `activeCount` tanpa search + Reset bawaan). `FilterPanel.vue` dihapus.
+- Ditolak: search di dalam `FilterPanel` tertutup (UX jelek: mencari harus buka filter dulu), tombol filter teks terpisah dari Refresh.
+- Alasan: kebutuhan paling sering di halaman list adalah mencari; filter lanjutan jarang dipakai sehingga disembunyikan di balik ikon. Tanpa slot `#filters` tombol filter hilang otomatis (16 halaman search-only). `activeCount` tidak lagi menghitung search. Pengecualian sadar: search di dalam modal detail (DO/RI/IT/PO/Stock/Itr) dan halaman non-list (Import, LaporanLuarkota, ProductImage) tidak diubah.
+
 ## ADR-010: Vendor dibaca live dari Odoo res.partner, tanpa migrasi/tabel lokal
 - Dipilih: modul Vendor (`VendorOdooServices` + `GET /api/vendor-odoo`) baca langsung `res.partner` Odoo (`search_read` + `read`); list/detail di `Pages/Vendor/Index.vue`.
 - Dilarang: migrasi baru untuk vendor (kolom snapshot, ubah FK `packs.vendor_id`, dsb.) dan baca/tulis tabel `vendors` lokal untuk kebutuhan vendor Odoo.

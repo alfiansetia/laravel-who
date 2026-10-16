@@ -6,7 +6,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -33,10 +33,6 @@ const selected = ref([]);
 
 const searchBox = ref(props.filters.search ?? '');
 const satuanBox = ref(props.filters.satuan ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 function onSatuan(v) {
     satuanBox.value = v;
     query.fetch();
@@ -46,7 +42,7 @@ function resetFilter() {
     satuanBox.value = '';
     query.setSearch('', 0);
 }
-const activeCount = computed(() => (query.search.value ? 1 : 0) + (satuanBox.value ? 1 : 0));
+const activeCount = computed(() => (satuanBox.value ? 1 : 0));
 
 const columns = [
     { key: 'code', label: 'Kode', mono: true },
@@ -226,7 +222,6 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['code', 'name', 'satuan', 'stok'], 'atk')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
                 <Button variant="outline" size="sm" @click="router.visit('/atk-import')">Import</Button>
@@ -234,14 +229,14 @@ query.fetch();
             </template>
         </PageHeader>
         <div class="space-y-4">
-            <FilterPanel title="Filter ATK" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari kode, nama, satuan..." @input="onSearchInput" />
-                </FormField>
-                <FormField label="Satuan">
-                    <SearchableSelect :model-value="satuanBox" :options="satuanOptions" placeholder="Semua Satuan" @update:model-value="onSatuan" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari kode, nama, satuan..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+                <template #filters>
+                    <FormField label="Satuan">
+                        <SearchableSelect :model-value="satuanBox" :options="satuanOptions" placeholder="Semua Satuan" @update:model-value="onSatuan" />
+                    </FormField>
+                </template>
+            </TableToolbar>
             <DataTable
                 :columns="columns"
                 :rows="query.rows.value"

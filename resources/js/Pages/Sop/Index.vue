@@ -6,7 +6,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -30,16 +30,7 @@ const query = useTableQuery((p) => api.get('/sops', { params: p }), {
 });
 
 const searchBox = ref(props.filters.search ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
 const columns = [
     { key: 'product_code', label: 'Kode Product', mono: true },
     { key: 'product_name', label: 'Nama Product' },
@@ -146,17 +137,14 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['code', 'name', 'target'], 'sop')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="exportAll"><FileDown /> Export</Button>
                 <Button size="sm" @click="goCreate"><Pencil /> Manage SOP QC</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter SOP" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari product, target..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari product, target..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

@@ -6,10 +6,8 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -30,15 +28,6 @@ const query = useTableQuery((p) => api.get('/akls', { params: p }), {
 const selected = ref([]);
 
 const searchBox = ref(props.filters.search ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
-const activeCount = computed(() => (query.search.value ? 1 : 0));
 
 const columns = [
     { key: 'reg_no', label: 'Reg No', mono: true },
@@ -180,18 +169,15 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['reg_no', 'name', 'vendor', 'berlaku', 'expired'], 'akl')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Upload Lampiran</Button>
             </template>
         </PageHeader>
         <div class="space-y-4">
-            <FilterPanel title="Filter AKL" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari reg no, nama, vendor..." @input="onSearchInput" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari reg no, nama, vendor..." @search="query.setSearch">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            </TableToolbar>
             <DataTable
                 :columns="columns"
                 :rows="query.rows.value"

@@ -5,7 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
 import MultiSelect from '@/components/MultiSelect.vue';
@@ -88,18 +88,11 @@ const totalPagesFiltered = computed(() => Math.max(1, Math.ceil(totalFiltered.va
 
 const activeCount = computed(
     () =>
-        (table.search.value ? 1 : 0) +
         (filterPltbb.value ? 1 : 0) +
         (filterImage.value ? 1 : 0) +
         (filterPl.value ? 1 : 0) +
         (filterSop.value ? 1 : 0),
 );
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    table.setSearch(e.target.value);
-    table.setPage(1);
-}
 
 function resetFilter() {
     searchBox.value = '';
@@ -320,32 +313,31 @@ load();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['code', 'name', 'akl', 'akl_exp', 'pltbb', 'images', 'pl', 'sop'], 'product')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv('product', mainExportRows, ['code', 'name', 'akl', 'akl_exp', 'pltbb', 'images', 'pl', 'sop'])"><Download /> CSV</Button>
                 <Button variant="destructive" size="sm" @click="syncProduct"><RefreshCw /> Sync</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Product" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari kode, nama, AKL..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="PLTBB">
-                <SearchableSelect v-model="filterPltbb" :options="pltbbOptions" placeholder="Semua" />
-            </FormField>
-            <FormField label="Image">
-                <SearchableSelect v-model="filterImage" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
-            </FormField>
-            <FormField label="Packing List">
-                <SearchableSelect v-model="filterPl" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
-            </FormField>
-            <FormField label="SOP">
-                <SearchableSelect v-model="filterSop" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
-            </FormField>
-            <FormField label="Kolom tampil" :hint="`${visibleCols.length} dari ${ALL_COLUMNS.length} kolom tampil`">
-                <MultiSelect v-model="visibleCols" :options="columnOptions" placeholder="Kolom tampil" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari kode, nama, AKL..." :active-count="activeCount" @search="table.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="PLTBB">
+                    <SearchableSelect v-model="filterPltbb" :options="pltbbOptions" placeholder="Semua" />
+                </FormField>
+                <FormField label="Image">
+                    <SearchableSelect v-model="filterImage" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
+                </FormField>
+                <FormField label="Packing List">
+                    <SearchableSelect v-model="filterPl" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
+                </FormField>
+                <FormField label="SOP">
+                    <SearchableSelect v-model="filterSop" :options="boolOptions('Ada', 'Tidak ada')" placeholder="Semua" />
+                </FormField>
+                <FormField label="Kolom tampil" :hint="`${visibleCols.length} dari ${ALL_COLUMNS.length} kolom tampil`">
+                    <MultiSelect v-model="visibleCols" :options="columnOptions" placeholder="Kolom tampil" />
+                </FormField>
+            </template>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="pageRows"

@@ -6,11 +6,10 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import Card from '@/components/ui/Card.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
@@ -47,10 +46,6 @@ const searchBox = ref(props.filters.search ?? '');
 const kategoriBox = ref(props.filters.kategori ?? '');
 const pendaftarBox = ref(props.filters.pendaftar ?? '');
 const pabrikBox = ref(props.filters.pabrik ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value, 400);
-}
 function onKategori(v) {
     kategoriBox.value = v;
     query.fetch();
@@ -76,8 +71,7 @@ function resetFilter() {
 }
 const activeCount = computed(
     () =>
-        (query.search.value ? 1 : 0)
-        + (kategoriBox.value ? 1 : 0)
+        (kategoriBox.value ? 1 : 0)
         + (pendaftarBox.value ? 1 : 0)
         + (pabrikBox.value ? 1 : 0),
 );
@@ -804,7 +798,6 @@ loadProgress(true).then(() => {
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['kategori', 'nomor', 'terbit', 'exp', 'merk', 'jenis', 'pendaftar', 'pabrik'], 'izin-edar')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="checkFiles"><Download /> Cek File</Button>
                 <Button variant="outline" size="sm" @click="openUpload"><Upload /> Upload File</Button>
@@ -867,20 +860,20 @@ loadProgress(true).then(() => {
                 </div>
             </Card>
 
-            <FilterPanel title="Filter Izin Edar" :active-count="activeCount" grid-class="grid gap-3 md:grid-cols-2 xl:grid-cols-4" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari nomor izin, merk, pendaftar..." @input="onSearchInput" />
-                </FormField>
-                <FormField label="Kategori">
-                    <SearchableSelect :model-value="kategoriBox" :options="kategoriOptions" placeholder="Semua Kategori" @update:model-value="onKategori" />
-                </FormField>
-                <FormField label="Pendaftar">
-                    <SearchableSelect :model-value="pendaftarBox" :options="pendaftarOptions" :loading="loadingPendaftar" placeholder="Semua Pendaftar" search-placeholder="Ketik nama pendaftar..." @update:model-value="onPendaftar" @search="searchPendaftar" />
-                </FormField>
-                <FormField label="Pabrik">
-                    <SearchableSelect :model-value="pabrikBox" :options="pabrikOptions" :loading="loadingPabrik" placeholder="Semua Pabrik" search-placeholder="Ketik nama pabrik..." @update:model-value="onPabrik" @search="searchPabrik" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari nomor izin, merk, pendaftar..." :active-count="activeCount" grid-class="grid gap-3 md:grid-cols-2 xl:grid-cols-4" @search="(v) => query.setSearch(v, 400)" @reset="resetFilter">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+                <template #filters>
+                    <FormField label="Kategori">
+                        <SearchableSelect :model-value="kategoriBox" :options="kategoriOptions" placeholder="Semua Kategori" @update:model-value="onKategori" />
+                    </FormField>
+                    <FormField label="Pendaftar">
+                        <SearchableSelect :model-value="pendaftarBox" :options="pendaftarOptions" :loading="loadingPendaftar" placeholder="Semua Pendaftar" search-placeholder="Ketik nama pendaftar..." @update:model-value="onPendaftar" @search="searchPendaftar" />
+                    </FormField>
+                    <FormField label="Pabrik">
+                        <SearchableSelect :model-value="pabrikBox" :options="pabrikOptions" :loading="loadingPabrik" placeholder="Semua Pabrik" search-placeholder="Ketik nama pabrik..." @update:model-value="onPabrik" @search="searchPabrik" />
+                    </FormField>
+                </template>
+            </TableToolbar>
 
             <DataTable
                 :columns="columns"

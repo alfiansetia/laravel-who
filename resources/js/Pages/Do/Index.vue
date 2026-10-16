@@ -7,8 +7,9 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import ModalTabs from '@/components/ModalTabs.vue';
 import CopyButton from '@/components/CopyButton.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -34,6 +35,7 @@ const detailOpen = ref(false);
 const detail = ref(null);
 const productLines = ref([]);
 const lotLines = ref([]);
+const selectedProducts = ref([]);
 const activeRow = ref(null);
 const detailTab = ref('product');
 const lotCodeFilter = ref('');
@@ -48,15 +50,10 @@ const detailTabs = computed(() => [
     { value: 'lot', label: 'Product Lot', count: lotTable.total.value },
 ]);
 
-const activeCount = computed(() => (query.search.value ? 1 : 0) + (query.filters.value.note_search ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
 const noteBox = ref(props.filters.note_search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 
 function onNoteInput(e) {
     noteBox.value = e.target.value;
@@ -148,6 +145,19 @@ const productExportRows = computed(() => productTable.filtered.value.map((row) =
     qty_done: row.quantity_done ?? 0,
 })));
 
+const labelItems = computed(() => {
+    const picked = new Set((selectedProducts.value ?? []).map(String));
+    return productTable.filtered.value
+        .filter((row) => picked.size === 0 || picked.has(String(row.id ?? '')))
+        .map((row) => ({
+            code: getCode(odooName(row.product_id)),
+            name: getDesc(odooName(row.product_id)),
+            qty: Number(row.product_uom_qty ?? 0),
+        }));
+});
+
+const labelTitle = computed(() => `Label DO ${detail?.value?.name ?? activeRow?.value?.name ?? ''}`);
+
 const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {
     const pid = Array.isArray(row.product_id) ? row.product_id[0] : -1;
     return {
@@ -175,6 +185,7 @@ async function openDetail(row) {
     lotCodeFilter.value = '';
     productSearchBox.value = '';
     lotSearchBox.value = '';
+    selectedProducts.value = [];
     productTable.setSearch('', 0);
     lotTable.setSearch('', 0);
     productTable.setRows([]);
@@ -226,19 +237,15 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title">
-            <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        <PageHeader :title="title" />
+        <TableToolbar v-model="searchBox" placeholder="Cari nomor DO..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Note">
+                    <Input :model-value="noteBox" placeholder="Cari Note..." @input="onNoteInput" />
+                </FormField>
             </template>
-        </PageHeader>
-        <FilterPanel title="Filter DO" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Nomor DO">
-                <Input :model-value="searchBox" type="search" placeholder="Cari nomor DO..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="Note">
-                <Input :model-value="noteBox" placeholder="Cari Note..." @input="onNoteInput" />
-            </FormField>
-        </FilterPanel>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"
@@ -280,6 +287,7 @@ query.fetch();
                     <Input :model-value="productSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onProductSearchInput" />
                     <Button variant="outline" size="sm" @click="copyRows(productExportRows, ['code', 'desc', 'akl', 'qty_so', 'qty_done'], 'item DO')"><Copy /> Salin</Button>
                     <Button variant="outline" size="sm" @click="downloadCsv(`do-${detail?.name ?? activeRow?.name ?? 'detail'}-product`, productExportRows, ['code', 'desc', 'akl', 'qty_so', 'qty_done'])"><Download /> CSV</Button>
+                    <LabelPrint :items="labelItems" :title="labelTitle" />
                 </div>
                 <DataTable
                     :columns="productColumns"
@@ -290,11 +298,14 @@ query.fetch();
                     :total-pages="productTable.totalPages.value"
                     :total="productTable.total.value"
                     :per-page="productTable.perPage.value"
+                    :selected="selectedProducts"
                     sortable
+                    selectable
                     empty-title="Item tidak ditemukan"
-                    empty-message="Ubah kata kunci pencarian."
+                    empty-message="Ubah kata kunci pencarian. Centang baris bila hanya sebagian item yang mau dicetak."
                     @update:page="productTable.setPage"
                     @update:per-page="productTable.setPerPage"
+                    @update:selected="selectedProducts = $event"
                     @sort="productTable.toggleSort"
                 >
                     <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>

@@ -7,11 +7,9 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import ModalTabs from '@/components/ModalTabs.vue';
 import CopyButton from '@/components/CopyButton.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
@@ -45,19 +43,7 @@ const detailTabs = computed(() => [
     { value: 'lot', label: 'Product Lot', count: filteredLots.value.length },
 ]);
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
-
 const searchBox = ref(props.filters.search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
 const columns = [
     { key: 'aksi', label: '#' },
@@ -176,16 +162,10 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title">
-            <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
-            </template>
-        </PageHeader>
-        <FilterPanel title="Filter Produk" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari code / nama..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <PageHeader :title="title" />
+        <TableToolbar v-model="searchBox" placeholder="Cari code / nama..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

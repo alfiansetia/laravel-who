@@ -6,8 +6,9 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -36,6 +37,7 @@ const query = useTableQuery((p) => api.get('/so', { params: p }), {
 const detailOpen = ref(false);
 const detail = ref(null);
 const activeRow = ref(null);
+const selectedItems = ref([]);
 const itemTable = useClientTable(null, {
     searchKeys: ['default_code', 'name', 'product_id', 'unit_price1', 'product_uom_qty', 'qty_delivered'],
 });
@@ -45,15 +47,10 @@ const printOptions = [
     { label: 'Blm Print OK', value: 'print_ok' },
 ];
 
-const activeCount = computed(() => (query.search.value ? 1 : 0) + (query.filters.value.note_search ? 1 : 0) + (query.filters.value.filter ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0) + (query.filters.value.filter ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
 const noteBox = ref(props.filters.note_search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 
 function onNoteInput(e) {
     noteBox.value = e.target.value;
@@ -102,6 +99,19 @@ const itemExportRows = computed(() => itemTable.filtered.value.map((row) => ({
     qty_delivered: row.qty_delivered ?? 0,
 })));
 
+const labelItems = computed(() => {
+    const picked = new Set((selectedItems.value ?? []).map(String));
+    return itemTable.filtered.value
+        .filter((row) => picked.size === 0 || picked.has(String(row.id ?? '')))
+        .map((row) => ({
+            code: row.default_code ?? '',
+            name: row.name ?? '',
+            qty: Number(row.product_uom_qty ?? 0),
+        }));
+});
+
+const labelTitle = computed(() => `Label SO ${detail?.value?.name ?? activeRow?.value?.name ?? ''}`);
+
 function sistemOf(row) {
     const s = String(row.sistem ?? '').trim().toUpperCase();
     return s && s !== '-' ? s : '';
@@ -117,6 +127,7 @@ async function openDetail(row) {
     const seq = ++detailSeq;
     activeRow.value = row;
     itemSearchBox.value = '';
+    selectedItems.value = [];
     itemTable.setSearch('', 0);
     itemTable.setRows([]);
     itemTable.error.value = '';
@@ -167,22 +178,18 @@ query.fetch();
 
 <template>
     <AppLayout>
-        <PageHeader :title="title">
-            <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        <PageHeader :title="title" />
+        <TableToolbar v-model="searchBox" placeholder="Cari nomor SO..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Notes">
+                    <Input :model-value="noteBox" placeholder="Cari Notes..." @input="onNoteInput" />
+                </FormField>
+                <FormField label="Status Print">
+                    <SearchableSelect :model-value="query.filters.value.filter" :options="printOptions" placeholder="Semua" @update:model-value="query.setFilters({ filter: $event })" />
+                </FormField>
             </template>
-        </PageHeader>
-        <FilterPanel title="Filter SO" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Nomor SO">
-                <Input :model-value="searchBox" type="search" placeholder="Cari nomor SO..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="Notes">
-                <Input :model-value="noteBox" placeholder="Cari Notes..." @input="onNoteInput" />
-            </FormField>
-            <FormField label="Status Print">
-                <SearchableSelect :model-value="query.filters.value.filter" :options="printOptions" placeholder="Semua" @update:model-value="query.setFilters({ filter: $event })" />
-            </FormField>
-        </FilterPanel>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"
@@ -222,6 +229,7 @@ query.fetch();
                 <Input :model-value="itemSearchBox" type="search" placeholder="Cari code / desc..." class="max-w-xs" @input="onItemSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(itemExportRows, ['code', 'desc', 'origin', 'price', 'qty_order', 'qty_delivered'], 'item SO')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv(`so-${detail?.name ?? activeRow?.name ?? 'detail'}`, itemExportRows, ['code', 'desc', 'origin', 'price', 'qty_order', 'qty_delivered'])"><Download /> CSV</Button>
+                <LabelPrint :items="labelItems" :title="labelTitle" />
             </div>
             <DataTable
                 :columns="itemColumns"
@@ -232,11 +240,14 @@ query.fetch();
                 :total-pages="itemTable.totalPages.value"
                 :total="itemTable.total.value"
                 :per-page="itemTable.perPage.value"
+                :selected="selectedItems"
                 sortable
+                selectable
                 empty-title="Item tidak ditemukan"
-                empty-message="Ubah kata kunci pencarian."
+                empty-message="Ubah kata kunci pencarian. Centang baris bila hanya sebagian item yang mau dicetak."
                 @update:page="itemTable.setPage"
                 @update:per-page="itemTable.setPerPage"
+                @update:selected="selectedItems = $event"
                 @sort="itemTable.toggleSort"
             >
                 <template #cell-default_code="{ row }">{{ row.default_code ?? '-' }}</template>

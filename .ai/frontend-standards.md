@@ -3,8 +3,8 @@
 ## 1. Aturan Emas Reusable
 
 1. **Cek katalog dulu.** Butuh tabel/select/modal/toast/confirm/badge → ambil dari `component-catalog.md`. Bikin baru hanya jika tidak ada + tulis ADR.
-2. **Page = komposisi.** `Pages/X/Index.vue` hanya: `AppLayout` + `PageHeader` + `FilterPanel` + `DataTable` + `AppModal`. Logika fetch/format/toast di `composables`/`lib`.
-3. **Filter = satu pola.** Semua filter page WAJIB `FilterPanel` (default TERTUTUP, collapsible + badge `activeCount` + Reset) berisi `FormField` per field + tombol `Terapkan` di slot `actions`. Select tunggal pakai `SearchableSelect`, multi pakai `MultiSelect`. Dilarang blok `div.mb-3.grid` filter mentah dan `<select>` native di `Pages/`.
+2. **Page = komposisi.** `Pages/X/Index.vue` hanya: `AppLayout` + `PageHeader` + `TableToolbar` + `DataTable` + `AppModal`. Logika fetch/format/toast di `composables`/`lib`.
+3. **Filter = satu pola.** Semua halaman list WAJIB `TableToolbar`: search selalu terlihat via `v-model="searchBox"` + `@search="query.setSearch"` (ref lokal, jangan bind `query.search.value`); filter tambahan (select/tanggal) di slot `#filters` default TERSEMBUNYI via tombol ikon `Filter` sejajar Refresh + badge `activeCount` (tanpa search) + Reset bawaan; aksi tabel (Refresh) di slot default toolbar, bukan `PageHeader`. Tanpa `#filters` → tombol filter hilang otomatis. Dilarang search di dalam panel filter, blok filter mentah, dan `<select>` native di `Pages/`.
 3. **Batas duplikasi: 2x.** Kode yang muncul di 2 page (kolom tabel, fetch options, format berat, validasi) wajib naik ke komponen/composable dalam PR yang sama.
 4. **Tanpa style per-page.** Dilarang `<style scoped>` untuk button/input/table/modal di `Pages/`. Yang boleh: layout spacing page (`space-y-4`) + class Tailwind standar.
 5. **Tanpa script mentah.** Dilarang `fetch()` langsung, `$.ajax`, `axios.get` tanpa instance, `alert/confirm`, `iziToast` langsung, `<select>` native, `<table>` mentah di `Pages/`.

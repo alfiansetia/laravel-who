@@ -5,10 +5,8 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
@@ -30,19 +28,7 @@ const detail = ref(null);
 const detailLoading = ref(false);
 const activeRow = ref(null);
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
-
 const searchBox = ref(props.filters.search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
 function vendorName(row) {
     return row.display_name ?? row.name ?? '-';
@@ -95,15 +81,12 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['name', 'phone', 'email', 'city'], 'vendor')"><Copy /> Salin</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Vendor" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari nama / email / telepon..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari nama / email / telepon..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

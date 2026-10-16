@@ -5,12 +5,11 @@ import { Check, Clock, Copy, Pencil, Plus, RefreshCw, Trash2 } from '@lucide/vue
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -39,10 +38,6 @@ const typeBox = ref('');
 const yearBox = ref(String(new Date().getFullYear()));
 const productBox = ref('');
 const statusBox = ref('');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 function onFilter() {
     query.fetch();
 }
@@ -55,7 +50,7 @@ function resetFilter() {
     query.setSearch('', 0);
 }
 const activeCount = computed(
-    () => (query.search.value ? 1 : 0) + (typeBox.value ? 1 : 0) + (productBox.value ? 1 : 0) + (statusBox.value ? 1 : 0),
+    () => (typeBox.value ? 1 : 0) + (productBox.value ? 1 : 0) + (statusBox.value ? 1 : 0),
 );
 
 const columns = [
@@ -139,29 +134,28 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['number', 'date', 'type', 'stock', 'status', 'pic'], 'problem')"><Copy /> Salin</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah Problem</Button>
             </template>
         </PageHeader>
         <div class="space-y-4">
-            <FilterPanel title="Filter Problem" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari nomor, PIC, RI/PO..." @input="onSearchInput" />
-                </FormField>
-                <FormField label="Tipe">
-                    <SearchableSelect :model-value="typeBox" :options="typeOptions.map((t) => ({ value: t, label: t }))" placeholder="Semua tipe" @update:model-value="(v) => { typeBox = v; onFilter(); }" />
-                </FormField>
-                <FormField label="Tahun">
-                    <SearchableSelect :model-value="yearBox" :options="yearOptions" placeholder="Semua tahun" @update:model-value="(v) => { yearBox = v; onFilter(); }" />
-                </FormField>
-                <FormField label="Product">
-                    <SearchableSelect v-model="productBox" :options="productOptions" placeholder="Semua product" @update:model-value="onFilter" />
-                </FormField>
-                <FormField label="Status">
-                    <SearchableSelect :model-value="statusBox" :options="statusOptions.map((s) => ({ value: s, label: s }))" placeholder="Semua status" @update:model-value="(v) => { statusBox = v; onFilter(); }" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari nomor, PIC, RI/PO..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+                <template #filters>
+                    <FormField label="Tipe">
+                        <SearchableSelect :model-value="typeBox" :options="typeOptions.map((t) => ({ value: t, label: t }))" placeholder="Semua tipe" @update:model-value="(v) => { typeBox = v; onFilter(); }" />
+                    </FormField>
+                    <FormField label="Tahun">
+                        <SearchableSelect :model-value="yearBox" :options="yearOptions" placeholder="Semua tahun" @update:model-value="(v) => { yearBox = v; onFilter(); }" />
+                    </FormField>
+                    <FormField label="Product">
+                        <SearchableSelect v-model="productBox" :options="productOptions" placeholder="Semua product" @update:model-value="onFilter" />
+                    </FormField>
+                    <FormField label="Status">
+                        <SearchableSelect :model-value="statusBox" :options="statusOptions.map((s) => ({ value: s, label: s }))" placeholder="Semua status" @update:model-value="(v) => { statusBox = v; onFilter(); }" />
+                    </FormField>
+                </template>
+            </TableToolbar>
             <DataTable
                 :columns="columns"
                 :rows="query.rows.value"

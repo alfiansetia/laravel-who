@@ -6,7 +6,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -33,15 +33,6 @@ const query = useTableQuery((p) => api.get('/qc-lots', { params: p }), {
 const selected = ref([]);
 
 const searchBox = ref(props.filters.search ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
-const activeCount = computed(() => (query.search.value ? 1 : 0));
 
 const columns = [
     { key: 'product', label: 'Product' },
@@ -159,7 +150,6 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['product', 'lot', 'ed', 'date', 'qc_by', 'note'], 'qc-lot')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
                 <Button variant="outline" size="sm" @click="goImport">Import</Button>
@@ -167,11 +157,9 @@ query.fetch();
             </template>
         </PageHeader>
         <div class="space-y-4">
-            <FilterPanel title="Filter QC Lot" :active-count="activeCount" @reset="resetFilter">
-                <FormField label="Pencarian">
-                    <Input :model-value="searchBox" type="search" placeholder="Cari product, lot, qc by..." @input="onSearchInput" />
-                </FormField>
-            </FilterPanel>
+            <TableToolbar v-model="searchBox" placeholder="Cari product, lot, qc by..." @search="query.setSearch">
+                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            </TableToolbar>
             <DataTable
                 :columns="columns"
                 :rows="query.rows.value"

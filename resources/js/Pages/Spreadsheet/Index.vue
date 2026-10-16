@@ -5,13 +5,12 @@ import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useClientTable } from '@/composables/useClientTable';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
@@ -115,18 +114,13 @@ const columns = [
     { key: 'status', label: 'Status', align: 'center' },
 ];
 
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    table.setSearch(e.target.value);
-}
-
 const statusOptions = [
     { label: 'Semua', value: 'all' },
     { label: 'Lengkap', value: 'lengkap' },
     { label: 'Belum Lengkap', value: 'tidak_lengkap' },
 ];
 
-const activeCount = computed(() => (table.search.value ? 1 : 0) + (statusFilter.value !== 'all' ? 1 : 0));
+const activeCount = computed(() => (statusFilter.value !== 'all' ? 1 : 0));
 
 function setStatusFilter(v) {
     statusFilter.value = v;
@@ -237,21 +231,20 @@ table.fetch();
     <AppLayout>
         <PageHeader :title="props.title">
             <template #actions>
-                <Button variant="outline" size="sm" :disabled="table.loading.value" @click="table.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="onCopy"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="onDownload"><Download /> CSV</Button>
                 <Button variant="destructive" size="sm" :disabled="syncingAll" @click="syncAll"><RefreshCw /> {{ syncingAll ? 'Sinkron...' : 'Sync All' }}</Button>
             </template>
         </PageHeader>
 
-        <FilterPanel title="Filter Spreadsheet" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari kode atau nama..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="Status">
-                <SearchableSelect :model-value="statusFilter" :options="statusOptions" placeholder="Semua Status" :clearable="false" @update:model-value="setStatusFilter" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari kode atau nama..." :active-count="activeCount" @search="table.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" :disabled="table.loading.value" @click="table.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Status">
+                    <SearchableSelect :model-value="statusFilter" :options="statusOptions" placeholder="Semua Status" :clearable="false" @update:model-value="setStatusFilter" />
+                </FormField>
+            </template>
+        </TableToolbar>
 
         <DataTable
             :columns="columns"

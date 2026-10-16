@@ -5,9 +5,10 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import MultiSelect from '@/components/MultiSelect.vue';
 import FormField from '@/components/FormField.vue';
+import LabelPrint from '@/components/LabelPrint.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
 import Textarea from '@/components/ui/Textarea.vue';
@@ -51,14 +52,9 @@ const lotOpen = ref(false);
 const activeProduct = ref(null);
 const lotTable = useClientTable(null, { searchKeys: ['location', 'lot', 'expired'] });
 
-const activeCount = computed(() => locations.value.length + (table.search.value ? 1 : 0));
+const activeCount = computed(() => locations.value.length);
 
 const searchBox = ref('');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    table.setSearch(e.target.value);
-}
 
 const lotSearchBox = ref('');
 
@@ -66,6 +62,13 @@ function onLotSearchInput(e) {
     lotSearchBox.value = e.target.value;
     lotTable.setSearch(e.target.value);
 }
+
+const labelItems = computed(() => [{
+    code: activeProduct.value?.code ?? '',
+    name: activeProduct.value?.name ?? '',
+    qty: Number(activeProduct.value?.quantity ?? 0),
+}]);
+const labelTitle = computed(() => `Label Stock ${activeProduct.value?.code ?? ''}`);
 
 const lotSummary = computed(() => {
     const lotParts = [];
@@ -161,23 +164,22 @@ load();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(table.filtered.value, ['code', 'name', 'quantity'])"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv('stock', table.filtered.value, ['code', 'name', 'quantity', 'akl'])"><Download /> CSV</Button>
                 <Button size="sm" @click="downloadOpname"><Download /> Opname</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Stock" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Lokasi">
-                <MultiSelect v-model="locations" :options="locationOptions" placeholder="Pilih lokasi..." />
-            </FormField>
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari kode / nama / AKL..." @input="onSearchInput" />
-            </FormField>
-            <template #actions>
+        <TableToolbar v-model="searchBox" placeholder="Cari kode / nama / AKL..." :active-count="activeCount" @search="table.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="load"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Lokasi">
+                    <MultiSelect v-model="locations" :options="locationOptions" placeholder="Pilih lokasi..." />
+                </FormField>
+            </template>
+            <template #filterActions>
                 <Button size="sm" @click="load">Terapkan</Button>
             </template>
-        </FilterPanel>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="table.rows.value"
@@ -208,6 +210,7 @@ load();
                 <Input :model-value="lotSearchBox" type="search" placeholder="Cari lokasi / lot..." class="max-w-xs" @input="onLotSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'], 'lot')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv(`lot-${activeProduct?.code ?? 'stock'}`, lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'])"><Download /> CSV</Button>
+                <LabelPrint :items="labelItems" :title="labelTitle" />
             </div>
             <DataTable
                 :columns="lotColumns"

@@ -4,10 +4,8 @@ import { Copy, Download, RefreshCw } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useClientTable } from '@/composables/useClientTable';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
@@ -39,16 +37,6 @@ const perPageOptions = [10, 50, 100, 500, 1000];
 const exportRows = computed(() =>
     table.filtered.value.map((r) => ({ no: r.no, tgl: r.tgl, no_do: r.no_do, no_so: r.no_so, item: r.item, qty: r.qty, note: r.note })),
 );
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    table.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    table.setSearch('', 0);
-}
 
 async function reload() {
     table.loading.value = true;
@@ -88,16 +76,13 @@ reload();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="reload"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['no', 'tgl', 'no_do', 'no_so', 'item', 'qty', 'note'], 'monitor DO')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv('monitor-do', exportRows, ['no', 'tgl', 'no_do', 'no_so', 'item', 'qty', 'note'])"><Download /> CSV</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Monitor DO" :active-count="searchBox ? 1 : 0" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari NO DO, NO SO, item..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari NO DO, NO SO, item..." @search="table.setSearch">
+            <Button variant="outline" size="sm" @click="reload"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="table.rows.value"

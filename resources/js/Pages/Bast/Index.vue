@@ -5,10 +5,8 @@ import { Copy, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useBlock } from '@/composables/useBlock';
 import { useConfirm } from '@/composables/useConfirm';
@@ -30,16 +28,7 @@ const query = useTableQuery((p) => api.get('/basts', { params: p }), {
 });
 
 const searchBox = ref(props.filters.search ?? '');
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
-const activeCount = computed(() => (query.search.value ? 1 : 0));
 const selected = ref([]);
 const columns = [
     { key: 'do', label: 'No DO', mono: true },
@@ -92,17 +81,14 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(mainExportRows, ['do', 'name', 'city'], 'bast')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus ({{ selected.length }})</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter BAST" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari DO, nama, kota..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari DO, nama, kota..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

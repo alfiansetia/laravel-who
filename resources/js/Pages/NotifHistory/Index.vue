@@ -6,7 +6,7 @@ import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import CopyButton from '@/components/CopyButton.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
@@ -63,7 +63,7 @@ const typeOptions = [
     { label: 'Test', value: 'test' },
 ];
 
-const activeCount = computed(() => [searchBox.value, statusBox.value, typeBox.value, dateFromBox.value, dateToBox.value].filter(Boolean).length);
+const activeCount = computed(() => [statusBox.value, typeBox.value, dateFromBox.value, dateToBox.value].filter(Boolean).length);
 
 const columns = [
     { key: 'sent_at', label: 'Waktu Kirim', mono: true },
@@ -72,11 +72,6 @@ const columns = [
     { key: 'status', label: 'Status', align: 'center' },
     { key: 'source', label: 'Sumber', align: 'center' },
 ];
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 
 function onStatusChange(value) {
     statusBox.value = value ?? '';
@@ -222,27 +217,26 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter History Notifikasi" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari judul, DO, SO, partner..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="Status">
-                <SearchableSelect :model-value="statusBox" :options="statusOptions" placeholder="Semua Status" @update:model-value="onStatusChange" />
-            </FormField>
-            <FormField label="Tipe">
-                <SearchableSelect :model-value="typeBox" :options="typeOptions" placeholder="Semua Tipe" @update:model-value="onTypeChange" />
-            </FormField>
-            <FormField label="Dari Tanggal">
-                <Input :model-value="dateFromBox" type="date" @input="onDateFromInput" />
-            </FormField>
-            <FormField label="Sampai Tanggal">
-                <Input :model-value="dateToBox" type="date" @input="onDateToInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari judul, DO, SO, partner..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Status">
+                    <SearchableSelect :model-value="statusBox" :options="statusOptions" placeholder="Semua Status" @update:model-value="onStatusChange" />
+                </FormField>
+                <FormField label="Tipe">
+                    <SearchableSelect :model-value="typeBox" :options="typeOptions" placeholder="Semua Tipe" @update:model-value="onTypeChange" />
+                </FormField>
+                <FormField label="Dari Tanggal">
+                    <Input :model-value="dateFromBox" type="date" @input="onDateFromInput" />
+                </FormField>
+                <FormField label="Sampai Tanggal">
+                    <Input :model-value="dateToBox" type="date" @input="onDateToInput" />
+                </FormField>
+            </template>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

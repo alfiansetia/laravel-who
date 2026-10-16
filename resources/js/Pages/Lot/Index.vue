@@ -6,7 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -36,14 +36,9 @@ const traceTable = useClientTable(null, {
     searchKeys: ['ref', 'product', 'date', 'lot', 'from', 'to', 'qty'],
 });
 
-const activeCount = computed(() => (query.search.value ? 1 : 0) + (query.filters.value.product ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.product ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
 
 function resetFilter() {
     searchBox.value = '';
@@ -158,18 +153,17 @@ loadProductOptions();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="outline" size="sm" @click="copyRows(query.rows.value, ['name', 'product_qty1'])"><Copy /> Salin</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Lot" :active-count="activeCount" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari lot..." @input="onSearchInput" />
-            </FormField>
-            <FormField label="Produk">
-                <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="loadingProducts" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari lot..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Produk">
+                    <SearchableSelect :model-value="query.filters.value.product" :options="productOptions" :loading="loadingProducts" placeholder="Semua Product" @update:model-value="query.setFilters({ product: $event })" />
+                </FormField>
+            </template>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="query.rows.value"

@@ -5,10 +5,8 @@ import { Eye, Pencil, Printer, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
-import FilterPanel from '@/components/FilterPanel.vue';
-import FormField from '@/components/FormField.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
-import Input from '@/components/ui/Input.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -39,16 +37,6 @@ const perPageOptions = [10, 25, 50, 100, 200];
 const rows = computed(() =>
     query.rows.value.map((r, i) => ({ ...r, no: (query.page.value - 1) * query.perPage.value + i + 1 })),
 );
-
-function onSearchInput(e) {
-    searchBox.value = e.target.value;
-    query.setSearch(e.target.value);
-}
-
-function resetFilter() {
-    searchBox.value = '';
-    query.setSearch('', 0);
-}
 
 function goCreate() {
     router.visit('/alamats/create');
@@ -102,16 +90,13 @@ query.fetch();
     <AppLayout>
         <PageHeader :title="title">
             <template #actions>
-                <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah</Button>
             </template>
         </PageHeader>
-        <FilterPanel title="Filter Alamat" :active-count="searchBox ? 1 : 0" @reset="resetFilter">
-            <FormField label="Pencarian">
-                <Input :model-value="searchBox" type="search" placeholder="Cari DO, tujuan, ekspedisi..." @input="onSearchInput" />
-            </FormField>
-        </FilterPanel>
+        <TableToolbar v-model="searchBox" placeholder="Cari DO, tujuan, ekspedisi..." @search="query.setSearch">
+            <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+        </TableToolbar>
         <DataTable
             :columns="columns"
             :rows="rows"
