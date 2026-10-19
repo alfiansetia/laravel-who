@@ -232,6 +232,7 @@ function fillAklFromDb(entry) {
 const importOpen = ref(false);
 const importSource = ref('ri');
 const importLot = ref(true);
+const importTanggal = ref(true);
 const importLokasiPo = ref(true);
 const importGudang = ref('5');
 const gudangOptions = [
@@ -455,7 +456,7 @@ function doImport() {
             ? (docDetail.value?.name ?? '')
             : (docDetail.value?.origin ?? '');
     const d = docDateOf(docDetail.value);
-    // RI/IT/DO: No. dokumen + tanggal ikut terisi. SO/PO/ITR: dikosongkan.
+    // RI/IT/DO: No. dokumen ikut terisi; tanggal opsional (bisa dikosongkan). SO/PO/ITR: dikosongkan.
     picked.forEach((l) => {
         seq += 1;
         const entry = {
@@ -465,7 +466,7 @@ function doImport() {
             po,
             docType: 'RI',
             docNo: cfg.fillDoc ? (docDetail.value?.name ?? '') : '',
-            docDate: cfg.fillDoc ? (d || '') : '',
+            docDate: cfg.fillDoc && importTanggal.value ? (d || '') : '',
             qty: '',
             akl: l.akl,
             lotEd: importLot.value ? l.lotEd : '',
@@ -517,7 +518,13 @@ const labels = computed(() => {
 const sheets = computed(() => Math.max(0, Math.ceil(labels.value.length / 3)));
 
 // ---- Baris tabel: 1 baris per entri (Jml hanya mengatur jumlah label cetak) ----
-const tableRows = computed(() => entries.value.map((e, i) => ({ ...e, no: i + 1 })));
+// docDate disimpan ISO di entri; tabel menampilkan dd/mm/yyyy, print tetap format panjang.
+const tableRows = computed(() => entries.value.map((e, i) => ({
+    ...e,
+    no: i + 1,
+    docDateIso: e.docDate,
+    docDate: formatDocDate(e.docDate),
+})));
 
 // ---- Edit langsung di sel tabel (commit → entri induk) ----
 const editing = ref({ id: null, field: '' });
@@ -744,6 +751,10 @@ function onPrint() {
                         <label v-if="SOURCES[importSource]?.kind === 'picking'" class="flex w-fit cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium">
                             <input v-model="importLot" type="checkbox" class="size-4 accent-primary" />
                             Sertakan LOT &amp; ED
+                        </label>
+                        <label v-if="SOURCES[importSource]?.fillDoc" class="flex w-fit cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium">
+                            <input v-model="importTanggal" type="checkbox" class="size-4 accent-primary" />
+                            Sertakan Tgl RI
                         </label>
                         <label v-if="importSource === 'it'" class="flex w-fit cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium">
                             <input v-model="importLokasiPo" type="checkbox" class="size-4 accent-primary" />
