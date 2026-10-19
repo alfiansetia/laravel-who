@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Copy, Download, Plus, RotateCcw, Trash2 } from '@lucide/vue';
+import { ClipboardCopy, CopyPlus, Download, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -14,6 +14,7 @@ import Card from '@/components/ui/Card.vue';
 import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
+import { copyRows, copyText, downloadCsv } from '@/lib/export';
 import { getCode, getDesc, odooName } from '@/lib/odoo';
 
 const props = defineProps({
@@ -344,6 +345,27 @@ const labelItems = computed(() => entries.value.map((e) => ({
     qty: clampQty(e.copies),
 })));
 
+// ---- Export / salin tabel ----
+const EXPORT_HEADERS = ['Kode', 'Nama', 'Qty'];
+
+// copyRows menulis header apa adanya (nama key), jadi bentuk ulang baris
+// agar clipboard berisi header yang enak dibaca.
+function exportRows() {
+    return entries.value.map((e) => ({
+        Kode: e.kode,
+        Nama: e.nama,
+        Qty: clampQty(e.copies),
+    }));
+}
+
+function onCopy() {
+    copyRows(exportRows(), EXPORT_HEADERS, 'label');
+}
+
+function onDownloadCsv() {
+    downloadCsv('print-label', exportRows(), EXPORT_HEADERS);
+}
+
 // ---- Edit langsung di sel tabel ----
 const editing = ref({ id: null, field: '' });
 const cellOptions = ref([]);
@@ -443,6 +465,8 @@ function commitKode(row, val) {
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-semibold">Daftar Label ({{ totalQty }} label / {{ entries.length }} baris)</h2>
                 <div class="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" size="sm" :disabled="entries.length === 0" title="Salin kode, nama, qty ke clipboard (tempel ke Excel)" @click="onCopy"><ClipboardCopy /> Salin</Button>
+                    <Button variant="outline" size="sm" :disabled="entries.length === 0" title="Unduh tabel sebagai CSV" @click="onDownloadCsv"><Download /> CSV</Button>
                     <Button variant="outline" size="sm" :disabled="entries.length === 0" @click="clearEntries"><Trash2 /> Hapus Semua</Button>
                     <LabelPrint :items="labelItems" :title="props.title" />
                 </div>
@@ -484,7 +508,8 @@ function commitKode(row, val) {
                 </template>
                 <template #actions="{ row }">
                     <div class="flex justify-end gap-1">
-                        <Button variant="outline" size="sm" title="Duplikat baris ini" @click="duplicateEntry(row.id)"><Copy /></Button>
+                        <Button variant="outline" size="sm" title="Salin kode + nama baris ini" @click="copyText(`${row.kode}\t${row.nama ?? ''}`)"><ClipboardCopy /></Button>
+                        <Button variant="outline" size="sm" title="Duplikat baris ini" @click="duplicateEntry(row.id)"><CopyPlus /></Button>
                         <Button variant="destructive" size="sm" title="Hapus baris ini" @click="removeEntry(row.id)"><Trash2 /></Button>
                     </div>
                 </template>

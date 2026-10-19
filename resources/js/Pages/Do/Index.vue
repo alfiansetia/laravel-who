@@ -43,7 +43,7 @@ const productTable = useClientTable(null, {
     searchKeys: ['product_id', 'akl_id', 'product_uom_qty', 'quantity_done'],
 });
 const lotTable = useClientTable(null, {
-    searchKeys: ['product_id', 'akl_id', 'lot_id', 'lot_name', 'expired_date', 'qty_done'],
+    searchKeys: ['product_id', 'akl_id', 'lot_id', 'lot_name', 'expired_date_do', 'qty_done'],
 });
 const detailTabs = computed(() => [
     { value: 'product', label: 'Product', count: productTable.total.value },
@@ -88,9 +88,8 @@ const lotColumns = [
     { key: 'desc', label: 'Desc' },
     { key: 'product', label: 'Product' },
     { key: 'akl', label: 'AKL' },
-    { key: 'lot', label: 'Lot/SN' },
+    { key: 'lot', label: 'Lot/SN/ED' },
     { key: 'qty', label: 'Qty', align: 'center' },
-    { key: 'exp', label: 'Exp Date', align: 'center' },
 ];
 
 const perPageOptions = [10, 25, 50, 100, 500, 1000];
@@ -165,11 +164,18 @@ const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {
         desc: getDesc(odooName(row.product_id)),
         product: odooName(row.product_id),
         akl: aklMap.value[pid] ?? '-',
-        lot: odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? ''),
+        lot: lotLabel(row),
         qty: row.qty_done ?? 0,
-        exp: formatExpDate(row.expired_date),
     };
 }));
+
+// Lot/SN digabung dengan ED DO: `LOT/2028.01.31`.
+// Sumber expired khusus DO adalah `expired_date_do`; bila kosong/false cukup lot saja.
+function lotLabel(row) {
+    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? '');
+    const exp = formatExpDate(row.expired_date_do);
+    return exp ? `${lot}/${exp}` : (lot || '');
+}
 
 function sistemOf(row) {
     const s = String(row.sistem ?? '').trim().toUpperCase();
@@ -322,8 +328,8 @@ query.fetch();
                 </div>
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                     <Input :model-value="lotSearchBox" type="search" placeholder="Cari lot..." class="max-w-xs" @input="onLotSearchInput" />
-                    <Button variant="outline" size="sm" @click="copyRows(lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty', 'exp'], 'lot DO')"><Copy /> Salin</Button>
-                    <Button variant="outline" size="sm" @click="downloadCsv(`do-${detail?.name ?? activeRow?.name ?? 'detail'}-lot`, lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty', 'exp'])"><Download /> CSV</Button>
+                    <Button variant="outline" size="sm" @click="copyRows(lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'], 'lot DO')"><Copy /> Salin</Button>
+                    <Button variant="outline" size="sm" @click="downloadCsv(`do-${detail?.name ?? activeRow?.name ?? 'detail'}-lot`, lotExportRows, ['code', 'desc', 'product', 'akl', 'lot', 'qty'])"><Download /> CSV</Button>
                 </div>
                 <DataTable
                     :columns="lotColumns"
@@ -345,9 +351,8 @@ query.fetch();
                     <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
                     <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
                     <template #cell-akl="{ row }">{{ aklMap[Array.isArray(row.product_id) ? row.product_id[0] : -1] ?? '-' }}</template>
-                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? '') }}</template>
+                    <template #cell-lot="{ row }">{{ lotLabel(row) }}</template>
                     <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
-                    <template #cell-exp="{ row }">{{ formatExpDate(row.expired_date) }}</template>
                 </DataTable>
             </div>
             <div class="mt-2 space-y-1 border-t pt-2 text-sm">
