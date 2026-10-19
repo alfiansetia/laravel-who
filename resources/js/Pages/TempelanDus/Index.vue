@@ -491,14 +491,12 @@ const resultColumns = [
     { key: 'qty', label: 'QTY', align: 'center' },
     { key: 'akl', label: 'AKL / SUKET', wrap: true, maxWidth: '180px' },
     { key: 'lotEd', label: 'LOT & ED', wrap: true, maxWidth: '180px' },
-    { key: 'entryCopies', label: 'Jml', align: 'center' },
+    { key: 'copies', label: 'Jml', align: 'center' },
 ];
 
 const labels = computed(() => {
-    let no = 0;
     return entries.value.flatMap((e) => {
         const base = {
-            entryId: e.id,
             noCtn: e.noCtn,
             kode: e.kode,
             nama: e.nama,
@@ -511,27 +509,26 @@ const labels = computed(() => {
             qty: e.qty,
             akl: e.akl,
             lotEd: e.lotEd,
-            entryCopies: e.copies,
         };
-        return Array.from({ length: clampCopies(e.copies) }, (_, i) => {
-            no += 1;
-            return { ...base, key: `${e.id}-${i}`, no };
-        });
+        return Array.from({ length: clampCopies(e.copies) }, () => ({ ...base }));
     });
 });
 
 const sheets = computed(() => Math.max(0, Math.ceil(labels.value.length / 3)));
 
-// ---- Edit langsung di sel tabel (commit → entri induk, semua copy ikut) ----
-const editing = ref({ key: '', field: '' });
+// ---- Baris tabel: 1 baris per entri (Jml hanya mengatur jumlah label cetak) ----
+const tableRows = computed(() => entries.value.map((e, i) => ({ ...e, no: i + 1 })));
+
+// ---- Edit langsung di sel tabel (commit → entri induk) ----
+const editing = ref({ id: null, field: '' });
 const cellOptions = ref([]);
 
 function entryOf(row) {
-    return entries.value.find((e) => e.id === row.entryId);
+    return entries.value.find((e) => e.id === row.id);
 }
 
 function isEditing(row, field) {
-    return editing.value.key === row.key && editing.value.field === field;
+    return editing.value.id === row.id && editing.value.field === field;
 }
 
 function startEdit(row, field) {
@@ -543,16 +540,16 @@ function startEdit(row, field) {
             cellOptions.value = [cur, ...cellOptions.value];
         }
     }
-    editing.value = { key: row.key, field };
+    editing.value = { id: row.id, field };
 }
 
 function cancelEdit() {
-    editing.value = { key: '', field: '' };
+    editing.value = { id: null, field: '' };
 }
 
 function commitCell(row, field, value) {
     const entry = entryOf(row);
-    editing.value = { key: '', field: '' };
+    editing.value = { id: null, field: '' };
     if (!entry) {
         return;
     }
@@ -578,7 +575,7 @@ function searchCellProduct(kw) {
 
 function commitKode(row, val) {
     const entry = entryOf(row);
-    editing.value = { key: '', field: '' };
+    editing.value = { id: null, field: '' };
     if (!entry) {
         return;
     }
@@ -642,9 +639,9 @@ function onPrint() {
             </div>
             <DataTable
                 :columns="resultColumns"
-                :rows="labels"
+                :rows="tableRows"
                 :loading="false"
-                row-key="key"
+                row-key="id"
                 :show-footer="false"
                 empty-title="Belum ada tempelan"
                 empty-message="Tambahkan baris lewat form di atas atau import dari dokumen."
@@ -693,17 +690,17 @@ function onPrint() {
                 <template #cell-lotEd="{ row }">
                     <EditableCell :value="row.lotEd" :active="isEditing(row, 'lotEd')" @start="startEdit(row, 'lotEd')" @commit="(v) => commitCell(row, 'lotEd', v)" @cancel="cancelEdit" />
                 </template>
-                <template #cell-entryCopies="{ row }">
-                    <EditableCell :value="row.entryCopies" type="number" :active="isEditing(row, 'copies')" @start="startEdit(row, 'copies')" @commit="(v) => commitCell(row, 'copies', v)" @cancel="cancelEdit" />
+                <template #cell-copies="{ row }">
+                    <EditableCell :value="row.copies" type="number" :active="isEditing(row, 'copies')" @start="startEdit(row, 'copies')" @commit="(v) => commitCell(row, 'copies', v)" @cancel="cancelEdit" />
                 </template>
                 <template #actions="{ row }">
                     <div class="flex justify-end gap-1">
-                        <Button variant="outline" size="sm" title="Duplikat baris ini" @click="duplicateEntry(row.entryId)"><Copy /></Button>
-                        <Button variant="destructive" size="sm" title="Hapus baris ini" @click="removeEntry(row.entryId)"><Trash2 /></Button>
+                        <Button variant="outline" size="sm" title="Duplikat baris ini" @click="duplicateEntry(row.id)"><Copy /></Button>
+                        <Button variant="destructive" size="sm" title="Hapus baris ini" @click="removeEntry(row.id)"><Trash2 /></Button>
                     </div>
                 </template>
             </DataTable>
-            <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung (tersimpan ke baris entri — semua copy-nya ikut). Hapus lewat kolom aksi. Hasil cetak terbuka di tab baru (3 tempelan per lembar).</p>
+            <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung. Kolom Jml menentukan jumlah tempelan tercetak. Hapus lewat kolom aksi. Hasil cetak terbuka di tab baru (3 tempelan per lembar).</p>
         </Card>
 
         <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="xl" persistent>
