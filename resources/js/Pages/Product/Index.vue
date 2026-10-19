@@ -176,7 +176,6 @@ async function syncProduct() {
 // Detail modal
 const detailOpen = ref(false);
 const detail = ref(null);
-const detailLoading = ref(false);
 const activeRow = ref(null);
 const activeTab = ref('sop');
 const labelQty = ref(1);
@@ -191,20 +190,16 @@ const labelTitle = computed(() => `Label ${detail.value?.code ?? activeRow.value
 async function openDetail(row) {
     activeRow.value = row;
     detail.value = null;
-    detailOpen.value = true;
-    detailLoading.value = true;
+    detailOpen.value = false;
     activeTab.value = 'sop';
     labelQty.value = 1;
-    await withBlock(async () => {
-        try {
-            const res = await api.get(`/products/${row.id}`, { block: true, silent: true });
-            detail.value = res.data?.data ?? res.data;
-        } catch (e) {
-            toast.error(e.response?.data?.message ?? 'Gagal memuat detail product.');
-        } finally {
-            detailLoading.value = false;
-        }
-    });
+    try {
+        const res = await api.get(`/products/${row.id}`, { block: true, silent: true });
+        detail.value = res.data?.data ?? res.data;
+        detailOpen.value = true;
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal memuat detail product.');
+    }
 }
 
 function downloadZip() {
@@ -386,10 +381,7 @@ load();
         </DataTable>
 
         <AppModal v-model:open="detailOpen" :title="`${detail?.code ?? activeRow?.code ?? ''} — ${detail?.name ?? activeRow?.name ?? 'Detail Product'}`" size="xl">
-            <div v-if="detailLoading" class="space-y-2">
-                <div v-for="n in 5" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
-            </div>
-            <div v-else class="space-y-3">
+            <div class="space-y-3">
                 <p class="text-sm italic text-slate-600">{{ detail?.desc ?? activeRow?.desc ?? '-' }}</p>
                 <div class="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" @click="downloadZip"><FileArchive /> Unduh ZIP</Button>

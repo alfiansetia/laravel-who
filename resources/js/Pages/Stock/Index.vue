@@ -122,22 +122,17 @@ function copyRow(row) {
 
 async function openLot(row) {
     activeProduct.value = row;
-    lotOpen.value = true;
+    lotOpen.value = false;
     lotSearchBox.value = '';
     lotTable.setSearch('', 0);
     lotTable.setRows([]);
-    lotTable.loading.value = true;
     try {
         const res = await api.get(`/stock/${row.id}`, { params: { ...locationParams(), limit: row.quantity ?? 10 }, silent: true, block: true });
         const body = res.data?.data ?? res.data;
         lotTable.setRows(Array.isArray(body) ? body : (body.data ?? []));
+        lotOpen.value = true;
     } catch (e) {
-        const message = e.response?.data?.message ?? 'Gagal memuat lot.';
-        lotTable.setRows([]);
-        lotTable.error.value = message;
-        toast.error(message);
-    } finally {
-        lotTable.loading.value = false;
+        toast.error(e.response?.data?.message ?? 'Gagal memuat lot.');
     }
 }
 

@@ -133,33 +133,27 @@ function printCombined(row) {
 // View/edit modal (flat simple edit)
 const modalOpen = ref(false);
 const detail = ref(null);
-const detailLoading = ref(false);
 const activeRow = ref(null);
 const activeTab = ref('view');
 const editForm = ref({ name: '', desc: '', vendor_desc: '', items: [] });
 
 async function openDetail(row) {
     activeRow.value = row;
-    modalOpen.value = true;
+    modalOpen.value = false;
     activeTab.value = 'view';
-    detailLoading.value = true;
-    await withBlock(async () => {
-        try {
-            const res = await api.get(`/packs/${row.id}`, { block: true, silent: true });
-            detail.value = res.data?.data ?? res.data;
-            editForm.value = {
-                name: detail.value?.name ?? '',
-                desc: detail.value?.desc ?? '',
-                vendor_desc: detail.value?.vendor_desc ?? '',
-                items: flattenItems(detail.value?.items ?? []).map((i) => ({ item: i.item ?? '', qty: i.qty ?? '' })),
-            };
-        } catch (e) {
-            detail.value = row;
-            toast.error(e.response?.data?.message ?? 'Gagal memuat detail PL.');
-        } finally {
-            detailLoading.value = false;
-        }
-    });
+    try {
+        const res = await api.get(`/packs/${row.id}`, { block: true, silent: true });
+        detail.value = res.data?.data ?? res.data;
+        editForm.value = {
+            name: detail.value?.name ?? '',
+            desc: detail.value?.desc ?? '',
+            vendor_desc: detail.value?.vendor_desc ?? '',
+            items: flattenItems(detail.value?.items ?? []).map((i) => ({ item: i.item ?? '', qty: i.qty ?? '' })),
+        };
+        modalOpen.value = true;
+    } catch (e) {
+        toast.error(e.response?.data?.message ?? 'Gagal memuat detail PL.');
+    }
 }
 
 function flattenItems(items) {
@@ -255,10 +249,7 @@ query.fetch();
         </DataTable>
 
         <AppModal v-model:open="modalOpen" :title="`PL: ${detail?.name ?? activeRow?.name ?? ''}`" size="lg">
-            <div v-if="detailLoading" class="space-y-2">
-                <div v-for="n in 5" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
-            </div>
-            <div v-else class="space-y-3">
+            <div class="space-y-3">
                 <p class="text-sm"><b>Product:</b> [{{ detail?.product?.code ?? '-' }}] {{ detail?.product?.name ?? '-' }} — <b>Vendor:</b> {{ detail?.vendor?.name ?? '-' }}</p>
                 <div class="flex flex-wrap gap-2">
                     <Button variant="outline" size="sm" @click="downloadRow(activeRow)"><Download /> Excel</Button>

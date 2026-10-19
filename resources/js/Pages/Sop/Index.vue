@@ -49,7 +49,6 @@ const mainExportRows = computed(() =>
 // Detail + edit modal
 const modalOpen = ref(false);
 const detail = ref(null);
-const detailLoading = ref(false);
 const activeRow = ref(null);
 const activeTab = ref('view');
 const editTarget = ref('');
@@ -58,20 +57,17 @@ const errors = ref({});
 
 async function openDetail(row) {
     activeRow.value = row;
-    modalOpen.value = true;
+    modalOpen.value = false;
     activeTab.value = 'view';
-    detailLoading.value = true;
     errors.value = {};
     try {
         const res = await api.get(`/sops/${row.id}`, { silent: true, block: true });
         detail.value = res.data?.data ?? res.data;
         editTarget.value = detail.value?.target ?? '';
         editItems.value = (detail.value?.items ?? []).map((i) => ({ item: i.item ?? '' }));
+        modalOpen.value = true;
     } catch (e) {
-        detail.value = row;
         toast.error(e.response?.data?.message ?? 'Gagal memuat detail SOP.');
-    } finally {
-        detailLoading.value = false;
     }
 }
 
@@ -174,10 +170,7 @@ query.fetch();
         </DataTable>
 
         <AppModal v-model:open="modalOpen" :title="`[${detail?.product?.code ?? activeRow?.product?.code ?? ''}] ${detail?.product?.name ?? activeRow?.product?.name ?? 'Detail SOP'}`" size="lg">
-            <div v-if="detailLoading" class="space-y-2">
-                <div v-for="n in 5" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
-            </div>
-            <div v-else class="space-y-3">
+            <div class="space-y-3">
                 <p class="text-sm"><b>Target:</b> {{ detail?.target ?? '-' }}</p>
                 <div class="flex gap-2 border-b text-sm">
                     <button class="px-3 py-2" :class="activeTab === 'view' ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="activeTab = 'view'">Lihat Detail</button>
