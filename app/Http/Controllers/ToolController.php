@@ -121,6 +121,15 @@ class ToolController extends Controller
         ]);
     }
 
+    public function printLabel(): Response
+    {
+        return Inertia::render('PrintLabel/Index', [
+            'title' => 'Print Label',
+            // Katalog kecil (ribuan baris) → preload sekali, pencarian filter lokal.
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name', 'akl']),
+        ]);
+    }
+
     /**
      * POST /api/print-resi/convert
      *
