@@ -67,9 +67,7 @@ class BastController extends Controller
      */
     public function create()
     {
-        // Dropdown: jangan preload seluruh tabel products (berat). Ambil 50 teratas;
-        // cari lengkap via /api/products/search (SearchableSelect async).
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
 
         return Inertia::render('Bast/Create', [
             'title' => 'Create BAST',
@@ -84,7 +82,7 @@ class BastController extends Controller
      */
     public function edit(Bast $bast)
     {
-        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->limit(50)->get();
+        $products = Product::query()->select('id', 'code', 'name')->orderBy('code')->get();
         $data = $bast->load('details.product');
 
         return Inertia::render('Bast/Edit', [
