@@ -1,5 +1,8 @@
 # ---------- Stage 0: Frontend (Vue/Inertia via Vite) ----------
-FROM node:22-alpine AS frontend
+# Dipin ke Node 24-alpine: vite ^8 butuh Node ^20.19 || >=22.12,
+# image node:22-alpine yang ter-cache lama di VPS (<22.12) bikin
+# `npm run build` gagal <1 detik saat startup (lokal pakai Node 24 sukses).
+FROM node:24-alpine AS frontend
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
