@@ -10,14 +10,21 @@ COPY . .
 RUN npm run build
 
 # ---------- Stage 1: PHP-FPM (Laravel) ----------
-FROM php:8.4-fpm AS app
+# Dipin ke patch terbaru 8.4.27-bookworm (anti RCE terbaru, cegah tag
+# mengambang `8.4-fpm` ke-cache ke versi lama yang vuln di VPS).
+# Rebuild produksi WAJIB: `docker compose build --no-cache --pull`.
+FROM php:8.4.27-fpm-bookworm AS app
+
+# Pakai konfigurasi production (display_errors Off, dll).
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # System deps + PHP extensions (Laravel, MySQL prod + sqlite lokal) + binary pendukung:
 # - default-mysql-client : mysqldump (dipakai backup DB MySQL saat IS_DOCKER=true)
 # - sqlite3              : inspeksi database.sqlite lokal dari dalam kontainer
 # - gosu                 : drop privilege ke www-data di entrypoint
 # - procps               : pidof untuk healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     git curl unzip zip procps gosu default-mysql-client sqlite3 \
     libpng-dev libonig-dev libxml2-dev libzip-dev libicu-dev libsqlite3-dev \
     libfreetype6-dev libjpeg62-turbo-dev \
@@ -29,7 +36,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Limit upload PHP diselaraskan dengan nginx (lihat docker/php/uploads.ini)
+# + hardening anti-RCE (lihat docker/php/security.ini).
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/php/security.ini /usr/local/etc/php/conf.d/security.ini
 
 WORKDIR /var/www/html
 
