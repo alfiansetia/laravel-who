@@ -57,6 +57,7 @@ function defaultDate() {
 
 const selectedProduct = ref('');
 const productOptions = ref([]);
+const productCache = ref([]);
 const productLoading = ref(false);
 const pic = ref('Karim A S');
 const showDetail = ref(false);
@@ -83,7 +84,7 @@ const packList = ref([]);
 const saving = ref(false);
 const getPlLoading = ref(false);
 const previewReady = ref(false);
-const previewTab = ref('lampiran');
+const previewTab = ref('rekap');
 
 const picOptions = [
     { label: 'Karim', value: 'Karim A S' },
@@ -118,15 +119,17 @@ async function loadProductsOnce() {
     try {
         const res = await api.get('/products', { silent: true });
         const list = res.data?.data ?? [];
+        productCache.value = list;
         productOptions.value = list.map((p) => ({ label: `[${p.code}] ${p.name}`, value: p.id }));
     } catch {
+        productCache.value = [];
         productOptions.value = [];
     } finally {
         productLoading.value = false;
     }
 }
 
-async function pickProduct() {
+function pickProduct() {
     if (!selectedProduct.value) {
         form.value.name = 'TERLAMPIR';
         form.value.merk = 'TERLAMPIR';
@@ -134,16 +137,15 @@ async function pickProduct() {
         generatePreview();
         return;
     }
-    try {
-        const res = await api.get(`/products/${selectedProduct.value}`, { silent: true, block: true });
-        const p = res.data?.data ?? {};
-        form.value.name = p.name ?? '';
-        form.value.merk = getPrefix(p.code);
-        form.value.type = p.code ?? '';
-        generatePreview();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Produk tidak ditemukan.');
+    const p = productCache.value.find((item) => String(item.id) === String(selectedProduct.value));
+    if (!p) {
+        toast.error('Produk tidak ditemukan.');
+        return;
     }
+    form.value.name = p.name ?? '';
+    form.value.merk = getPrefix(p.code);
+    form.value.type = p.code ?? '';
+    generatePreview();
 }
 
 function setTerlampir(field) {
@@ -453,10 +455,11 @@ onMounted(() => {
 
         <Card class="mt-4 p-4">
             <div class="mb-3 flex gap-2 border-b text-sm">
-                <button v-for="t in [['rekap', 'Rekap QC'], ['lampiran', 'Lampiran'], ['tabel', 'Table QC']]" :key="t[0]" class="px-3 py-2" :class="previewTab === t[0] ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="previewTab = t[0]">{{ t[1] }}</button>
+                <button v-for="t in [['rekap', 'Rekap & Lampiran'], ['tabel', 'Table QC']]" :key="t[0]" class="px-3 py-2" :class="previewTab === t[0] ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="previewTab = t[0]">{{ t[1] }}</button>
                 <span class="ml-auto hidden items-center text-xs text-slate-500 sm:flex">PIC: {{ pic }}</span>
             </div>
-            <div v-if="previewTab === 'rekap'">
+            <div v-if="previewTab === 'rekap'" class="space-y-4">
+            <div>
             <h2 class="mb-2 text-sm font-semibold">Rekap QC: {{ pic }}</h2>
             <div class="overflow-x-auto rounded-md border">
                 <table class="w-full text-sm">
@@ -479,8 +482,8 @@ onMounted(() => {
                 </table>
             </div>
             </div>
-            <div v-if="previewTab === 'lampiran'">
-            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div>
+            <div class="mb-2 flex flex-wrap items-center gap-2">
                 <h2 class="text-sm font-semibold">Preview Lampiran</h2>
                 <div class="flex gap-2">
                     <Button variant="outline" size="sm" @click="copyLampiranA"><Copy /> Salin Kode</Button>
@@ -506,6 +509,7 @@ onMounted(() => {
                         </tbody>
                     </table>
                 </div>
+            </div>
             </div>
             </div>
             <div v-if="previewTab === 'tabel'">
