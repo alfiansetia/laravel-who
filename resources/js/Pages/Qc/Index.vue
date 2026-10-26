@@ -33,6 +33,8 @@ const FISIK_DEFAULT = [
     'Kondisi kardus atau peti',
     'Penempelan penandaan AKL dialat',
     'Penempelan nomor izin edar pada dus',
+    'Foto',
+    'Dimensi',
 ];
 
 const REAGEN_DEFAULT = [
@@ -154,17 +156,29 @@ function setTerlampir(field) {
 }
 
 function applyFisik(allBaik) {
-    fisikRows.value = FISIK_DEFAULT.map((text) => ({ text, radio: allBaik ? 'yes' : 'other', desc: '' }));
+    if (allBaik) {
+        fisikRows.value = fisikRows.value.map((r) => ({ ...r, radio: 'yes' }));
+    } else {
+        fisikRows.value = FISIK_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
+    }
     generatePreview();
 }
 
 function applyReagen(allBaik = false) {
-    reagenRows.value = REAGEN_DEFAULT.map((text) => ({ text, radio: allBaik ? 'yes' : 'other', desc: '' }));
+    if (allBaik) {
+        reagenRows.value = reagenRows.value.map((r) => ({ ...r, radio: 'yes' }));
+    } else {
+        reagenRows.value = REAGEN_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
+    }
     generatePreview();
 }
 
 function applyKel(allAda = false) {
-    kelRows.value = KEL_DEFAULT.map((text) => ({ text, radio: allAda ? 'yes' : 'other', desc: '' }));
+    if (allAda) {
+        kelRows.value = kelRows.value.map((r) => ({ ...r, radio: 'yes' }));
+    } else {
+        kelRows.value = KEL_DEFAULT.map((text) => ({ text, radio: 'other', desc: '' }));
+    }
     generatePreview();
 }
 
@@ -180,6 +194,19 @@ function addKel(text = '', checked = false) {
 
 function delKel(index) {
     kelRows.value.splice(index, 1);
+    generatePreview();
+}
+
+function addReagen(text = '', checked = false) {
+    reagenRows.value.push({ text, radio: checked ? 'yes' : 'other', desc: '' });
+    generatePreview();
+}
+
+function delReagen(index) {
+    if (index < REAGEN_DEFAULT.length) {
+        return;
+    }
+    reagenRows.value.splice(index, 1);
     generatePreview();
 }
 
@@ -409,13 +436,18 @@ onMounted(() => {
                     <div class="mb-2 flex items-center gap-3 border-b pb-1">
                         <h3 class="text-sm font-bold text-slate-600">FUNGSI DAN SISTEM</h3>
                         <div class="flex gap-1">
+                            <Button variant="outline" size="sm" title="Tambah baris fungsi & sistem" @click="addReagen()"><Plus /> Tambah</Button>
                             <Button variant="outline" size="sm" title="Ulangi ke bawaan" @click="applyReagen(false)"><RefreshCw /> Reset</Button>
                             <Button size="sm" title="Tandai semua Baik" @click="applyReagen(true)"><CircleCheck /> All Baik</Button>
                         </div>
                     </div>
                     <div class="space-y-2 px-2">
                         <div v-for="(row, i) in reagenRows" :key="i" class="grid items-center gap-2 sm:grid-cols-[4fr_4fr_4fr]">
-                            <Input v-model="row.text" class="h-8 bg-slate-100" @input="generatePreview" />
+                            <div v-if="i >= 4" class="flex gap-1">
+                                <Button variant="destructive" size="sm" title="Hapus baris" @click="delReagen(i)"><Trash2 /></Button>
+                                <Input v-model="row.text" class="h-8 flex-1 bg-slate-100" @input="generatePreview" />
+                            </div>
+                            <Input v-else v-model="row.text" class="h-8 bg-slate-100" @input="generatePreview" />
                             <QcRadioGroup v-model="row.radio" :options="fisikRadios" :name="`reagen-${i}`" @change="generatePreview" />
                             <Input v-model="row.desc" class="h-8" placeholder="Catatan/Keterangan" @input="generatePreview" />
                         </div>
@@ -532,10 +564,10 @@ onMounted(() => {
                             <td class="px-2 py-2">{{ form.merk }}</td><td class="px-2 py-2 font-mono">{{ form.type }}</td>
                             <td class="px-2 py-2">{{ form.sn_lot }}</td><td class="px-2 py-2">{{ form.qty }}</td>
                             <td class="px-2 py-2">{{ form.jenis }}</td><td class="px-2 py-2">{{ form.qc_sebelumnya }}</td>
-                            <td class="px-2 py-2 text-center">{{ fisikRows.slice(0, 6).filter((r) => r.radio === 'yes').length }}</td>
-                            <td class="px-2 py-2 text-center">{{ fisikRows.slice(0, 6).filter((r) => r.radio === 'no').length }}</td>
-                            <td class="px-2 py-2 text-center">{{ reagenRows.slice(0, 4).filter((r) => r.radio === 'yes').length }}</td>
-                            <td class="px-2 py-2 text-center">{{ reagenRows.slice(0, 4).filter((r) => r.radio === 'no').length }}</td>
+                            <td class="px-2 py-2 text-center">{{ fisikRows.slice(0, 8).filter((r) => r.radio === 'yes').length }}</td>
+                            <td class="px-2 py-2 text-center">{{ fisikRows.slice(0, 8).filter((r) => r.radio === 'no').length }}</td>
+                            <td class="px-2 py-2 text-center">{{ reagenRows.filter((r) => r.radio === 'yes').length }}</td>
+                            <td class="px-2 py-2 text-center">{{ reagenRows.filter((r) => r.radio === 'no').length }}</td>
                             <td class="px-2 py-2 text-center">{{ kelRows.slice(0, 3).filter((r) => r.radio === 'yes').length }}</td>
                             <td class="px-2 py-2 text-center">{{ kelRows.slice(0, 3).filter((r) => r.radio === 'no').length }}</td>
                         </tr>

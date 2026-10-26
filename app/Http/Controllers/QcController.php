@@ -35,9 +35,42 @@ class QcController extends Controller
             $data_kel = array_values($request->kelengkapan ?? []);
             $data_kel_radio = array_values($request->kelengkapan_radio ?? []);
             $data_kel_desc = array_values($request->kelengkapan_desc ?? []);
+            $fisik_radio = array_values($request->fisik_radio ?? []);
+            $fisik_desc = array_values($request->fisik_desc ?? []);
+            $data_reagen = array_values($request->reagen ?? []);
+            $reagen_radio = array_values($request->reagen_radio ?? []);
+            $reagen_desc = array_values($request->reagen_desc ?? []);
 
             $file = public_path('master/qc.docx');
             $template = new TemplateProcessor($file);
+            $extra_reagen = [];
+            foreach ($data_reagen as $index => $row) {
+                if ($index < 4) {
+                    continue;
+                }
+                $extra_reagen[] = [
+                    'v' => $row ?? '',
+                    'radio' => $reagen_radio[$index] ?? null,
+                    'd' => $reagen_desc[$index] ?? '',
+                ];
+            }
+            if (in_array('reagen_v', $template->getVariables())) {
+                $reagen_row = max(1, count($extra_reagen));
+                $template->cloneRow('reagen_v', $reagen_row);
+                foreach ($extra_reagen as $index => $row) {
+                    $i = $index + 1;
+                    $template->setValue("reagen_v#$i", htmlspecialchars($row['v']));
+                    $template->setValue('reagen_y#'.$i, htmlspecialchars($row['radio'] == 'yes' ? 'v' : ''));
+                    $template->setValue('reagen_n#'.$i, htmlspecialchars($row['radio'] == 'no' ? 'v' : ''));
+                    $template->setValue("reagen_d#$i", htmlspecialchars($row['d']));
+                }
+                for ($j = count($extra_reagen) + 1; $j <= $reagen_row; $j++) {
+                    $template->setValue("reagen_v#$j", '');
+                    $template->setValue("reagen_y#$j", '');
+                    $template->setValue("reagen_n#$j", '');
+                    $template->setValue("reagen_d#$j", '');
+                }
+            }
             $total = count($data_kel);
             $kel_row = max(23, $total);
             $template->cloneRow('kel_v', $kel_row);
@@ -70,37 +103,43 @@ class QcController extends Controller
                 'jenis' => htmlspecialchars($request->jenis),
                 'qc_sebelumnya' => htmlspecialchars($request->qc_sebelumnya),
 
-                'fisik_0y' => htmlspecialchars($request->fisik_radio[0] == 'yes' ? 'v' : ''),
-                'fisik_0n' => htmlspecialchars($request->fisik_radio[0] == 'no' ? 'v' : ''),
-                'fisik_0d' => htmlspecialchars($request->fisik_desc[0]),
-                'fisik_1y' => htmlspecialchars($request->fisik_radio[1] == 'yes' ? 'v' : ''),
-                'fisik_1n' => htmlspecialchars($request->fisik_radio[1] == 'no' ? 'v' : ''),
-                'fisik_1d' => htmlspecialchars($request->fisik_desc[1]),
-                'fisik_2y' => htmlspecialchars($request->fisik_radio[2] == 'yes' ? 'v' : ''),
-                'fisik_2n' => htmlspecialchars($request->fisik_radio[2] == 'no' ? 'v' : ''),
-                'fisik_2d' => htmlspecialchars($request->fisik_desc[2]),
-                'fisik_3y' => htmlspecialchars($request->fisik_radio[3] == 'yes' ? 'v' : ''),
-                'fisik_3n' => htmlspecialchars($request->fisik_radio[3] == 'no' ? 'v' : ''),
-                'fisik_3d' => htmlspecialchars($request->fisik_desc[3]),
-                'fisik_4y' => htmlspecialchars($request->fisik_radio[4] == 'yes' ? 'v' : ''),
-                'fisik_4n' => htmlspecialchars($request->fisik_radio[4] == 'no' ? 'v' : ''),
-                'fisik_4d' => htmlspecialchars($request->fisik_desc[4]),
-                'fisik_5y' => htmlspecialchars($request->fisik_radio[5] == 'yes' ? 'v' : ''),
-                'fisik_5n' => htmlspecialchars($request->fisik_radio[5] == 'no' ? 'v' : ''),
-                'fisik_5d' => htmlspecialchars($request->fisik_desc[5]),
+                'fisik_0y' => htmlspecialchars(($fisik_radio[0] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_0n' => htmlspecialchars(($fisik_radio[0] ?? null) == 'no' ? 'v' : ''),
+                'fisik_0d' => htmlspecialchars($fisik_desc[0] ?? ''),
+                'fisik_1y' => htmlspecialchars(($fisik_radio[1] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_1n' => htmlspecialchars(($fisik_radio[1] ?? null) == 'no' ? 'v' : ''),
+                'fisik_1d' => htmlspecialchars($fisik_desc[1] ?? ''),
+                'fisik_2y' => htmlspecialchars(($fisik_radio[2] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_2n' => htmlspecialchars(($fisik_radio[2] ?? null) == 'no' ? 'v' : ''),
+                'fisik_2d' => htmlspecialchars($fisik_desc[2] ?? ''),
+                'fisik_3y' => htmlspecialchars(($fisik_radio[3] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_3n' => htmlspecialchars(($fisik_radio[3] ?? null) == 'no' ? 'v' : ''),
+                'fisik_3d' => htmlspecialchars($fisik_desc[3] ?? ''),
+                'fisik_4y' => htmlspecialchars(($fisik_radio[4] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_4n' => htmlspecialchars(($fisik_radio[4] ?? null) == 'no' ? 'v' : ''),
+                'fisik_4d' => htmlspecialchars($fisik_desc[4] ?? ''),
+                'fisik_5y' => htmlspecialchars(($fisik_radio[5] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_5n' => htmlspecialchars(($fisik_radio[5] ?? null) == 'no' ? 'v' : ''),
+                'fisik_5d' => htmlspecialchars($fisik_desc[5] ?? ''),
+                'fisik_6y' => htmlspecialchars(($fisik_radio[6] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_6n' => htmlspecialchars(($fisik_radio[6] ?? null) == 'no' ? 'v' : ''),
+                'fisik_6d' => htmlspecialchars($fisik_desc[6] ?? ''),
+                'fisik_7y' => htmlspecialchars(($fisik_radio[7] ?? null) == 'yes' ? 'v' : ''),
+                'fisik_7n' => htmlspecialchars(($fisik_radio[7] ?? null) == 'no' ? 'v' : ''),
+                'fisik_7d' => htmlspecialchars($fisik_desc[7] ?? ''),
 
-                'reagen_0y' => htmlspecialchars($request->reagen_radio[0] == 'yes' ? 'v' : ''),
-                'reagen_0n' => htmlspecialchars($request->reagen_radio[0] == 'no' ? 'v' : ''),
-                'reagen_0d' => htmlspecialchars($request->reagen_desc[0]),
-                'reagen_1y' => htmlspecialchars($request->reagen_radio[1] == 'yes' ? 'v' : ''),
-                'reagen_1n' => htmlspecialchars($request->reagen_radio[1] == 'no' ? 'v' : ''),
-                'reagen_1d' => htmlspecialchars($request->reagen_desc[1]),
-                'reagen_2y' => htmlspecialchars($request->reagen_radio[2] == 'yes' ? 'v' : ''),
-                'reagen_2n' => htmlspecialchars($request->reagen_radio[2] == 'no' ? 'v' : ''),
-                'reagen_2d' => htmlspecialchars($request->reagen_desc[2]),
-                'reagen_3y' => htmlspecialchars($request->reagen_radio[3] == 'yes' ? 'v' : ''),
-                'reagen_3n' => htmlspecialchars($request->reagen_radio[3] == 'no' ? 'v' : ''),
-                'reagen_3d' => htmlspecialchars($request->reagen_desc[3]),
+                'reagen_0y' => htmlspecialchars(($reagen_radio[0] ?? null) == 'yes' ? 'v' : ''),
+                'reagen_0n' => htmlspecialchars(($reagen_radio[0] ?? null) == 'no' ? 'v' : ''),
+                'reagen_0d' => htmlspecialchars($reagen_desc[0] ?? ''),
+                'reagen_1y' => htmlspecialchars(($reagen_radio[1] ?? null) == 'yes' ? 'v' : ''),
+                'reagen_1n' => htmlspecialchars(($reagen_radio[1] ?? null) == 'no' ? 'v' : ''),
+                'reagen_1d' => htmlspecialchars($reagen_desc[1] ?? ''),
+                'reagen_2y' => htmlspecialchars(($reagen_radio[2] ?? null) == 'yes' ? 'v' : ''),
+                'reagen_2n' => htmlspecialchars(($reagen_radio[2] ?? null) == 'no' ? 'v' : ''),
+                'reagen_2d' => htmlspecialchars($reagen_desc[2] ?? ''),
+                'reagen_3y' => htmlspecialchars(($reagen_radio[3] ?? null) == 'yes' ? 'v' : ''),
+                'reagen_3n' => htmlspecialchars(($reagen_radio[3] ?? null) == 'no' ? 'v' : ''),
+                'reagen_3d' => htmlspecialchars($reagen_desc[3] ?? ''),
             ]);
 
             $no = $request->no;
