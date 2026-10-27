@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import EditableCell from '@/components/EditableCell.vue';
 import FormField from '@/components/FormField.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
+import LabelToolTabs from '@/components/LabelToolTabs.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -428,6 +429,7 @@ function commitKode(row, val) {
 <template>
     <AppLayout>
         <PageHeader :title="props.title" />
+        <LabelToolTabs class="mb-4" />
 
         <Card class="mb-4 p-4">
             <div class="flex flex-wrap items-center gap-2">

@@ -6,6 +6,7 @@ import AppModal from '@/components/AppModal.vue';
 import DataTable from '@/components/DataTable.vue';
 import EditableCell from '@/components/EditableCell.vue';
 import FormField from '@/components/FormField.vue';
+import LabelToolTabs from '@/components/LabelToolTabs.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -441,6 +442,7 @@ function onPrint() {
 <template>
     <AppLayout>
         <PageHeader :title="props.title" />
+        <LabelToolTabs class="mb-4" />
 
         <Card class="mb-4 p-4">
             <div class="flex flex-wrap items-center gap-2">
@@ -448,14 +450,6 @@ function onPrint() {
                 <Button v-for="s in sourceList" :key="s.value" variant="outline" size="sm" @click="openImport(s.value)"><Download /> {{ s.label }}</Button>
             </div>
             <p class="mt-2 text-xs text-muted-foreground">Ambil produk + AKL dari dokumen sumber. Tiap baris tercentang = 1 strip (qty dokumen diabaikan).</p>
-        </Card>
-
-        <Card class="mb-4 p-4">
-            <h2 class="mb-3 text-sm font-semibold">Pengaturan</h2>
-            <label class="flex w-fit cursor-pointer items-center gap-2 text-sm font-medium" title="Kalau dimatikan, kolom AKL diganti kode/desc (4 + 3 = 7 kolom)">
-                <input v-model="withAkl" type="checkbox" class="size-4 accent-primary" />
-                Sertakan AKL
-            </label>
         </Card>
 
         <Card class="mb-4 p-4">
@@ -483,6 +477,10 @@ function onPrint() {
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-semibold">Hasil Stiker ({{ totalPrint }} strip)</h2>
                 <div class="flex flex-wrap items-center gap-2">
+                    <label class="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground" title="Kalau dimatikan, kolom AKL diganti kode/desc (4 + 3 = 7 kolom)">
+                        <input v-model="withAkl" type="checkbox" class="size-3.5 accent-primary" />
+                        AKL
+                    </label>
                     <Button variant="outline" size="sm" :disabled="entries.length === 0" @click="clearEntries"><Trash2 /> Hapus Semua</Button>
                     <Button size="sm" :disabled="entries.length === 0" @click="onPrint"><Printer /> Print</Button>
                 </div>

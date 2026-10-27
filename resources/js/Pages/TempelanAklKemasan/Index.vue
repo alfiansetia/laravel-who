@@ -1,11 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Copy, Download, Plus, Printer, RotateCcw, Trash2 } from '@lucide/vue';
+import { ChevronDown, Copy, Download, Plus, Printer, RotateCcw, Settings2, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import DataTable from '@/components/DataTable.vue';
 import EditableCell from '@/components/EditableCell.vue';
 import FormField from '@/components/FormField.vue';
+import LabelToolTabs from '@/components/LabelToolTabs.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
@@ -72,10 +73,13 @@ const company = ref('PT MITRA ASA PRATAMA');
 const address = ref('Jakarta Timur 13330');
 const qtyMin = ref(1);
 
-// ---- Opsi cetak ala print label ----
+// ---- Opsi cetak ala print label (kontrol inline di atas tabel) ----
 const cols = ref(4);
 const fillRows = ref(false);
 const fontSel = ref('0');
+
+// ---- Pengaturan distributor (jarang berubah, default tersembunyi) ----
+const showSettings = ref(false);
 
 const fontOptions = [
     { label: 'Auto', value: '0' },
@@ -556,6 +560,7 @@ function onPrint() {
 <template>
     <AppLayout>
         <PageHeader :title="props.title" />
+        <LabelToolTabs class="mb-4" />
 
         <Card class="mb-4 p-4">
             <div class="flex flex-wrap items-center gap-2">
@@ -566,8 +571,11 @@ function onPrint() {
         </Card>
 
         <Card class="mb-4 p-4">
-            <h2 class="mb-3 text-sm font-semibold">Pengaturan Label</h2>
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Button variant="ghost" size="sm" class="px-0" @click="showSettings = !showSettings">
+                <Settings2 /> Pengaturan Distributor
+                <ChevronDown :class="['transition-transform', showSettings && 'rotate-180']" />
+            </Button>
+            <div v-show="showSettings" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <FormField label="Baris importir" hint="Tercetak di semua label">
                     <Input v-model="importer" placeholder="Diimpor dan didistribusikan oleh :" />
                 </FormField>
@@ -577,28 +585,8 @@ function onPrint() {
                 <FormField label="Alamat distributor" hint="Tercetak di semua label">
                     <Input v-model="address" placeholder="Jakarta Timur 13330" />
                 </FormField>
-                <FormField label="Qty minimal" hint="Qty bawaan tiap baris baru">
-                    <Input v-model="qtyMin" type="number" min="1" max="1000" />
-                </FormField>
-                <FormField label="Kolom per lembar" hint="Makin sedikit, makin besar">
-                    <Input v-model="cols" type="number" min="1" max="10" />
-                </FormField>
             </div>
-            <div class="mt-3 flex flex-wrap items-center gap-4">
-                <FormField label="Jenis font" class="w-40">
-                    <SearchableSelect
-                        :model-value="fontSel"
-                        :options="fontOptionList"
-                        :clearable="false"
-                        placeholder="Pilih font..."
-                        @update:model-value="fontSel = $event"
-                    />
-                </FormField>
-                <label class="flex cursor-pointer items-center gap-2 text-sm font-medium" title="Genapkan tiap produk menjadi baris penuh (kekurangan sel diisi label yang sama)">
-                    <input v-model="fillRows" type="checkbox" class="size-4 accent-primary" />
-                    Genapkan per baris
-                </label>
-            </div>
+            <p v-show="!showSettings" class="mt-1 text-xs text-muted-foreground">{{ company }}{{ address ? ` — ${address}` : '' }}</p>
         </Card>
 
         <Card class="mb-4 p-4">
@@ -626,6 +614,20 @@ function onPrint() {
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-sm font-semibold">Hasil Tempelan ({{ totalPrint }} label)</h2>
                 <div class="flex flex-wrap items-center gap-2">
+                    <label class="text-xs text-muted-foreground" title="Qty bawaan tiap baris baru">Min</label>
+                    <Input v-model="qtyMin" type="number" min="1" max="1000" class="h-8 w-16 px-2 text-xs" />
+                    <label class="text-xs text-muted-foreground" title="Makin sedikit, makin besar">Kolom</label>
+                    <Input v-model="cols" type="number" min="1" max="10" class="h-8 w-16 px-2 text-xs" />
+                    <label class="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground" title="Kunci ukuran font label (Auto = mengikuti jumlah kolom)">
+                        Font
+                        <select v-model="fontSel" class="h-8 rounded-md border border-input bg-background px-1 text-xs shadow-sm">
+                            <option v-for="o in fontOptionList" :key="o.value" :value="o.value">{{ o.label }}</option>
+                        </select>
+                    </label>
+                    <label class="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground" title="Genapkan tiap produk menjadi baris penuh (kekurangan sel diisi label yang sama)">
+                        <input v-model="fillRows" type="checkbox" class="size-3.5 accent-primary" />
+                        Genapkan
+                    </label>
                     <Button variant="outline" size="sm" :disabled="entries.length === 0" @click="clearEntries"><Trash2 /> Hapus Semua</Button>
                     <Button size="sm" :disabled="entries.length === 0" @click="onPrint"><Printer /> Print</Button>
                 </div>
