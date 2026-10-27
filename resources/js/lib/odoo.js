@@ -1,10 +1,17 @@
 /** Helper render field Odoo — cerminan logika Blade (_app scripts). */
 
 export function odooName(value) {
-    if (Array.isArray(value)) {
-        return value[1] ?? '-';
+    if (value === false || value === null || value === undefined || value === '') {
+        return '-';
     }
-    return value ?? '-';
+    if (Array.isArray(value)) {
+        const name = value[1];
+        if (name === false || name === null || name === undefined || name === '') {
+            return '-';
+        }
+        return name;
+    }
+    return value;
 }
 
 /**

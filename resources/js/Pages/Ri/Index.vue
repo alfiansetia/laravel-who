@@ -155,9 +155,12 @@ const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {    c
 }));
 
 function lotLabel(row) {
-    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? '');
+    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '');
     const exp = formatExpDate(row.expired_date);
-    return exp ? `${lot}/${exp}` : (lot || '');
+    if (!lot) {
+        return exp || '';
+    }
+    return exp ? `${lot}/${exp}` : lot;
 }
 
 let detailSeq = 0;

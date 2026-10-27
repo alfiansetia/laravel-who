@@ -172,9 +172,12 @@ const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {
 // Lot/SN digabung dengan ED DO: `LOT/2028.01.31`.
 // Sumber expired khusus DO adalah `expired_date_do`; bila kosong/false cukup lot saja.
 function lotLabel(row) {
-    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? '');
+    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '');
     const exp = formatExpDate(row.expired_date_do);
-    return exp ? `${lot}/${exp}` : (lot || '');
+    if (!lot) {
+        return exp || '';
+    }
+    return exp ? `${lot}/${exp}` : lot;
 }
 
 function sistemOf(row) {

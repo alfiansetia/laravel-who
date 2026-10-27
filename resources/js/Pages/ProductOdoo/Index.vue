@@ -221,7 +221,7 @@ query.fetch();
                     <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
                     <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
                     <template #cell-akl="{ row }">{{ aklMap[Array.isArray(row.product_id) ? row.product_id[0] : -1] ?? '-' }}</template>
-                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name ?? '') }}</template>
+                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '') }}</template>
                     <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
                     <template #cell-exp="{ row }">{{ formatExpDate(row.expired_date) }}</template>
                 </DataTable>
