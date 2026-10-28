@@ -250,7 +250,7 @@ class StockController extends Controller
 
                 if ($i < $itemsCount) {
                     $item = $data[$i];
-                    $lotLabel = $item['lot'] ?? '';
+                    $lotLabel = ! empty($item['lot']) ? $item['lot'] : '-';
                     if (! empty($item['expired']) && $item['expired'] !== 'False') {
                         $lotLabel .= '/'.$item['expired'];
                     }
