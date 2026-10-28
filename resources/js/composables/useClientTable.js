@@ -64,7 +64,7 @@ export function useClientTable(fetcher = null, options = {}) {
         page.value = Math.min(Math.max(1, Number(v)), totalPages.value);
     }
 
-    function setSearch(value, ms = 200) {
+    function setSearch(value, ms = 0) {
         clearTimeout(searchDebounce);
         if (ms <= 0) {
             search.value = value;
