@@ -159,6 +159,14 @@ function downloadOpname() {
     window.open(`/api/stock-opname?location=${encodeURIComponent(locations.value.join(','))}`, '_blank');
 }
 
+function downloadOpnameLot() {
+    if (locations.value.length === 0) {
+        window.open('/api/stock-opname-lot', '_blank');
+        return;
+    }
+    window.open(`/api/stock-opname-lot?location=${encodeURIComponent(locations.value.join(','))}`, '_blank');
+}
+
 load();
 </script>
 
@@ -169,6 +177,7 @@ load();
                 <Button variant="outline" size="sm" @click="copyRows(table.filtered.value, ['code', 'name', 'quantity'])"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv('stock', table.filtered.value, ['code', 'name', 'quantity', 'akl'])"><Download /> CSV</Button>
                 <Button size="sm" @click="downloadOpname"><Download /> Opname</Button>
+                <Button variant="outline" size="sm" @click="downloadOpnameLot"><Download /> Opname Lot</Button>
             </template>
         </PageHeader>
         <TableToolbar v-model="searchBox" placeholder="Cari kode / nama / AKL..." :active-count="activeCount" @search="table.setSearch" @reset="resetFilter">

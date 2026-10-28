@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\StockServices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -91,7 +92,7 @@ class StockController extends Controller
 
         $currentMonth = date('F Y');
         $currentDate = date('d F Y');
-        $currentTime = date('H:i:s');
+        $currentTime = date('H-i-s');
         $cdakb = config('cdakb.opname');
 
         foreach ($locations as $loc_name) {
@@ -140,8 +141,8 @@ class StockController extends Controller
                 if ($i < $itemsCount) {
                     $item = $data[$i];
                     $currentSheet->setCellValue("A{$currentRow}", $i + 1);
-                    $currentSheet->setCellValue("B{$currentRow}", $item['code']);
-                    $currentSheet->setCellValue("C{$currentRow}", $item['name']);
+                    $currentSheet->getCell("B{$currentRow}")->setValueExplicit($item['code'], DataType::TYPE_STRING);
+                    $currentSheet->getCell("C{$currentRow}")->setValueExplicit($item['name'], DataType::TYPE_STRING);
                     $currentSheet->setCellValue("E{$currentRow}", 'EA');
                     $currentSheet->setCellValue("F{$currentRow}", $item['quantity']);
 
@@ -175,6 +176,122 @@ class StockController extends Controller
         }
 
         $filename = "Stock Opname {$currentDate} {$currentTime}.xlsx";
+        $outputPath = storage_path('app/temp/'.$filename);
+        if (! file_exists(dirname($outputPath))) {
+            mkdir(dirname($outputPath), 0775, true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($outputPath);
+
+        return response()->download($outputPath)->deleteFileAfterSend();
+    }
+
+    public function opnameLot(Request $request)
+    {
+        set_time_limit(300);
+
+        $loc = $request->location ?? '';
+        $locations = array_filter(array_map('trim', explode(',', $loc)));
+        if (count($locations) < 1) {
+            return $this->sendError('Location is required', [], 400);
+        }
+
+        $templatePath = public_path('master/master_opname.xlsx');
+        $spreadsheet = IOFactory::load($templatePath);
+        $templateSheet = $spreadsheet->getSheet(0);
+
+        $currentMonth = date('F Y');
+        $currentDate = date('d F Y');
+        $currentTime = date('H-i-s');
+        $cdakb = config('cdakb.opname');
+
+        foreach ($locations as $loc_name) {
+            // 1 bulk call per lokasi (bukan 1 call per produk)
+            $data = StockServices::lotBulk([$loc_name])->values();
+
+            // Clone template untuk sheet baru
+            $currentSheet = clone $templateSheet;
+
+            // Set Judul Sheet (Limit 31 Karakter & Sanitasi)
+            $real_name = StockServices::getLocationAlias($loc_name);
+            $safeTitle = str_replace(['*', ':', '/', '\\', '?', '[', ']'], '', $real_name);
+            $currentSheet->setTitle(substr($safeTitle, 0, 31));
+
+            $spreadsheet->addSheet($currentSheet);
+
+            // === HEADER INFO ===
+            $currentSheet->setCellValue('C4', ': '.$currentMonth);
+            $currentSheet->setCellValue('C5', ': '.$real_name);
+            $currentSheet->setCellValue('C6', ': '.$currentDate);
+
+            // === ITEMS LOGIC (1 lot = 1 baris) ===
+            $startRow = 9;
+            $itemsCount = count($data);
+            $minRows = 30;
+            $totalLines = max($itemsCount, $minRows);
+
+            // Row 9 adalah base style
+            $baseStyle = $currentSheet->getStyle("A{$startRow}:I{$startRow}");
+
+            // Masukkan baris baru jika lebih dari 1 baris dibutuhkan
+            if ($totalLines > 1) {
+                $currentSheet->insertNewRowBefore($startRow + 1, $totalLines - 1);
+            }
+
+            // Terapkan style ke seluruh range tabel sekaligus (Row 9 hingga baris terakhir)
+            $lastRow = $startRow + $totalLines - 1;
+            $currentSheet->duplicateStyle($baseStyle, "A{$startRow}:I{$lastRow}");
+
+            // Loop hanya untuk mengisi data dan mengatur tinggi baris
+            for ($i = 0; $i < $totalLines; $i++) {
+                $currentRow = $startRow + $i;
+                $currentSheet->getRowDimension($currentRow)->setRowHeight(-1);
+
+                if ($i < $itemsCount) {
+                    $item = $data[$i];
+                    $lotLabel = $item['lot'] ?? '';
+                    if (! empty($item['expired']) && $item['expired'] !== 'False') {
+                        $lotLabel .= '/'.$item['expired'];
+                    }
+                    $currentSheet->setCellValue("A{$currentRow}", $i + 1);
+                    $currentSheet->getCell("B{$currentRow}")->setValueExplicit($item['code'], DataType::TYPE_STRING);
+                    $currentSheet->getCell("C{$currentRow}")->setValueExplicit($item['name'], DataType::TYPE_STRING);
+                    $currentSheet->getCell("D{$currentRow}")->setValueExplicit($lotLabel, DataType::TYPE_STRING);
+                    $currentSheet->setCellValue("E{$currentRow}", 'EA');
+                    $currentSheet->setCellValue("F{$currentRow}", $item['quantity']);
+
+                    $currentSheet->getStyle("B{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $currentSheet->getStyle("B{$currentRow}")->getAlignment()->setWrapText(true);
+                    $currentSheet->getStyle("C{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $currentSheet->getStyle("C{$currentRow}")->getAlignment()->setWrapText(true);
+                    $currentSheet->getStyle("D{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                    $currentSheet->getStyle("D{$currentRow}")->getAlignment()->setWrapText(true);
+                } else {
+                    // Baris kosong (style border dan alignment sudah terduplikasi di atas)
+                    $currentSheet->setCellValue("A{$currentRow}", '');
+                    $currentSheet->setCellValue("B{$currentRow}", '');
+                    $currentSheet->setCellValue("C{$currentRow}", '');
+                    $currentSheet->setCellValue("D{$currentRow}", '');
+                    $currentSheet->setCellValue("E{$currentRow}", '');
+                    $currentSheet->setCellValue("F{$currentRow}", '');
+                }
+            }
+
+            // CDAKB Logic: Default di I19 akan terdorong otomatis ke bawah
+            $cdakb_row_idx = 19 + ($totalLines - 1);
+            $cdakb_cell = "I{$cdakb_row_idx}";
+
+            $currentSheet->setCellValue($cdakb_cell, $cdakb);
+            $currentSheet->getStyle($cdakb_cell)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        }
+
+        // Hapus sheet template asli jika ada setidaknya satu sheet baru yang ditambahkan
+        if ($spreadsheet->getSheetCount() > 1) {
+            $spreadsheet->removeSheetByIndex(0);
+        }
+
+        $filename = "Stock Opname Lot {$currentDate} {$currentTime}.xlsx";
         $outputPath = storage_path('app/temp/'.$filename);
         if (! file_exists(dirname($outputPath))) {
             mkdir(dirname($outputPath), 0775, true);

@@ -55,6 +55,7 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('api.product_odoo.index');
 
     Route::get('stock-opname', [StockController::class, 'opname'])->name('api.stock.opname');
+    Route::get('stock-opname-lot', [StockController::class, 'opnameLot'])->name('api.stock.opname_lot');
     Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
     Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
 

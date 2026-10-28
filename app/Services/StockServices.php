@@ -105,8 +105,7 @@ class StockServices extends Odoo
 
     public static function lot(int $id, $locations = [], int $limit = 10)
     {
-        $param = [
-            'jsonrpc' => '2.0',
+        $param = ['jsonrpc' => '2.0',
             'method' => 'call',
             'params' => [
                 'model' => 'stock.quant',
@@ -164,33 +163,122 @@ class StockServices extends Odoo
             ->get();
         $data = collect(Arr::get($response, 'result.records', []) ?? []);
 
-        return $data->map(function ($item) {
-            $loc = get_name($item['location_id'] ?? null);
-            $lot = get_name($item['lot_id'] ?? null);
-            $pecah_code = pecah_code($item['product_id'] ?? null);
-            $id = $pecah_code[0];
-            $code = $pecah_code[1];
-            $name = $pecah_code[2];
-            $expired = $item['itds_expired'] ?? null;
-            $expired_ori = $expired;
-            try {
-                $expired = odoo_datetime($expired, 'Y.m.d');
-            } catch (\Throwable $th) {
-                // throw $th;
-            }
+        return $data->map(fn ($item) => static::mapQuantRow($item));
+    }
 
-            return [
-                'id' => $id,
-                'quantity' => $item['quantity'] ?? 0,
-                'code' => $code,
-                'name' => $name,
-                'location' => $loc,
-                'lot' => $lot,
-                'expired' => $expired,
-                'expired_ori' => $expired_ori,
-                'original' => $item,
+    /**
+     * Ambil semua lot/quant untuk lokasi sekaligus (bulk, paginasi).
+     *
+     * Pengganti N+1 query lot($id) per produk untuk kebutuhan opname lot:
+     * 1 request search_read per halaman per lokasi, lalu agregat
+     * quantity per (produk, lot, expired) di PHP.
+     */
+    public static function lotBulk(array|string|null $locations = [], int $batchSize = 2000)
+    {
+        if (! is_array($locations)) {
+            $locations = $locations === null || $locations === '' ? [] : array_values(array_filter(array_map('trim', explode(',', (string) $locations))));
+        }
+
+        $domain = [
+            ['location_id.usage', '=', 'internal'],
+        ];
+        for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
+            array_push($domain, '|');
+        }
+        foreach ($locations ?? [] as $item) {
+            array_push($domain, ['location_id', 'ilike', $item]);
+        }
+        array_push($domain, ['quantity', '>', 0]);
+
+        $records = collect();
+        $offset = 0;
+        do {
+            $param = [
+                'jsonrpc' => '2.0',
+                'method' => 'call',
+                'params' => [
+                    'model' => 'stock.quant',
+                    'domain' => $domain,
+                    'fields' => [
+                        'product_id',
+                        'location_id',
+                        'lot_id',
+                        'itds_expired',
+                        'package_id',
+                        'owner_id',
+                        'reserved_quantity',
+                        'quantity',
+                        'product_uom_id',
+                        'write_date',
+                        'company_id',
+                    ],
+                    'limit' => $batchSize,
+                    'offset' => $offset,
+                    'sort' => '',
+                    'context' => [
+                        'lang' => 'en_US',
+                        'tz' => 'Asia/Jakarta',
+                        'uid' => 192,
+                        'search_default_internal_loc' => 1,
+                        'search_disable_custom_filters' => true,
+                    ],
+                ],
+                'id' => 520742991,
             ];
-        });
+            $url_param = '/web/dataset/search_read';
+            $response = parent::asJson()
+                ->withData($param)
+                ->withUrlParam($url_param)
+                ->method('POST')
+                ->get();
+            $page = Arr::get($response, 'result.records', []) ?? [];
+            $records = $records->merge($page);
+            $offset += $batchSize;
+        } while (count($page) >= $batchSize);
+
+        return $records->map(fn ($item) => static::mapQuantRow($item))
+            ->groupBy(fn ($row) => $row['id'].'|'.($row['lot'] ?? '').'|'.($row['expired'] ?? ''))
+            ->map(function ($group) {
+                $first = $group->first();
+                $first['quantity'] = $group->sum('quantity');
+
+                return $first;
+            })
+            ->values()
+            ->sortBy([
+                ['code', 'asc'],
+                ['lot', 'asc'],
+            ])
+            ->values();
+    }
+
+    private static function mapQuantRow(array $item): array
+    {
+        $loc = get_name($item['location_id'] ?? null);
+        $lot = get_name($item['lot_id'] ?? null);
+        $pecah_code = pecah_code($item['product_id'] ?? null);
+        $id = $pecah_code[0];
+        $code = $pecah_code[1];
+        $name = $pecah_code[2];
+        $expired = $item['itds_expired'] ?? null;
+        $expired_ori = $expired;
+        try {
+            $expired = odoo_datetime($expired, 'Y.m.d');
+        } catch (\Throwable $th) {
+            // throw $th;
+        }
+
+        return [
+            'id' => $id,
+            'quantity' => $item['quantity'] ?? 0,
+            'code' => $code,
+            'name' => $name,
+            'location' => $loc,
+            'lot' => $lot,
+            'expired' => $expired,
+            'expired_ori' => $expired_ori,
+            'original' => $item,
+        ];
     }
 
     public static function getLocationAlias(string $code)
