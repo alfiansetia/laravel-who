@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
+import CopyButton from '@/components/CopyButton.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import MultiSelect from '@/components/MultiSelect.vue';
 import FormField from '@/components/FormField.vue';
@@ -206,7 +207,12 @@ load();
                 <Button variant="outline" size="sm" title="Salin kode + nama" @click="copyRow(row)"><Copy /></Button>
             </template>
         </DataTable>
-        <AppModal v-model:open="lotOpen" :title="`${activeProduct?.code ?? ''} — ${activeProduct?.name ?? 'Detail Lot/SN'}`" size="xl">
+        <AppModal v-model:open="lotOpen" size="xl">
+            <template #title>
+                {{ activeProduct?.code ?? '' }} — {{ activeProduct?.name ?? 'Detail Lot/SN' }}
+                <CopyButton :text="activeProduct?.code ?? ''" label="Kode Barang" />
+                <CopyButton :text="activeProduct?.name ?? ''" label="Deskripsi" />
+            </template>
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <Input :model-value="lotSearchBox" type="search" placeholder="Cari lokasi / lot..." class="max-w-xs" @input="onLotSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(lotCopyRows, ['location', 'lot_ed', 'quantity'], 'lot')"><Copy /> Salin</Button>
