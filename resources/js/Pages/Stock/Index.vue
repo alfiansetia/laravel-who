@@ -139,10 +139,16 @@ async function openLot(row) {
 function lotLabel(row) {
     const lot = row.lot || '-';
     if (row.expired && row.expired !== 'False') {
-        return `${lot} / ${row.expired}`;
+        return `${lot}/${row.expired}`;
     }
     return lot;
 }
+
+/** Baris siap salin: lot & ED digabung satu kolom (`LOT/ED`). */
+const lotCopyRows = computed(() => lotTable.filtered.value.map((row) => ({
+    ...row,
+    lot_ed: lotLabel(row),
+})));
 
 function downloadOpname() {
     if (locations.value.length === 0) {
@@ -203,7 +209,7 @@ load();
         <AppModal v-model:open="lotOpen" :title="`${activeProduct?.code ?? ''} — ${activeProduct?.name ?? 'Detail Lot/SN'}`" size="xl">
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <Input :model-value="lotSearchBox" type="search" placeholder="Cari lokasi / lot..." class="max-w-xs" @input="onLotSearchInput" />
-                <Button variant="outline" size="sm" @click="copyRows(lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'], 'lot')"><Copy /> Salin</Button>
+                <Button variant="outline" size="sm" @click="copyRows(lotCopyRows, ['location', 'lot_ed', 'quantity'], 'lot')"><Copy /> Salin</Button>
                 <Button variant="outline" size="sm" @click="downloadCsv(`lot-${activeProduct?.code ?? 'stock'}`, lotTable.filtered.value, ['location', 'lot', 'expired', 'quantity'])"><Download /> CSV</Button>
                 <LabelPrint :items="labelItems" :title="labelTitle" />
             </div>
