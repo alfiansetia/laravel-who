@@ -36,4 +36,16 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    /* Cegah auto-zoom saat fokus input di HP.
+       iOS Safari (dan sebagian Android) memaksa zoom bila
+       font-size elemen form < 16px. Di desktop tetap 14px
+       via class text-sm masing-masing komponen. */
+    @media (max-width: 767.98px) {
+        input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']),
+        textarea,
+        select {
+            font-size: 16px !important;
+        }
+    }
 }

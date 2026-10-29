@@ -187,7 +187,7 @@ onBeforeUnmount(() => {
                 <input
                     ref="searchInputEl"
                     :placeholder="searchPlaceholder"
-                    class="mb-1 h-8 w-full rounded border px-2 text-sm"
+                    class="mb-1 h-8 w-full rounded border px-2 text-base md:text-sm"
                     @input="onSearch"
                 />
                 <div v-if="loading" class="px-1 py-1">

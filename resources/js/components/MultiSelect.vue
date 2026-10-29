@@ -83,7 +83,7 @@ function clearAll() {
             <input
                 v-model="keyword"
                 placeholder="Cari..."
-                class="mb-1 h-8 w-full rounded border px-2 text-sm"
+                class="mb-1 h-8 w-full rounded border px-2 text-base md:text-sm"
             />
             <div class="mb-1 flex gap-1 px-1">
                 <button type="button" class="text-xs text-primary hover:underline" @click="selectAll">Pilih semua</button>
