@@ -344,13 +344,11 @@ load();
             :per-page="table.perPage.value"
             :per-page-options="perPageOptions"
             sortable
-            clickable
             empty-title="Product tidak ditemukan"
             empty-message="Ubah kata kunci atau filter."
             @update:page="table.setPage"
             @update:per-page="table.setPerPage"
             @sort="table.toggleSort"
-            @row-click="openDetail"
         >
             <template #cell-code="{ row }"><b>{{ row.code ?? '-' }}</b></template>
             <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
