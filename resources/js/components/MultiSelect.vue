@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Check, ChevronsUpDown } from '@lucide/vue';
 
 const props = defineProps({
@@ -14,6 +14,44 @@ const emit = defineEmits(['update:modelValue']);
 
 const open = ref(false);
 const keyword = ref('');
+const rootEl = ref(null);
+
+function toggle() {
+    open.value = !open.value;
+}
+
+function onOutside(e) {
+    if (!open.value) {
+        return;
+    }
+    if (rootEl.value?.contains(e.target)) {
+        return;
+    }
+    open.value = false;
+}
+
+function onKey(e) {
+    if (e.key === 'Escape' && open.value) {
+        open.value = false;
+    }
+}
+
+watch(open, (v, prev) => {
+    if (v) {
+        document.addEventListener('pointerdown', onOutside, true);
+        document.addEventListener('keydown', onKey, true);
+    }
+    if (prev && !v) {
+        document.removeEventListener('pointerdown', onOutside, true);
+        document.removeEventListener('keydown', onKey, true);
+        keyword.value = '';
+    }
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('pointerdown', onOutside, true);
+    document.removeEventListener('keydown', onKey, true);
+});
 
 const selectedSet = computed(() => new Set(props.modelValue.map(String)));
 
@@ -62,11 +100,11 @@ function clearAll() {
 </script>
 
 <template>
-    <div class="relative">
+    <div ref="rootEl" class="relative">
         <button
             type="button"
             class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-sm"
-            @click="open = !open"
+            @click="toggle"
         >
             <span class="truncate" :class="modelValue.length === 0 && 'text-muted-foreground'">{{ triggerLabel }}</span>
             <span class="flex shrink-0 items-center gap-1">
