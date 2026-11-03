@@ -594,7 +594,25 @@ const uploadSize = ref('');
 const uploadPct = ref(0);
 const uploadText = ref('');
 const uploading = ref(false);
+// Ringkasan + retry: simpan baris ter-parse agar batch gagal bisa dikirim ulang.
+const uploadDataRows = ref([]);
+const uploadFailed = ref([]);
+const uploadImported = ref(0);
+const uploadTotalRows = ref(0);
+const uploadDone = ref(false);
+const retrying = ref(false);
 let importCancelled = false;
+function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+}
+function batchErrorInfo(e) {
+    const status = e?.response?.status ?? null;
+    let message = e?.response?.data?.message ?? e?.message ?? 'Gagal mengirim batch.';
+    if (status === 429) {
+        message = `Rate limited (429) — ${e?.response?.data?.message ?? 'terlalu banyak request. Coba retry dengan jeda.'}`;
+    }
+    return { status, message };
+}
 function openUpload() {
     uploadKategori.value = '';
     uploadFile.value = null;
@@ -604,6 +622,12 @@ function openUpload() {
     uploadText.value = '';
     uploading.value = false;
     importCancelled = false;
+    uploadDataRows.value = [];
+    uploadFailed.value = [];
+    uploadImported.value = 0;
+    uploadTotalRows.value = 0;
+    uploadDone.value = false;
+    retrying.value = false;
     uploadOpen.value = true;
 }
 function onPickFile() {
@@ -646,6 +670,38 @@ function formatISO(d) {
 }
 function cancelUpload() {
     importCancelled = true;
+}
+async function sendOneBatch(batchNo, slice, attempt = 1) {
+    try {
+        const res = await api.post('/izin-edars/import-batch', { kategori: uploadKategori.value, rows: slice }, { silent: true, block: true });
+        if (res.data?.success) {
+            return res.data?.imported ?? slice.length;
+        }
+        throw new Error(res.data?.message ?? `Batch ${batchNo} ditolak server.`);
+    } catch (e) {
+        const { status } = batchErrorInfo(e);
+        // 429 → hormati Retry-After lalu coba lagi (maks 3x) sebelum dinyatakan gagal.
+        if (status === 429 && attempt < 3 && !importCancelled) {
+            const retryAfter = Number(e?.response?.headers?.['retry-after'] ?? 0);
+            const waitMs = (Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 2000 * attempt);
+            uploadText.value = `Batch ${batchNo} kena 429 — jeda ${Math.round(waitMs / 1000)} dtk lalu retry (${attempt}/3)...`;
+            await sleep(waitMs);
+            return sendOneBatch(batchNo, slice, attempt + 1);
+        }
+        throw e;
+    }
+}
+function failedEntry(batchNo, slice, e) {
+    const BATCH = 500;
+    const { status, message } = batchErrorInfo(e);
+    return {
+        batchNo,
+        from: (batchNo - 1) * BATCH + 1,
+        to: (batchNo - 1) * BATCH + slice.length,
+        count: slice.length,
+        status,
+        message,
+    };
 }
 async function doUpload() {
     if (!uploadKategori.value) {
@@ -726,25 +782,31 @@ async function doUpload() {
         }
         const BATCH = 500;
         const total = Math.ceil(dataRows.length / BATCH);
+        uploadDataRows.value = dataRows;
+        uploadTotalRows.value = dataRows.length;
+        uploadFailed.value = [];
+        uploadImported.value = 0;
+        uploadDone.value = false;
         let imported = 0;
-        let failed = 0;
         uploadPct.value = 20;
         uploadText.value = `${dataRows.length} baris ditemukan. Mengirim ke server...`;
         for (let b = 0; b < total; b++) {
             if (importCancelled) {
                 break;
             }
+            const batchNo = b + 1;
+            const slice = dataRows.slice(b * BATCH, (b + 1) * BATCH);
             uploadPct.value = 20 + Math.round((b / total) * 80);
-            uploadText.value = `Batch ${b + 1}/${total} — ${imported} / ${dataRows.length} baris`;
+            uploadText.value = `Batch ${batchNo}/${total} — ${imported} / ${dataRows.length} baris`;
             try {
-                const res = await api.post('/izin-edars/import-batch', { kategori: uploadKategori.value, rows: dataRows.slice(b * BATCH, (b + 1) * BATCH) }, { silent: true, block: true });
-                if (res.data?.success) {
-                    imported += res.data?.imported ?? 0;
-                } else {
-                    failed++;
-                }
-            } catch {
-                failed++;
+                imported += await sendOneBatch(batchNo, slice);
+                uploadImported.value = imported;
+            } catch (e) {
+                uploadFailed.value.push(failedEntry(batchNo, slice, e));
+            }
+            // Jeda antar batch agar tidak menabrak throttle:api (60/menit).
+            if (b < total - 1 && !importCancelled) {
+                await sleep(600);
             }
         }
         if (importCancelled) {
@@ -752,16 +814,22 @@ async function doUpload() {
             return importingReset();
         }
         uploadPct.value = 100;
-        uploadText.value = `Selesai! ${imported} baris diimport.`;
+        uploadDone.value = true;
+        const failed = uploadFailed.value.length;
         if (failed > 0) {
-            toast.warning(`${imported} baris diimport (${failed} batch gagal).`);
+            uploadText.value = `Selesai dengan ${failed} batch gagal — ${imported} / ${dataRows.length} baris diimport.`;
+            toast.warning(`${imported} baris diimport (${failed} batch gagal — bisa retry di bawah).`);
         } else {
+            uploadText.value = `Selesai! ${imported} baris diimport.`;
             toast.success(`${imported} baris diimport (${uploadKategori.value}).`);
         }
         query.fetch();
-        setTimeout(() => {
-            uploadOpen.value = false;
-        }, 1000);
+        // Tutup otomatis hanya bila semua sukses; bila ada gagal biarkan modal terbuka untuk retry.
+        if (failed === 0) {
+            setTimeout(() => {
+                uploadOpen.value = false;
+            }, 1000);
+        }
     } catch (e) {
         toast.error(e.message ?? 'Gagal memproses file.');
         importingReset();
@@ -772,6 +840,84 @@ async function doUpload() {
 function importingReset() {
     uploadPct.value = 0;
     uploadText.value = '';
+}
+async function retryFailed() {
+    if (retrying.value || uploading.value || uploadFailed.value.length === 0) {
+        return;
+    }
+    const BATCH = 500;
+    importCancelled = false;
+    retrying.value = true;
+    uploading.value = true;
+    const pending = [...uploadFailed.value];
+    uploadFailed.value = [];
+    const total = pending.length;
+    let done = 0;
+    for (const item of pending) {
+        if (importCancelled) {
+            uploadFailed.value.push(item);
+            continue;
+        }
+        uploadText.value = `Retry batch ${item.batchNo} (${done + 1}/${total}) — baris ${item.from}–${item.to}...`;
+        uploadPct.value = Math.round((done / total) * 100);
+        const slice = uploadDataRows.value.slice((item.batchNo - 1) * BATCH, (item.batchNo - 1) * BATCH + item.count);
+        try {
+            const n = await sendOneBatch(item.batchNo, slice.length ? slice : uploadDataRows.value.slice(item.from - 1, item.to));
+            uploadImported.value += n;
+            done++;
+        } catch (e) {
+            uploadFailed.value.push(failedEntry(item.batchNo, slice, e));
+        }
+        if (!importCancelled) {
+            await sleep(800);
+        }
+    }
+    uploadPct.value = 100;
+    if (uploadFailed.value.length === 0) {
+        uploadText.value = `Semua retry berhasil! Total ${uploadImported.value} / ${uploadTotalRows.value} baris diimport.`;
+        toast.success('Semua batch gagal berhasil di-retry.');
+        query.fetch();
+        setTimeout(() => {
+            uploadOpen.value = false;
+        }, 1200);
+    } else {
+        uploadText.value = `${uploadFailed.value.length} batch masih gagal — ${uploadImported.value} / ${uploadTotalRows.value} baris diimport.`;
+        toast.warning(`${uploadFailed.value.length} batch masih gagal. Bisa retry lagi.`);
+        query.fetch();
+    }
+    retrying.value = false;
+    uploading.value = false;
+}
+async function retrySingle(batchNo) {
+    if (retrying.value || uploading.value) {
+        return;
+    }
+    const idx = uploadFailed.value.findIndex((f) => f.batchNo === batchNo);
+    if (idx === -1) {
+        return;
+    }
+    const BATCH = 500;
+    const item = uploadFailed.value[idx];
+    retrying.value = true;
+    try {
+        const slice = uploadDataRows.value.slice((item.batchNo - 1) * BATCH, (item.batchNo - 1) * BATCH + item.count);
+        const n = await sendOneBatch(item.batchNo, slice.length ? slice : uploadDataRows.value.slice(item.from - 1, item.to));
+        uploadImported.value += n;
+        uploadFailed.value.splice(idx, 1);
+        toast.success(`Batch ${item.batchNo} berhasil di-retry (${n} baris).`);
+        query.fetch();
+        if (uploadFailed.value.length === 0) {
+            uploadText.value = `Semua retry berhasil! Total ${uploadImported.value} / ${uploadTotalRows.value} baris diimport.`;
+            setTimeout(() => {
+                uploadOpen.value = false;
+            }, 1200);
+        }
+    } catch (e) {
+        uploadFailed.value[idx] = failedEntry(item.batchNo, uploadDataRows.value.slice((item.batchNo - 1) * BATCH, (item.batchNo - 1) * BATCH + item.count), e);
+        toast.error(`Batch ${item.batchNo} masih gagal: ${uploadFailed.value[idx].message}`);
+    } finally {
+        retrying.value = false;
+    }
 }
 
 onMounted(() => {
@@ -978,11 +1124,27 @@ loadProgress(true).then(() => {
                     </div>
                     <p class="text-xs text-muted-foreground">{{ uploadPct }}% — {{ uploadText }}</p>
                 </div>
+                <div v-if="uploadDone" class="rounded-lg border p-3 text-xs" :class="uploadFailed.length ? 'border-red-200 bg-red-50/50' : 'border-green-200 bg-green-50/50'">
+                    <p class="text-sm font-bold">{{ uploadFailed.length ? 'Ringkasan: ada batch gagal' : 'Ringkasan: semua berhasil' }}</p>
+                    <p class="mt-1 text-muted-foreground">
+                        Total {{ uploadTotalRows }} baris ({{ uploadKategori }}) — berhasil {{ uploadImported }}, gagal {{ uploadFailed.reduce((a, f) => a + f.count, 0) }} baris dalam {{ uploadFailed.length }} batch.
+                    </p>
+                    <div v-if="uploadFailed.length" class="mt-2 space-y-1">
+                        <div v-for="f in uploadFailed" :key="f.batchNo" class="flex items-center justify-between gap-2 rounded-md border border-red-200 bg-white px-2 py-1.5">
+                            <div class="min-w-0">
+                                <p class="font-bold">Batch {{ f.batchNo }} <span class="font-normal text-muted-foreground">(baris {{ f.from }}–{{ f.to }})</span> <span v-if="f.status" class="ml-1 rounded bg-red-100 px-1.5 py-0.5 font-mono">{{ f.status }}</span></p>
+                                <p class="truncate text-muted-foreground" :title="f.message">{{ f.message }}</p>
+                            </div>
+                            <Button variant="outline" size="sm" :disabled="uploading || retrying" @click="retrySingle(f.batchNo)"><RefreshCw /> Retry</Button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <template #footer>
                 <Button variant="ghost" :disabled="uploading" @click="uploadOpen = false">Tutup</Button>
                 <Button v-if="uploading" variant="outline" @click="cancelUpload">Batalkan</Button>
-                <Button :disabled="uploading || !uploadKategori || !uploadName" @click="doUpload"><Upload /> Parse &amp; Import</Button>
+                <Button v-if="uploadDone && uploadFailed.length" :disabled="uploading || retrying" @click="retryFailed"><RefreshCw /> Retry gagal ({{ uploadFailed.length }})</Button>
+                <Button v-else :disabled="uploading || retrying || !uploadKategori || !uploadName" @click="doUpload"><Upload /> Parse &amp; Import</Button>
             </template>
         </AppModal>
     </AppLayout>
