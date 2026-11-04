@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDownToLine, ArrowUpFromLine, Copy, Eye, Pencil, Plus, RefreshCw, Save, Trash2 } from '@lucide/vue';
+import { ArrowDownToLine, ArrowUpFromLine, Copy, Eye, Pencil, Plus, Printer, RefreshCw, Save, Trash2, Upload } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -26,23 +26,29 @@ const props = defineProps({
 const toast = useToast();
 const { confirm } = useConfirm();
 const query = useTableQuery(
-    (p) => api.get('/atk', { params: { ...p, satuan: satuanBox.value || undefined } }),
+    (p) => api.get('/atk', { params: { ...p, satuan: satuanBox.value || undefined, stok: stokBox.value || undefined } }),
     { search: props.filters.search ?? '', page: Number(props.filters.page ?? 1) },
 );
 const selected = ref([]);
 
 const searchBox = ref(props.filters.search ?? '');
 const satuanBox = ref(props.filters.satuan ?? '');
+const stokBox = ref(props.filters.stok ?? '');
 function onSatuan(v) {
     satuanBox.value = v;
+    query.fetch();
+}
+function onStok(v) {
+    stokBox.value = v;
     query.fetch();
 }
 function resetFilter() {
     searchBox.value = '';
     satuanBox.value = '';
+    stokBox.value = '';
     query.setSearch('', 0);
 }
-const activeCount = computed(() => (satuanBox.value ? 1 : 0));
+const activeCount = computed(() => (satuanBox.value ? 1 : 0) + (stokBox.value ? 1 : 0));
 
 const columns = [
     { key: 'code', label: 'Kode', mono: true },
@@ -52,6 +58,10 @@ const columns = [
 ];
 const perPageOptions = [10, 25, 50, 100, 200];
 const satuanOptions = computed(() => props.satuanList.map((s) => ({ value: s, label: s })));
+const stokOptions = [
+    { value: 'ada', label: 'Ada stok' },
+    { value: 'kosong', label: 'Stok kosong' },
+];
 
 const exportRows = computed(() =>
     query.rows.value.map((r) => ({ code: r.code ?? '', name: r.name ?? '', satuan: r.satuan ?? '', stok: r.stok ?? 0 })),
@@ -104,19 +114,6 @@ async function saveForm() {
         toast.error(e.response?.data?.message ?? 'Gagal menyimpan ATK.');
     }
 }
-async function deleteRow(row) {
-    const ok = await confirm({ title: `Hapus ${row.code}?`, message: 'Data yang dihapus tidak dapat dikembalikan.', confirmText: 'Ya, hapus', tone: 'destructive' });
-    if (!ok) {
-        return;
-    }
-    try {
-        await api.delete(`/atk/${row.id}`, { block: true });
-        toast.success('ATK dihapus.');
-        query.fetch();
-    } catch (e) {
-        toast.error(e.response?.data?.message ?? 'Gagal menghapus ATK.');
-    }
-}
 async function deleteBatch() {
     if (selected.value.length === 0) {
         toast.warning('Pilih minimal 1 data untuk dihapus.');
@@ -139,11 +136,11 @@ async function deleteBatch() {
 // Transaksi in/out
 const trxOpen = ref(false);
 const trxRow = ref(null);
-const trxForm = ref({ date: new Date().toISOString().slice(0, 10), type: 'in', pic: 'Tika', qty: 1, desc: '' });
+const trxForm = ref({ date: new Date().toISOString().slice(0, 10), type: 'in', pic: 'Fabil', qty: 1, desc: '' });
 const trxErrors = ref({});
 function openTrx(row, type) {
     trxRow.value = row;
-    trxForm.value = { date: new Date().toISOString().slice(0, 10), type, pic: 'Tika', qty: 1, desc: '' };
+    trxForm.value = { date: new Date().toISOString().slice(0, 10), type, pic: 'Fabil', qty: 1, desc: '' };
     trxErrors.value = {};
     trxOpen.value = true;
 }
@@ -166,7 +163,6 @@ async function saveTrx() {
 const detailOpen = ref(false);
 const detailRow = ref(null);
 const detailRows = ref([]);
-const detailLoading = ref(false);
 const detailColumns = [
     { key: 'date', label: 'Tgl', mono: true },
     { key: 'pic', label: 'PIC' },
@@ -185,16 +181,13 @@ const detailWithSaldo = computed(() => {
 });
 async function openDetail(row) {
     detailRow.value = row;
-    detailOpen.value = true;
-    detailLoading.value = true;
     try {
         const res = await api.get('/atk-trx', { params: { atk_id: row.id }, silent: true, block: true });
         detailRows.value = res.data?.data ?? res.data ?? [];
+        detailOpen.value = true;
     } catch (e) {
         detailRows.value = [];
         toast.error(e.response?.data?.message ?? 'Gagal memuat kartu stok.');
-    } finally {
-        detailLoading.value = false;
     }
 }
 async function deleteTrx(t) {
@@ -214,6 +207,9 @@ async function deleteTrx(t) {
 function printCard(row) {
     window.open(`/atk-eksport/${row.id}`, '_blank');
 }
+function printGlobal() {
+    window.open('/atk-eksport-global', '_blank');
+}
 
 query.fetch();
 </script>
@@ -223,8 +219,9 @@ query.fetch();
         <PageHeader :title="title">
             <template #actions>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['code', 'name', 'satuan', 'stok'], 'atk')"><Copy /> Salin</Button>
+                <Button variant="outline" size="sm" @click="printGlobal"><Printer /> Rekap</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
-                <Button variant="outline" size="sm" @click="router.visit('/atk-import')">Import</Button>
+                <Button variant="outline" size="sm" @click="router.visit('/atk-import')"><Upload /> Import</Button>
                 <Button size="sm" @click="openAdd"><Plus /> Add</Button>
             </template>
         </PageHeader>
@@ -234,6 +231,9 @@ query.fetch();
                 <template #filters>
                     <FormField label="Satuan">
                         <SearchableSelect :model-value="satuanBox" :options="satuanOptions" placeholder="Semua Satuan" @update:model-value="onSatuan" />
+                    </FormField>
+                    <FormField label="Stok">
+                        <SearchableSelect :model-value="stokBox" :options="stokOptions" placeholder="Semua Stok" @update:model-value="onStok" />
                     </FormField>
                 </template>
             </TableToolbar>
@@ -267,7 +267,6 @@ query.fetch();
                         <Button variant="outline" size="sm" title="Stok keluar" @click="openTrx(row, 'out')"><ArrowUpFromLine /></Button>
                         <Button variant="ghost" size="sm" title="Kartu stok" @click="openDetail(row)"><Eye /></Button>
                         <Button variant="ghost" size="sm" title="Edit" @click="openEdit(row)"><Pencil /></Button>
-                        <Button variant="ghost" size="sm" title="Hapus" @click="deleteRow(row)"><Trash2 /></Button>
                     </div>
                 </template>
             </DataTable>
@@ -303,12 +302,13 @@ query.fetch();
                     <Input v-model="trxForm.pic" />
                 </FormField>
                 <FormField label="Qty" required :error="trxErrors.qty?.[0]">
-                    <Input v-model.number="trxForm.qty" type="number" min="1" />
+                    <Input v-model.number="trxForm.qty" type="number" min="1" step="1" />
                 </FormField>
                 <FormField label="Keterangan" :error="trxErrors.desc?.[0]">
                     <Input v-model="trxForm.desc" placeholder="Opsional..." />
                 </FormField>
             </div>
+            <p v-if="trxForm.type === 'out'" class="mt-2 text-xs text-muted-foreground">Sisa stok: {{ trxRow?.stok ?? 0 }}</p>
             <template #footer>
                 <Button variant="ghost" @click="trxOpen = false">Batal</Button>
                 <Button @click="saveTrx"><Save /> Simpan</Button>
@@ -316,11 +316,8 @@ query.fetch();
         </AppModal>
 
         <AppModal v-model:open="detailOpen" :title="`Kartu Stok: ${detailRow?.code ?? ''} - ${detailRow?.name ?? ''}`" size="lg">
-            <div v-if="detailLoading" class="space-y-2">
-                <div v-for="n in 5" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
-            </div>
             <DataTable
-                v-if="!detailLoading && detailWithSaldo.length > 0"
+                v-if="detailWithSaldo.length > 0"
                 :columns="detailColumns"
                 :rows="detailWithSaldo"
                 :loading="false"
@@ -341,7 +338,7 @@ query.fetch();
                     <Button variant="ghost" size="sm" @click="deleteTrx(row)"><Trash2 /></Button>
                 </template>
             </DataTable>
-            <p v-else-if="!detailLoading" class="py-8 text-center text-sm text-muted-foreground">Belum ada transaksi.</p>
+            <p v-else class="py-8 text-center text-sm text-muted-foreground">Belum ada transaksi.</p>
             <template #footer>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
                 <Button variant="outline" @click="printCard(detailRow)">Cetak Kartu</Button>

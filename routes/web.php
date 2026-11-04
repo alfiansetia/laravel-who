@@ -97,6 +97,8 @@ Route::delete('atk/{atk}', [AtkController::class, 'destroy'])->name('atk.destroy
 Route::delete('atk', [AtkController::class, 'destroy_batch'])->name('atk.destroy_batch');
 Route::get('atk-import', [AtkController::class, 'import'])->name('atk.import');
 Route::post('atk-import', [AtkController::class, 'import'])->name('atk.import_store');
+Route::get('atk-eksport-global', [AtkController::class, 'eksportGlobal'])->name('atk.eksport_global');
+Route::get('atk-eksport-global-xlsx', [AtkController::class, 'eksportGlobalXlsx'])->name('atk.eksport_global_xlsx');
 Route::get('atk-eksport/{atk}', [AtkController::class, 'eksport'])->name('atk.eksport');
 
 // ATK Transaction (single controller: AtkController)

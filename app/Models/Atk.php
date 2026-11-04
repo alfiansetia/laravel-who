@@ -13,7 +13,7 @@ class Atk extends Model
 
     public function transactions()
     {
-        return $this->hasMany(AtkTransaction::class)->orderBy('date', 'asc');
+        return $this->hasMany(AtkTransaction::class)->orderBy('date', 'asc')->orderBy('id', 'asc');
     }
 
     public function getStokAttribute()
