@@ -17,9 +17,10 @@ class ItController extends Controller
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
             $gudang = $request->input('gudang', 5);
+            $product_search = (string) ($request->input('product_search') ?? '');
 
             $response = ItServices::withGudang(intval($gudang))
-                ->getAll($search, $perPage, $offset);
+                ->getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -34,7 +35,7 @@ class ItController extends Controller
 
         return Inertia::render('It/Index', [
             'title' => 'IT',
-            'filters' => $request->only(['search', 'page', 'gudang']),
+            'filters' => $request->only(['search', 'page', 'gudang', 'product_search']),
         ]);
     }
 

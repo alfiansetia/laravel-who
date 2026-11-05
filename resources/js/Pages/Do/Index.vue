@@ -29,7 +29,7 @@ const toast = useToast();
 const query = useTableQuery((p) => api.get('/do', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
-    filters: { note_search: props.filters.note_search ?? '' },
+    filters: { note_search: props.filters.note_search ?? '', product_search: props.filters.product_search ?? '' },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -50,21 +50,28 @@ const detailTabs = computed(() => [
     { value: 'lot', label: 'Product Lot', count: lotTable.total.value },
 ]);
 
-const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0) + (query.filters.value.product_search ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
 const noteBox = ref(props.filters.note_search ?? '');
+const productBox = ref(props.filters.product_search ?? '');
 
 function onNoteInput(e) {
     noteBox.value = e.target.value;
     query.setFilters({ note_search: e.target.value }, 1000);
 }
 
+function onProductInput(e) {
+    productBox.value = e.target.value;
+    query.setFilters({ product_search: e.target.value }, 1000);
+}
+
 function resetFilter() {
     searchBox.value = '';
     noteBox.value = '';
+    productBox.value = '';
     query.setSearch('', 0);
-    query.setFilters({ note_search: '' });
+    query.setFilters({ note_search: '', product_search: '' });
 }
 
 const columns = [
@@ -252,6 +259,9 @@ query.fetch();
             <template #filters>
                 <FormField label="Note">
                     <Input :model-value="noteBox" placeholder="Cari Note..." @input="onNoteInput" />
+                </FormField>
+                <FormField label="Kode Produk">
+                    <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
                 </FormField>
             </template>
         </TableToolbar>

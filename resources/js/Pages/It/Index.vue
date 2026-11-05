@@ -36,7 +36,7 @@ const toast = useToast();
 const query = useTableQuery((p) => api.get('/it', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
-    filters: { gudang: props.filters.gudang ?? '5' },
+    filters: { gudang: props.filters.gudang ?? '5', product_search: props.filters.product_search ?? '' },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -57,14 +57,21 @@ const detailTabs = computed(() => [
     { value: 'lot', label: 'Product Lot', count: lotTable.total.value },
 ]);
 
-const activeCount = computed(() => (query.filters.value.gudang ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.gudang ? 1 : 0) + (query.filters.value.product_search ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
+const productBox = ref(props.filters.product_search ?? '');
+
+function onProductInput(e) {
+    productBox.value = e.target.value;
+    query.setFilters({ product_search: e.target.value }, 1000);
+}
 
 function resetFilter() {
     searchBox.value = '';
+    productBox.value = '';
     query.setSearch('', 0);
-    query.setFilters({ gudang: '5' });
+    query.setFilters({ gudang: '5', product_search: '' });
 }
 
 const columns = [
@@ -237,6 +244,9 @@ query.fetch();
             <template #filters>
                 <FormField label="Gudang">
                     <SearchableSelect :model-value="query.filters.value.gudang" :options="gudangOptions" placeholder="Pilih gudang..." @update:model-value="query.setFilters({ gudang: $event })" />
+                </FormField>
+                <FormField label="Kode Produk">
+                    <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
                 </FormField>
             </template>
         </TableToolbar>

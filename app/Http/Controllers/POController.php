@@ -17,8 +17,9 @@ class POController extends Controller
             $page = max((int) $request->input('page', 1), 1);
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
+            $product_search = (string) ($request->input('product_search') ?? '');
 
-            $response = POServices::getAll($search, $perPage, $offset);
+            $response = POServices::getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -33,7 +34,7 @@ class POController extends Controller
 
         return Inertia::render('Po/Index', [
             'title' => 'PO',
-            'filters' => $request->only(['search', 'page']),
+            'filters' => $request->only(['search', 'page', 'product_search']),
         ]);
     }
 

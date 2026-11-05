@@ -32,7 +32,7 @@ const { withBlock } = useBlock();
 const query = useTableQuery((p) => api.get('/so', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
-    filters: { note_search: props.filters.note_search ?? '', filter: props.filters.filter ?? '' },
+    filters: { note_search: props.filters.note_search ?? '', filter: props.filters.filter ?? '', product_search: props.filters.product_search ?? '' },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -47,21 +47,28 @@ const printOptions = [
     { label: 'Blm Print OK', value: 'print_ok' },
 ];
 
-const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0) + (query.filters.value.filter ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0) + (query.filters.value.filter ? 1 : 0) + (query.filters.value.product_search ? 1 : 0));
 
 const searchBox = ref(props.filters.search ?? '');
 const noteBox = ref(props.filters.note_search ?? '');
+const productBox = ref(props.filters.product_search ?? '');
 
 function onNoteInput(e) {
     noteBox.value = e.target.value;
     query.setFilters({ note_search: e.target.value }, 1000);
 }
 
+function onProductInput(e) {
+    productBox.value = e.target.value;
+    query.setFilters({ product_search: e.target.value }, 1000);
+}
+
 function resetFilter() {
     searchBox.value = '';
     noteBox.value = '';
+    productBox.value = '';
     query.setSearch('', 0);
-    query.setFilters({ note_search: '', filter: '' });
+    query.setFilters({ note_search: '', filter: '', product_search: '' });
 }
 
 const columns = [
@@ -187,6 +194,9 @@ query.fetch();
                 </FormField>
                 <FormField label="Status Print">
                     <SearchableSelect :model-value="query.filters.value.filter" :options="printOptions" placeholder="Semua" @update:model-value="query.setFilters({ filter: $event })" />
+                </FormField>
+                <FormField label="Kode Produk">
+                    <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
                 </FormField>
             </template>
         </TableToolbar>

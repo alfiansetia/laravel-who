@@ -11,13 +11,34 @@ class RIServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll($query = 'CENT/IN', $limit = 80, $offset = null)
+    public static function getAll($query = 'CENT/IN', $limit = 80, $offset = null, $product_search = '')
     {
         if (empty($query)) {
             $query = 'CENT/IN';
         }
         if (empty($limit)) {
             $limit = 80;
+        }
+        $domain = [
+            [
+                'picking_type_id',
+                '=',
+                1,
+            ],
+            '|',
+            [
+                'name',
+                'ilike',
+                $query,
+            ],
+            [
+                'origin',
+                'ilike',
+                $query,
+            ],
+        ];
+        if (trim((string) $product_search) !== '') {
+            $domain[] = ['product_id', 'ilike', trim((string) $product_search)];
         }
         $url_param = '/web/dataset/search_read';
         $data = [
@@ -26,24 +47,7 @@ class RIServices extends Odoo
             'id' => 904074976,
             'params' => [
                 'model' => 'stock.picking',
-                'domain' => [
-                    [
-                        'picking_type_id',
-                        '=',
-                        1,
-                    ],
-                    '|',
-                    [
-                        'name',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'origin',
-                        'ilike',
-                        $query,
-                    ],
-                ],
+                'domain' => $domain,
                 'fields' => [
                     'name',
                     'x_studio_no_do_manual',

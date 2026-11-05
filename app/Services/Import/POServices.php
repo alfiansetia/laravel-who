@@ -10,13 +10,23 @@ class POServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll($query = 'PO', $limit = 80, $offset = null)
+    public static function getAll($query = 'PO', $limit = 80, $offset = null, $product_search = '')
     {
         if (empty($query)) {
             $query = 'PO';
         }
         if (empty($limit)) {
             $limit = 80;
+        }
+        $domain = [
+            [
+                'name',
+                'ilike',
+                $query,
+            ],
+        ];
+        if (trim((string) $product_search) !== '') {
+            $domain[] = ['order_line.product_id', 'ilike', trim((string) $product_search)];
         }
         $url_param = '/web/dataset/search_read';
         $data = [
@@ -25,13 +35,7 @@ class POServices extends Odoo
             'id' => 392626529,
             'params' => [
                 'model' => 'purchase.order',
-                'domain' => [
-                    [
-                        'name',
-                        'ilike',
-                        $query,
-                    ],
-                ],
+                'domain' => $domain,
                 'fields' => [
                     'message_unread',
                     'name',

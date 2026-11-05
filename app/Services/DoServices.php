@@ -9,7 +9,7 @@ class DoServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null, $note_search = '')
+    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null, $note_search = '', $product_search = '')
     {
         if (empty($query)) {
             $query = 'CENT/OUT';
@@ -17,35 +17,39 @@ class DoServices extends Odoo
         if (empty($limit)) {
             $limit = 80;
         }
+        $domain = [
+            [
+                'picking_type_id',
+                '=',
+                2,
+            ],
+            '|',
+            [
+                'name',
+                'ilike',
+                $query,
+            ],
+            [
+                'origin',
+                'ilike',
+                $query,
+            ],
+            [
+                'note_to_wh',
+                'ilike',
+                $note_search,
+            ],
+        ];
+        if (trim((string) $product_search) !== '') {
+            $domain[] = ['product_id', 'ilike', trim((string) $product_search)];
+        }
         $url_param = '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',
             'params' => [
                 'model' => 'stock.picking',
-                'domain' => [
-                    [
-                        'picking_type_id',
-                        '=',
-                        2,
-                    ],
-                    '|',
-                    [
-                        'name',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'origin',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'note_to_wh',
-                        'ilike',
-                        $note_search,
-                    ],
-                ],
+                'domain' => $domain,
                 'fields' => [
                     'name',
                     'x_studio_no_do_manual',

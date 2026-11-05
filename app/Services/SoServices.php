@@ -10,7 +10,7 @@ class SoServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll(string $query = '', int $limit = 80, int $offset = 0, array $filter = [])
+    public static function getAll(string $query = '', int $limit = 80, int $offset = 0, array $filter = [], string $product_search = '')
     {
         $url_param = '/web/dataset/search_read';
         $data = [
@@ -84,6 +84,9 @@ class SoServices extends Odoo
                 ],
             ],
         ];
+        if (trim($product_search) !== '') {
+            $data['params']['domain'][] = ['order_line.product_id', 'ilike', trim($product_search)];
+        }
         $response = parent::asJson()
             ->withUrlParam($url_param)
             ->method('POST')

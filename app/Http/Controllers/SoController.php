@@ -17,6 +17,7 @@ class SoController extends Controller
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
             $note_search = (string) ($request->input('note_search') ?? '');
+            $product_search = (string) ($request->input('product_search') ?? '');
             $filter = $request->input('filter');
             $filters = [];
             if ($filter == 'print_ok') {
@@ -36,7 +37,7 @@ class SoController extends Controller
                 ];
             }
 
-            $response = SoServices::getAll($search, $perPage, $offset, $filters);
+            $response = SoServices::getAll($search, $perPage, $offset, $filters, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -51,7 +52,7 @@ class SoController extends Controller
 
         return Inertia::render('So/Index', [
             'title' => 'SO',
-            'filters' => $request->only(['search', 'page', 'note_search', 'filter']),
+            'filters' => $request->only(['search', 'page', 'note_search', 'filter', 'product_search']),
         ]);
     }
 

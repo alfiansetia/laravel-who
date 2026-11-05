@@ -25,32 +25,36 @@ class ItServices extends Odoo
         return new self;
     }
 
-    public static function getAll($query = '', int $limit = 80, int $offset = 0)
+    public static function getAll($query = '', int $limit = 80, int $offset = 0, $product_search = '')
     {
+        $domain = [
+            [
+                'picking_type_id',
+                '=',
+                self::$gudang_id,
+            ],
+            '|',
+            [
+                'name',
+                'ilike',
+                $query,
+            ],
+            [
+                'origin',
+                'ilike',
+                $query,
+            ],
+        ];
+        if (trim((string) $product_search) !== '') {
+            $domain[] = ['product_id', 'ilike', trim((string) $product_search)];
+        }
         $url_param = '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',
             'method' => 'call',
             'params' => [
                 'model' => 'stock.picking',
-                'domain' => [
-                    [
-                        'picking_type_id',
-                        '=',
-                        self::$gudang_id,
-                    ],
-                    '|',
-                    [
-                        'name',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'origin',
-                        'ilike',
-                        $query,
-                    ],
-                ],
+                'domain' => $domain,
                 'fields' => [
                     'name',
                     'x_studio_no_do_manual',

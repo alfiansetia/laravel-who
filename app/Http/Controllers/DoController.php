@@ -18,7 +18,8 @@ class DoController extends Controller
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
             $note_search = (string) ($request->input('note_search') ?? '');
-            $response = DoServices::getAll($search, $perPage, $offset, $note_search);
+            $product_search = (string) ($request->input('product_search') ?? '');
+            $response = DoServices::getAll($search, $perPage, $offset, $note_search, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -33,7 +34,7 @@ class DoController extends Controller
 
         return Inertia::render('Do/Index', [
             'title' => 'DO',
-            'filters' => $request->only(['search', 'page', 'note_search']),
+            'filters' => $request->only(['search', 'page', 'note_search', 'product_search']),
         ]);
     }
 
