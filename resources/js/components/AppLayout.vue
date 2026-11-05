@@ -16,6 +16,7 @@ import {
     FileText,
     ListOrdered,
     Layers,
+    ShoppingCart,
     X,
 } from '@lucide/vue';
 import AuthModal from '@/components/AuthModal.vue';
@@ -72,6 +73,7 @@ const mainLinks = [
     { label: 'BAST', route: 'basts.index', match: 'basts.*', icon: FileText },
     { label: 'PL', route: 'packs.index', match: 'packs.*', icon: ListOrdered },
     { label: 'SOP', route: 'sops.index', match: 'sops.*', icon: Layers },
+    { label: 'SO', route: 'so.index', match: 'so.*', icon: ShoppingCart },
 ];
 
 const odooLinks = [
@@ -80,7 +82,6 @@ const odooLinks = [
     { label: 'Vendor', route: 'vendors.index', match: 'vendors.*' },
     { label: 'Purchase Order (PO)', route: 'po.index', match: 'po.*' },
     { label: 'Reception (RI)', route: 'ri.index', match: 'ri.*' },
-    { label: 'Sales Order (SO)', route: 'so.index', match: 'so.*' },
     { label: 'Delivery Order (DO)', route: 'do.index', match: 'do.*' },
     { label: 'Internal Transfer (IT)', route: 'it.index', match: 'it.*' },
     { label: 'IT Request (ITR)', route: 'itr.index', match: 'itr.*' },

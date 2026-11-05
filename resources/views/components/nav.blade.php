@@ -181,6 +181,11 @@
                         <i class="fas fa-layer-group mr-1"></i>SOP
                     </a>
                 </li>
+                <li class="nav-item <?= Route::is('so.*') ? 'active' : '' ?>">
+                    <a class="nav-link" href="{{ route('so.index') }}">
+                        <i class="fas fa-shopping-cart mr-1"></i>SO
+                    </a>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
                         aria-expanded="false">
@@ -191,8 +196,6 @@
                                 class="fas fa-file-invoice mr-1 text-primary"></i>Purchase Order (PO)</a>
                         <a class="dropdown-item" href="{{ route('ri.index') }}"><i
                                 class="fas fa-receipt mr-1 text-success"></i>Reception (RI)</a>
-                        <a class="dropdown-item" href="{{ route('so.index') }}"><i
-                                class="fas fa-shopping-cart mr-1 text-info"></i>Sales Order (SO)</a>
                         <a class="dropdown-item" href="{{ route('do.index') }}"><i
                                 class="fas fa-truck mr-1 text-warning"></i>Delivery Order (DO)</a>
                         <a class="dropdown-item" href="{{ route('it.index') }}"><i
