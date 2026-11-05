@@ -48,7 +48,7 @@ class ItrServices extends Odoo
         ];
     }
 
-    public static function getAll($query = '', $limit = 80, $offset = 0)
+    public static function getAll($query = '', $limit = 80, $offset = 0, $product_search = '')
     {
         $query = trim((string) $query);
         $domain = $query === ''
@@ -60,6 +60,9 @@ class ItrServices extends Odoo
                     $query,
                 ],
             ];
+        if (trim((string) $product_search) !== '') {
+            $domain[] = ['detail.nama_produk', 'ilike', trim((string) $product_search)];
+        }
         $url_param = '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',

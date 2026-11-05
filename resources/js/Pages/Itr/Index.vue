@@ -6,6 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import FormField from '@/components/FormField.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
 import Button from '@/components/ui/Button.vue';
@@ -26,6 +27,7 @@ const toast = useToast();
 const query = useTableQuery((p) => api.get('/itr', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
+    filters: { product_search: props.filters.product_search ?? '' },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -36,6 +38,21 @@ const itemTable = useClientTable(null, {
 });
 
 const searchBox = ref(props.filters.search ?? '');
+const productBox = ref(props.filters.product_search ?? '');
+
+const activeCount = computed(() => (query.filters.value.product_search ? 1 : 0));
+
+function onProductInput(e) {
+    productBox.value = e.target.value;
+    query.setFilters({ product_search: e.target.value }, 1000);
+}
+
+function resetFilter() {
+    searchBox.value = '';
+    productBox.value = '';
+    query.setSearch('', 0);
+    query.setFilters({ product_search: '' });
+}
 
 const columns = [
     { key: 'name', label: 'No ITR', mono: true },
@@ -119,8 +136,13 @@ query.fetch();
 <template>
     <AppLayout>
         <PageHeader :title="title" />
-        <TableToolbar v-model="searchBox" placeholder="Cari nomor ITR..." @search="query.setSearch">
+        <TableToolbar v-model="searchBox" placeholder="Cari nomor ITR..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
             <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Kode Produk">
+                    <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
+                </FormField>
+            </template>
         </TableToolbar>
         <DataTable
             :columns="columns"
