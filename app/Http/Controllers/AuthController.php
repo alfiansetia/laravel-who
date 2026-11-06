@@ -6,7 +6,6 @@ use App\Services\EnvAuth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
@@ -29,25 +28,9 @@ class AuthController extends Controller
             return back()->with('error', 'Server password is not configured.');
         }
 
-        $authenticated = false;
-
-        try {
-            // ADMIN_PASS normalnya berisi hash bcrypt (diawali $2y$).
-            // Kalau di server terisi plaintext / algoritma lain (argon),
-            // Hash::check akan melempar RuntimeException ("does not use
-            // the Bcrypt algorithm") — tangani agar jadi 401, bukan 500.
-            if (Hash::isHashed($configPassword)) {
-                $authenticated = Hash::check($request->password, $configPassword);
-            } else {
-                Log::warning('ADMIN_PASS is not a hashed value. Falling back to plain comparison.');
-                $authenticated = hash_equals((string) $configPassword, (string) $request->password);
-            }
-        } catch (\RuntimeException $e) {
-            Log::warning('Auth Hash::check failed, fallback to password_verify: '.$e->getMessage());
-            // password_verify native mendukung semua algoritma (bcrypt/argon),
-            // tanpa validasi driver seperti BcryptHasher.
-            $authenticated = password_verify((string) $request->password, (string) $configPassword);
-        }
+        // ADMIN_PASS disimpan sebagai plain text di .env.
+        // Perbandingan timing-safe agar tidak bocor via timing attack.
+        $authenticated = hash_equals((string) $configPassword, (string) $request->password);
 
         if ($authenticated) {
             EnvAuth::login();
@@ -89,7 +72,7 @@ class AuthController extends Controller
 
     public function status(Request $request): JsonResponse|RedirectResponse
     {
-        // Satu logika dengan middleware (termasuk cek hash & expiry 24 jam).
+        // Satu logika dengan middleware (termasuk cek session & expiry 24 jam).
         $authenticated = EnvAuth::check();
 
         if ($request->wantsJson()) {

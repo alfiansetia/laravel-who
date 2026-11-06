@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Services\OdooSession;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -126,7 +125,7 @@ class SettingSessionTest extends TestCase
 
     public function test_verify_returns_sanitized_intended_url(): void
     {
-        config()->set('envauth.password', Hash::make('rahasia'));
+        config()->set('envauth.password', 'rahasia');
 
         $response = $this->withSession(['url.intended' => url('/settings/')])
             ->postJson('/api/auth/verify', ['password' => 'rahasia'])
@@ -139,7 +138,7 @@ class SettingSessionTest extends TestCase
 
     public function test_verify_rejects_external_intended_url(): void
     {
-        config()->set('envauth.password', Hash::make('rahasia'));
+        config()->set('envauth.password', 'rahasia');
 
         $response = $this->withSession(['url.intended' => 'https://evil.test/phish'])
             ->postJson('/api/auth/verify', ['password' => 'rahasia'])
