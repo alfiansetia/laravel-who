@@ -216,7 +216,7 @@ function mapStockRows(list) {
             return;
         }
         if (!seen.has(code)) {
-            seen.set(code, { key: `${i}`, code, name: m.name ?? '', qty: 0, checked: true });
+            seen.set(code, { key: `${i}`, code, name: m.name ?? '', qty: 0, checked: false });
         }
         seen.get(code).qty += q;
     });
