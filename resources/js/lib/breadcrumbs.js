@@ -60,6 +60,7 @@ const INDEX = {
     'tools/tempelan-akl-kemasan': { label: 'Tempelan AKL Kemasan', href: '/tools/tempelan-akl-kemasan' },
     'tools/stiker-kartu-stok': { label: 'Stiker Kartu Stok', href: '/tools/stiker-kartu-stok' },
     'tools/print-label': { label: 'Print Label', href: '/tools/print-label' },
+    'tools/suhu': { label: 'Form Ruangan', href: '/tools/suhu' },
     'tools/file-search': { label: 'File Search Manager', href: '/tools/file-search' },
 };
 

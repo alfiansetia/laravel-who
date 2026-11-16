@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Services\PltbbServices;
+use App\Services\SuhuDocService;
 use App\Services\TikiServices;
 use App\Services\XlsDrawingCropService;
 use Illuminate\Http\JsonResponse;
@@ -128,6 +129,58 @@ class ToolController extends Controller
             // Katalog kecil (ribuan baris) → preload sekali, pencarian filter lokal.
             'products' => Product::orderBy('code')->get(['id', 'code', 'name', 'akl']),
         ]);
+    }
+
+    public function suhu(Request $request): Response
+    {
+        return Inertia::render('Suhu/Index', [
+            'title' => 'Form Ruangan',
+            'gudangOptions' => [
+                ['value' => 'gudang_a', 'label' => 'Gudang A'],
+                ['value' => 'gudang_b', 'label' => 'Gudang B'],
+            ],
+            'lokasiCount' => [
+                'gudang_a' => count(SuhuDocService::lokasiFor('gudang_a')),
+                'gudang_b' => count(SuhuDocService::lokasiFor('gudang_b')),
+            ],
+            'defaults' => [
+                'bulan' => (int) now()->format('n'),
+                'tahun' => (int) now()->format('Y'),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /tools/suhu/download?gudang=gudang_a&bulan=11&tahun=2026
+     *
+     * Hasil .docx berisi satu halaman per lokasi gudang. Baris tanggal
+     * hanya diisi hari kerja (Senin–Jumat), akhir pekan dilewati.
+     */
+    public function suhuDownload(Request $request): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'gudang' => 'required|in:gudang_a,gudang_b',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ], [
+            'gudang.required' => 'Gudang wajib dipilih.',
+            'gudang.in' => 'Pilihan gudang tidak valid.',
+            'bulan.required' => 'Bulan wajib dipilih.',
+            'tahun.required' => 'Tahun wajib diisi.',
+        ]);
+
+        $path = (new SuhuDocService)->generate(
+            $validated['gudang'],
+            (int) $validated['bulan'],
+            (int) $validated['tahun'],
+            'PENCATATAN SUHU'
+        );
+
+        return response()->download(
+            $path,
+            SuhuDocService::fileName($validated['gudang'], (int) $validated['bulan'], (int) $validated['tahun'], 'PENCATATAN SUHU'),
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        )->deleteFileAfterSend(true);
     }
 
     /**

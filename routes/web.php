@@ -137,6 +137,8 @@ Route::get('tools/tempelan-akl-unit', [ToolController::class, 'tempelanAklUnit']
 Route::get('tools/tempelan-akl-kemasan', [ToolController::class, 'tempelanAklKemasan'])->name('tools.tempelan_akl_kemasan');
 Route::get('tools/stiker-kartu-stok', [ToolController::class, 'stikerKartuStok'])->name('tools.stiker_kartu_stok');
 Route::get('tools/print-label', [ToolController::class, 'printLabel'])->name('tools.print_label');
+Route::get('tools/suhu', [ToolController::class, 'suhu'])->name('tools.suhu');
+Route::get('tools/suhu/download', [ToolController::class, 'suhuDownload'])->name('tools.suhu_download');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 
