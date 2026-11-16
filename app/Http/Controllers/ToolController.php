@@ -184,6 +184,34 @@ class ToolController extends Controller
     }
 
     /**
+     * GET /tools/suhu-refrigrator/download?bulan=11&tahun=2026
+     *
+     * Satu halaman tanpa gudang. Baris tanggal hanya diisi hari kerja
+     * (Senin–Jumat), akhir pekan dilewati.
+     */
+    public function suhuRefrigeratorDownload(Request $request): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ], [
+            'bulan.required' => 'Bulan wajib dipilih.',
+            'tahun.required' => 'Tahun wajib diisi.',
+        ]);
+
+        $path = (new SuhuDocService)->generateRefrigerator(
+            (int) $validated['bulan'],
+            (int) $validated['tahun']
+        );
+
+        return response()->download(
+            $path,
+            SuhuDocService::refrigeratorFileName((int) $validated['bulan'], (int) $validated['tahun']),
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        )->deleteFileAfterSend(true);
+    }
+
+    /**
      * POST /api/print-resi/convert
      *
      * Konversi .xls legacy (OLE/BIFF) ke .xlsx agar bisa diekstrak

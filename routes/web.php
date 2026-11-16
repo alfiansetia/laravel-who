@@ -139,6 +139,7 @@ Route::get('tools/stiker-kartu-stok', [ToolController::class, 'stikerKartuStok']
 Route::get('tools/print-label', [ToolController::class, 'printLabel'])->name('tools.print_label');
 Route::get('tools/suhu', [ToolController::class, 'suhu'])->name('tools.suhu');
 Route::get('tools/suhu/download', [ToolController::class, 'suhuDownload'])->name('tools.suhu_download');
+Route::get('tools/suhu-refrigrator/download', [ToolController::class, 'suhuRefrigeratorDownload'])->name('tools.suhu_refrigrator_download');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 

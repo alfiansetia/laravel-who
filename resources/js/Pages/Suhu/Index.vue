@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { FileDown } from '@lucide/vue';
+import { FileDown, Refrigerator, Thermometer } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -45,7 +45,7 @@ const pageCount = computed(() => Number(props.lokasiCount?.[gudang.value]) || 0)
 const rowCount = computed(() => workdayCount(Number(bulan.value), Number(tahun.value)));
 const monthLabel = computed(() => MONTHS[Number(bulan.value) - 1] || '');
 
-function onDownload() {
+function onDownloadSuhu() {
     const params = new URLSearchParams({
         gudang: gudang.value,
         bulan: String(bulan.value),
@@ -53,6 +53,36 @@ function onDownload() {
     });
     window.open(`/tools/suhu/download?${params.toString()}`, '_blank');
 }
+
+function onDownloadRefrigerator() {
+    const params = new URLSearchParams({
+        bulan: String(bulan.value),
+        tahun: String(tahun.value),
+    });
+    window.open(`/tools/suhu-refrigrator/download?${params.toString()}`, '_blank');
+}
+
+// Tambah modul baru cukup tambah entri di sini (key, title, desc, icon, pages, onDownload).
+const documents = computed(() => [
+    {
+        key: 'suhu',
+        title: 'Pencatatan Suhu',
+        desc: 'Satu halaman per lokasi gudang yang dipilih.',
+        icon: Thermometer,
+        pages: `${pageCount.value} halaman (satu per lokasi)`,
+        primary: true,
+        onDownload: onDownloadSuhu,
+    },
+    {
+        key: 'refrigrator',
+        title: 'Suhu Refrigerator',
+        desc: 'Satu halaman, tanpa gudang.',
+        icon: Refrigerator,
+        pages: '1 halaman',
+        primary: false,
+        onDownload: onDownloadRefrigerator,
+    },
+]);
 </script>
 
 <template>
@@ -73,16 +103,28 @@ function onDownload() {
                     </FormField>
                 </div>
 
-                <div class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-md bg-primary/10 px-3 py-2">
-                    <span class="text-sm text-muted-foreground">
-                        {{ pageCount }} halaman (satu per lokasi) x 26 baris
-                        ({{ rowCount }} terisi tanggal kerja
-                        <span class="font-medium text-foreground">{{ monthLabel }} {{ tahun }}</span>,
-                        sisanya kosong, Sabtu-Minggu dilewati)
-                    </span>
-                    <Button size="sm" @click="onDownload"><FileDown /> Unduh Pencatatan Suhu</Button>
+                <div class="mt-4 rounded-md bg-primary/10 px-3 py-2 text-sm text-muted-foreground">
+                    {{ rowCount }} baris terisi tanggal kerja
+                    <span class="font-medium text-foreground">{{ monthLabel }} {{ tahun }}</span>,
+                    sisanya kosong, Sabtu-Minggu dilewati.
                 </div>
             </Card>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <Card v-for="doc in documents" :key="doc.key" class="flex flex-col gap-3 p-4">
+                    <div class="flex items-center gap-2">
+                        <span class="rounded-md bg-primary/10 p-2 text-primary"><component :is="doc.icon" class="size-5" /></span>
+                        <div>
+                            <h3 class="font-semibold leading-tight">{{ doc.title }}</h3>
+                            <p class="text-xs text-muted-foreground">{{ doc.desc }}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-muted-foreground">{{ doc.pages }} x 26 baris</p>
+                    <Button size="sm" :variant="doc.primary ? 'default' : 'outline'" class="w-fit" @click="doc.onDownload">
+                        <FileDown /> Unduh {{ doc.title }}
+                    </Button>
+                </Card>
+            </div>
         </div>
     </AppLayout>
 </template>

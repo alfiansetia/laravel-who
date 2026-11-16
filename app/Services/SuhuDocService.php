@@ -21,6 +21,8 @@ class SuhuDocService
 {
     private const TEMPLATE = 'master/suhu/suhu.docx';
 
+    private const REFRIGERATOR_TEMPLATE = 'master/suhu/suhu_refrigrator.docx';
+
     private const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
@@ -102,23 +104,10 @@ class SuhuDocService
         }
 
         $workdays = self::workdays($bulan, $tahun);
-        $bulanName = self::monthName($bulan);
 
         $pages = [];
         foreach ($lokasiList as $lokasi) {
-            $processor = new TemplateProcessor($template);
-            $processor->setValue('judul', self::escape($judul));
-            $processor->setValue('lokasi', self::escape($lokasi));
-            $processor->setValue('bulan', self::escape($bulanName));
-            $processor->setValue('tahun', (string) $tahun);
-            $processor->cloneRowAndSetValues('tgl', array_map(
-                fn (string $tgl): array => ['tgl' => $tgl],
-                self::paddedWorkdays($workdays)
-            ));
-
-            $page = tempnam(sys_get_temp_dir(), 'suhu_page_').'.docx';
-            $processor->saveAs($page);
-            $pages[] = $page;
+            $pages[] = $this->fillPage(self::TEMPLATE, ['judul' => $judul, 'lokasi' => $lokasi], $workdays, $bulan, $tahun);
         }
 
         $output = tempnam(sys_get_temp_dir(), 'suhu_').'.docx';
@@ -136,6 +125,54 @@ class SuhuDocService
         $gudangSlug = strtolower(str_replace('_', '-', $gudang));
 
         return sprintf('%s-%s-%s-%d.docx', Str::slug($judul), $gudangSlug, strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    /**
+     * Bangun file .docx pencatatan suhu refrigerator/freezer (satu halaman,
+     * tanpa gudang) dan kembalikan path file sementara hasil.
+     */
+    public function generateRefrigerator(int $bulan, int $tahun): string
+    {
+        return $this->fillPage(self::REFRIGERATOR_TEMPLATE, [], self::workdays($bulan, $tahun), $bulan, $tahun);
+    }
+
+    public static function refrigeratorFileName(int $bulan, int $tahun): string
+    {
+        return sprintf('pencatatan-suhu-refrigrator-%s-%d.docx', strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    /**
+     * Isi satu halaman template: variabel teks + baris ${tgl} sejumlah hari
+     * kerja (sisanya baris kosong hingga pas 1 halaman).
+     *
+     * @param  array<string, string>  $values
+     * @param  array<int, string>  $workdays
+     */
+    private function fillPage(string $templateConst, array $values, array $workdays, int $bulan, int $tahun): string
+    {
+        $template = public_path($templateConst);
+        if (! is_file($template)) {
+            abort(500, 'Template '.$templateConst.' tidak ditemukan.');
+        }
+
+        $processor = new TemplateProcessor($template);
+        $variables = $processor->getVariables();
+        foreach ($values as $key => $value) {
+            if (in_array($key, $variables, true)) {
+                $processor->setValue($key, self::escape($value));
+            }
+        }
+        $processor->setValue('bulan', self::escape(self::monthName($bulan)));
+        $processor->setValue('tahun', (string) $tahun);
+        $processor->cloneRowAndSetValues('tgl', array_map(
+            fn (string $tgl): array => ['tgl' => $tgl],
+            self::paddedWorkdays($workdays)
+        ));
+
+        $page = tempnam(sys_get_temp_dir(), 'suhu_page_').'.docx';
+        $processor->saveAs($page);
+
+        return $page;
     }
 
     /**
