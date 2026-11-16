@@ -378,7 +378,7 @@ load();
             </template>
         </DataTable>
 
-        <AppModal v-model:open="detailOpen" :title="`${detail?.code ?? activeRow?.code ?? ''} — ${detail?.name ?? activeRow?.name ?? 'Detail Product'}`" size="xl">
+        <AppModal v-model:open="detailOpen" :title="`${detail?.code ?? activeRow?.code ?? ''} — ${detail?.name ?? activeRow?.name ?? 'Detail Product'}`" size="2xl">
             <div class="space-y-3">
                 <p class="text-sm italic text-slate-600">{{ detail?.desc ?? activeRow?.desc ?? '-' }}</p>
                 <div class="flex flex-wrap items-center gap-2">
@@ -447,7 +447,7 @@ load();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="moveOpen" :title="`Move: ${activeRow?.code ?? ''}`" size="xl">
+        <AppModal v-model:open="moveOpen" :title="`Move: ${activeRow?.code ?? ''}`" size="2xl">
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <Input :model-value="moveSearchBox" type="search" placeholder="Cari DO / lot / customer..." class="max-w-xs" @input="onMoveSearch" />
                 <Button variant="outline" size="sm" @click="copyRows(moveExportRows, ['reference', 'from', 'destination', 'date', 'lot', 'qty', 'doc', 'customer'], 'move')"><Copy /> Salin</Button>

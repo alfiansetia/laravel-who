@@ -279,7 +279,7 @@ query.fetch();
                 </div>
             </template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="xl">
+        <AppModal v-model:open="detailOpen" size="2xl">
             <template #title>
                 {{ `Item IT: ${detail?.name ?? activeRow?.name ?? ''}` }}
                 <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No IT" />

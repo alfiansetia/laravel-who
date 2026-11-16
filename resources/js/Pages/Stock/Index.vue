@@ -216,7 +216,7 @@ load();
                 <Button variant="outline" size="sm" title="Salin kode + nama" @click="copyRow(row)"><Copy /></Button>
             </template>
         </DataTable>
-        <AppModal v-model:open="lotOpen" size="xl">
+        <AppModal v-model:open="lotOpen" size="2xl">
             <template #title>
                 {{ activeProduct?.code ?? '' }} — {{ activeProduct?.name ?? 'Detail Lot/SN' }}
                 <CopyButton :text="activeProduct?.code ?? ''" label="Kode Barang" />

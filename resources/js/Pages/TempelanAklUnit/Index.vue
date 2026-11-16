@@ -678,7 +678,7 @@ function onPrint() {
             <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung. Qty menentukan jumlah label yang tercetak. AKL / SN yang dikosongkan tercetak "-". Hasil cetak terbuka di tab baru, tiap produk diawali note merah.</p>
         </Card>
 
-        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="xl" persistent>
+        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="2xl" persistent>
             <div class="space-y-3">
                 <p class="text-xs text-muted-foreground">
                     Centang baris yang mau dijadikan tempelan. Qty mengikuti qty dokumen.

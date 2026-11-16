@@ -24,6 +24,7 @@ const sizes = {
     md: 'sm:max-w-lg',
     lg: 'sm:max-w-2xl',
     xl: 'sm:max-w-6xl',
+    '2xl': 'sm:max-w-[88rem]',
 };
 
 // Dialog dijalankan non-modal: panel SearchableSelect di-teleport ke body

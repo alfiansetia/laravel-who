@@ -533,7 +533,7 @@ function onPrint() {
             <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung. Qty = jumlah strip sebaris yang tercetak. Hasil cetak terbuka di tab baru<span v-if="withAkl">, 1 strip = kode×4 + AKL×3 (atas) / nama×4 + AKL×3 (bawah)</span><span v-else>, 1 strip = kode/nama ×7 penuh tanpa AKL</span>.</p>
         </Card>
 
-        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="xl" persistent>
+        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="2xl" persistent>
             <div class="space-y-3">
                 <p class="text-xs text-muted-foreground">
                     Centang baris yang mau dijadikan stiker. Tiap baris = 1 strip.

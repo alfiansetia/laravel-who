@@ -264,7 +264,7 @@ query.fetch();
             <template #cell-note_to_wh="{ row }">{{ truncate(row.note_to_wh, 50) }}</template>
             <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="xl">
+        <AppModal v-model:open="detailOpen" size="2xl">
             <template #title>
                 {{ `List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}` }}
                 <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No RI" />

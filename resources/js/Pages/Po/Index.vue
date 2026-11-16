@@ -177,7 +177,7 @@ query.fetch();
             <template #cell-notes="{ row }">{{ truncate(row.notes, 40) }}</template>
             <template #cell-picking_count="{ row }">{{ row.picking_count ?? 0 }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="xl">
+        <AppModal v-model:open="detailOpen" size="2xl">
             <template #title>
                 {{ `List Item PO No : ${detail?.name ?? activeRow?.name ?? ''}` }}
                 <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No PO" />

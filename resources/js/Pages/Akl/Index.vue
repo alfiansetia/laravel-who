@@ -227,7 +227,7 @@ query.fetch();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="syncOpen" :title="`Sync Cek ${syncRow?.reg_no ?? ''} → Izin Edar`" size="xl">
+        <AppModal v-model:open="syncOpen" :title="`Sync Cek ${syncRow?.reg_no ?? ''} → Izin Edar`" size="2xl">
             <div v-if="syncLoading" class="space-y-2">
                 <div v-for="n in 4" :key="n" class="h-4 animate-pulse rounded bg-slate-100" />
             </div>

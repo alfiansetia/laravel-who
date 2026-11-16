@@ -188,7 +188,7 @@ loadProductOptions();
             <template #cell-product_qty1="{ row }">{{ formatQtyUS(row.product_qty1) }}</template>
             <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
         </DataTable>
-        <AppModal v-model:open="traceOpen" title="Lot Traceability" size="xl">
+        <AppModal v-model:open="traceOpen" title="Lot Traceability" size="2xl">
             <div v-if="traceTable.loading.value || traceTable.total.value > 0">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                     <Input :model-value="traceSearchBox" type="search" placeholder="Cari reference / produk / lot..." class="max-w-xs" @input="onTraceSearchInput" />

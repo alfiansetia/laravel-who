@@ -712,7 +712,7 @@ function onPrint() {
             <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung. Kolom Jml menentukan jumlah tempelan tercetak. Hapus lewat kolom aksi. Hasil cetak terbuka di tab baru (3 tempelan per lembar).</p>
         </Card>
 
-        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="xl" persistent>
+        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="2xl" persistent>
             <div class="space-y-3">
                 <p class="text-xs text-muted-foreground">
                     Centang baris yang mau dijadikan tempelan.

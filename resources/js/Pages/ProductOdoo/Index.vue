@@ -194,7 +194,7 @@ query.fetch();
             <template #cell-x_studio_valid_to_akl="{ row }">{{ row.x_studio_valid_to_akl ?? '-' }}</template>
             <template #cell-qty_available="{ row }">{{ formatQtyUS(row.qty_available) }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="xl">
+        <AppModal v-model:open="detailOpen" size="2xl">
             <template #title>
                 {{ `List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}` }}
                 <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No RI" />
@@ -231,7 +231,7 @@ query.fetch();
                 <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Notes" /></p>
             </div>
         </AppModal>
-        <AppModal v-model:open="onhandOpen" :title="onhandTitle" size="xl">
+        <AppModal v-model:open="onhandOpen" :title="onhandTitle" size="2xl">
             <DataTable :columns="onhandColumns" :rows="onhandRows" :loading="onhandLoading" :total="onhandRows.length" :total-pages="1" empty-title="Data tidak ditemukan">
                 <template #cell-product_id="{ row }">{{ odooName(row.product_id) }}</template>
                 <template #cell-location_id="{ row }">{{ odooName(row.location_id) }}</template>

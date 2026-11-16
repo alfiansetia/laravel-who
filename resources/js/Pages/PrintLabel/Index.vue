@@ -612,7 +612,7 @@ function commitKode(row, val) {
             <p class="mt-2 text-xs text-muted-foreground">Klik sel mana pun untuk ubah langsung. Qty menentukan jumlah label yang tercetak. Pengaturan kolom, font, genapkan baris, dan kode saja ada di tombol cetak. Hasil cetak terbuka di tab baru.</p>
         </Card>
 
-        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="xl" persistent>
+        <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="2xl" persistent>
             <div class="space-y-3">
                 <template v-if="importSource === 'stock'">
                     <p class="text-xs text-muted-foreground">

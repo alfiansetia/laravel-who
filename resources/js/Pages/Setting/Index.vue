@@ -910,7 +910,7 @@ fetchNtfy();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="cekOpen" title="Status Koneksi Odoo" size="xl" persistent>
+        <AppModal v-model:open="cekOpen" title="Status Koneksi Odoo" size="2xl" persistent>
             <div v-if="cekResult" class="space-y-3">
                 <div
                     class="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm"
@@ -1009,7 +1009,7 @@ fetchNtfy();
             </template>
         </AppModal>
 
-        <AppModal v-model:open="logDetailOpen" :title="`Log: ${logFile ?? ''}`" size="xl" persistent>
+        <AppModal v-model:open="logDetailOpen" :title="`Log: ${logFile ?? ''}`" size="2xl" persistent>
             <div v-if="logMeta" class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <span class="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-medium text-slate-600">{{ logMeta.parse }}</span>
                 <span>{{ logMeta.modified }}</span>

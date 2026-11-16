@@ -169,7 +169,7 @@ query.fetch();
             <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
             <template #cell-user_id="{ row }">{{ odooName(row.user_id) }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="xl">
+        <AppModal v-model:open="detailOpen" size="2xl">
             <template #title>
                 {{ `List Item ITR No : ${detail?.name ?? activeRow?.name ?? ''}` }}
                 <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No ITR" />

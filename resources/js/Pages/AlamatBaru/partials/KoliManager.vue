@@ -578,7 +578,7 @@ defineExpose({ openAddKoli });
             </template>
         </AppModal>
 
-        <AppModal v-model:open="itemModalOpen" :title="`Tambah Barang — Koli ${activeKoli?.urutan ?? ''}`" size="xl">
+        <AppModal v-model:open="itemModalOpen" :title="`Tambah Barang — Koli ${activeKoli?.urutan ?? ''}`" size="2xl">
             <div class="mb-3 flex gap-2 border-b text-sm">
                 <button v-for="t in [['manual', 'Data Produk'], ['do', 'Ambil dari DO'], ['it', 'Ambil dari IT']]" :key="t[0]" class="px-3 py-2" :class="itemTab === t[0] ? 'border-b-2 border-slate-900 font-semibold' : 'text-slate-500'" @click="itemTab = t[0]">{{ t[1] }}</button>
             </div>

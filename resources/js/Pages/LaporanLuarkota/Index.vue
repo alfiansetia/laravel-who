@@ -508,7 +508,7 @@ onBeforeUnmount(() => {
             </DataTable>
         </div>
 
-        <AppModal v-model:open="trackingOpen" title="Tracking TIKI" size="xl">
+        <AppModal v-model:open="trackingOpen" title="Tracking TIKI" size="2xl">
             <div v-if="trackingLoading" class="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
                 <span class="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" /> Memuat data tracking...
             </div>
