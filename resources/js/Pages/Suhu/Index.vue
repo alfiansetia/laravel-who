@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Bug, FileDown, Refrigerator, Thermometer } from '@lucide/vue';
+import { Bug, FileDown, Refrigerator, SprayCan, Thermometer } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -71,6 +71,15 @@ function onDownloadHama() {
     window.open(`/tools/suhu-hama/download?${params.toString()}`, '_blank');
 }
 
+function onDownloadPembersihan() {
+    const params = new URLSearchParams({
+        gudang: gudang.value,
+        bulan: String(bulan.value),
+        tahun: String(tahun.value),
+    });
+    window.open(`/tools/suhu-pembersihan/download?${params.toString()}`, '_blank');
+}
+
 // Tambah modul baru cukup tambah entri di sini (key, title, desc, icon, pages, onDownload).
 const documents = computed(() => [
     {
@@ -96,6 +105,14 @@ const documents = computed(() => [
         icon: Bug,
         pages: `${pageCount.value} halaman (satu per lokasi)`,
         onDownload: onDownloadHama,
+    },
+    {
+        key: 'pembersihan',
+        title: 'Pembersihan Gudang',
+        desc: 'Satu halaman per lokasi gudang yang dipilih, akhir pekan dicap -.',
+        icon: SprayCan,
+        pages: `${pageCount.value} halaman (satu per lokasi)`,
+        onDownload: onDownloadPembersihan,
     },
 ]);
 </script>

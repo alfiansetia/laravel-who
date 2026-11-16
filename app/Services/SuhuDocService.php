@@ -25,6 +25,8 @@ class SuhuDocService
 
     private const HAMA_TEMPLATE = 'master/suhu/hama.docx';
 
+    private const PEMBERSIHAN_TEMPLATE = 'master/suhu/pembersihan_gudang.docx';
+
     private const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
@@ -174,6 +176,150 @@ class SuhuDocService
         $gudangSlug = strtolower(str_replace('_', '-', $gudang));
 
         return sprintf('pengendalian-hama-%s-%s-%d.docx', $gudangSlug, strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    /**
+     * Bangun file .docx pembersihan gudang: satu halaman per lokasi gudang.
+     * Kolom tanggal 1-31 sudah fix di template; sel tanggal yang jatuh di
+     * akhir pekan (atau di luar jumlah hari bulan itu) dicap 'X' berdasarkan
+     * posisi kolom, tanpa variabel tambahan.
+     */
+    public function generatePembersihan(string $gudang, int $bulan, int $tahun): string
+    {
+        $lokasiList = self::lokasiFor($gudang);
+        if ($lokasiList === []) {
+            abort(422, 'Daftar lokasi gudang kosong.');
+        }
+
+        $pages = [];
+        foreach ($lokasiList as $lokasi) {
+            $pages[] = $this->fillPembersihanPage($lokasi, $bulan, $tahun);
+        }
+
+        $output = tempnam(sys_get_temp_dir(), 'bersih_').'.docx';
+        $this->mergePages($pages, $output);
+
+        foreach ($pages as $page) {
+            @unlink($page);
+        }
+
+        return $output;
+    }
+
+    public static function pembersihanFileName(string $gudang, int $bulan, int $tahun): string
+    {
+        $gudangSlug = strtolower(str_replace('_', '-', $gudang));
+
+        return sprintf('pembersihan-gudang-%s-%s-%d.docx', $gudangSlug, strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    private function fillPembersihanPage(string $lokasi, int $bulan, int $tahun): string
+    {
+        $page = $this->fillPage(self::PEMBERSIHAN_TEMPLATE, ['lokasi' => $lokasi], [], $bulan, $tahun);
+        $this->markOffDayCells($page, $bulan, $tahun);
+
+        return $page;
+    }
+
+    /**
+     * Cap '-' pada sel tanggal yang bukan hari kerja (Sabtu/Minggu atau
+     * tanggal di luar jumlah hari bulan itu). Layout template dianggap:
+     * baris 0 header, baris 1 kepala tanggal, baris 2..(N-2) baris tugas,
+     * baris terakhir tanda tangan — dengan 3 kolom label di depan lalu
+     * kolom tanggal 1-31 (baris tanda tangan menggabung 3 kolom label jadi
+     * tanggal mulai di sel indeks 1). Tambah baris tugas di template otomatis
+     * ikut dicap.
+     */
+    private function markOffDayCells(string $docxPath, int $bulan, int $tahun): void
+    {
+        $daysInMonth = Carbon::create($tahun, $bulan, 1)->daysInMonth;
+        $offDays = [];
+        for ($day = 1; $day <= 31; $day++) {
+            if ($day > $daysInMonth || Carbon::create($tahun, $bulan, $day)->isWeekend()) {
+                $offDays[] = $day;
+            }
+        }
+        if ($offDays === []) {
+            return;
+        }
+
+        $zip = new ZipArchive;
+        $zip->open($docxPath);
+        $xml = (string) $zip->getFromName('word/document.xml');
+
+        $doc = new DOMDocument('1.0', 'UTF-8');
+        if (! self::loadXml($doc, $xml)) {
+            $zip->close();
+            abort(500, 'Gagal membaca dokumen hasil generate.');
+        }
+        $xpath = new DOMXPath($doc);
+        $xpath->registerNamespace('w', self::WORD_NS);
+
+        $rows = $xpath->query('//w:tbl[1]//w:tr');
+        $totalRows = $rows->length;
+        if ($totalRows < 4) {
+            $zip->close();
+            abort(500, 'Layout template pembersihan berubah.');
+        }
+        $headerCells = $xpath->query('./w:tc', $rows->item(1));
+        $lastTaskRow = $totalRows - 2;
+        for ($r = 2; $r <= $lastTaskRow; $r++) {
+            $cells = $xpath->query('./w:tc', $rows->item($r));
+            foreach ($offDays as $day) {
+                $cellIndex = 3 + $day - 1;
+                $source = $headerCells->item($cellIndex);
+                $target = $cells->item($cellIndex);
+                if (! $source instanceof \DOMElement || ! $target instanceof \DOMElement) {
+                    continue;
+                }
+                $this->stampCell($xpath, $source, $target, '-');
+            }
+        }
+
+        $signatureRow = $rows->item($totalRows - 1);
+        $signatureLabel = '';
+        foreach ($xpath->query('./w:tc[1]//w:t', $signatureRow) as $text) {
+            $signatureLabel .= $text->nodeValue;
+        }
+        if (str_contains(strtolower($signatureLabel), 'tanda tangan')) {
+            $signatureCells = $xpath->query('./w:tc', $signatureRow);
+            foreach ($offDays as $day) {
+                $source = $headerCells->item(3 + $day - 1);
+                $target = $signatureCells->item($day);
+                if (! $source instanceof \DOMElement || ! $target instanceof \DOMElement) {
+                    continue;
+                }
+                $this->stampCell($xpath, $source, $target, '-');
+            }
+        }
+
+        $zip->addFromString('word/document.xml', (string) $doc->saveXML());
+        $zip->close();
+    }
+
+    /**
+     * Salin format paragraf sel kepala tanggal lalu isi dengan tanda.
+     */
+    private function stampCell(DOMXPath $xpath, \DOMElement $source, \DOMElement $target, string $mark): void
+    {
+        foreach (iterator_to_array($xpath->query('./w:p', $target)) as $old) {
+            $target->removeChild($old);
+        }
+
+        $sourceParagraph = $xpath->query('./w:p[1]', $source)->item(0);
+        if (! $sourceParagraph instanceof \DOMElement) {
+            return;
+        }
+        $paragraph = $sourceParagraph->cloneNode(true);
+        $texts = $xpath->query('.//w:t', $paragraph);
+        foreach ($texts as $i => $text) {
+            if ($i === 0) {
+                $text->nodeValue = $mark;
+            } else {
+                $text->parentNode?->removeChild($text);
+            }
+        }
+        $target->appendChild($paragraph);
     }
 
     /**
