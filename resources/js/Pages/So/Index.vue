@@ -29,10 +29,22 @@ const props = defineProps({
 const toast = useToast();
 const { confirm } = useConfirm();
 const { withBlock } = useBlock();
+const printOptions = [
+    { label: 'Semua', value: '' },
+    { label: 'Blm Print OK', value: 'print_ok' },
+];
+// Backend (SoController) hanya mengenal 'print_ok'; nilai lain (mis. ?filter=Semua
+// dari URL/bookmark) diabaikan server tapi dulu ikut dihitung badge. Normalisasi
+// ke allowlist agar badge, tampilan select, dan request API selalu konsisten.
+const normalizePrintFilter = (v) => {
+    const s = String(v ?? '').trim();
+    return printOptions.some((o) => o.value === s) ? s : '';
+};
+const hasValue = (v) => String(v ?? '').trim() !== '';
 const query = useTableQuery((p) => api.get('/so', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
-    filters: { note_search: props.filters.note_search ?? '', filter: props.filters.filter ?? '', product_search: props.filters.product_search ?? '' },
+    filters: { note_search: String(props.filters.note_search ?? '').trim(), filter: normalizePrintFilter(props.filters.filter), product_search: String(props.filters.product_search ?? '').trim() },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -42,25 +54,26 @@ const itemTable = useClientTable(null, {
     searchKeys: ['default_code', 'name', 'product_id', 'unit_price1', 'product_uom_qty', 'qty_delivered'],
 });
 
-const printOptions = [
-    { label: 'Semua', value: '' },
-    { label: 'Blm Print OK', value: 'print_ok' },
-];
+const activeCount = computed(() => (hasValue(query.filters.value.note_search) ? 1 : 0) + (hasValue(query.filters.value.filter) ? 1 : 0) + (hasValue(query.filters.value.product_search) ? 1 : 0));
 
-const activeCount = computed(() => (query.filters.value.note_search ? 1 : 0) + (query.filters.value.filter ? 1 : 0) + (query.filters.value.product_search ? 1 : 0));
+function onPrintFilterChange(v) {
+    query.setFilters({ filter: normalizePrintFilter(v) });
+}
 
 const searchBox = ref(props.filters.search ?? '');
-const noteBox = ref(props.filters.note_search ?? '');
-const productBox = ref(props.filters.product_search ?? '');
+const noteBox = ref(String(props.filters.note_search ?? '').trim());
+const productBox = ref(String(props.filters.product_search ?? '').trim());
 
 function onNoteInput(e) {
-    noteBox.value = e.target.value;
-    query.setFilters({ note_search: e.target.value }, 1000);
+    const raw = e.target.value ?? '';
+    noteBox.value = raw;
+    query.setFilters({ note_search: String(raw).trim() }, 1000);
 }
 
 function onProductInput(e) {
-    productBox.value = e.target.value;
-    query.setFilters({ product_search: e.target.value }, 1000);
+    const raw = e.target.value ?? '';
+    productBox.value = raw;
+    query.setFilters({ product_search: String(raw).trim() }, 1000);
 }
 
 function resetFilter() {
@@ -193,7 +206,7 @@ query.fetch();
                     <Input :model-value="noteBox" placeholder="Cari Notes..." @input="onNoteInput" />
                 </FormField>
                 <FormField label="Status Print">
-                    <SearchableSelect :model-value="query.filters.value.filter" :options="printOptions" placeholder="Semua" @update:model-value="query.setFilters({ filter: $event })" />
+                    <SearchableSelect :model-value="query.filters.value.filter" :options="printOptions" placeholder="Semua" @update:model-value="onPrintFilterChange" />
                 </FormField>
                 <FormField label="Kode Produk">
                     <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
