@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { FileDown, Refrigerator, Thermometer } from '@lucide/vue';
+import { Bug, FileDown, Refrigerator, Thermometer } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -62,6 +62,15 @@ function onDownloadRefrigerator() {
     window.open(`/tools/suhu-refrigrator/download?${params.toString()}`, '_blank');
 }
 
+function onDownloadHama() {
+    const params = new URLSearchParams({
+        gudang: gudang.value,
+        bulan: String(bulan.value),
+        tahun: String(tahun.value),
+    });
+    window.open(`/tools/suhu-hama/download?${params.toString()}`, '_blank');
+}
+
 // Tambah modul baru cukup tambah entri di sini (key, title, desc, icon, pages, onDownload).
 const documents = computed(() => [
     {
@@ -70,7 +79,6 @@ const documents = computed(() => [
         desc: 'Satu halaman per lokasi gudang yang dipilih.',
         icon: Thermometer,
         pages: `${pageCount.value} halaman (satu per lokasi)`,
-        primary: true,
         onDownload: onDownloadSuhu,
     },
     {
@@ -79,8 +87,15 @@ const documents = computed(() => [
         desc: 'Satu halaman, tanpa gudang.',
         icon: Refrigerator,
         pages: '1 halaman',
-        primary: false,
         onDownload: onDownloadRefrigerator,
+    },
+    {
+        key: 'hama',
+        title: 'Pengendalian Hama',
+        desc: 'Satu halaman per lokasi gudang yang dipilih, tanpa tanggal.',
+        icon: Bug,
+        pages: `${pageCount.value} halaman (satu per lokasi)`,
+        onDownload: onDownloadHama,
     },
 ]);
 </script>
@@ -120,7 +135,7 @@ const documents = computed(() => [
                         </div>
                     </div>
                     <p class="text-sm text-muted-foreground">{{ doc.pages }} x 26 baris</p>
-                    <Button size="sm" :variant="doc.primary ? 'default' : 'outline'" class="w-fit" @click="doc.onDownload">
+                    <Button size="sm" class="w-fit" @click="doc.onDownload">
                         <FileDown /> Unduh {{ doc.title }}
                     </Button>
                 </Card>

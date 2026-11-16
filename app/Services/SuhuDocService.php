@@ -23,6 +23,8 @@ class SuhuDocService
 
     private const REFRIGERATOR_TEMPLATE = 'master/suhu/suhu_refrigrator.docx';
 
+    private const HAMA_TEMPLATE = 'master/suhu/hama.docx';
+
     private const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
@@ -142,6 +144,39 @@ class SuhuDocService
     }
 
     /**
+     * Bangun file .docx pengendalian hama: satu halaman per lokasi gudang,
+     * tanpa baris tanggal.
+     */
+    public function generateHama(string $gudang, int $bulan, int $tahun): string
+    {
+        $lokasiList = self::lokasiFor($gudang);
+        if ($lokasiList === []) {
+            abort(422, 'Daftar lokasi gudang kosong.');
+        }
+
+        $pages = [];
+        foreach ($lokasiList as $lokasi) {
+            $pages[] = $this->fillPage(self::HAMA_TEMPLATE, ['lokasi' => $lokasi], [], $bulan, $tahun);
+        }
+
+        $output = tempnam(sys_get_temp_dir(), 'hama_').'.docx';
+        $this->mergePages($pages, $output);
+
+        foreach ($pages as $page) {
+            @unlink($page);
+        }
+
+        return $output;
+    }
+
+    public static function hamaFileName(string $gudang, int $bulan, int $tahun): string
+    {
+        $gudangSlug = strtolower(str_replace('_', '-', $gudang));
+
+        return sprintf('pengendalian-hama-%s-%s-%d.docx', $gudangSlug, strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    /**
      * Isi satu halaman template: variabel teks + baris ${tgl} sejumlah hari
      * kerja (sisanya baris kosong hingga pas 1 halaman).
      *
@@ -162,12 +197,18 @@ class SuhuDocService
                 $processor->setValue($key, self::escape($value));
             }
         }
-        $processor->setValue('bulan', self::escape(self::monthName($bulan)));
-        $processor->setValue('tahun', (string) $tahun);
-        $processor->cloneRowAndSetValues('tgl', array_map(
-            fn (string $tgl): array => ['tgl' => $tgl],
-            self::paddedWorkdays($workdays)
-        ));
+        if (in_array('bulan', $variables, true)) {
+            $processor->setValue('bulan', self::escape(self::monthName($bulan)));
+        }
+        if (in_array('tahun', $variables, true)) {
+            $processor->setValue('tahun', (string) $tahun);
+        }
+        if (in_array('tgl', $variables, true) && $workdays !== []) {
+            $processor->cloneRowAndSetValues('tgl', array_map(
+                fn (string $tgl): array => ['tgl' => $tgl],
+                self::paddedWorkdays($workdays)
+            ));
+        }
 
         $page = tempnam(sys_get_temp_dir(), 'suhu_page_').'.docx';
         $processor->saveAs($page);

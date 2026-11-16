@@ -212,6 +212,37 @@ class ToolController extends Controller
     }
 
     /**
+     * GET /tools/suhu-hama/download?gudang=gudang_a&bulan=11&tahun=2026
+     *
+     * Satu halaman per lokasi gudang, tanpa baris tanggal.
+     */
+    public function hamaDownload(Request $request): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'gudang' => 'required|in:gudang_a,gudang_b',
+            'bulan' => 'required|integer|min:1|max:12',
+            'tahun' => 'required|integer|min:2000|max:2100',
+        ], [
+            'gudang.required' => 'Gudang wajib dipilih.',
+            'gudang.in' => 'Pilihan gudang tidak valid.',
+            'bulan.required' => 'Bulan wajib dipilih.',
+            'tahun.required' => 'Tahun wajib diisi.',
+        ]);
+
+        $path = (new SuhuDocService)->generateHama(
+            $validated['gudang'],
+            (int) $validated['bulan'],
+            (int) $validated['tahun']
+        );
+
+        return response()->download(
+            $path,
+            SuhuDocService::hamaFileName($validated['gudang'], (int) $validated['bulan'], (int) $validated['tahun']),
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        )->deleteFileAfterSend(true);
+    }
+
+    /**
      * POST /api/print-resi/convert
      *
      * Konversi .xls legacy (OLE/BIFF) ke .xlsx agar bisa diekstrak
