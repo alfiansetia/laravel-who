@@ -27,6 +27,8 @@ class SuhuDocService
 
     private const PEMBERSIHAN_TEMPLATE = 'master/suhu/pembersihan_gudang.docx';
 
+    private const PALET_TEMPLATE = 'master/suhu/pembersihan_palet.docx';
+
     private const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
@@ -211,6 +213,54 @@ class SuhuDocService
         $gudangSlug = strtolower(str_replace('_', '-', $gudang));
 
         return sprintf('pembersihan-gudang-%s-%s-%d.docx', $gudangSlug, strtolower(self::monthName($bulan)), $tahun);
+    }
+
+    /**
+     * Pilihan gudang palet (fix, jarang berubah).
+     *
+     * @return array<string, string>
+     */
+    public static function paletGudang(): array
+    {
+        return [
+            'a' => 'Gudang B05 (LT.1)',
+            'b' => 'Gudang C26',
+            'c' => 'Gudang C01',
+        ];
+    }
+
+    /**
+     * Bangun file .docx perawatan dan pembersihan palet (3 halaman, satu per
+     * gudang). $tgl diisi dd/mm/yyyy, nama tiap gudang dari form.
+     *
+     * @param  array<string, string>  $namaGudang
+     */
+    public function generatePalet(array $namaGudang, Carbon $tanggal): string
+    {
+        $template = public_path(self::PALET_TEMPLATE);
+        if (! is_file($template)) {
+            abort(500, 'Template pembersihan_palet.docx tidak ditemukan.');
+        }
+
+        $defaults = self::paletGudang();
+        $processor = new TemplateProcessor($template);
+        $processor->setValue('tgl', $tanggal->format('d/m/Y'));
+        $processor->setValue('bulan', self::escape(self::monthName($tanggal->month)));
+        $processor->setValue('tahun', (string) $tanggal->year);
+        foreach (['a', 'b', 'c'] as $key) {
+            $nama = trim($namaGudang[$key] ?? '');
+            $processor->setValue('gudang_'.$key, self::escape($nama !== '' ? $nama : $defaults[$key]));
+        }
+
+        $page = tempnam(sys_get_temp_dir(), 'palet_').'.docx';
+        $processor->saveAs($page);
+
+        return $page;
+    }
+
+    public static function paletFileName(Carbon $tanggal): string
+    {
+        return sprintf('pembersihan-palet-%s.docx', $tanggal->format('d-m-Y'));
     }
 
     private function fillPembersihanPage(string $lokasi, int $bulan, int $tahun): string

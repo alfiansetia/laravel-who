@@ -84,6 +84,7 @@ class HomeController extends Controller
                     ['route' => 'tools.stiker_kartu_stok', 'icon' => 'Tag', 'title' => 'Stiker Kartu Stok', 'desc' => 'Cetak stiker kartu stok'],
                     ['route' => 'tools.print_label', 'icon' => 'Printer', 'title' => 'Print Label', 'desc' => 'Cetak label kode & nama produk custom'],
                     ['route' => 'tools.suhu', 'icon' => 'Thermometer', 'title' => 'Form Ruangan', 'desc' => 'Generate form pencatatan suhu'],
+                    ['route' => 'tools.pembersihan', 'icon' => 'Package', 'title' => 'Pembersihan Palet', 'desc' => 'Form perawatan dan pembersihan palet'],
                     ['route' => 'tools.spreadsheet', 'icon' => 'Table2', 'title' => 'PLTBB', 'desc' => 'Spreadsheet PLTBB'],
                     ['route' => 'settings.index', 'icon' => 'Settings', 'title' => 'Setting', 'desc' => 'Pengaturan aplikasi'],
                 ]),

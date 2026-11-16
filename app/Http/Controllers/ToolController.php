@@ -7,6 +7,7 @@ use App\Services\PltbbServices;
 use App\Services\SuhuDocService;
 use App\Services\TikiServices;
 use App\Services\XlsDrawingCropService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -269,6 +270,48 @@ class ToolController extends Controller
         return response()->download(
             $path,
             SuhuDocService::pembersihanFileName($validated['gudang'], (int) $validated['bulan'], (int) $validated['tahun']),
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+        )->deleteFileAfterSend(true);
+    }
+
+    public function palet(Request $request): Response
+    {
+        return Inertia::render('Palet/Index', [
+            'title' => 'Pembersihan Palet',
+            'gudangDefaults' => SuhuDocService::paletGudang(),
+            'defaults' => [
+                'tanggal' => now()->format('Y-m-d'),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /tools/pembersihan/download?tanggal=2026-11-16&gudang_a=..&gudang_b=..&gudang_c=..
+     *
+     * 3 halaman (satu per gudang). $tgl diisi dd/mm/yyyy.
+     */
+    public function paletDownload(Request $request): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'gudang_a' => 'nullable|string|max:100',
+            'gudang_b' => 'nullable|string|max:100',
+            'gudang_c' => 'nullable|string|max:100',
+        ], [
+            'tanggal.required' => 'Tanggal wajib dipilih.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+        ]);
+
+        $tanggal = Carbon::parse($validated['tanggal']);
+        $path = (new SuhuDocService)->generatePalet([
+            'a' => (string) ($validated['gudang_a'] ?? ''),
+            'b' => (string) ($validated['gudang_b'] ?? ''),
+            'c' => (string) ($validated['gudang_c'] ?? ''),
+        ], $tanggal);
+
+        return response()->download(
+            $path,
+            SuhuDocService::paletFileName($tanggal),
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
         )->deleteFileAfterSend(true);
     }

@@ -142,6 +142,8 @@ Route::get('tools/suhu/download', [ToolController::class, 'suhuDownload'])->name
 Route::get('tools/suhu-refrigrator/download', [ToolController::class, 'suhuRefrigeratorDownload'])->name('tools.suhu_refrigrator_download');
 Route::get('tools/suhu-hama/download', [ToolController::class, 'hamaDownload'])->name('tools.suhu_hama_download');
 Route::get('tools/suhu-pembersihan/download', [ToolController::class, 'pembersihanDownload'])->name('tools.suhu_pembersihan_download');
+Route::get('tools/pembersihan', [ToolController::class, 'palet'])->name('tools.pembersihan');
+Route::get('tools/pembersihan/download', [ToolController::class, 'paletDownload'])->name('tools.pembersihan_download');
 
 Route::get('/', [HomeController::class, 'index'])->name('index');
 

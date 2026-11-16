@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import FormField from '@/components/FormField.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
+import SuhuToolTabs from '@/components/SuhuToolTabs.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
 
@@ -120,6 +121,7 @@ const documents = computed(() => [
 <template>
     <AppLayout>
         <PageHeader :title="props.title" />
+        <SuhuToolTabs class="mb-4" />
 
         <div class="space-y-4">
             <Card class="p-4">

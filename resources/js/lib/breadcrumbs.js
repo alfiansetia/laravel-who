@@ -61,6 +61,7 @@ const INDEX = {
     'tools/stiker-kartu-stok': { label: 'Stiker Kartu Stok', href: '/tools/stiker-kartu-stok' },
     'tools/print-label': { label: 'Print Label', href: '/tools/print-label' },
     'tools/suhu': { label: 'Form Ruangan', href: '/tools/suhu' },
+    'tools/pembersihan': { label: 'Pembersihan Palet', href: '/tools/pembersihan' },
     'tools/file-search': { label: 'File Search Manager', href: '/tools/file-search' },
 };
 

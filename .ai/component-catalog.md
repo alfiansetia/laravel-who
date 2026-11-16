@@ -14,6 +14,7 @@
 | `FilterBar.vue` | `.input-group` search + select status di header card | Deprecated untuk page baru — pakai `FilterPanel`. Dipertahankan hanya untuk kompatibilitas. |
 | `lib/menuIcons.js` | `data-lucide` + `lucide.createIcons()` di Blade | Registry ikon dinamis (string → komponen). Tambah ikon baru = named import di file ini, bukan `icons` map. |
 | `LabelToolTabs.vue` | Navigasi silang antar alat label | Tanpa props (tab aktif dari URL Inertia). Gaya `ModalTabs` tapi isi `Link`: Dus / AKL Unit / AKL Kemasan / Kartu Stok / Print Label. Dipakai di 5 page label, di bawah `PageHeader`. |
+| `SuhuToolTabs.vue` | Navigasi silang antar form suhu/pembersihan | Tanpa props (tab aktif dari URL Inertia). Isi `Link`: Form Ruangan / Pembersihan Palet. Dipakai di `Pages/Suhu` + `Pages/Palet`, di bawah `PageHeader`. |
 
 ## B. Data (inti anti-duplikasi)
 
