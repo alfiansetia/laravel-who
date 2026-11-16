@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Import\CekImportService;
+use App\Services\Import\POServices;
 use App\Services\Import\RIServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -61,5 +63,84 @@ class RIController extends Controller
         }
 
         return redirect()->back()->with('success', 'Success!');
+    }
+
+    public function cekImport(string $id)
+    {
+        $ri = RIServices::detail((int) $id);
+
+        $riName = (string) ($ri['name'] ?? '');
+        $poName = (string) ($ri['origin'] ?? '');
+
+        // Item + vendor diutamakan dari PO (origin) agar qty = qty PO.
+        $po = $this->findPo($poName);
+        if ($po) {
+            $poName = (string) ($po['name'] ?? $poName);
+            $partner = $po['partner_detail'] ?? null;
+            $vendorName = CekImportService::vendorName(is_array($partner) ? $partner : null, $po['partner_id'] ?? null);
+            $vendorAddress = CekImportService::composeAddress(is_array($partner) ? $partner : null);
+            $items = collect($po['order_line_detail'] ?? [])->map(function ($line) {
+                [$code, $name] = CekImportService::splitProduct($line['product_id'] ?? null);
+
+                return [
+                    'code' => $code,
+                    'name' => $name !== '' ? $name : (string) ($line['name'] ?? ''),
+                    'qty' => $line['product_qty'] ?? 0,
+                ];
+            })->all();
+        } else {
+            $vendorName = CekImportService::vendorName(null, $ri['partner_id'] ?? null);
+            $vendorAddress = $this->riAddress($ri);
+            $items = collect($ri['move_without_package_detail'] ?? [])->map(function ($line) {
+                [$code, $name] = CekImportService::splitProduct($line['product_id'] ?? null);
+
+                return [
+                    'code' => $code,
+                    'name' => $name !== '' ? $name : (string) ($line['name'] ?? ''),
+                    'qty' => $line['product_uom_qty'] ?? 0,
+                ];
+            })->all();
+        }
+
+        $path = CekImportService::build($poName, $riName, $vendorName, $vendorAddress, $items);
+
+        return response()->download($path, CekImportService::filename($poName, $vendorName), [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    private function findPo(string $origin): ?array
+    {
+        $origin = trim($origin);
+        if ($origin === '') {
+            return null;
+        }
+        try {
+            $list = POServices::getAll($origin, 5, 0);
+            $records = $list['records'] ?? [];
+            $match = collect($records)->firstWhere('name', $origin) ?? ($records[0] ?? null);
+            if (! $match) {
+                return null;
+            }
+
+            return POServices::detail((int) $match['id']);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function riAddress(array $ri): string
+    {
+        $parts = [];
+        foreach (['partner_address', 'partner_address2', 'partner_address3', 'partner_address4'] as $key) {
+            $v = $ri[$key] ?? null;
+            $v = is_array($v) ? ($v[1] ?? '') : $v;
+            $v = trim((string) $v);
+            if ($v !== '' && strtolower($v) !== 'false') {
+                $parts[] = $v;
+            }
+        }
+
+        return $parts === [] ? '-' : implode(', ', $parts);
     }
 }

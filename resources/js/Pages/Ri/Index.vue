@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Copy, Download, RefreshCw } from '@lucide/vue';
+import { Copy, Download, FileSpreadsheet, RefreshCw } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -182,6 +182,15 @@ function lotLabel(row) {
 
 let detailSeq = 0;
 
+function downloadCekImport() {
+    const id = activeRow.value?.id;
+    if (!id) {
+        toast.error('Pilih RI terlebih dahulu.');
+        return;
+    }
+    window.open(`/api/ri/${encodeURIComponent(id)}/cek-import`, '_blank');
+}
+
 async function openDetail(row) {
     const seq = ++detailSeq;
     activeRow.value = row;
@@ -266,6 +275,7 @@ query.fetch();
                     <Input :model-value="productSearchBox" type="search" placeholder="Cari code / nama..." class="max-w-xs" @input="onProductSearchInput" />
                     <Button variant="outline" size="sm" @click="copyRows(productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'], 'item RI')"><Copy /> Salin</Button>
                     <Button variant="outline" size="sm" @click="downloadCsv(`ri-${detail?.name ?? activeRow?.name ?? 'detail'}-product`, productExportRows, ['code', 'desc', 'name', 'akl', 'qty_total', 'qty_done', 'qty_sisa'])"><Download /> CSV</Button>
+                    <Button variant="outline" size="sm" @click="downloadCekImport"><FileSpreadsheet /> Cek Import</Button>
                     <LabelPrint :items="labelItems" :title="labelTitle" />
                 </div>
                 <DataTable

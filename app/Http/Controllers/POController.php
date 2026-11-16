@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PoResource;
+use App\Services\Import\CekImportService;
 use App\Services\Import\POServices;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -54,5 +55,34 @@ class POController extends Controller
         }
 
         return redirect()->back()->with('success', 'Success!');
+    }
+
+    public function cekImport(string $id)
+    {
+        $po = POServices::detail((int) $id);
+
+        $poName = (string) ($po['name'] ?? '');
+        // Dari PO, RI belum pasti (satu PO bisa punya banyak RI) → pakai dummy.
+        $riName = 'CENT/IN/';
+
+        $partner = $po['partner_detail'] ?? null;
+        $vendorName = CekImportService::vendorName(is_array($partner) ? $partner : null, $po['partner_id'] ?? null);
+        $vendorAddress = CekImportService::composeAddress(is_array($partner) ? $partner : null);
+
+        $items = collect($po['order_line_detail'] ?? [])->map(function ($line) {
+            [$code, $name] = CekImportService::splitProduct($line['product_id'] ?? null);
+
+            return [
+                'code' => $code,
+                'name' => $name !== '' ? $name : (string) ($line['name'] ?? ''),
+                'qty' => $line['product_qty'] ?? 0,
+            ];
+        })->all();
+
+        $path = CekImportService::build($poName, $riName, $vendorName, $vendorAddress, $items);
+
+        return response()->download($path, CekImportService::filename($poName, $vendorName), [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

@@ -70,10 +70,12 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
 
     Route::get('po', [POController::class, 'index'])->name('api.po.index');
     Route::get('po/order-line', [POController::class, 'order_line'])->name('api.po.order_line');
+    Route::get('po/{id}/cek-import', [POController::class, 'cekImport'])->name('api.po.cek_import');
     Route::get('po/{id}', [POController::class, 'detail'])->name('api.po.detail');
 
     Route::get('ri', [RIController::class, 'index'])->name('api.ri.index');
     Route::get('ri/order-line', [RIController::class, 'order_line'])->name('api.ri.order_line');
+    Route::get('ri/{id}/cek-import', [RIController::class, 'cekImport'])->name('api.ri.cek_import');
     Route::get('ri/{id}', [RIController::class, 'detail'])->name('api.ri.detail');
 
     Route::get('firebase-config', function () {
