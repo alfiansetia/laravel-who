@@ -79,6 +79,7 @@ const mainLinks = [
 const odooLinks = [
     { label: 'Lot / SN', route: 'lots.index', match: 'lots.*' },
     { label: 'Product Odoo', route: 'product_odoo.index', match: 'product_odoo.*' },
+    { label: 'Inventory Report', route: 'inventory_report.index', match: 'inventory_report.*' },
     { label: 'Vendor', route: 'vendors.index', match: 'vendors.*' },
     { label: 'Purchase Order (PO)', route: 'po.index', match: 'po.*' },
     { label: 'Reception (RI)', route: 'ri.index', match: 'ri.*' },

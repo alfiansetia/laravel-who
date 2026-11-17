@@ -7,6 +7,7 @@
 use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoController;
+use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\ItController;
 use App\Http\Controllers\ITRController;
 use App\Http\Controllers\IzinEdarController;
@@ -60,6 +61,10 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::get('stock-opname-lot', [StockController::class, 'opnameLot'])->name('api.stock.opname_lot');
     Route::get('stock/{id}', [StockController::class, 'lot'])->name('api.stock.lot');
     Route::get('stock', [StockController::class, 'index'])->name('api.stock.index');
+
+    Route::get('inventory-report/export', [InventoryReportController::class, 'export'])->name('api.inventory_report.export');
+    Route::get('inventory-report/{id}/locations', [InventoryReportController::class, 'locations'])->name('api.inventory_report.locations');
+    Route::get('inventory-report', [InventoryReportController::class, 'index'])->name('api.inventory_report.index');
 
     Route::get('lot/{id}/trace', [LotController::class, 'trace'])->name('api.lots.trace');
     Route::get('lot/{id}', [LotController::class, 'detail'])->name('api.lots.lot');
