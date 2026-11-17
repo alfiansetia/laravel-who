@@ -51,8 +51,14 @@ function isInsideConfirmDialog(target) {
     return target?.closest?.('[data-confirm-dialog]') != null;
 }
 
+// Klik di dalam panel DateTimePicker (teleport ke body, di luar DialogContent)
+// juga dianggap "outside" — abaikan agar modal pemilik tidak ikut tertutup.
+function isInsideDateTimePanel(target) {
+    return target?.closest?.('[data-datetime-panel]') != null;
+}
+
 function isProtectedOutside(target) {
-    return isInsideSearchablePanel(target) || isClipboardFallback(target) || isInsideConfirmDialog(target);
+    return isInsideSearchablePanel(target) || isInsideDateTimePanel(target) || isClipboardFallback(target) || isInsideConfirmDialog(target);
 }
 
 function handlePointerDownOutside(e) {

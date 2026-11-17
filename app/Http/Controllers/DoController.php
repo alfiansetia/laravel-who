@@ -19,7 +19,14 @@ class DoController extends Controller
             $search = (string) ($request->input('search') ?? '');
             $note_search = (string) ($request->input('note_search') ?? '');
             $product_search = (string) ($request->input('product_search') ?? '');
-            $response = DoServices::getAll($search, $perPage, $offset, $note_search, $product_search);
+            $date_from = (string) ($request->input('date_from') ?? '');
+            $date_to = (string) ($request->input('date_to') ?? '');
+
+            if ($request->input('export') === 'csv') {
+                return $this->exportCsv($search, $note_search, $product_search, $date_from, $date_to);
+            }
+
+            $response = DoServices::getAll($search, $perPage, $offset, $note_search, $product_search, $date_from, $date_to);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -34,7 +41,7 @@ class DoController extends Controller
 
         return Inertia::render('Do/Index', [
             'title' => 'DO',
-            'filters' => $request->only(['search', 'page', 'note_search', 'product_search']),
+            'filters' => $request->only(['search', 'page', 'note_search', 'product_search', 'date_from', 'date_to']),
         ]);
     }
 
@@ -51,6 +58,46 @@ class DoController extends Controller
         $response = DoMonitorService::getAll();
 
         return $this->sendResponse($response ?? []);
+    }
+
+    /**
+     * Export CSV seluruh data sesuai filter aktif (bukan cuma halaman tampil).
+     * Dipakai tombol "CSV Semua" di halaman DO.
+     */
+    protected function exportCsv(string $search, string $note_search, string $product_search, string $date_from, string $date_to)
+    {
+        $limit = 2000;
+        $response = DoServices::getAll($search, $limit, 0, $note_search, $product_search, $date_from, $date_to);
+        $records = Arr::get($response, 'records', []);
+
+        $columns = ['no_do', 'tgl_konfirmasi_so', 'fdate', 'partner', 'so', 'status', 'note'];
+        $lines = [implode(';', $columns)];
+        foreach ($records as $row) {
+            $partner = Arr::get($row, 'partner_id');
+            $lines[] = implode(';', [
+                $this->csvCell(Arr::get($row, 'name')),
+                $this->csvCell(Arr::get($row, 'x_studio_field_0rSR5', Arr::get($row, 'confirmation_date_so'))),
+                $this->csvCell(Arr::get($row, 'force_date')),
+                $this->csvCell(is_array($partner) ? ($partner[1] ?? '') : $partner),
+                $this->csvCell(Arr::get($row, 'origin')),
+                $this->csvCell(Arr::get($row, 'state')),
+                $this->csvCell(Arr::get($row, 'note_to_wh')),
+            ]);
+        }
+
+        $filename = 'do-'.now()->format('Ymd-His').'.csv';
+
+        return response(implode("\n", $lines), 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    protected function csvCell($value): string
+    {
+        $s = (string) ($value === false || $value === null ? '' : $value);
+
+        return '"'.str_replace('"', '""', $s).'"';
     }
 
     public function print(Request $request, $id)

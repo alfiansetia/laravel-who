@@ -9,7 +9,7 @@ class DoServices extends Odoo
 {
     public function __construct() {}
 
-    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null, $note_search = '', $product_search = '')
+    public static function getAll($query = 'CENT/OUT', $limit = 80, $offset = null, $note_search = '', $product_search = '', $date_from = '', $date_to = '')
     {
         if (empty($query)) {
             $query = 'CENT/OUT';
@@ -43,6 +43,14 @@ class DoServices extends Odoo
         if (trim((string) $product_search) !== '') {
             $domain[] = ['product_id', 'ilike', trim((string) $product_search)];
         }
+        $from = static::normalizeDateTime($date_from);
+        $to = static::normalizeDateTime($date_to);
+        if ($from !== null) {
+            $domain[] = ['confirmation_date_so', '>=', $from];
+        }
+        if ($to !== null) {
+            $domain[] = ['confirmation_date_so', '<=', $to];
+        }
         $url_param = '/web/dataset/search_read';
         $data = [
             'jsonrpc' => '2.0',
@@ -53,6 +61,7 @@ class DoServices extends Odoo
                 'fields' => [
                     'name',
                     'x_studio_no_do_manual',
+                    'confirmation_date_so',
                     'date',
                     'scheduled_date',
                     'force_date',
@@ -71,6 +80,9 @@ class DoServices extends Odoo
                     'state',
                     'priority',
                     'picking_type_id',
+                    'ekspedisi_id',
+                    'shipping_date',
+                    'tanggal_sampai',
                     'sale_id',
                     'partner_address3',
                 ],
@@ -107,6 +119,28 @@ class DoServices extends Odoo
         }
 
         return $res;
+    }
+
+    /**
+     * Normalisasi input tanggal-jam menjadi format Odoo `Y-m-d H:i:s`.
+     * Terima `Y-m-d H:i`, `Y-m-d H:i:s`, atau `Y-m-d\TH:i` (datetime-local).
+     * Return null bila kosong/tidak valid.
+     */
+    protected static function normalizeDateTime($value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+        $value = str_replace('T', ' ', $value);
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $value)) {
+            $value .= ':00';
+        }
+        if (! preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
+            return null;
+        }
+
+        return $value;
     }
 
     public static function detail(int $id)

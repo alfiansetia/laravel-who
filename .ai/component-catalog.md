@@ -28,7 +28,7 @@
 | `FormField.vue` | Label + slot input + error. Props: `label`, `error`, `hint`, `required`. Semua field form DAN filter wajib dibungkus ini. |
 | `StatusBadge.vue` | Pengganti badge status acak. Props: `status`. Map warna + ikon Lucide terpusat. Tambah status baru = edit file ini, bukan di page. |
 | `EmptyState.vue` | Props: `icon`, `title`, `message`, `action`. Dipakai tabel kosong, hasil search nol, error fetch. |
-| `DatePicker.vue` | Satu picker project-wide (pengganti flatpickr mentah). Format tampil `d M Y`, emit `Y-m-d`. |
+| `DatePicker.vue` | Satu picker project-wide (pengganti flatpickr mentah). Format tampil `d M Y`, emit `Y-m-d`. Butuh jam → `DateTimePicker.vue` (kalender + jam, v-model `YYYY-MM-DDTHH:mm`, emit `change`). |
 
 ## C. Interaksi
 
