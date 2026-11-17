@@ -19,6 +19,7 @@ use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
 use App\Http\Controllers\SoController;
+use App\Http\Controllers\SoPickingController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
@@ -37,6 +38,7 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::post('so/{id}/mark-as-unprint', [SoController::class, 'mark_as_unprint'])->name('api.so.mark_as_unprint');
     Route::get('so', [SoController::class, 'index'])->name('api.so.index');
     Route::get('so/{id}', [SoController::class, 'detail'])->name('api.so.detail');
+    Route::get('so-picking', [SoPickingController::class, 'index'])->name('api.so_picking.index');
 
     Route::get('it', [ItController::class, 'index'])->name('api.it.index');
     Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');

@@ -27,6 +27,7 @@ const INDEX = {
     po: { label: 'PO', href: '/po' },
     ri: { label: 'RI', href: '/ri' },
     so: { label: 'SO', href: '/so' },
+    'so-picking': { label: 'SO Picking', href: '/so-picking' },
     do: { label: 'DO', href: '/do' },
     it: { label: 'IT', href: '/it' },
     itr: { label: 'ITR', href: '/itr' },

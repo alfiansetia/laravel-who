@@ -29,6 +29,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
 use App\Http\Controllers\SoController;
 use App\Http\Controllers\SopController;
+use App\Http\Controllers\SoPickingController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\VendorController;
@@ -87,6 +88,7 @@ Route::delete('problem-log/{problemLog}', [ProblemController::class, 'problemLog
 
 Route::get('po', [POController::class, 'index'])->name('po.index');
 Route::get('so', [SoController::class, 'index'])->name('so.index');
+Route::get('so-picking', [SoPickingController::class, 'index'])->name('so_picking.index');
 Route::get('so/{id}/print', [SoController::class, 'print'])->name('so.print')->whereNumber('id');
 Route::get('ri', [RIController::class, 'index'])->name('ri.index');
 Route::get('atk', [AtkController::class, 'index'])->name('atk.index');
