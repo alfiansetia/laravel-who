@@ -233,7 +233,7 @@ class Odoo
                     'context' => [
                         'lang' => 'en_US',
                         'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
+                        'uid' => static::getUID(),
                         'bin_size' => true,
                     ],
                 ],

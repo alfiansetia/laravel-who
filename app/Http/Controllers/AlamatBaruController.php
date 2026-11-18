@@ -234,7 +234,7 @@ class AlamatBaruController extends Controller
         return redirect()->route('alamat_baru.index')->with('success', 'Alamat Baru deleted successfully.');
     }
 
-    public function bast(Request $request, AlamatBaru $alamatBaru)
+    public function bast(Request $request, AlamatBaru $alamatBaru, DoServices $doServices)
     {
         $no_do = $alamatBaru->do;
         $bast = Bast::query()
@@ -247,7 +247,7 @@ class AlamatBaruController extends Controller
 
             return redirect()->back()->with('error', 'BAST Sudah ada!');
         }
-        $response = DoServices::getAll($no_do, 1);
+        $response = $doServices->getAll($no_do, 1);
         $do = Arr::get($response, 'records.0', null);
         if (! $do) {
             if ($request->wantsJson()) {
@@ -411,15 +411,15 @@ class AlamatBaruController extends Controller
         return redirect()->back()->with('success', 'Koli deleted!');
     }
 
-    public function koliSync(Request $request, Koli $koli)
+    public function koliSync(Request $request, Koli $koli, DoServices $doServices)
     {
         $id = 0;
         $do = $koli->alamatBaru->do;
-        $json = DoServices::getAll($do);
+        $json = $doServices->getAll($do);
         if (count($json['records'] ?? []) > 0) {
             $id = intval($json['records'][0]['id']);
         }
-        $detail = DoServices::detail($id);
+        $detail = $doServices->detail($id);
         $pd_jd = [];
 
         $last_key = 0;
@@ -504,7 +504,7 @@ class AlamatBaruController extends Controller
         return redirect()->back()->with('success', 'Koli duplicated!');
     }
 
-    public function koliHitung(Request $request, Koli $koli)
+    public function koliHitung(Request $request, Koli $koli, DoServices $doServices)
     {
         $koli->load(['items.product', 'alamatBaru']);
 
@@ -529,7 +529,7 @@ class AlamatBaruController extends Controller
 
         // 2. Fetch DO from Odoo
         try {
-            $doRecords = DoServices::getAll($doNumber);
+            $doRecords = $doServices->getAll($doNumber);
         } catch (\Throwable $th) {
             if ($request->wantsJson()) {
                 return $this->sendError('Gagal mengambil data DO dari Odoo!', 500);
@@ -552,7 +552,7 @@ class AlamatBaruController extends Controller
 
         // 3. Get DO detail (includes so_detail.order_line_detail)
         try {
-            $doDetail = DoServices::detail($doId);
+            $doDetail = $doServices->detail($doId);
         } catch (\Throwable $th) {
             if ($request->wantsJson()) {
                 return $this->sendError('Gagal mengambil detail DO dari Odoo!', 500);

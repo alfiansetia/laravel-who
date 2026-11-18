@@ -3,80 +3,41 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Services\Odoo\OdooClient;
 use Illuminate\Support\Arr;
 
-class StockServices extends Odoo
+class StockServices
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    private const QUANT_FIELDS = [
+        'product_id', 'location_id', 'lot_id', 'itds_expired',
+        'package_id', 'owner_id', 'reserved_quantity', 'quantity',
+        'product_uom_id', 'write_date', 'company_id',
+    ];
 
-    public static function getAll(array|string|null $locations = [])
+    public function __construct(private OdooClient $odoo) {}
+
+    public function getAll(array|string|null $locations = [])
     {
-        if (! is_array($locations)) {
-            $locations = $locations === null || $locations === '' ? [] : array_values(array_filter(array_map('trim', explode(',', (string) $locations))));
-        }
-        $param = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [],
-                'model' => 'stock.quant',
-                'method' => 'read_group',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'GMT',
-                        'uid' => 192,
-                        'active_model' => 'stock.quantity.history',
-                        'active_id' => 1106,
-                        'active_ids' => [1106],
-                        'search_default_internal_loc' => 1,
-                        'group_by' => ['product_id', 'location_id'],
-                        'search_disable_custom_filters' => true,
-                    ],
-                    'domain' => [
-                        ['location_id.usage', '=', 'internal'],
-                        // ['location_id', 'ilike', 'center']
-                    ],
-                    'fields' => [
-                        'product_id',
-                        'location_id',
-                        'lot_id',
-                        'itds_expired',
-                        'package_id',
-                        'owner_id',
-                        'reserved_quantity',
-                        'quantity',
-                        'product_uom_id',
-                        'write_date',
-                        'company_id',
-                    ],
-                    'groupby' => ['product_id', 'location_id'],
-                    'orderby' => '',
-                    'lazy' => true,
-                ],
+        $locations = self::normalizeLocations($locations);
+
+        $result = $this->odoo->readGroup(
+            'stock.quant',
+            self::internalDomain($locations),
+            self::QUANT_FIELDS,
+            ['product_id', 'location_id'],
+            ['lazy' => true],
+            [
+                'tz' => 'GMT',
+                'active_model' => 'stock.quantity.history',
+                'active_id' => 1106,
+                'active_ids' => [1106],
+                'search_default_internal_loc' => 1,
+                'group_by' => ['product_id', 'location_id'],
+                'search_disable_custom_filters' => true,
             ],
-            'id' => 432008837,
-        ];
-        for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
-            array_push($param['params']['kwargs']['domain'], '|');
-        }
+        );
 
-        foreach ($locations ?? [] as $item) {
-            array_push($param['params']['kwargs']['domain'], ['location_id', 'ilike', $item]);
-        }
-        $url_param = '/web/dataset/call_kw/stock.quant/read_group';
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->get();
-        $data = collect(Arr::get($response, 'result', []) ?? []);
+        $data = collect($result ?? []);
 
         // 1. Ekstrak info dasar dan kumpulkan semua 'code' unik
         $mappedData = $data->map(function ($item) {
@@ -103,65 +64,22 @@ class StockServices extends Odoo
         });
     }
 
-    public static function lot(int $id, $locations = [], int $limit = 10)
+    public function lot(int $id, array|string|null $locations = [], int $limit = 10)
     {
-        $param = ['jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'model' => 'stock.quant',
-                'domain' => [
-                    [
-                        'product_id',
-                        'in',
-                        [
-                            $id,
-                        ],
-                    ],
-                ],
-                'fields' => [
-                    'product_id',
-                    'location_id',
-                    'lot_id',
-                    'itds_expired',
-                    'package_id',
-                    'owner_id',
-                    'reserved_quantity',
-                    'quantity',
-                    'product_uom_id',
-                    'write_date',
-                    'company_id',
-                ],
-                'limit' => $limit,
-                'sort' => '',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                    'active_model' => 'product.template',
-                    'active_id' => 21418,
-                    'active_ids' => [
-                        21418,
-                    ],
-                    'search_default_internal_loc' => 1,
-                    'search_disable_custom_filters' => true,
-                ],
-            ],
-            'id' => 520742991,
-        ];
-        for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
-            array_push($param['params']['domain'], '|');
-        }
+        $locations = self::normalizeLocations($locations);
 
-        foreach ($locations ?? [] as $item) {
-            array_push($param['params']['domain'], ['location_id', 'ilike', $item]);
-        }
-        $url_param = '/web/dataset/search_read';
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->get();
-        $data = collect(Arr::get($response, 'result.records', []) ?? []);
+        $result = $this->odoo->searchRead('stock.quant', array_merge(
+            [['product_id', 'in', [$id]]],
+            self::locationOr([], $locations),
+        ), self::QUANT_FIELDS, $limit, 0, '', [
+            'active_model' => 'product.template',
+            'active_id' => 21418,
+            'active_ids' => [21418],
+            'search_default_internal_loc' => 1,
+            'search_disable_custom_filters' => true,
+        ]);
+
+        $data = collect(Arr::get($result, 'records', []) ?? []);
 
         return $data->map(fn ($item) => static::mapQuantRow($item));
     }
@@ -173,68 +91,26 @@ class StockServices extends Odoo
      * 1 request search_read per halaman per lokasi, lalu agregat
      * quantity per (produk, lot, expired) di PHP.
      */
-    public static function lotBulk(array|string|null $locations = [], int $batchSize = 2000)
+    public function lotBulk(array|string|null $locations = [], int $batchSize = 2000)
     {
-        if (! is_array($locations)) {
-            $locations = $locations === null || $locations === '' ? [] : array_values(array_filter(array_map('trim', explode(',', (string) $locations))));
-        }
-
-        $domain = [
-            ['location_id.usage', '=', 'internal'],
-        ];
-        for ($i = 0; $i < (count($locations ?? []) - 1); $i++) {
-            array_push($domain, '|');
-        }
-        foreach ($locations ?? [] as $item) {
-            array_push($domain, ['location_id', 'ilike', $item]);
-        }
-        array_push($domain, ['quantity', '>', 0]);
+        $locations = self::normalizeLocations($locations);
+        $domain = array_merge(
+            [['location_id.usage', '=', 'internal']],
+            self::locationOr([], $locations),
+            [['quantity', '>', 0]],
+        );
 
         $records = collect();
         $offset = 0;
         do {
-            $param = [
-                'jsonrpc' => '2.0',
-                'method' => 'call',
-                'params' => [
-                    'model' => 'stock.quant',
-                    'domain' => $domain,
-                    'fields' => [
-                        'product_id',
-                        'location_id',
-                        'lot_id',
-                        'itds_expired',
-                        'package_id',
-                        'owner_id',
-                        'reserved_quantity',
-                        'quantity',
-                        'product_uom_id',
-                        'write_date',
-                        'company_id',
-                    ],
-                    'limit' => $batchSize,
-                    'offset' => $offset,
-                    'sort' => '',
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'search_default_internal_loc' => 1,
-                        'search_disable_custom_filters' => true,
-                    ],
-                ],
-                'id' => 520742991,
-            ];
-            $url_param = '/web/dataset/search_read';
-            $response = parent::asJson()
-                ->withData($param)
-                ->withUrlParam($url_param)
-                ->method('POST')
-                ->get();
-            $page = Arr::get($response, 'result.records', []) ?? [];
-            $records = $records->merge($page);
+            $page = $this->odoo->searchRead('stock.quant', $domain, self::QUANT_FIELDS, $batchSize, $offset, '', [
+                'search_default_internal_loc' => 1,
+                'search_disable_custom_filters' => true,
+            ]);
+            $rows = Arr::get($page, 'records', []) ?? [];
+            $records = $records->merge($rows);
             $offset += $batchSize;
-        } while (count($page) >= $batchSize);
+        } while (count($rows) >= $batchSize);
 
         return $records->map(fn ($item) => static::mapQuantRow($item))
             ->groupBy(fn ($row) => $row['id'].'|'.($row['lot'] ?? '').'|'.($row['expired'] ?? ''))
@@ -264,8 +140,8 @@ class StockServices extends Odoo
         $expired_ori = $expired;
         try {
             $expired = odoo_datetime($expired, 'Y.m.d');
-        } catch (\Throwable $th) {
-            // throw $th;
+        } catch (\Throwable) {
+            // biarkan format mentah bila gagal parse
         }
 
         return [
@@ -281,7 +157,7 @@ class StockServices extends Odoo
         ];
     }
 
-    public static function getLocationAlias(string $code)
+    public static function getLocationAlias(string $code): string
     {
         return match (strtolower($code)) {
             'center' => 'CENTER',
@@ -291,5 +167,44 @@ class StockServices extends Odoo
             'demo' => 'DEMO',
             default => $code,
         };
+    }
+
+    /**
+     * @return array<int, array|string>
+     */
+    private static function internalDomain(array $locations): array
+    {
+        return array_merge(
+            [['location_id.usage', '=', 'internal']],
+            self::locationOr([], $locations),
+        );
+    }
+
+    /**
+     * Susun OR `location_id ilike X` — 0 lokasi = tanpa filter,
+     * 1 lokasi = satu kondisi, N lokasi = prefix N-1 `'|'`.
+     *
+     * @return array<int, array|string>
+     */
+    private static function locationOr(array $domain, array $locations): array
+    {
+        if ($locations === []) {
+            return $domain;
+        }
+
+        $conds = array_map(fn ($loc) => ['location_id', 'ilike', $loc], $locations);
+        $ors = array_fill(0, count($conds) - 1, '|');
+
+        return array_merge($domain, $ors, $conds);
+    }
+
+    /** @return array<int, string> */
+    private static function normalizeLocations(array|string|null $locations): array
+    {
+        if (! is_array($locations)) {
+            $locations = $locations === null || $locations === '' ? [] : array_values(array_filter(array_map('trim', explode(',', (string) $locations))));
+        }
+
+        return array_values($locations);
     }
 }

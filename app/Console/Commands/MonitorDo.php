@@ -33,13 +33,13 @@ class MonitorDo extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(DoServices $doServices)
     {
         $session = $this->readSession();
         $last_error = Arr::get($session, 'last_error', now());
 
         try {
-            $do = DoServices::getAll('CENT/OUT/', 5);
+            $do = $doServices->getAll('CENT/OUT/', 5);
 
             // Validasi response dari DoServices
             if (! is_array($do)) {

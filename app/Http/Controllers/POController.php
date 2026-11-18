@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class POController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, POServices $po)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -20,7 +20,7 @@ class POController extends Controller
             $search = (string) ($request->input('search') ?? '');
             $product_search = (string) ($request->input('product_search') ?? '');
 
-            $response = POServices::getAll($search, $perPage, $offset, $product_search);
+            $response = $po->getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -39,27 +39,27 @@ class POController extends Controller
         ]);
     }
 
-    public function detail(Request $request, string $id)
+    public function detail(Request $request, string $id, POServices $po)
     {
-        $res = POServices::detail($id);
+        $res = $po->detail((int) $id);
 
         return $this->sendResponse($res);
     }
 
-    public function order_line(Request $request)
+    public function order_line(Request $request, POServices $po)
     {
-        $res = POServices::getOrderLines($request->lines);
+        $res = $po->getOrderLines((array) $request->lines);
 
         if ($request->wantsJson()) {
-            return $this->sendResponse(['data' => PoResource::collection($res['result'])]);
+            return $this->sendResponse(['data' => PoResource::collection($res)]);
         }
 
         return redirect()->back()->with('success', 'Success!');
     }
 
-    public function cekImport(string $id)
+    public function cekImport(string $id, POServices $poServices)
     {
-        $po = POServices::detail((int) $id);
+        $po = $poServices->detail((int) $id);
 
         $poName = (string) ($po['name'] ?? '');
         // Dari PO, RI belum pasti (satu PO bisa punya banyak RI) → pakai dummy.

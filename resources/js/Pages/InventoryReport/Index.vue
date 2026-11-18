@@ -118,22 +118,18 @@ function resetLocFilter() {
 
 const locSummary = computed(() => {
     let total = 0;
-    let reserved = 0;
     locTable.filtered.value.forEach((item) => {
         total += Number(item.quantity ?? 0);
-        reserved += Number(item.reserved ?? 0);
     });
-    return { total, reserved, available: total - reserved };
+    return { total };
 });
 
 const tableSummary = computed(() => {
     let total = 0;
-    let reserved = 0;
     table.filtered.value.forEach((item) => {
         total += Number(item.quantity ?? 0);
-        reserved += Number(item.reserved ?? 0);
     });
-    return { count: table.filtered.value.length, total, reserved, available: total - reserved };
+    return { count: table.filtered.value.length, total };
 });
 
 const columns = [
@@ -202,7 +198,7 @@ load();
             </template>
         </DataTable>
         <p class="mt-2 text-xs text-muted-foreground">
-            {{ tableSummary.count }} produk · Qty {{ formatQtyID(tableSummary.total) }} · Reserved {{ formatQtyID(tableSummary.reserved) }} · Available {{ formatQtyID(tableSummary.available) }}
+            {{ tableSummary.count }} produk · Qty {{ formatQtyID(tableSummary.total) }}
         </p>
         <AppModal v-model:open="locOpen" size="2xl">
             <template #title>
@@ -212,8 +208,6 @@ load();
             </template>
             <p class="mb-2 text-sm text-muted-foreground">
                 Total: <b>{{ formatQtyID(locSummary.total) }}</b>
-                &nbsp;· Reserved: <b>{{ formatQtyID(locSummary.reserved) }}</b>
-                &nbsp;· Available: <b>{{ formatQtyID(locSummary.available) }}</b>
             </p>
             <div class="mb-2 flex max-w-xl flex-wrap items-center gap-2">
                 <Input :model-value="locSearchBox" type="search" placeholder="Cari lokasi..." class="max-w-xs flex-1" @input="onLocSearchInput" />

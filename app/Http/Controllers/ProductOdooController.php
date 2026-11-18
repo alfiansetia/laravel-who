@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class ProductOdooController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ProductOdooServices $products)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -17,7 +17,7 @@ class ProductOdooController extends Controller
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
 
-            $response = ProductOdooServices::getAll($search, $perPage, $offset);
+            $response = $products->getAll($search, $perPage, $offset);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -36,41 +36,41 @@ class ProductOdooController extends Controller
         ]);
     }
 
-    public function detail(int $id)
+    public function detail(int $id, ProductOdooServices $products)
     {
-        $response = ProductOdooServices::detail((int) $id);
+        $response = $products->detail((int) $id);
 
         return $this->sendResponse($response);
     }
 
-    public function on_hand(Request $request, int $id, int $variant)
+    public function on_hand(Request $request, int $id, int $variant, ProductOdooServices $products)
     {
-        $res = ProductOdooServices::onHand($id, $variant);
-        $total = Arr::get($res, 'result.length');
+        $res = $products->onHand($id, $variant);
+        $total = Arr::get($res, 'length');
 
         if ($request->wantsJson()) {
             return response()->json([
                 'draw' => $request->draw,
                 'recordsTotal' => $total,
                 'recordsFiltered' => $total,
-                'data' => Arr::get($res, 'result.records'),
+                'data' => Arr::get($res, 'records'),
             ]);
         }
 
         return redirect()->back()->with('success', 'Success!');
     }
 
-    public function move(Request $request, int $id, int $variant)
+    public function move(Request $request, int $id, int $variant, ProductOdooServices $products)
     {
-        $res = ProductOdooServices::move($id, $variant);
-        $total = Arr::get($res, 'result.length');
+        $res = $products->move($id, $variant);
+        $total = Arr::get($res, 'length');
 
         if ($request->wantsJson()) {
             return response()->json([
                 'draw' => $request->draw,
                 'recordsTotal' => $total,
                 'recordsFiltered' => $total,
-                'data' => Arr::get($res, 'result.records'),
+                'data' => Arr::get($res, 'records'),
             ]);
         }
 

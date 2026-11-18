@@ -205,15 +205,15 @@ class AlamatController extends Controller
         return redirect()->route('alamats.index')->with('success', 'Success Duplicate!');
     }
 
-    public function sync(Request $request, Alamat $alamat)
+    public function sync(Request $request, Alamat $alamat, DoServices $doServices)
     {
         $id = 0;
         $do = $alamat->do;
-        $json = DoServices::getAll($do);
+        $json = $doServices->getAll($do);
         if (count($json['records'] ?? []) > 0) {
             $id = intval($json['records'][0]['id']);
         }
-        $detail = DoServices::detail($id);
+        $detail = $doServices->detail($id);
         $pd_jd = [];
 
         $last_key = 0;

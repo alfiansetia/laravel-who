@@ -2,139 +2,55 @@
 
 namespace App\Services;
 
-use App\Exceptions\OdooException;
-use Illuminate\Support\Arr;
+use App\Services\Odoo\OdooClient;
+use App\Services\Odoo\OdooDomain;
 
-class VendorOdooServices extends Odoo
+/**
+ * Master vendor Odoo (res.partner). Baca langsung dari ERP,
+ * tanpa tabel lokal (lihat ADR-010).
+ */
+class VendorOdooServices
 {
-    public function __construct() {}
+    private const MODEL = 'res.partner';
 
-    public static function getAll(string $query = '', int $limit = 80, int $offset = 0): array
+    private const LIST_FIELDS = [
+        'id', 'name', 'display_name', 'email', 'phone', 'mobile',
+        'website', 'street', 'city', 'country_id', 'vat',
+        'supplier', 'is_company',
+    ];
+
+    private const DETAIL_FIELDS = [
+        'id', 'name', 'display_name', 'email', 'phone', 'mobile',
+        'website', 'street', 'street2', 'city', 'zip', 'state_id',
+        'country_id', 'vat', 'supplier', 'customer', 'is_company',
+        'is_seller', 'company_type', 'parent_id', 'active',
+    ];
+
+    public function __construct(private OdooClient $odoo) {}
+
+    public function getAll(string $query = '', int $limit = 80, int $offset = 0): array
     {
-        $url_param = '/web/dataset/search_read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'model' => 'res.partner',
-                'domain' => [
-                    [
-                        'supplier',
-                        '=',
-                        true,
-                    ],
-                    '|',
-                    '|',
-                    [
-                        'name',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'email',
-                        'ilike',
-                        $query,
-                    ],
-                    [
-                        'phone',
-                        'ilike',
-                        $query,
-                    ],
-                ],
-                'fields' => [
-                    'id',
-                    'name',
-                    'display_name',
-                    'email',
-                    'phone',
-                    'mobile',
-                    'website',
-                    'street',
-                    'city',
-                    'country_id',
-                    'vat',
-                    'supplier',
-                    'is_company',
-                ],
-                'limit' => $limit,
-                'offset' => $offset,
-                'sort' => 'name ASC',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                ],
-            ],
-            'id' => 75135116,
-        ];
-        $response = parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
-        if (! isset($response['result'])) {
-            throw new OdooException('Gagal mengambil data vendor');
-        }
+        $domain = OdooDomain::and(
+            ['supplier', '=', true],
+            OdooDomain::or(
+                OdooDomain::ilike('name', $query),
+                OdooDomain::ilike('email', $query),
+                OdooDomain::ilike('phone', $query),
+            ),
+        );
 
-        return $response['result'];
+        return $this->odoo->searchRead(
+            self::MODEL,
+            $domain,
+            self::LIST_FIELDS,
+            $limit,
+            $offset,
+            'name ASC',
+        );
     }
 
-    public static function detail(int $id): array
+    public function detail(int $id): array
     {
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [
-                    [$id],
-                    [
-                        'id',
-                        'name',
-                        'display_name',
-                        'email',
-                        'phone',
-                        'mobile',
-                        'website',
-                        'street',
-                        'street2',
-                        'city',
-                        'zip',
-                        'state_id',
-                        'country_id',
-                        'vat',
-                        'supplier',
-                        'customer',
-                        'is_company',
-                        'is_seller',
-                        'company_type',
-                        'parent_id',
-                        'active',
-                    ],
-                ],
-                'model' => 'res.partner',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                    ],
-                ],
-            ],
-            'id' => 75135117,
-        ];
-        $response = parent::asJson()
-            ->method('POST')
-            ->withUrlParam('/web/dataset/call_kw/res.partner/read')
-            ->withData($data)
-            ->get();
-
-        $record = Arr::get($response, 'result.0');
-
-        if (! $record) {
-            throw new OdooException('Data vendor tidak ditemukan!', 404);
-        }
-
-        return $record;
+        return $this->odoo->readOne(self::MODEL, $id, self::DETAIL_FIELDS);
     }
 }

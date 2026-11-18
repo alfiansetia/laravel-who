@@ -12,11 +12,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class StockController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, StockServices $stock)
     {
         if ($request->wantsJson()) {
             $locations = $this->normalizeLocations($request->input('location'));
-            $data = StockServices::getAll($locations);
+            $data = $stock->getAll($locations);
 
             return $this->sendResponse($data);
         }
@@ -27,14 +27,14 @@ class StockController extends Controller
         ]);
     }
 
-    public function lot(Request $request, int $id)
+    public function lot(Request $request, int $id, StockServices $stock)
     {
         $limit = 10;
         if ($request->filled('limit')) {
             $limit = intval($request->limit);
         }
         $locations = $this->normalizeLocations($request->input('location'));
-        $data = StockServices::lot($id, $locations, $limit);
+        $data = $stock->lot($id, $locations, $limit);
 
         if ($request->wantsJson()) {
             return $this->sendResponse($data);
@@ -78,7 +78,7 @@ class StockController extends Controller
         return [];
     }
 
-    public function opname(Request $request)
+    public function opname(Request $request, StockServices $stock)
     {
         $loc = $request->location ?? '';
         $locations = array_filter(array_map('trim', explode(',', $loc)));
@@ -96,7 +96,7 @@ class StockController extends Controller
         $cdakb = config('cdakb.opname');
 
         foreach ($locations as $loc_name) {
-            $data = StockServices::getAll([$loc_name]);
+            $data = $stock->getAll([$loc_name]);
 
             // Clone template untuk sheet baru
             $currentSheet = clone $templateSheet;
@@ -187,7 +187,7 @@ class StockController extends Controller
         return response()->download($outputPath)->deleteFileAfterSend();
     }
 
-    public function opnameLot(Request $request)
+    public function opnameLot(Request $request, StockServices $stock)
     {
         set_time_limit(300);
 
@@ -208,7 +208,7 @@ class StockController extends Controller
 
         foreach ($locations as $loc_name) {
             // 1 bulk call per lokasi (bukan 1 call per produk)
-            $data = StockServices::lotBulk([$loc_name])->values();
+            $data = $stock->lotBulk([$loc_name])->values();
 
             // Clone template untuk sheet baru
             $currentSheet = clone $templateSheet;

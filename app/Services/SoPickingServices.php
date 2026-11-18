@@ -2,146 +2,77 @@
 
 namespace App\Services;
 
-use App\Exceptions\OdooException;
+use App\Services\Odoo\OdooClient;
+use App\Services\Odoo\OdooDomain;
 use DateTimeImmutable;
 use DateTimeZone;
-use Illuminate\Support\Arr;
 
-class SoPickingServices extends Odoo
+class SoPickingServices
 {
-    public function __construct() {}
+    private const LIST_FIELDS = [
+        'confirmation_date_so', 'picking_id', 'origin', 'partner_id',
+        'location_id', 'product_id', 'name', 'exp_date',
+        'product_uom_qty', 'quantity_done', 'product_uom', 'state',
+    ];
 
-    public static function getAll(string $search = '', int $limit = 80, int $offset = 0, string $state = '', string $productSearch = '', string $date = '', int $locationId = 0): array
-    {
+    private const STATES = ['waiting', 'confirmed', 'assigned', 'done'];
+
+    public function __construct(private OdooClient $odoo) {}
+
+    public function getAll(
+        string $search = '',
+        int $limit = 80,
+        int $offset = 0,
+        string $state = '',
+        string $productSearch = '',
+        string $date = '',
+        int $locationId = 0,
+    ): array {
         $domain = [
-            [
-                'picking_id.picking_type_id.code',
-                '=',
-                'outgoing',
-            ],
-            [
-                'picking_id.state',
-                'in',
-                [
-                    'waiting',
-                    'confirmed',
-                    'assigned',
-                    'done',
-                ],
-            ],
-            [
-                'picking_id.move_ids_without_package',
-                '!=',
-                false,
-            ],
+            ['picking_id.picking_type_id.code', '=', 'outgoing'],
+            ['picking_id.state', 'in', self::STATES],
+            ['picking_id.move_ids_without_package', '!=', false],
         ];
 
         [$from, $to] = static::resolveDayRange($date);
         if ($from !== null) {
-            $domain[] = [
-                'confirmation_date_so',
-                '>=',
-                $from,
-            ];
+            $domain[] = ['confirmation_date_so', '>=', $from];
         }
         if ($to !== null) {
-            $domain[] = [
-                'confirmation_date_so',
-                '<',
-                $to,
-            ];
+            $domain[] = ['confirmation_date_so', '<', $to];
         }
 
         if ($locationId > 0) {
-            $domain[] = [
-                'location_id',
-                '=',
-                $locationId,
-            ];
+            $domain[] = ['location_id', '=', $locationId];
         }
 
         $search = trim($search);
         if ($search !== '') {
-            $domain[] = '|';
-            $domain[] = '|';
-            $domain[] = [
-                'picking_id',
-                'ilike',
-                $search,
-            ];
-            $domain[] = [
-                'origin',
-                'ilike',
-                $search,
-            ];
-            $domain[] = [
-                'product_id',
-                'ilike',
-                $search,
-            ];
+            array_push($domain, ...OdooDomain::or(
+                OdooDomain::ilike('picking_id', $search),
+                OdooDomain::ilike('origin', $search),
+                OdooDomain::ilike('product_id', $search),
+            ));
         }
 
         $state = trim($state);
-        if ($state !== '' && in_array($state, ['waiting', 'confirmed', 'assigned', 'done'], true)) {
-            $domain[] = [
-                'state',
-                '=',
-                $state,
-            ];
+        if ($state !== '' && in_array($state, self::STATES, true)) {
+            $domain[] = ['state', '=', $state];
         }
 
         $productSearch = trim($productSearch);
         if ($productSearch !== '') {
-            $domain[] = [
-                'product_id',
-                'ilike',
-                $productSearch,
-            ];
+            $domain[] = ['product_id', 'ilike', $productSearch];
         }
 
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'model' => 'stock.move',
-                'domain' => $domain,
-                'fields' => [
-                    'confirmation_date_so',
-                    'picking_id',
-                    'origin',
-                    'partner_id',
-                    'location_id',
-                    'product_id',
-                    'name',
-                    'exp_date',
-                    'product_uom_qty',
-                    'quantity_done',
-                    'product_uom',
-                    'state',
-                ],
-                'limit' => intval($limit),
-                'offset' => intval($offset),
-                'sort' => 'confirmation_date_so DESC, create_date DESC, date_expected DESC',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                ],
-            ],
-        ];
-
-        $response = parent::asJson()
-            ->withUrlParam('/web/dataset/search_read')
-            ->method('POST')
-            ->withData($data)
-            ->get();
-
-        $res = Arr::get($response, 'result', null);
-        if (! $res) {
-            throw new OdooException('Data Not Found!', 404);
-        }
-
-        return $res;
+        return $this->odoo->searchRead(
+            'stock.move',
+            $domain,
+            self::LIST_FIELDS,
+            $limit,
+            $offset,
+            'confirmation_date_so DESC, create_date DESC, date_expected DESC',
+        );
     }
 
     /**

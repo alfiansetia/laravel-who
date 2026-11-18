@@ -26,10 +26,18 @@ const props = defineProps({
 });
 
 const toast = useToast();
+const gudangOptions = [
+    { label: 'CENTER', value: '1' },
+    { label: 'BAD STOCK', value: '756' },
+    { label: 'DEMO', value: '761' },
+    { label: 'MARKETING', value: '871' },
+    { label: 'SERVICE', value: '881' },
+    { label: 'SPAREPART', value: '886' },
+];
 const query = useTableQuery((p) => api.get('/ri', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
-    filters: { product_search: props.filters.product_search ?? '' },
+    filters: { gudang: props.filters.gudang ?? '1', product_search: props.filters.product_search ?? '' },
 });
 const detailOpen = ref(false);
 const detail = ref(null);
@@ -54,7 +62,7 @@ const detailTabs = computed(() => [
 const searchBox = ref(props.filters.search ?? '');
 const productBox = ref(props.filters.product_search ?? '');
 
-const activeCount = computed(() => (query.filters.value.product_search ? 1 : 0));
+const activeCount = computed(() => (query.filters.value.gudang ? 1 : 0) + (query.filters.value.product_search ? 1 : 0));
 
 function onProductInput(e) {
     productBox.value = e.target.value;
@@ -65,7 +73,7 @@ function resetFilter() {
     searchBox.value = '';
     productBox.value = '';
     query.setSearch('', 0);
-    query.setFilters({ product_search: '' });
+    query.setFilters({ gudang: '1', product_search: '' });
 }
 
 const columns = [
@@ -237,6 +245,9 @@ query.fetch();
         <TableToolbar v-model="searchBox" placeholder="Cari nomor RI..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
             <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
             <template #filters>
+                <FormField label="Gudang">
+                    <SearchableSelect :model-value="query.filters.value.gudang" :options="gudangOptions" placeholder="Pilih gudang..." @update:model-value="query.setFilters({ gudang: $event })" />
+                </FormField>
                 <FormField label="Kode Produk">
                     <Input :model-value="productBox" placeholder="Cari kode produk..." @input="onProductInput" />
                 </FormField>

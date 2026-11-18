@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\Odoo;
+use App\Services\OdooSession;
 use Exception;
 use Illuminate\Support\Facades\File;
 
@@ -24,7 +25,7 @@ class FileDownloaderController extends Controller
                     [
                         'lang' => 'en_US',
                         'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
+                        'uid' => (int) (OdooSession::getCurrentSession()['uid'] ?? 0),
                         'params' => [
                             'id' => 12508,
                             'action' => 338,

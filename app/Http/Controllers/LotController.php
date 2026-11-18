@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class LotController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, LotServices $lots)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -18,7 +18,7 @@ class LotController extends Controller
             $search = (string) ($request->input('search') ?? '');
             $product = $request->filled('product') ? $request->input('product') : null;
 
-            $response = LotServices::getAll($search, $perPage, $offset, $product);
+            $response = $lots->getAll($search, $perPage, $offset, $product);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -37,16 +37,16 @@ class LotController extends Controller
         ]);
     }
 
-    public function detail(Request $request, string $id)
+    public function detail(Request $request, string $id, LotServices $lots)
     {
-        $res = LotServices::detail($id);
+        $res = $lots->detail((int) $id);
 
         return $this->sendResponse($res);
     }
 
-    public function trace(Request $request, string $id)
+    public function trace(Request $request, string $id, LotServices $lots)
     {
-        $res = LotServices::getTraceHtml($id);
+        $res = $lots->getTraceHtml((int) $id);
         $data = Arr::get($res, 'result', null);
 
         if ($request->wantsJson()) {

@@ -49,7 +49,7 @@ function validYmd(value) {
     return /^\d{4}-\d{2}-\d{2}$/.test(String(value ?? '').trim()) ? String(value).trim() : '';
 }
 
-// Default: hari ini + gudang CENTER/Stock,
+// Default: kemarin + gudang CENTER/Stock,
 // kecuali URL sudah membawa filter tanggal/gudang sendiri.
 const hasDateParam = validYmd(props.filters.date) !== '';
 const hasLocationParam = String(props.filters.location_id ?? '') !== '';
@@ -61,14 +61,38 @@ const query = useTableQuery((p) => api.get('/so-picking', { params: p }), {
     filters: {
         state: props.filters.state ?? '',
         product_search: props.filters.product_search ?? '',
-        date: hasDateParam ? validYmd(props.filters.date) : todayYmd(),
+        date: hasDateParam ? validYmd(props.filters.date) : todayYmd(1),
         location_id: hasLocationParam ? String(props.filters.location_id) : '12',
     },
 });
 
 const searchBox = ref(props.filters.search ?? '');
 const productBox = ref(props.filters.product_search ?? '');
-const dateBox = ref(hasDateParam ? validYmd(props.filters.date) : todayYmd());
+const dateBox = ref(hasDateParam ? validYmd(props.filters.date) : todayYmd(1));
+
+// Search utama jalan murni di frontend (tanpa request): data sudah dibatasi
+// filter tanggal/gudang di server, jadi tinggal saring baris yang ke-load.
+// Kolom yang dicari: picking, order, produk, customer, deskripsi, lokasi.
+const feKeyword = computed(() => String(searchBox.value ?? '').trim().toLowerCase());
+
+const filteredRows = computed(() => {
+    const kw = feKeyword.value;
+    if (kw === '') {
+        return query.rows.value;
+    }
+    return query.rows.value.filter((row) => {
+        const hay = [
+            odooName(row.picking_id),
+            cellText(row.origin, ''),
+            odooName(row.product_id),
+            odooName(row.partner_id),
+            cellText(row.name, ''),
+            odooName(row.location_id),
+        ].join(' ').toLowerCase();
+
+        return hay.includes(kw);
+    });
+});
 
 const activeCount = computed(
     () =>
@@ -100,7 +124,7 @@ function presetKemarin() {
 function resetFilter() {
     searchBox.value = '';
     productBox.value = '';
-    dateBox.value = todayYmd(0);
+    dateBox.value = todayYmd(1);
     query.setSearch('', 0);
     query.setFilters({ state: '', product_search: '', date: dateBox.value, location_id: '12' });
 }
@@ -141,7 +165,7 @@ const columns = [
 
 const perPageOptions = [10, 25, 50, 80, 100, 500];
 
-const exportRows = computed(() => query.rows.value.map((row) => ({
+const exportRows = computed(() => filteredRows.value.map((row) => ({
     confirmation_date_so: row.confirmation_date_so && row.confirmation_date_so !== false ? formatOdooDate(row.confirmation_date_so) : '',
     picking_reference: odooName(row.picking_id),
     order_reference: cellText(row.origin, ''),
@@ -163,7 +187,7 @@ query.fetch();
 <template>
     <AppLayout>
         <PageHeader :title="title" />
-        <TableToolbar v-model="searchBox" placeholder="Cari picking / order / produk..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
+        <TableToolbar v-model="searchBox" placeholder="Cari di data ini..." :active-count="activeCount" @reset="resetFilter">
             <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
             <Button variant="outline" size="sm" @click="copyRows(exportRows, exportCols, 'SO Picking')"><Copy /> Salin</Button>
             <Button variant="outline" size="sm" @click="downloadCsv('so-picking', exportRows, exportCols)"><Download /> CSV</Button>
@@ -188,7 +212,7 @@ query.fetch();
         </TableToolbar>
         <DataTable
             :columns="columns"
-            :rows="query.rows.value"
+            :rows="filteredRows"
             :loading="query.loading.value"
             :error="query.error.value"
             :page="query.page.value"

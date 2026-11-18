@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class ItController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ItServices $it)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -19,7 +19,7 @@ class ItController extends Controller
             $gudang = $request->input('gudang', 5);
             $product_search = (string) ($request->input('product_search') ?? '');
 
-            $response = ItServices::withGudang(intval($gudang))
+            $response = $it->withGudang(intval($gudang))
                 ->getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
@@ -39,17 +39,17 @@ class ItController extends Controller
         ]);
     }
 
-    public function detail(int $id)
+    public function detail(int $id, ItServices $it)
     {
         $id = intval($id);
-        $response = ItServices::detail($id);
+        $response = $it->detail($id);
 
         return $this->sendResponse($response);
     }
 
-    public function print(Request $request, $id)
+    public function print(Request $request, $id, ItServices $it)
     {
-        $data = ItServices::detail($id);
+        $data = $it->detail($id);
         if (! isset($data['id'])) {
             return redirect()->route('it.index')->with('error', 'Data Tidak Ditemukan');
         }

@@ -2,23 +2,23 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Arr;
+use App\Services\Odoo\OdooClient;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class InventoryReportServices extends Odoo
+class InventoryReportServices
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    private const QUANT_FIELDS = [
+        'product_id', 'location_id', 'lot_id', 'itds_expired',
+        'package_id', 'owner_id', 'reserved_quantity', 'quantity',
+        'product_uom_id', 'write_date', 'company_id',
+    ];
 
-    /** Cache ID lokasi GA/Stock per proses (hindari lookup berulang). */
-    protected static ?array $gaStockLocationIds = null;
+    public function __construct(private OdooClient $odoo) {}
+
+    /** Cache ID lokasi GA/Stock per request (hindari lookup berulang). */
+    private ?array $gaStockLocationIds = null;
 
     /**
      * Domain dasar: lokasi internal + opsional exclude GA/Stock.
@@ -29,13 +29,13 @@ class InventoryReportServices extends Odoo
      *
      * @return array<int, mixed>
      */
-    public static function baseDomain(bool $excludeGaStock = true): array
+    public function baseDomain(bool $excludeGaStock = true): array
     {
         $domain = [
             ['location_id.usage', '=', 'internal'],
         ];
         if ($excludeGaStock) {
-            $ids = static::gaStockLocationIds();
+            $ids = $this->gaStockLocationIds();
             if (! empty($ids)) {
                 $domain[] = ['location_id', 'not in', $ids];
             }
@@ -49,46 +49,25 @@ class InventoryReportServices extends Odoo
      *
      * @return array<int, int>
      */
-    protected static function gaStockLocationIds(): array
+    protected function gaStockLocationIds(): array
     {
-        if (static::$gaStockLocationIds !== null) {
-            return static::$gaStockLocationIds;
+        if ($this->gaStockLocationIds !== null) {
+            return $this->gaStockLocationIds;
         }
 
-        $param = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'model' => 'stock.location',
-                'domain' => [
-                    ['complete_name', 'ilike', 'GA/Stock'],
-                    ['usage', '=', 'internal'],
-                ],
-                'fields' => ['id'],
-                'limit' => 50,
-                'sort' => '',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                ],
-            ],
-            'id' => 446368427,
-        ];
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam('/web/dataset/search_read')
-            ->method('POST')
-            ->get();
+        $result = $this->odoo->searchRead('stock.location', [
+            ['complete_name', 'ilike', 'GA/Stock'],
+            ['usage', '=', 'internal'],
+        ], ['id'], 50);
 
-        $ids = collect(Arr::get($response, 'result.records', []) ?? [])
+        $ids = collect($result['records'] ?? [])
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->filter()
             ->values()
             ->all();
 
-        return static::$gaStockLocationIds = $ids;
+        return $this->gaStockLocationIds = $ids;
     }
 
     /**
@@ -97,60 +76,25 @@ class InventoryReportServices extends Odoo
      *
      * @return array<int, array{id:int,code:string,name:string,quantity:float,reserved:float,available:float,count:int}>
      */
-    public static function getAll(bool $excludeGaStock = true): array
+    public function getAll(bool $excludeGaStock = true): array
     {
-        $domain = static::baseDomain($excludeGaStock);
-
-        $param = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [],
-                'model' => 'stock.quant',
-                'method' => 'read_group',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'active_model' => 'stock.quantity.history',
-                        'active_id' => 2124,
-                        'active_ids' => [2124],
-                        'search_default_internal_loc' => 1,
-                        'group_by' => ['product_id', 'location_id'],
-                        'search_disable_custom_filters' => true,
-                    ],
-                    'domain' => $domain,
-                    'fields' => [
-                        'product_id',
-                        'location_id',
-                        'lot_id',
-                        'itds_expired',
-                        'package_id',
-                        'owner_id',
-                        'reserved_quantity',
-                        'quantity',
-                        'product_uom_id',
-                        'write_date',
-                        'company_id',
-                    ],
-                    'groupby' => ['product_id', 'location_id'],
-                    'orderby' => '',
-                    'lazy' => true,
-                ],
+        $data = $this->odoo->readGroup(
+            'stock.quant',
+            $this->baseDomain($excludeGaStock),
+            self::QUANT_FIELDS,
+            ['product_id', 'location_id'],
+            ['lazy' => true],
+            [
+                'active_model' => 'stock.quantity.history',
+                'active_id' => 2124,
+                'active_ids' => [2124],
+                'search_default_internal_loc' => 1,
+                'group_by' => ['product_id', 'location_id'],
+                'search_disable_custom_filters' => true,
             ],
-            'id' => 446368424,
-        ];
+        );
 
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam('/web/dataset/call_kw/stock.quant/read_group')
-            ->method('POST')
-            ->get();
-
-        $data = collect(Arr::get($response, 'result', []) ?? []);
-
-        return $data->map(function ($item) {
+        return collect($data)->map(function ($item) {
             [$id, $code, $name] = pecah_code($item['product_id'] ?? null);
             $quantity = (float) ($item['quantity'] ?? 0);
             $reserved = (float) ($item['reserved_quantity'] ?? 0);
@@ -172,53 +116,27 @@ class InventoryReportServices extends Odoo
      *
      * @return array<int, array{location:string,quantity:float,reserved:float,available:float,count:int}>
      */
-    public static function getLocations(int $productId, bool $excludeGaStock = true): array
+    public function getLocations(int $productId, bool $excludeGaStock = true): array
     {
         $domain = array_merge(
             [['product_id', '=', $productId]],
-            static::baseDomain($excludeGaStock)
+            $this->baseDomain($excludeGaStock)
         );
 
-        $param = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [],
-                'model' => 'stock.quant',
-                'method' => 'read_group',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'search_default_internal_loc' => 1,
-                        'group_by' => ['location_id'],
-                        'search_disable_custom_filters' => true,
-                    ],
-                    'domain' => $domain,
-                    'fields' => [
-                        'product_id',
-                        'location_id',
-                        'reserved_quantity',
-                        'quantity',
-                    ],
-                    'groupby' => ['location_id'],
-                    'orderby' => '',
-                    'lazy' => false,
-                ],
+        $data = $this->odoo->readGroup(
+            'stock.quant',
+            $domain,
+            ['product_id', 'location_id', 'reserved_quantity', 'quantity'],
+            ['location_id'],
+            ['lazy' => false],
+            [
+                'search_default_internal_loc' => 1,
+                'group_by' => ['location_id'],
+                'search_disable_custom_filters' => true,
             ],
-            'id' => 446368425,
-        ];
+        );
 
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam('/web/dataset/call_kw/stock.quant/read_group')
-            ->method('POST')
-            ->get();
-
-        $data = collect(Arr::get($response, 'result', []) ?? []);
-
-        return $data->map(function ($item) {
+        return collect($data)->map(function ($item) {
             $quantity = (float) ($item['quantity'] ?? 0);
             $reserved = (float) ($item['reserved_quantity'] ?? 0);
 
@@ -239,47 +157,20 @@ class InventoryReportServices extends Odoo
      *
      * @return array{main: array<int,string>, others: array<int,string>, rows: array<int, array{id:int,code:string,name:string,qtys:array<string,float>}>}
      */
-    public static function getMatrix(bool $excludeGaStock = true): array
+    public function getMatrix(bool $excludeGaStock = true): array
     {
-        $domain = static::baseDomain($excludeGaStock);
-
-        $param = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [],
-                'model' => 'stock.quant',
-                'method' => 'read_group',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'search_default_internal_loc' => 1,
-                        'group_by' => ['product_id', 'location_id'],
-                        'search_disable_custom_filters' => true,
-                    ],
-                    'domain' => $domain,
-                    'fields' => [
-                        'product_id',
-                        'location_id',
-                        'quantity',
-                    ],
-                    'groupby' => ['product_id', 'location_id'],
-                    'orderby' => '',
-                    'lazy' => false,
-                ],
+        $result = $this->odoo->readGroup(
+            'stock.quant',
+            $this->baseDomain($excludeGaStock),
+            ['product_id', 'location_id', 'quantity'],
+            ['product_id', 'location_id'],
+            ['lazy' => false],
+            [
+                'search_default_internal_loc' => 1,
+                'group_by' => ['product_id', 'location_id'],
+                'search_disable_custom_filters' => true,
             ],
-            'id' => 446368426,
-        ];
-
-        $response = parent::asJson()
-            ->withData($param)
-            ->withUrlParam('/web/dataset/call_kw/stock.quant/read_group')
-            ->method('POST')
-            ->get();
-
-        $result = Arr::get($response, 'result', []) ?? [];
+        );
 
         return static::buildMatrix($result);
     }

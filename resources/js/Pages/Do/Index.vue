@@ -31,6 +31,7 @@ const query = useTableQuery((p) => api.get('/do', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
     filters: {
+        gudang: props.filters.gudang ?? '2',
         note_search: props.filters.note_search ?? '',
         product_search: props.filters.product_search ?? '',
         date_from: props.filters.date_from ?? '',
@@ -56,8 +57,18 @@ const detailTabs = computed(() => [
     { value: 'lot', label: 'Product Lot', count: lotTable.total.value },
 ]);
 
+const gudangOptions = [
+    { label: 'CENTER', value: '2' },
+    { label: 'BAD STOCK', value: '757' },
+    { label: 'DEMO', value: '762' },
+    { label: 'MARKETING', value: '872' },
+    { label: 'SERVICE', value: '882' },
+    { label: 'SPAREPART', value: '887' },
+];
+
 const activeCount = computed(
     () =>
+        (query.filters.value.gudang ? 1 : 0) +
         (query.filters.value.note_search ? 1 : 0) +
         (query.filters.value.product_search ? 1 : 0) +
         (query.filters.value.date_from ? 1 : 0) +
@@ -167,7 +178,7 @@ function resetFilter() {
     dateFromBox.value = '';
     dateToBox.value = '';
     query.setSearch('', 0);
-    query.setFilters({ note_search: '', product_search: '', date_from: '', date_to: '' });
+    query.setFilters({ gudang: '2', note_search: '', product_search: '', date_from: '', date_to: '' });
 }
 
 const columns = [
@@ -264,6 +275,7 @@ async function exportAllCsv() {
         const params = {
             export: 'csv',
             search: query.search.value,
+            gudang: query.filters.value.gudang ?? '2',
             note_search: query.filters.value.note_search ?? '',
             product_search: query.filters.value.product_search ?? '',
             date_from: query.filters.value.date_from ?? '',
@@ -285,7 +297,7 @@ async function exportAllCsv() {
     }
 }
 
-// ---- Modal Tarik Data (laporan range tanggal, default kemarin lusa 16:00 -> kemarin 16:00) ----
+// ---- Modal Tarik Data (laporan range tanggal, default kemarin lusa 15:30 -> kemarin 15:30) ----
 const reportOpen = ref(false);
 const reportFrom = ref('');
 const reportTo = ref('');
@@ -296,16 +308,16 @@ const reportTable = useClientTable(null, {
 });
 const reportTotal = ref(0);
 
-function atSixteen(daysAgo) {
+function atHalfPastThree(daysAgo) {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T16:00`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T15:30`;
 }
 
 async function openReport() {
-    reportFrom.value = atSixteen(2);
-    reportTo.value = atSixteen(1);
+    reportFrom.value = atHalfPastThree(2);
+    reportTo.value = atHalfPastThree(1);
     reportSearchBox.value = '';
     reportTable.setSearch('', 0);
     reportTable.setRows([]);
@@ -567,6 +579,9 @@ query.fetch();
             <Button variant="outline" size="sm" title="Unduh seluruh data sesuai filter (maks 2000 baris)" @click="exportAllCsv()"><Download /> CSV Semua</Button>
             <Button variant="outline" size="sm" title="Buka laporan tarik data per tanggal" @click="openReport()"><Download /> Tarik Data</Button>
             <template #filters>
+                <FormField label="Gudang">
+                    <SearchableSelect :model-value="query.filters.value.gudang" :options="gudangOptions" placeholder="Pilih gudang..." @update:model-value="query.setFilters({ gudang: $event })" />
+                </FormField>
                 <FormField label="Note">
                     <Input :model-value="noteBox" placeholder="Cari Note..." @input="onNoteInput" />
                 </FormField>
@@ -716,9 +731,9 @@ query.fetch();
                 <Button
                     variant="outline"
                     size="sm"
-                    @click="reportFrom = atSixteen(2); reportTo = atSixteen(1); fetchReport();"
+                    @click="reportFrom = atHalfPastThree(2); reportTo = atHalfPastThree(1); fetchReport();"
                 >
-                    Kemarin lusa - Kemarin 16:00 WIB
+                    Kemarin lusa - Kemarin 15:30 WIB
                 </Button>
                 <Input :model-value="reportSearchBox" type="search" placeholder="Cari di hasil..." class="max-w-xs" @input="onReportSearchInput" />
                 <Button variant="outline" size="sm" @click="copyRows(reportExportRows, reportExportCols, 'DO')"><Copy /> Salin</Button>

@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class SoPickingController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, SoPickingServices $picking)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 80), 1);
@@ -21,7 +21,7 @@ class SoPickingController extends Controller
             $date = (string) ($request->input('date') ?? '');
             $locationId = (int) ($request->input('location_id') ?? 0);
 
-            $response = SoPickingServices::getAll($search, $perPage, $offset, $state, $productSearch, $date, $locationId);
+            $response = $picking->getAll($search, $perPage, $offset, $state, $productSearch, $date, $locationId);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 

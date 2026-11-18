@@ -2,258 +2,122 @@
 
 namespace App\Services\Import;
 
-use App\Exceptions\OdooException;
-use App\Services\Odoo;
-use Exception;
-use Illuminate\Support\Arr;
+use App\Services\Odoo\InteractsWithPicking;
+use App\Services\Odoo\OdooClient;
+use App\Services\Odoo\OdooDomain;
 
-class RIServices extends Odoo
+class RIServices
 {
-    public function __construct() {}
+    use InteractsWithPicking;
 
-    public static function getAll($query = 'CENT/IN', $limit = 80, $offset = null, $product_search = '')
+    private const LIST_FIELDS = [
+        'name', 'x_studio_no_do_manual', 'date', 'scheduled_date',
+        'force_date', 'partner_id', 'location_dest_id', 'location_id',
+        'origin', 'x_studio_tags', 'x_studio_field_0rSR5', 'priority_so',
+        'note_to_wh', 'note_itr', 'invoice_state', 'group_id',
+        'backorder_id', 'state', 'priority', 'picking_type_id',
+        'move_ids_without_package', 'move_line_ids_without_package',
+    ];
+
+    private const MOVE_FIELDS = [
+        'product_id', 'name', 'location_id', 'x_studio_lot',
+        'x_studio_field_X7gbX', 'akl_id', 'exp_date', 'product_uom_qty',
+        'quantity_done',
+    ];
+
+    public function __construct(
+        private OdooClient $odoo,
+        private int $gudangId = 1,
+    ) {}
+
+    /**
+     * Gudang = picking_type_id Odoo (incoming per warehouse).
+     * 1 = CENTER. Contoh lain: 756 BAD STOCK, 761 DEMO.
+     */
+    public function withGudang(int $gudangId): static
     {
-        if (empty($query)) {
-            $query = 'CENT/IN';
-        }
-        if (empty($limit)) {
-            $limit = 80;
-        }
-        $domain = [
-            [
-                'picking_type_id',
-                '=',
-                1,
-            ],
-            '|',
-            [
-                'name',
-                'ilike',
-                $query,
-            ],
-            [
-                'origin',
-                'ilike',
-                $query,
-            ],
-        ];
-        if (trim((string) $product_search) !== '') {
-            $domain[] = ['product_id', 'ilike', trim((string) $product_search)];
-        }
-        $url_param = '/web/dataset/search_read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'id' => 904074976,
-            'params' => [
-                'model' => 'stock.picking',
-                'domain' => $domain,
-                'fields' => [
-                    'name',
-                    'x_studio_no_do_manual',
-                    'date',
-                    'scheduled_date',
-                    'force_date',
-                    'partner_id',
-                    'location_dest_id',
-                    'location_id',
-                    'origin',
-                    'x_studio_tags',
-                    'x_studio_field_0rSR5',
-                    'priority_so',
-                    'note_to_wh',
-                    'note_itr',
-                    'invoice_state',
-                    'group_id',
-                    'backorder_id',
-                    'state',
-                    'priority',
-                    'picking_type_id',
-                    'move_ids_without_package',
-                    'move_line_ids_without_package',
-                    'note_to_wh',
-                ],
-                'limit' => intval($limit),
-                'offset' => intval($offset),
-                'sort' => '',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                    'active_id' => 1,
-                    'active_ids' => [
-                        1,
-                    ],
-                    'params' => [
-                        'id' => 20468,
-                        'action' => 384,
-                        'active_id' => 1,
-                        'model' => 'stock.picking',
-                        'view_type' => 'form',
-                        'menu_id' => 241,
-                    ],
-                    'search_default_picking_type_id' => [
-                        1,
-                    ],
-                    'default_picking_type_id' => 1,
-                    'contact_display' => 'partner_address',
-                    'search_default_available' => 1,
-                    'search_disable_custom_filters' => true,
-                ],
-            ],
-        ];
-        $response = parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
-        if (! isset($response['result'])) {
-            throw new Exception('Odoo Error');
-        }
+        $clone = clone $this;
+        $clone->gudangId = $gudangId;
 
-        return $response['result'];
+        return $clone;
     }
 
-    public static function detail(int $id)
+    public function getAll(string $query = 'CENT/IN', int $limit = 80, int $offset = 0, string $product_search = ''): array
     {
-        $url_param = '/web/dataset/call_kw/stock.picking/read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'id' => 475016332,
-            'params' => [
-                'args' => [
-                    [
-                        intval($id),
-                    ],
-                    [
-                        'id',
-                        'is_locked',
-                        'show_mark_as_todo',
-                        'show_check_availability',
-                        'show_validate',
-                        'show_lots_text',
-                        'cancel_done_picking',
-                        'picking_type_code',
-                        'show_operations',
-                        'move_line_exist',
-                        'has_packages',
-                        'state',
-                        'picking_type_entire_packs',
-                        'has_scrap_move',
-                        'has_tracking',
-                        'name',
-                        'x_studio_field_2kd16',
-                        'x_studio_no_do_manual',
-                        'partner_id',
-                        'partner_address',
-                        'partner_address2',
-                        'partner_address3',
-                        'partner_address4',
-                        'x_studio_customer',
-                        'bill_to',
-                        'delivery_manual',
-                        'ekspedisi_id',
-                        'x_studio_update_eta',
-                        'pp',
-                        'ppk',
-                        'location_id',
-                        'kurir_id',
-                        'kurir_state',
-                        'tanggal_sampai',
-                        'tanggal_persetujuan',
-                        'location_dest_id',
-                        'picking_type_id',
-                        'backorder_id',
-                        'date',
-                        'force_date',
-                        'x_studio_date',
-                        'date_done',
-                        'confirmation_date_so',
-                        'print_x_studio_date',
-                        'print_tanggal_sampai',
-                        'tgl_bast',
-                        'origin',
-                        'x_studio_id_paket',
-                        'x_studio_no_po',
-                        'x_studio_no_ska',
-                        'itr_id',
-                        'invoice_state',
-                        'cancel_reason',
-                        'note_itr',
-                        'receipts_date',
-                        'no_po',
-                        'no_aks',
-                        'no_ska',
-                        'no_sph',
-                        'no_si',
-                        'tgl_akhir_kontrak',
-                        'note_to_wh',
-                        'priority_so',
-                        'owner_id',
-                        'penanggung_jawab',
-                        'jumlah_hari',
-                        'partner',
-                        'schedule_id',
-                        'move_line_ids_without_package',
-                        'package_level_ids_details',
-                        'immediate_transfer',
-                        'move_ids_without_package',
-                        'package_level_ids',
-                        'move_type',
-                        'sale_id',
-                        'company_id',
-                        'group_id',
-                        'scheduled_date',
-                        'priority',
-                        'note',
-                        'move_temp_id',
-                        'message_follower_ids',
-                        'activity_ids',
-                        'message_ids',
-                        'message_attachment_count',
-                        'display_name',
-                    ],
-                ],
-                'model' => 'stock.picking',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'active_model' => 'stock.picking.type',
-                        'active_id' => 1,
-                        'active_ids' => [
-                            1,
-                        ],
-                        'search_default_picking_type_id' => [
-                            1,
-                        ],
-                        'default_picking_type_id' => 1,
-                        'contact_display' => 'partner_address',
-                        'search_default_available' => 1,
-                        'search_disable_custom_filters' => true,
-                        'bin_size' => true,
-                    ],
-                ],
-            ],
-        ];
-        $response = parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
-        $res = Arr::get($response, 'result.0', null);
-        if (! $res) {
-            throw new OdooException('Data Not Found!', 404);
+        $query = trim($query) === '' ? 'CENT/IN' : $query;
+
+        $domain = OdooDomain::and(
+            ['picking_type_id', '=', $this->gudangId],
+            OdooDomain::or(
+                OdooDomain::ilike('name', $query),
+                OdooDomain::ilike('origin', $query),
+            ),
+        );
+
+        if (trim($product_search) !== '') {
+            $domain[] = ['product_id', 'ilike', trim($product_search)];
         }
+
+        return $this->odoo->searchRead('stock.picking', $domain, self::LIST_FIELDS, $limit, $offset, '', [
+            'active_id' => $this->gudangId,
+            'active_ids' => [$this->gudangId],
+            'params' => [
+                'id' => 20468, 'action' => 384, 'active_id' => 1,
+                'model' => 'stock.picking', 'view_type' => 'form', 'menu_id' => 241,
+            ],
+            'search_default_picking_type_id' => [$this->gudangId],
+            'default_picking_type_id' => $this->gudangId,
+            'contact_display' => 'partner_address',
+            'search_default_available' => 1,
+            'search_disable_custom_filters' => true,
+        ]);
+    }
+
+    public function detail(int $id): array
+    {
+        $res = $this->odoo->readOne('stock.picking', $id, [
+            'id', 'is_locked', 'show_mark_as_todo', 'show_check_availability',
+            'show_validate', 'show_lots_text', 'cancel_done_picking',
+            'picking_type_code', 'show_operations', 'move_line_exist',
+            'has_packages', 'state', 'picking_type_entire_packs',
+            'has_scrap_move', 'has_tracking', 'name', 'x_studio_field_2kd16',
+            'x_studio_no_do_manual', 'partner_id', 'partner_address',
+            'partner_address2', 'partner_address3', 'partner_address4',
+            'x_studio_customer', 'bill_to', 'delivery_manual',
+            'ekspedisi_id', 'x_studio_update_eta', 'pp', 'ppk',
+            'location_id', 'kurir_id', 'kurir_state', 'tanggal_sampai',
+            'tanggal_persetujuan', 'location_dest_id', 'picking_type_id',
+            'backorder_id', 'date', 'force_date', 'x_studio_date',
+            'date_done', 'confirmation_date_so', 'print_x_studio_date',
+            'print_tanggal_sampai', 'tgl_bast', 'origin',
+            'x_studio_id_paket', 'x_studio_no_po', 'x_studio_no_ska',
+            'itr_id', 'invoice_state', 'cancel_reason', 'note_itr',
+            'receipts_date', 'no_po', 'no_aks', 'no_ska', 'no_sph',
+            'no_si', 'tgl_akhir_kontrak', 'note_to_wh', 'priority_so',
+            'owner_id', 'penanggung_jawab', 'jumlah_hari', 'partner',
+            'schedule_id', 'move_line_ids_without_package',
+            'package_level_ids_details', 'immediate_transfer',
+            'move_ids_without_package', 'package_level_ids', 'move_type',
+            'sale_id', 'company_id', 'group_id', 'scheduled_date',
+            'priority', 'note', 'move_temp_id', 'message_follower_ids',
+            'activity_ids', 'message_ids', 'message_attachment_count',
+            'display_name',
+        ], [
+            'active_model' => 'stock.picking.type',
+            'active_id' => $this->gudangId,
+            'active_ids' => [$this->gudangId],
+            'search_default_picking_type_id' => [$this->gudangId],
+            'default_picking_type_id' => $this->gudangId,
+            'contact_display' => 'partner_address',
+            'search_default_available' => 1,
+            'search_disable_custom_filters' => true,
+            'bin_size' => true,
+        ]);
+
         try {
-            $order_line = static::getMovesWithoutPackages($res['move_ids_without_package']);
-            $order_line_detail = static::getOrderLinesDetail($res['move_line_ids_without_package'] ?? []);
-            $res['move_without_package_detail'] = $order_line['result'] ?? [];
-            $res['move_line_ids_without_package_detail'] = $order_line_detail['result'] ?? [];
-        } catch (\Throwable $th) {
+            $res['move_without_package_detail'] = $this->getMoves($res['move_ids_without_package'] ?? []);
+            $res['move_line_ids_without_package_detail'] = $this->getOrderLinesDetail($res['move_line_ids_without_package'] ?? []);
+        } catch (\Throwable) {
             $res['move_without_package_detail'] = [];
             $res['move_line_ids_without_package_detail'] = [];
         }
@@ -261,144 +125,26 @@ class RIServices extends Odoo
         return $res;
     }
 
-    public static function getMovesWithoutPackages(array $line)
+    /** @return array<int, array> */
+    public function getMoves(array $line): array
     {
-        $id_prod = array_map('intval', array_filter($line, 'is_numeric'));
-        $data_line = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [
-                    $id_prod,
-                    [
-                        'product_id',
-                        'name',
-                        'location_id',
-                        'x_studio_lot',
-                        'x_studio_field_X7gbX',
-                        'akl_id',
-                        'exp_date',
-                        'product_uom_qty',
-                        'quantity_done',
-                    ],
-                ],
-                'model' => 'stock.move',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'GMT',
-                        'uid' => 192,
-                        'active_model' => 'stock.picking.type',
-                        'active_id' => 2,
-                        'active_ids' => [2],
-                        'search_default_picking_type_id' => [2],
-                        'default_picking_type_id' => 2,
-                        'contact_display' => 'partner_address',
-                        'search_default_available' => 1,
-                        'search_disable_custom_filters' => true,
-                        'picking_type_code' => 'outgoing',
-                        'default_picking_id' => 2309,
-                        'form_view_ref' => 'stock.view_move_picking_form',
-                        'address_in_id' => 25823,
-                        'default_location_id' => 12,
-                        'default_location_dest_id' => 9,
-                    ],
-                ],
-            ],
-            'id' => 555446768,
-        ];
-        $order_line = parent::asJson()
-            ->method('POST')
-            ->withUrlParam('/web/dataset/call_kw/stock.move/read')
-            ->withData($data_line)
-            ->get();
-
-        return $order_line;
+        return $this->odoo->read('stock.move', $line, self::MOVE_FIELDS, [
+            'tz' => 'GMT',
+            'active_model' => 'stock.picking.type',
+            'active_id' => 2,
+            'active_ids' => [2],
+            'search_default_picking_type_id' => [2],
+            'default_picking_type_id' => 2,
+            'contact_display' => 'partner_address',
+            'search_default_available' => 1,
+            'search_disable_custom_filters' => true,
+            'picking_type_code' => 'outgoing',
+        ]);
     }
 
-    public static function getOrderLinesDetail(array $line)
+    /** @return array<int, array> */
+    public function getOrderLines(array $line): array
     {
-        $id_prod = array_map('intval', array_filter($line, 'is_numeric'));
-        $data_line = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'params' => [
-                'args' => [
-                    $id_prod,
-                    [
-                        'picking_id',
-                        'product_id',
-                        'package_level_id',
-                        'location_id',
-                        'location_dest_id',
-                        'lot_id',
-                        'expired_date_do',
-                        'lot_name',
-                        'expired_date',
-                        'lot_id2',
-                        'package_id',
-                        'result_package_id',
-                        'owner_id',
-                        'is_initial_demand_editable',
-                        'product_uom_qty',
-                        'qty_availa',
-                        'state',
-                        'is_locked',
-                        'qty_done',
-                        'product_uom_id',
-                    ],
-                ],
-                'model' => 'stock.move.line',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'params' => [
-                            'action' => 384,
-                            'active_id' => 2,
-                            'model' => 'stock.picking',
-                            'view_type' => 'list',
-                            'menu_id' => 241,
-                        ],
-                        'contact_display' => 'partner_address',
-                        'search_disable_custom_filters' => true,
-                        'active_model' => 'stock.move',
-                        'active_id' => 2,
-                        'active_ids' => [
-                            2,
-                        ],
-                        'search_default_picking_type_id' => [
-                            2,
-                        ],
-                        'default_picking_type_id' => 2,
-                        'search_default_available' => 1,
-                        'show_lots_m2o' => true,
-                        'show_lots_text' => false,
-                        'show_source_location' => 'stock.location()',
-                        'show_destination_location' => 'stock.location()',
-                        'show_package' => true,
-                        'show_reserved_quantity' => false,
-                        'tree_view_ref' => 'stock.view_stock_move_line_operation_tree',
-                        'default_product_uom_id' => 61,
-                        'default_picking_id' => 20018,
-                        'default_move_id' => 226881,
-                        'default_product_id' => 22006,
-                        'default_location_id' => 12,
-                        'default_location_dest_id' => 9,
-                    ],
-                ],
-            ],
-            'id' => 647906249,
-        ];
-        $order_line = parent::asJson()
-            ->method('POST')
-            ->withUrlParam('/web/dataset/call_kw/stock.move/read')
-            ->withData($data_line)
-            ->get();
-
-        return $order_line;
+        return $this->getMoves($line);
     }
 }

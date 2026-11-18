@@ -155,15 +155,15 @@ class BastController extends Controller
         return redirect()->route('basts.index')->with('success', 'Bast deleted successfully.');
     }
 
-    public function sync(Request $request, Bast $bast)
+    public function sync(Request $request, Bast $bast, DoServices $doServices)
     {
         $id = 0;
         $do = $bast->do;
-        $json = Cache::remember('odoo:do:list:'.$do, 300, fn () => DoServices::getAll($do));
+        $json = Cache::remember('odoo:do:list:'.$do, 300, fn () => $doServices->getAll($do));
         if (count($json['records'] ?? []) > 0) {
             $id = intval($json['records'][0]['id']);
         }
-        $detail = Cache::remember('odoo:do:detail:'.$id, 300, fn () => DoServices::detail($id));
+        $detail = Cache::remember('odoo:do:detail:'.$id, 300, fn () => $doServices->detail($id));
         $pd_jd = [];
         foreach (($detail['move_ids_detail'] ?? []) as $item) {
             $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {

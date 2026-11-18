@@ -151,14 +151,14 @@ class VendorController extends Controller
         return redirect()->back()->with('success', 'Vendor deleted successfully.');
     }
 
-    public function vendorOdooIndex(Request $request)
+    public function vendorOdooIndex(Request $request, VendorOdooServices $vendors)
     {
         $perPage = max((int) $request->input('per_page', 10), 1);
         $page = max((int) $request->input('page', 1), 1);
         $offset = ($page - 1) * $perPage;
         $search = (string) ($request->input('search') ?? '');
 
-        $response = VendorOdooServices::getAll($search, $perPage, $offset);
+        $response = $vendors->getAll($search, $perPage, $offset);
         $total = Arr::get($response, 'length', 0);
         $data = Arr::get($response, 'records', []);
 
@@ -171,9 +171,9 @@ class VendorController extends Controller
         ]);
     }
 
-    public function vendorOdooDetail(Request $request, $id)
+    public function vendorOdooDetail(Request $request, $id, VendorOdooServices $vendors)
     {
-        $response = VendorOdooServices::detail((int) $id);
+        $response = $vendors->detail((int) $id);
 
         return $this->sendResponse($response);
     }

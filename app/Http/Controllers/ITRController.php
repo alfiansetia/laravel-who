@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class ITRController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ItrServices $itr)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -18,7 +18,7 @@ class ITRController extends Controller
             $search = (string) ($request->input('search') ?? '');
             $product_search = (string) ($request->input('product_search') ?? '');
 
-            $response = ItrServices::getAll($search, $perPage, $offset, $product_search);
+            $response = $itr->getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -37,9 +37,9 @@ class ITRController extends Controller
         ]);
     }
 
-    public function detail(Request $request, string $id)
+    public function detail(Request $request, string $id, ItrServices $itr)
     {
-        $res = ItrServices::detail((int) $id);
+        $res = $itr->detail((int) $id);
 
         return $this->sendResponse($res);
     }

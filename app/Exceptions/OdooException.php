@@ -37,6 +37,14 @@ class OdooException extends Exception
         return redirect()->route('home')->with('error', $this->getMessage());
     }
 
+    public function context(): array
+    {
+        return [
+            'status' => $this->statusCode,
+            'body' => $this->responseBody,
+        ];
+    }
+
     public function report(): void
     {
         Log::error('OdooException', [

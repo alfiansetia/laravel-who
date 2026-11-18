@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class SoController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, SoServices $so)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -33,11 +33,11 @@ class SoController extends Controller
                 $filters[] = [
                     'note_to_wh',
                     'ilike',
-                    "%$note_search%",
+                    $note_search,
                 ];
             }
 
-            $response = SoServices::getAll($search, $perPage, $offset, $filters, $product_search);
+            $response = $so->getAll($search, $perPage, $offset, $filters, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -56,19 +56,19 @@ class SoController extends Controller
         ]);
     }
 
-    public function detail(int $id)
+    public function detail(int $id, SoServices $so)
     {
         $id = intval($id);
-        $response = SoServices::detail($id);
+        $response = $so->detail($id);
 
         return $this->sendResponse($response);
     }
 
-    public function mark_as_print(Request $request, int $id)
+    public function mark_as_print(Request $request, int $id, SoServices $so)
     {
         $id = intval($id);
         $new_note = "PRINT OK\n".($request->note ?? '');
-        $response = SoServices::writeNote($id, $new_note);
+        $response = $so->writeNote($id, $new_note);
 
         if ($request->wantsJson()) {
             return $this->sendResponse($response, 'Success mark as print');
@@ -77,7 +77,7 @@ class SoController extends Controller
         return redirect()->back()->with('success', 'Success mark as print');
     }
 
-    public function mark_as_unprint(Request $request, int $id)
+    public function mark_as_unprint(Request $request, int $id, SoServices $so)
     {
         $id = intval($id);
         $note = $request->note ?? '';
@@ -85,7 +85,7 @@ class SoController extends Controller
         $new_note = preg_replace('/PRINT OK\s*/i', '', $note);
         $new_note = trim($new_note);
 
-        $response = SoServices::writeNote($id, $new_note);
+        $response = $so->writeNote($id, $new_note);
 
         if ($request->wantsJson()) {
             return $this->sendResponse($response, 'Success mark as unprint');
@@ -94,9 +94,9 @@ class SoController extends Controller
         return redirect()->back()->with('success', 'Success mark as unprint');
     }
 
-    public function print($id)
+    public function print($id, SoServices $so)
     {
-        $data = SoServices::detail($id);
+        $data = $so->detail($id);
         if (! isset($data['id'])) {
             return redirect()->route('so.index')->with('error', 'Data Tidak Ditemukan');
         }

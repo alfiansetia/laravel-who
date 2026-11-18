@@ -2,178 +2,61 @@
 
 namespace App\Services\Import;
 
-use App\Exceptions\OdooException;
-use App\Services\Odoo;
-use Exception;
+use App\Services\Odoo\OdooClient;
 
-class ItrServices extends Odoo
+class ItrServices
 {
-    public function __construct() {}
+    private const LIST_FIELDS = [
+        'name', 'tanggal', 'ref', 'state_picking', 'state_picking_terima',
+        'warehouse', 'state', 'user_id',
+    ];
 
-    /** @return array{fields: string[]} */
-    private static function fields(): array
-    {
-        return [
-            'name',
-            'tanggal',
-            'ref',
-            'state_picking',
-            'state_picking_terima',
-            'warehouse',
-            'state',
-            'user_id',
-        ];
-    }
+    private const DETAIL_FIELDS = [
+        'state', 'name', 'tanggal', 'ref', 'warehouse_src', 'locs_src',
+        'warehouse', 'locs', 'ket', 'picking', 'state_picking',
+        'picking_terima', 'state_picking_terima', 'user_id', 'detail',
+        'display_name',
+    ];
 
-    /** @return string[] */
-    private static function detailFields(): array
-    {
-        return [
-            'state',
-            'name',
-            'tanggal',
-            'ref',
-            'warehouse_src',
-            'locs_src',
-            'warehouse',
-            'locs',
-            'ket',
-            'picking',
-            'state_picking',
-            'picking_terima',
-            'state_picking_terima',
-            'user_id',
-            'detail',
-            'display_name',
-        ];
-    }
+    private const DETAIL_LINE_FIELDS = ['nama_produk', 'qty', 'satuan'];
 
-    public static function getAll($query = '', $limit = 80, $offset = 0, $product_search = '')
+    public function __construct(private OdooClient $odoo) {}
+
+    public function getAll(string $query = '', int $limit = 80, int $offset = 0, string $product_search = ''): array
     {
-        $query = trim((string) $query);
-        $domain = $query === ''
-            ? []
-            : [
-                [
-                    'name',
-                    'ilike',
-                    $query,
-                ],
-            ];
-        if (trim((string) $product_search) !== '') {
-            $domain[] = ['detail.nama_produk', 'ilike', trim((string) $product_search)];
-        }
-        $url_param = '/web/dataset/search_read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'id' => 115013929,
-            'params' => [
-                'model' => 'tbl_it_request',
-                'domain' => $domain,
-                'fields' => self::fields(),
-                'limit' => intval($limit) ?: 80,
-                'offset' => intval($offset),
-                'sort' => 'name DESC',
-                'context' => [
-                    'lang' => 'en_US',
-                    'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
-                ],
-            ],
-        ];
-        $response = parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
-        if (! isset($response['result'])) {
-            throw new Exception('Odoo Error');
+        $query = trim($query);
+        $domain = $query === '' ? [] : [['name', 'ilike', $query]];
+
+        if (trim($product_search) !== '') {
+            $domain[] = ['detail.nama_produk', 'ilike', trim($product_search)];
         }
 
-        return $response['result'];
+        return $this->odoo->searchRead(
+            'tbl_it_request',
+            $domain,
+            self::LIST_FIELDS,
+            $limit <= 0 ? 80 : $limit,
+            $offset,
+            'name DESC',
+        );
     }
 
-    public static function detail(int $id)
+    public function detail(int $id): array
     {
-        $url_param = '/web/dataset/call_kw/tbl_it_request/read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'id' => 235531685,
-            'params' => [
-                'args' => [
-                    [
-                        intval($id),
-                    ],
-                    self::detailFields(),
-                ],
-                'model' => 'tbl_it_request',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                        'bin_size' => true,
-                    ],
-                ],
-            ],
-        ];
-        $response = parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
-        $res = $response['result'][0] ?? null;
-        if (! $res) {
-            throw new OdooException('Data Not Found!', 404);
-        }
+        $res = $this->odoo->readOne('tbl_it_request', $id, self::DETAIL_FIELDS, ['bin_size' => true]);
+
         try {
-            $lineIds = array_map('intval', array_filter((array) ($res['detail'] ?? []), 'is_numeric'));
-            $res['detail_lines'] = $lineIds !== []
-                ? (static::getDetails($lineIds)['result'] ?? [])
-                : [];
-        } catch (\Throwable $th) {
+            $res['detail_lines'] = $this->getDetails((array) ($res['detail'] ?? []));
+        } catch (\Throwable) {
             $res['detail_lines'] = [];
         }
 
         return $res;
     }
 
-    public static function getDetails(array $ids)
+    /** @return array<int, array> */
+    public function getDetails(array $ids): array
     {
-        $lineIds = array_map('intval', array_filter($ids, 'is_numeric'));
-        $url_param = '/web/dataset/call_kw/tbl_it_request_detail/read';
-        $data = [
-            'jsonrpc' => '2.0',
-            'method' => 'call',
-            'id' => 27699387,
-            'params' => [
-                'args' => [
-                    $lineIds,
-                    [
-                        'nama_produk',
-                        'qty',
-                        'satuan',
-                    ],
-                ],
-                'model' => 'tbl_it_request_detail',
-                'method' => 'read',
-                'kwargs' => [
-                    'context' => [
-                        'lang' => 'en_US',
-                        'tz' => 'Asia/Jakarta',
-                        'uid' => 192,
-                    ],
-                ],
-            ],
-        ];
-
-        return parent::asJson()
-            ->withUrlParam($url_param)
-            ->method('POST')
-            ->withData($data)
-            ->get();
+        return $this->odoo->read('tbl_it_request_detail', $ids, self::DETAIL_LINE_FIELDS);
     }
 }

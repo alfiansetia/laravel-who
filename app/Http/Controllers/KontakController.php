@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kontak;
 use App\Services\Odoo;
+use App\Services\OdooSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -82,7 +83,7 @@ class KontakController extends Controller
                 'context' => [
                     'lang' => 'en_US',
                     'tz' => 'Asia/Jakarta',
-                    'uid' => 192,
+                    'uid' => (int) (OdooSession::getCurrentSession()['uid'] ?? 0),
                 ],
             ],
             ['id' => 288682884],

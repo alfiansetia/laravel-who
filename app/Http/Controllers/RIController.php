@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class RIController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, RIServices $ri)
     {
         if ($request->wantsJson()) {
             $perPage = max((int) $request->input('per_page', 10), 1);
@@ -19,8 +19,9 @@ class RIController extends Controller
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
             $product_search = (string) ($request->input('product_search') ?? '');
+            $gudang = max((int) $request->input('gudang', 1), 1);
 
-            $response = RIServices::getAll($search, $perPage, $offset, $product_search);
+            $response = $ri->withGudang($gudang)->getAll($search, $perPage, $offset, $product_search);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -35,23 +36,23 @@ class RIController extends Controller
 
         return Inertia::render('Ri/Index', [
             'title' => 'RI',
-            'filters' => $request->only(['search', 'page', 'product_search']),
+            'filters' => $request->only(['search', 'page', 'product_search', 'gudang']),
         ]);
     }
 
-    public function detail(Request $request, string $id)
+    public function detail(Request $request, string $id, RIServices $ri)
     {
-        $res = RIServices::detail($id);
+        $res = $ri->detail((int) $id);
 
         return $this->sendResponse($res);
     }
 
-    public function order_line(Request $request)
+    public function order_line(Request $request, RIServices $ri)
     {
-        $res = RIServices::getOrderLines($request->lines);
+        $res = $ri->getOrderLines((array) $request->lines);
 
         if ($request->wantsJson()) {
-            return $this->sendResponse(['data' => collect($res['result'])->map(function ($item) {
+            return $this->sendResponse(['data' => collect($res)->map(function ($item) {
                 $p = pecah_code($item['product_id']);
                 $item['p_id'] = $p[0];
                 $item['p_code'] = $p[1];
@@ -65,15 +66,15 @@ class RIController extends Controller
         return redirect()->back()->with('success', 'Success!');
     }
 
-    public function cekImport(string $id)
+    public function cekImport(string $id, RIServices $riServices, POServices $poServices)
     {
-        $ri = RIServices::detail((int) $id);
+        $ri = $riServices->detail((int) $id);
 
         $riName = (string) ($ri['name'] ?? '');
         $poName = (string) ($ri['origin'] ?? '');
 
         // Item + vendor diutamakan dari PO (origin) agar qty = qty PO.
-        $po = $this->findPo($poName);
+        $po = $this->findPo($poServices, $poName);
         if ($po) {
             $poName = (string) ($po['name'] ?? $poName);
             $partner = $po['partner_detail'] ?? null;
@@ -109,21 +110,21 @@ class RIController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
-    private function findPo(string $origin): ?array
+    private function findPo(POServices $poServices, string $origin): ?array
     {
         $origin = trim($origin);
         if ($origin === '') {
             return null;
         }
         try {
-            $list = POServices::getAll($origin, 5, 0);
+            $list = $poServices->getAll($origin, 5, 0);
             $records = $list['records'] ?? [];
             $match = collect($records)->firstWhere('name', $origin) ?? ($records[0] ?? null);
             if (! $match) {
                 return null;
             }
 
-            return POServices::detail((int) $match['id']);
+            return $poServices->detail((int) $match['id']);
         } catch (\Throwable) {
             return null;
         }

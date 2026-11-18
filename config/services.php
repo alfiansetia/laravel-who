@@ -41,6 +41,11 @@ return [
         'email' => env('ODOO_EMAIL'),
         'password' => env('ODOO_PASSWORD'),
         'db' => env('ODOO_DB'),
+        'lang' => env('ODOO_LANG', 'en_US'),
+        'timeout' => (int) env('ODOO_TIMEOUT', 15),
+        'connect_timeout' => (int) env('ODOO_CONNECT_TIMEOUT', 5),
+        'retry_times' => (int) env('ODOO_RETRY_TIMES', 2),
+        'retry_sleep_ms' => (int) env('ODOO_RETRY_SLEEP_MS', 200),
     ],
 
     'firebase' => [

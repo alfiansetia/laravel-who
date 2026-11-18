@@ -79,7 +79,7 @@ class ProductController extends Controller
         return $this->sendResponse($data, 'Success!');
     }
 
-    public function move(Request $request, $id)
+    public function move(Request $request, $id, ProductMoveService $moves)
     {
         $product = Product::query()->with(['packs.items', 'sop.items'])->find($id);
         if (! $product) {
@@ -96,7 +96,7 @@ class ProductController extends Controller
 
             return redirect()->back()->with('error', 'Data Tidak Ditemukan');
         }
-        $data = ProductMoveService::getAll($product->odoo_id);
+        $data = $moves->getAll($product->odoo_id);
 
         if ($request->wantsJson()) {
             return $this->sendResponse($data['records'] ?? [], 'Success!');
@@ -105,9 +105,9 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Success!');
     }
 
-    public function sync(Request $request)
+    public function sync(Request $request, ProductServices $products)
     {
-        $records = ProductServices::getAll();
+        $records = $products->getAll();
         $chunks = array_chunk($records, 100);
         foreach ($chunks as $chunk) {
             foreach ($chunk as $item) {
