@@ -16,8 +16,9 @@ class ProductOdooController extends Controller
             $page = max((int) $request->input('page', 1), 1);
             $offset = ($page - 1) * $perPage;
             $search = (string) ($request->input('search') ?? '');
+            $type = $request->input('type', []);
 
-            $response = $products->getAll($search, $perPage, $offset);
+            $response = $products->getAll($search, $perPage, $offset, $type);
             $total = Arr::get($response, 'length', 0);
             $data = Arr::get($response, 'records', []);
 
@@ -32,7 +33,7 @@ class ProductOdooController extends Controller
 
         return Inertia::render('ProductOdoo/Index', [
             'title' => 'Product Odoo',
-            'filters' => $request->only(['search', 'page']),
+            'filters' => $request->only(['search', 'page', 'type']),
         ]);
     }
 

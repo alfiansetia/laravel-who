@@ -7,51 +7,29 @@ use App\Services\Odoo\OdooDomain;
 
 class ProductOdooServices
 {
-    private const PICKING_DETAIL_FIELDS = [
-        'id', 'is_locked', 'show_mark_as_todo', 'show_check_availability',
-        'show_validate', 'show_lots_text', 'cancel_done_picking',
-        'picking_type_code', 'show_operations', 'move_line_exist',
-        'has_packages', 'state', 'picking_type_entire_packs',
-        'has_scrap_move', 'has_tracking', 'name', 'x_studio_field_2kd16',
-        'x_studio_no_do_manual', 'partner_id', 'partner_address',
-        'partner_address2', 'partner_address3', 'partner_address4',
-        'x_studio_customer', 'bill_to', 'delivery_manual', 'ekspedisi_id',
-        'x_studio_update_eta', 'pp', 'ppk', 'location_id', 'kurir_id',
-        'kurir_state', 'tanggal_sampai', 'tanggal_persetujuan',
-        'location_dest_id', 'picking_type_id', 'backorder_id', 'date',
-        'force_date', 'x_studio_date', 'date_done', 'confirmation_date_so',
-        'print_x_studio_date', 'print_tanggal_sampai', 'tgl_bast',
-        'origin', 'x_studio_id_paket', 'x_studio_no_po', 'x_studio_no_ska',
-        'itr_id', 'invoice_state', 'cancel_reason', 'note_itr',
-        'receipts_date', 'no_po', 'no_aks', 'no_ska', 'no_sph', 'no_si',
-        'tgl_akhir_kontrak', 'note_to_wh', 'priority_so', 'system_so',
-        'owner_id', 'penanggung_jawab', 'jumlah_hari', 'partner',
-        'schedule_id', 'move_line_ids_without_package',
-        'package_level_ids_details', 'immediate_transfer',
-        'move_ids_without_package', 'package_level_ids', 'move_type',
-        'sale_id', 'company_id', 'group_id', 'scheduled_date',
-        'priority', 'note', 'move_temp_id', 'message_follower_ids',
-        'activity_ids', 'message_ids', 'message_attachment_count',
-        'display_name',
+    /**
+     * Cerminan field yang dibaca form produk Odoo saat klik detail
+     * (payload `read` product.template + sub-read pricelist/diskon).
+     */
+    private const TEMPLATE_DETAIL_FIELDS = [
+        'id', 'name', 'default_code', 'barcode', 'active', 'type', 'categ_id',
+        'list_price', 'standard_price', 'taxes_id', 'uom_id', 'uom_po_id',
+        'currency_id', 'qty_available', 'virtual_available',
+        'outgoing_qty', 'incoming_qty',
+        'hs_code', 'akl_id', 'desc_akl', 'x_studio_valid_to_akl',
+        'tracking', 'sale_ok', 'purchase_ok',
+        'seller_ids', 'item_ids', 'detail_disk',
+        'product_variant_id', 'product_variant_ids', 'image_medium',
     ];
 
-    private const MOVE_FIELDS = [
-        'product_id', 'name', 'date_expected', 'state', 'picking_type_id',
-        'location_id', 'location_dest_id', 'scrapped', 'picking_code',
-        'product_type', 'show_details_visible', 'show_reserved_availability',
-        'show_operations', 'additional', 'has_move_lines', 'is_locked',
-        'x_studio_lot', 'x_studio_field_X7gbX', 'hs_code', 'akl_id',
-        'exp_date', 'is_initial_demand_editable',
-        'is_quantity_done_editable', 'product_uom_qty',
-        'reserved_availability', 'quantity_done', 'product_uom',
+    private const PRICELIST_ITEM_FIELDS = [
+        'pricelist_id', 'currency_id', 'fixed_price', 'min_quantity',
+        'date_start', 'date_end', 'bc_persen', 'applied_on',
     ];
 
-    private const MOVE_LINE_FIELDS = [
-        'picking_id', 'product_id', 'package_level_id', 'location_id',
-        'location_dest_id', 'lot_id', 'expired_date_do', 'lot_name',
-        'expired_date', 'lot_id2', 'package_id', 'result_package_id',
-        'owner_id', 'is_initial_demand_editable', 'product_uom_qty',
-        'qty_availa', 'state', 'is_locked', 'qty_done', 'product_uom_id',
+    private const DISK_DETAIL_FIELDS = [
+        'name', 'metode_disk', 'disk_m', 'disk_rsm', 'disk_hm',
+        'disk_d', 'disk_xd', 'disk_hm_dd', 'disk_d_dd',
     ];
 
     private const QUANT_FIELDS = [
@@ -62,10 +40,15 @@ class ProductOdooServices
 
     public function __construct(private OdooClient $odoo) {}
 
-    public function getAll(string $query = '', int $limit = 80, int $offset = 0): array
+    public function getAll(string $query = '', int $limit = 80, int $offset = 0, array|string $type = []): array
     {
+        $types = array_values(array_intersect((array) $type, ['consu', 'product']));
+        if ($types === []) {
+            $types = ['consu', 'product'];
+        }
+
         $domain = [
-            ['type', 'in', ['consu', 'product']],
+            count($types) === 1 ? ['type', '=', $types[0]] : ['type', 'in', $types],
             ...OdooDomain::or(
                 OdooDomain::ilike('default_code', $query),
                 OdooDomain::ilike('product_variant_ids.default_code', $query),
@@ -89,57 +72,81 @@ class ProductOdooServices
 
     public function detail(int $id): array
     {
-        $res = $this->odoo->readOne('stock.picking', $id, self::PICKING_DETAIL_FIELDS, [
-            'tz' => 'GMT',
-            'active_model' => 'stock.picking.type',
-            'active_id' => 2,
-            'active_ids' => [2],
-            'search_default_picking_type_id' => [2],
-            'default_picking_type_id' => 2,
-            'contact_display' => 'partner_address',
-            'search_default_available' => 1,
+        $res = $this->odoo->readOne('product.template', $id, self::TEMPLATE_DETAIL_FIELDS, [
+            'search_default_consumable' => 1,
+            'default_type' => 'product',
             'search_disable_custom_filters' => true,
             'bin_size' => true,
         ]);
 
+        $res['variant_id'] = $this->resolveVariant($res);
+
         try {
-            $res['move_ids_detail'] = $this->getOrderLines($res['move_ids_without_package'] ?? []);
-            $res['move_line_detail'] = $this->getOrderLinesDetail($res['move_line_ids_without_package'] ?? []);
+            $res['on_hand'] = $this->onHand($id, (int) $res['variant_id'])['records'] ?? [];
         } catch (\Throwable) {
-            $res['move_ids_detail'] = [];
-            $res['move_line_detail'] = [];
+            $res['on_hand'] = [];
+        }
+
+        try {
+            $res['pricelist_items'] = $this->odoo->read(
+                'product.pricelist.item',
+                self::ids($res['item_ids'] ?? []),
+                self::PRICELIST_ITEM_FIELDS,
+                [
+                    'search_default_consumable' => 1,
+                    'default_type' => 'product',
+                    'default_applied_on' => '1_product',
+                ]
+            );
+        } catch (\Throwable) {
+            $res['pricelist_items'] = [];
+        }
+
+        try {
+            $res['disk_details'] = $this->odoo->read(
+                'tbl_detail_disk',
+                self::ids($res['detail_disk'] ?? []),
+                self::DISK_DETAIL_FIELDS,
+                [
+                    'search_default_consumable' => 1,
+                    'default_type' => 'product',
+                ]
+            );
+        } catch (\Throwable) {
+            $res['disk_details'] = [];
         }
 
         return $res;
     }
 
-    /** @return array<int, array> */
-    public function getOrderLines(array $line): array
+    /** @return array<int> */
+    private static function ids(mixed $value): array
     {
-        return $this->odoo->read('stock.move', $line, self::MOVE_FIELDS, [
-            'tz' => 'GMT',
-            'active_model' => 'stock.picking.type',
-            'active_id' => 2,
-            'active_ids' => [2],
-            'search_default_picking_type_id' => [2],
-            'default_picking_type_id' => 2,
-            'contact_display' => 'partner_address',
-            'search_default_available' => 1,
-            'search_disable_custom_filters' => true,
-            'picking_type_code' => 'outgoing',
-        ]);
+        $ids = is_array($value) ? $value : [$value];
+
+        return array_values(array_unique(array_map(
+            'intval',
+            array_filter($ids, 'is_numeric'),
+        )));
     }
 
-    /** @return array<int, array> */
-    public function getOrderLinesDetail(array $line): array
+    private function resolveVariant(array $product): int
     {
-        return $this->odoo->read('stock.move.line', $line, self::MOVE_LINE_FIELDS, [
-            'active_model' => 'stock.move',
-            'search_default_available' => 1,
-            'search_disable_custom_filters' => true,
-            'show_lots_m2o' => true,
-            'show_lots_text' => false,
-        ]);
+        $variant = $product['product_variant_id'] ?? false;
+        if (is_array($variant) && isset($variant[0]) && (int) $variant[0] > 0) {
+            return (int) $variant[0];
+        }
+
+        $variants = $product['product_variant_ids'] ?? [];
+        if (is_array($variants)) {
+            foreach ($variants as $variantId) {
+                if (is_numeric($variantId) && (int) $variantId > 0) {
+                    return (int) $variantId;
+                }
+            }
+        }
+
+        return 0;
     }
 
     public function onHand(int $id, int $variant): array
@@ -168,8 +175,10 @@ class ProductOdooServices
             'x_studio_id_paket', 'x_studio_customer',
             'product_category_related', 'location_id', 'location_dest_id',
             'qty_done', 'state', 'product_uom_id',
-        ], 80, 0, 'date DESC', [
+        ], 80, 0, 'date ASC', [
             'active_model' => 'product.template',
+            'active_id' => $id,
+            'active_ids' => [$id],
             'search_default_done' => 1,
             'search_default_groupby_product_id' => 1,
             'search_disable_custom_filters' => true,

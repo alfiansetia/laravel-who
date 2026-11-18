@@ -1,20 +1,21 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Eye, Move, RefreshCw } from '@lucide/vue';
+import { Copy, Eye, Move, RefreshCw } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
-import ModalTabs from '@/components/ModalTabs.vue';
-import CopyButton from '@/components/CopyButton.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
+import FormField from '@/components/FormField.vue';
+import MultiSelect from '@/components/MultiSelect.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import StatusBadge from '@/components/StatusBadge.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
-import { formatExpDate, formatQtyUS, getCode, getDesc, odooName } from '@/lib/odoo';
+import { copyText } from '@/lib/export';
+import { formatExpDate, formatOdooDate, formatQtyUS, odooName } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'Product Odoo' },
@@ -25,51 +26,56 @@ const toast = useToast();
 const query = useTableQuery((p) => api.get('/product-odoo', { params: p }), {
     search: props.filters.search ?? '',
     page: Number(props.filters.page ?? 1),
+    filters: { type: initialTypes() },
 });
-const detailOpen = ref(false);
 const onhandOpen = ref(false);
-const detail = ref(null);
-const productLines = ref([]);
-const lotLines = ref([]);
 const onhandRows = ref([]);
-const detailLoading = ref(false);
 const onhandLoading = ref(false);
 const onhandTitle = ref('');
-const activeRow = ref(null);
-const detailTab = ref('product');
-const lotCodeFilter = ref('');
-const detailTabs = computed(() => [
-    { value: 'product', label: 'Product', count: productLines.value.length },
-    { value: 'lot', label: 'Product Lot', count: filteredLots.value.length },
-]);
+const stockMode = ref('onhand');
+const stockLocationFilter = ref('');
+
+const stockLocationOptions = computed(() => {
+    const locs = [...new Set(onhandRows.value.map((r) => odooName(r.location_id)).filter((v) => v && v !== '-'))].sort();
+    return [{ label: 'Semua Lokasi', value: '' }, ...locs.map((l) => ({ label: l, value: l }))];
+});
+
+const filteredStockRows = computed(() => {
+    if (stockMode.value !== 'onhand' || !stockLocationFilter.value) {
+        return onhandRows.value;
+    }
+    return onhandRows.value.filter((r) => odooName(r.location_id) === stockLocationFilter.value);
+});
 
 const searchBox = ref(props.filters.search ?? '');
 
+function initialTypes() {
+    const raw = props.filters.type;
+    const list = Array.isArray(raw) ? raw : String(raw ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const valid = list.filter((v) => ['consu', 'product'].includes(v));
+    return valid.length > 0 ? valid : ['consu', 'product'];
+}
+
+const typeOptions = [
+    { label: 'Consumable', value: 'consu' },
+    { label: 'Storable Product', value: 'product' },
+];
+
+const activeCount = computed(() => query.filters.value.type.length);
+
+function resetFilter() {
+    searchBox.value = '';
+    query.setSearch('', 0);
+    query.setFilters({ type: ['consu', 'product'] });
+}
+
 const columns = [
-    { key: 'aksi', label: '#' },
     { key: 'default_code', label: 'Code', mono: true },
     { key: 'name', label: 'Name' },
     { key: 'akl_id', label: 'AKL' },
     { key: 'x_studio_valid_to_akl', label: 'AKL To', align: 'center' },
     { key: 'qty_available', label: 'On Hand', align: 'center' },
-];
-const productColumns = [
-    { key: 'code', label: 'Code', mono: true },
-    { key: 'desc', label: 'Desc' },
-    { key: 'name', label: 'Name' },
-    { key: 'akl', label: 'AKL' },
-    { key: 'qty_total', label: 'Qty Total', align: 'center' },
-    { key: 'qty_done', label: 'Qty Done', align: 'center' },
-    { key: 'qty_sisa', label: 'Qty Sisa', align: 'center' },
-];
-const lotColumns = [
-    { key: 'code', label: 'Code', mono: true },
-    { key: 'desc', label: 'Desc' },
-    { key: 'product', label: 'Product' },
-    { key: 'akl', label: 'AKL' },
-    { key: 'lot', label: 'Lot/SN' },
-    { key: 'qty', label: 'Qty', align: 'center' },
-    { key: 'exp', label: 'Exp Date', align: 'center' },
+    { key: 'aksi', label: 'Aksi', align: 'center' },
 ];
 const onhandColumns = [
     { key: 'product_id', label: 'Product' },
@@ -78,31 +84,17 @@ const onhandColumns = [
     { key: 'itds_expired', label: 'Ed', align: 'center' },
     { key: 'quantity', label: 'Qty', align: 'center' },
 ];
+const moveColumns = [
+    { key: 'date', label: 'Date', mono: true },
+    { key: 'reference', label: 'Reference', mono: true },
+    { key: 'lot', label: 'Lot/SN' },
+    { key: 'source', label: 'Source' },
+    { key: 'dest', label: 'Dest' },
+    { key: 'qty', label: 'Qty', align: 'center' },
+    { key: 'state', label: 'State', align: 'center' },
+];
 
 const perPageOptions = [10, 25, 50, 100, 500, 1000];
-
-const aklMap = computed(() => {
-    const map = {};
-    productLines.value.forEach((l) => {
-        const pid = Array.isArray(l.product_id) ? l.product_id[0] : null;
-        if (pid) {
-            map[pid] = odooName(l.akl_id);
-        }
-    });
-    return map;
-});
-
-const lotCodeOptions = computed(() => {
-    const codes = [...new Set(lotLines.value.map((l) => getCode(odooName(l.product_id))).filter(Boolean))].sort();
-    return [{ label: 'All Products', value: '' }, ...codes.map((c) => ({ label: c, value: c }))];
-});
-
-const filteredLots = computed(() => {
-    if (!lotCodeFilter.value) {
-        return lotLines.value;
-    }
-    return lotLines.value.filter((l) => getCode(odooName(l.product_id)) === lotCodeFilter.value);
-});
 
 const onhandSummary = computed(() => {
     const map = {};
@@ -117,43 +109,32 @@ function variantOf(row) {
     return Array.isArray(row.product_variant_id) ? row.product_variant_id[0] : (row.product_variant_id ?? 0);
 }
 
-async function openDetail(row) {
-    activeRow.value = row;
-    detailOpen.value = true;
-    detailTab.value = 'product';
-    lotCodeFilter.value = '';
-    detailLoading.value = true;
-    try {
-        const res = await api.get(`/product-odoo/${row.id}`, { silent: true, block: true });
-        const body = res.data?.data ?? res.data;
-        detail.value = body;
-        productLines.value = body.move_ids_detail ?? [];
-        lotLines.value = body.move_line_detail ?? [];
-    } catch (e) {
-        detail.value = row;
-        productLines.value = [];
-        lotLines.value = [];
-        toast.error(e.response?.data?.message ?? 'Gagal memuat detail produk.');
-    } finally {
-        detailLoading.value = false;
-    }
-}
+let stockSeq = 0;
 
 async function openStock(row, mode) {
-    activeRow.value = row;
-    onhandOpen.value = true;
+    const seq = ++stockSeq;
+    stockMode.value = mode;
+    stockLocationFilter.value = '';
     onhandLoading.value = true;
-    onhandRows.value = [];
-    onhandTitle.value = `${mode === 'move' ? 'Move' : 'On Hand'}: ${row.name ?? ''}`;
     try {
         const res = await api.get(`/product-odoo/${row.id}/${variantOf(row)}/${mode === 'move' ? 'move' : 'on-hand'}`, { silent: true, block: true });
+        if (seq !== stockSeq) {
+            return;
+        }
         const body = res.data?.data ?? res.data;
-        onhandRows.value = body.data ?? body.records ?? [];
+        onhandRows.value = Array.isArray(body) ? body : (body.data ?? body.records ?? []);
+        onhandTitle.value = `${mode === 'move' ? 'Move' : 'On Hand'}: ${row.name ?? ''}`;
+        onhandOpen.value = true;
     } catch (e) {
+        if (seq !== stockSeq) {
+            return;
+        }
         onhandRows.value = [];
         toast.error(e.response?.data?.message ?? 'Gagal memuat data stock.');
     } finally {
-        onhandLoading.value = false;
+        if (seq === stockSeq) {
+            onhandLoading.value = false;
+        }
     }
 }
 
@@ -163,8 +144,13 @@ query.fetch();
 <template>
     <AppLayout>
         <PageHeader :title="title" />
-        <TableToolbar v-model="searchBox" placeholder="Cari code / nama..." @search="query.setSearch">
+        <TableToolbar v-model="searchBox" placeholder="Cari code / nama..." :active-count="activeCount" @search="query.setSearch" @reset="resetFilter">
             <Button variant="outline" size="sm" @click="query.fetch()"><RefreshCw /> Segarkan</Button>
+            <template #filters>
+                <FormField label="Type">
+                    <MultiSelect :model-value="query.filters.value.type" :options="typeOptions" placeholder="Pilih type..." @update:model-value="query.setFilters({ type: $event })" />
+                </FormField>
+            </template>
         </TableToolbar>
         <DataTable
             :columns="columns"
@@ -176,16 +162,15 @@ query.fetch();
             :total="query.total.value"
             :per-page="query.perPage.value"
             :per-page-options="perPageOptions"
-            clickable
             empty-title="Produk tidak ditemukan"
             @update:page="query.setPage"
             @update:per-page="query.setPerPage"
-            @row-click="openDetail"
         >
             <template #cell-aksi="{ row }">
-                <div class="flex justify-center gap-1" @click.stop>
+                <div class="flex justify-center gap-1">
                     <Button variant="outline" size="sm" title="On Hand" @click.stop="openStock(row, 'onhand')"><Eye /></Button>
                     <Button variant="outline" size="sm" title="Move" @click.stop="openStock(row, 'move')"><Move /></Button>
+                    <Button variant="outline" size="sm" title="Salin kode + nama" @click.stop="copyText(`${row.default_code ?? ''}\t${row.name ?? ''}`)"><Copy /></Button>
                 </div>
             </template>
             <template #cell-default_code="{ row }">{{ row.default_code ?? '-' }}</template>
@@ -194,58 +179,41 @@ query.fetch();
             <template #cell-x_studio_valid_to_akl="{ row }">{{ row.x_studio_valid_to_akl ?? '-' }}</template>
             <template #cell-qty_available="{ row }">{{ formatQtyUS(row.qty_available) }}</template>
         </DataTable>
-        <AppModal v-model:open="detailOpen" size="2xl">
-            <template #title>
-                {{ `List Item RI No : ${detail?.name ?? activeRow?.name ?? ''}` }}
-                <CopyButton :text="detail?.name ?? activeRow?.name ?? ''" label="No RI" />
-            </template>
-            <ModalTabs v-model="detailTab" :tabs="detailTabs" class="mb-2" />
-            <div v-if="detailTab === 'product'">
-                <DataTable :columns="productColumns" :rows="productLines" :loading="detailLoading" :total="productLines.length" :total-pages="1" empty-title="Item tidak ditemukan">
-                    <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
-                    <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
-                    <template #cell-name="{ row }">{{ row.name ?? '-' }}</template>
-                    <template #cell-akl="{ row }">{{ odooName(row.akl_id) }}</template>
-                    <template #cell-qty_total="{ row }">{{ row.product_uom_qty ?? 0 }}</template>
-                    <template #cell-qty_done="{ row }">{{ row.quantity_done ?? 0 }}</template>
-                    <template #cell-qty_sisa="{ row }">{{ Number(row.product_uom_qty ?? 0) - Number(row.quantity_done ?? 0) }}</template>
-                </DataTable>
-            </div>
-            <div v-else>
-                <div class="mb-2 grid max-w-xl gap-2 sm:grid-cols-2">
-                    <SearchableSelect v-model="lotCodeFilter" :options="lotCodeOptions" placeholder="Select Product Code" />
-                    <Button variant="outline" size="sm" @click="lotCodeFilter = ''">Reset</Button>
-                </div>
-                <DataTable :columns="lotColumns" :rows="filteredLots" :loading="detailLoading" :total="filteredLots.length" :total-pages="1" empty-title="Lot tidak ditemukan">
-                    <template #cell-code="{ row }">{{ getCode(odooName(row.product_id)) }}</template>
-                    <template #cell-desc="{ row }">{{ getDesc(odooName(row.product_id)) }}</template>
-                    <template #cell-product="{ row }">{{ odooName(row.product_id) }}</template>
-                    <template #cell-akl="{ row }">{{ aklMap[Array.isArray(row.product_id) ? row.product_id[0] : -1] ?? '-' }}</template>
-                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '') }}</template>
-                    <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
-                    <template #cell-exp="{ row }">{{ formatExpDate(row.expired_date) }}</template>
-                </DataTable>
-            </div>
-            <div class="mt-2 space-y-1 border-t pt-2 text-sm">
-                <p><b>Origin/PO:</b> {{ detail?.origin ?? '-' }} <CopyButton :text="detail?.origin ?? ''" label="Origin/PO" /></p>
-                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Notes" /></p>
-            </div>
-        </AppModal>
         <AppModal v-model:open="onhandOpen" :title="onhandTitle" size="2xl">
-            <DataTable :columns="onhandColumns" :rows="onhandRows" :loading="onhandLoading" :total="onhandRows.length" :total-pages="1" empty-title="Data tidak ditemukan">
-                <template #cell-product_id="{ row }">{{ odooName(row.product_id) }}</template>
-                <template #cell-location_id="{ row }">{{ odooName(row.location_id) }}</template>
-                <template #cell-lot_id="{ row }">{{ odooName(row.lot_id) }}</template>
-                <template #cell-itds_expired="{ row }">{{ formatExpDate(row.itds_expired) }}</template>
-                <template #cell-quantity="{ row }">{{ formatQtyUS(row.quantity) }}</template>
-            </DataTable>
-            <div class="mt-2 border-t pt-2 text-sm">
-                <b>Summary:</b>
-                <div v-if="onhandSummary.length > 0" class="mt-1 space-y-1">
-                    <div v-for="[loc, qty] in onhandSummary" :key="loc">→ <b>{{ loc }}</b>: <StatusBadge status="secondary">{{ formatQtyUS(qty) }}</StatusBadge></div>
+            <template v-if="stockMode === 'move'">
+                <DataTable :columns="moveColumns" :rows="onhandRows" :loading="onhandLoading" :total="onhandRows.length" :total-pages="1" empty-title="Riwayat move tidak ditemukan">
+                    <template #cell-date="{ row }">{{ formatOdooDate(row.date) }}</template>
+                    <template #cell-reference="{ row }">{{ row.reference ?? '-' }}</template>
+                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '-') }}</template>
+                    <template #cell-source="{ row }">{{ odooName(row.location_id) }}</template>
+                    <template #cell-dest="{ row }">{{ odooName(row.location_dest_id) }}</template>
+                    <template #cell-qty="{ row }">{{ formatQtyUS(row.qty_done) }}</template>
+                    <template #cell-state="{ row }">{{ row.state ?? '-' }}</template>
+                </DataTable>
+            </template>
+            <template v-else>
+                <div class="mb-2 grid max-w-xl gap-2 sm:grid-cols-2">
+                    <SearchableSelect v-model="stockLocationFilter" :options="stockLocationOptions" placeholder="Filter Lokasi" />
+                    <Button variant="outline" size="sm" @click="stockLocationFilter = ''">Reset</Button>
                 </div>
-                <p v-else class="text-muted-foreground">-</p>
-            </div>
+                <DataTable :columns="onhandColumns" :rows="filteredStockRows" :loading="onhandLoading" :total="filteredStockRows.length" :total-pages="1" empty-title="Data tidak ditemukan">
+                    <template #cell-product_id="{ row }">{{ odooName(row.product_id) }}</template>
+                    <template #cell-location_id="{ row }">{{ odooName(row.location_id) }}</template>
+                    <template #cell-lot_id="{ row }">{{ odooName(row.lot_id) }}</template>
+                    <template #cell-itds_expired="{ row }">{{ formatExpDate(row.itds_expired) }}</template>
+                    <template #cell-quantity="{ row }">{{ formatQtyUS(row.quantity) }}</template>
+                </DataTable>
+                <div class="mt-2 border-t pt-2 text-sm">
+                    <b>Summary (klik untuk filter):</b>
+                    <div v-if="onhandSummary.length > 0" class="mt-1 space-y-1">
+                        <div v-for="[loc, qty] in onhandSummary" :key="loc">
+                            → <Button variant="ghost" size="sm" class="h-auto px-1 py-0 font-bold" :class="stockLocationFilter === loc ? 'bg-accent' : ''" :title="`Filter lokasi ${loc}`" @click="stockLocationFilter = stockLocationFilter === loc ? '' : loc">{{ loc }}</Button>:
+                            <StatusBadge status="secondary">{{ formatQtyUS(qty) }}</StatusBadge>
+                        </div>
+                    </div>
+                    <p v-else class="text-muted-foreground">-</p>
+                </div>
+            </template>
         </AppModal>
     </AppLayout>
 </template>
