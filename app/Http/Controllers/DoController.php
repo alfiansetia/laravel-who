@@ -76,8 +76,8 @@ class DoController extends Controller
             $partner = Arr::get($row, 'partner_id');
             $lines[] = implode(';', [
                 $this->csvCell(Arr::get($row, 'name')),
-                $this->csvCell(Arr::get($row, 'x_studio_field_0rSR5', Arr::get($row, 'confirmation_date_so'))),
-                $this->csvCell(Arr::get($row, 'force_date')),
+                $this->csvCell($this->csvDate(Arr::get($row, 'x_studio_field_0rSR5', Arr::get($row, 'confirmation_date_so')))),
+                $this->csvCell($this->csvDate(Arr::get($row, 'force_date'))),
                 $this->csvCell(is_array($partner) ? ($partner[1] ?? '') : $partner),
                 $this->csvCell(Arr::get($row, 'origin')),
                 $this->csvCell(Arr::get($row, 'state')),
@@ -98,6 +98,24 @@ class DoController extends Controller
         $s = (string) ($value === false || $value === null ? '' : $value);
 
         return '"'.str_replace('"', '""', $s).'"';
+    }
+
+    /**
+     * Konversi datetime UTC Odoo ke WIB untuk CSV.
+     * Return '' bila kosong agar sel CSV bersih.
+     */
+    protected function csvDate($value): string
+    {
+        if (empty($value) || $value === false || $value === 'False') {
+            return '';
+        }
+        try {
+            $formatted = odoo_datetime($value, 'Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return (string) $value;
+        }
+
+        return $formatted === 'False' ? '' : $formatted;
     }
 
     public function print(Request $request, $id)

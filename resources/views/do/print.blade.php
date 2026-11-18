@@ -220,7 +220,7 @@
                     </tr>
                     <tr>
                         <td>
-                            {{ Arr::get($data, 'force_date', 'False') ? date('d/m/Y', strtotime($data['force_date'])) : ($data['date_done'] ? date('d/m/Y', strtotime($data['date_done'])) : '') }}
+                            {{ Arr::get($data, 'force_date', 'False') ? odoo_datetime($data['force_date'], 'd/m/Y') : ($data['date_done'] ? odoo_datetime($data['date_done'], 'd/m/Y') : '') }}
                         </td>
                         <td>{{ Arr::get($data, 'name', 'False') }}</td>
                     </tr>

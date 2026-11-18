@@ -38,11 +38,11 @@ function xmlEntities($str)
 
 function jam($date, $hours = 7)
 {
-    if (empty($str)) {
+    if (empty($date)) {
         return '';
     }
 
-    return Carbon::parse($date)->addHours($hours)->toDateTimeString();
+    return Carbon::parse($date, 'UTC')->setTimezone(config('app.timezone'))->toDateTimeString();
 }
 
 function pecah_code($string)
@@ -155,11 +155,32 @@ function parseDecimal($value, $decimals = 2)
 
 function odoo_datetime($datetime, string $format = 'd/m/Y H:i'): string
 {
-    if (empty($datetime) || $datetime === false) {
+    if (empty($datetime) || $datetime === false || $datetime === 'False') {
         return 'False';
     }
 
-    return Carbon::createFromFormat('Y-m-d H:i:s', $datetime, 'UTC')
-        ->setTimezone(config('app.timezone'))
-        ->format($format);
+    $value = trim((string) $datetime);
+
+    // Field date-only Odoo (Y-m-d) tidak mengandung jam: tak perlu shift timezone.
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        return Carbon::createFromFormat('Y-m-d', $value, 'UTC')
+            ->setTimezone(config('app.timezone'))
+            ->format($format);
+    }
+
+    // Terima pemisah T (datetime-local) dan detik opsional.
+    $normalized = str_replace('T', ' ', $value);
+    if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $normalized)) {
+        $normalized .= ':00';
+    }
+
+    try {
+        return Carbon::createFromFormat('Y-m-d H:i:s', $normalized, 'UTC')
+            ->setTimezone(config('app.timezone'))
+            ->format($format);
+    } catch (Throwable) {
+        return Carbon::parse($value, 'UTC')
+            ->setTimezone(config('app.timezone'))
+            ->format($format);
+    }
 }

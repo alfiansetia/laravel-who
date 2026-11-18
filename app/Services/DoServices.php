@@ -124,6 +124,8 @@ class DoServices extends Odoo
     /**
      * Normalisasi input tanggal-jam menjadi format Odoo `Y-m-d H:i:s`.
      * Terima `Y-m-d H:i`, `Y-m-d H:i:s`, atau `Y-m-d\TH:i` (datetime-local).
+     * Input diasumsikan SUDAH UTC (frontend `toApiDatetime` mengonversi
+     * WIB -> UTC), jadi teruskan apa adanya tanpa shift timezone.
      * Return null bila kosong/tidak valid.
      */
     protected static function normalizeDateTime($value): ?string

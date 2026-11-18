@@ -53,27 +53,40 @@ export function formatQtyID(value) {
     return n.toLocaleString('id-ID');
 }
 
-/** Cerminan formatDateDisplay() Blade: +7 jam → DD/MM/YYYY HH:mm:ss. */
+/** Odoo mengirim naive UTC (`YYYY-MM-DD HH:mm:ss`): parse sebagai UTC lalu +7 jam → DD/MM/YYYY HH:mm:ss. */
 export function formatOdooDate(value) {
-    if (!value) {
+    if (!value || value === false || value === 'False') {
         return '-';
     }
     try {
-        const d = new Date(String(value).replace(' ', 'T'));
-        d.setHours(d.getHours() + 7);
+        const s = String(value).trim().replace('T', ' ');
+        const m = s.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})(?::(\d{2}))?$/);
+        if (!m) {
+            return String(value);
+        }
+        const utc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? '00'));
+        if (Number.isNaN(utc)) {
+            return String(value);
+        }
+        const d = new Date(utc + 7 * 3600 * 1000);
         const pad = (v) => String(v).padStart(2, '0');
-        return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
     } catch {
         return String(value);
     }
 }
 
-/** Cerminan moment(expired).format('YYYY.MM.DD') Blade. */
+/** Field date-only Odoo: ambil YYYY-MM-DD langsung tanpa objek Date agar tak kena shift timezone. */
 export function formatExpDate(value) {
     if (!value || value === 'False' || value === false) {
         return '';
     }
-    const d = new Date(value);
+    const s = String(value).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+        return `${m[1]}.${m[2]}.${m[3]}`;
+    }
+    const d = new Date(s);
     if (Number.isNaN(d.getTime())) {
         return String(value);
     }
