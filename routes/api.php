@@ -7,6 +7,7 @@
 use App\Http\Controllers\AlamatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoController;
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\ItController;
 use App\Http\Controllers\ITRController;
@@ -43,6 +44,8 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
 
     Route::get('it', [ItController::class, 'index'])->name('api.it.index');
     Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
+
+    Route::get('gudang', [GudangController::class, 'index'])->name('api.gudang.index');
 
     Route::get('itr', [ITRController::class, 'index'])->name('api.itr.index');
     Route::get('itr/{id}', [ITRController::class, 'detail'])->name('api.itr.detail');

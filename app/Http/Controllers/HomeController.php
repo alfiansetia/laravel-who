@@ -56,10 +56,13 @@ class HomeController extends Controller
                 'accent' => '#a855f7',
                 'menus' => $build([
                     ['route' => 'stock.index', 'icon' => 'Boxes', 'title' => 'Stock', 'desc' => 'Pantau stok barang'],
+                    ['route' => 'gudang.index', 'icon' => 'Warehouse', 'title' => 'Gudang', 'desc' => 'Daftar gudang'],
+                    ['route' => 'inventory_report.index', 'icon' => 'FileSpreadsheet', 'title' => 'Inventory Report', 'desc' => 'Laporan stok inventory'],
                     ['route' => 'po.index', 'icon' => 'ShoppingCart', 'title' => 'PO', 'desc' => 'Purchase order'],
                     ['route' => 'ri.index', 'icon' => 'ArrowDownToLine', 'title' => 'RI', 'desc' => 'Receiving inventory'],
                     ['route' => 'it.index', 'icon' => 'RefreshCw', 'title' => 'IT', 'desc' => 'Inventory transfer'],
                     ['route' => 'so.index', 'icon' => 'ShoppingBag', 'title' => 'SO', 'desc' => 'Sales order'],
+                    ['route' => 'so_picking.index', 'icon' => 'ListChecks', 'title' => 'SO Picking', 'desc' => 'Picking barang SO per hari'],
                     ['route' => 'do.index', 'icon' => 'PackageOpen', 'title' => 'DO', 'desc' => 'Delivery order'],
                     ['route' => 'monitor.do', 'icon' => 'Activity', 'title' => 'Monitor DO', 'desc' => 'Pantau DO berjalan'],
                     ['route' => 'vendors.index', 'icon' => 'Store', 'title' => 'Vendor', 'desc' => 'Daftar vendor aktif'],

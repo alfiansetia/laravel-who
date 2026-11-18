@@ -8,6 +8,7 @@ use App\Http\Controllers\BastController;
 use App\Http\Controllers\DoController;
 use App\Http\Controllers\FileDownloaderController;
 use App\Http\Controllers\FileSearchController;
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\ItController;
@@ -41,6 +42,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('lots', [LotController::class, 'index'])->name('lots.index');
 Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+Route::get('gudang', [GudangController::class, 'index'])->name('gudang.index');
 Route::get('inventory-report', [InventoryReportController::class, 'index'])->name('inventory_report.index');
 
 Route::get('product-odoo', [ProductOdooController::class, 'index'])->name('product_odoo.index');

@@ -38,6 +38,7 @@ import {
     Trophy,
     Truck,
     UserPlus,
+    Warehouse,
     Wrench,
 } from '@lucide/vue';
 
@@ -80,6 +81,7 @@ const menuIcons = {
     Trophy,
     Truck,
     UserPlus,
+    Warehouse,
     Wrench,
     Ship,
 };
