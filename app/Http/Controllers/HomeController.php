@@ -68,6 +68,7 @@ class HomeController extends Controller
                     ['route' => 'vendors.index', 'icon' => 'Store', 'title' => 'Vendor', 'desc' => 'Daftar vendor aktif'],
                     ['route' => 'lots.index', 'icon' => 'Box', 'title' => 'Lot/SN', 'desc' => 'Daftar Lot/SN'],
                     ['route' => 'product_odoo.index', 'icon' => 'Box', 'title' => 'Product', 'desc' => 'Daftar Product Odoo'],
+                    ['route' => 'lnd.index', 'icon' => 'GraduationCap', 'title' => 'L&D', 'desc' => 'Program Learning & Development'],
                 ]),
             ],
             [

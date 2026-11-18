@@ -12,6 +12,7 @@ use App\Http\Controllers\InventoryReportController;
 use App\Http\Controllers\ItController;
 use App\Http\Controllers\ITRController;
 use App\Http\Controllers\IzinEdarController;
+use App\Http\Controllers\LndController;
 use App\Http\Controllers\LotController;
 use App\Http\Controllers\NotificationHistoryController;
 use App\Http\Controllers\POController;
@@ -46,6 +47,8 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
     Route::get('it/{id}', [ItController::class, 'detail'])->name('api.it.detail');
 
     Route::get('gudang', [GudangController::class, 'index'])->name('api.gudang.index');
+
+    Route::get('lnd', [LndController::class, 'index'])->name('api.lnd.index');
 
     Route::get('itr', [ITRController::class, 'index'])->name('api.itr.index');
     Route::get('itr/{id}', [ITRController::class, 'detail'])->name('api.itr.detail');
