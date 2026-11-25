@@ -7,10 +7,12 @@ import DataTable from '@/components/DataTable.vue';
 import EditableCell from '@/components/EditableCell.vue';
 import FormField from '@/components/FormField.vue';
 import LabelToolTabs from '@/components/LabelToolTabs.vue';
+import MultiSelect from '@/components/MultiSelect.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
+import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { printKartuStokLabels } from '@/lib/labelPrint';
@@ -135,7 +137,7 @@ function clearEntries() {
     resetForm();
 }
 
-// ---- Import dari DO / SO / PO / RI / IT / ITR (per produk, tanpa SN) ----
+// ---- Import dari DO / SO / PO / RI / IT / ITR / Stock (per produk, tanpa SN) ----
 const SOURCES = {
     do: { label: 'DO', endpoint: '/do', kind: 'picking', moves: 'move_ids_detail' },
     so: { label: 'SO', endpoint: '/so', kind: 'so' },
@@ -143,6 +145,7 @@ const SOURCES = {
     ri: { label: 'RI', endpoint: '/ri', kind: 'picking', moves: 'move_without_package_detail' },
     it: { label: 'IT', endpoint: '/it', kind: 'picking', moves: 'move_ids_detail' },
     itr: { label: 'ITR', endpoint: '/itr', kind: 'itr' },
+    stock: { label: 'Stock', endpoint: '/stock', kind: 'stock' },
 };
 
 const sourceList = Object.entries(SOURCES).map(([value, s]) => ({ value, label: s.label }));
@@ -162,6 +165,84 @@ const docId = ref('');
 const docDetail = ref(null);
 const importLines = ref([]);
 const importBusy = ref(false);
+
+// ---- Import dari Stock (Odoo): per lokasi, qty = on-hand (hanya info, import tetap 1 strip) ----
+const stockLocationOptions = [
+    { label: 'CENTER', value: 'center' },
+    { label: 'CIBUBUR', value: 'cbb' },
+    { label: 'KARANTINA', value: 'krtn' },
+    { label: 'BADSTOCK', value: 'badstock' },
+    { label: 'DEMO', value: 'demo' },
+];
+const importLocations = ref(['center']);
+const stockSearch = ref('');
+
+const stockFilteredLines = computed(() => {
+    const q = String(stockSearch.value ?? '').trim().toLowerCase();
+    if (!q) {
+        return importLines.value;
+    }
+    return importLines.value.filter(
+        (l) => String(l.code ?? '').toLowerCase().includes(q) || String(l.name ?? '').toLowerCase().includes(q),
+    );
+});
+
+const allStockChecked = computed(
+    () => stockFilteredLines.value.length > 0 && stockFilteredLines.value.every((l) => l.checked),
+);
+
+const stockTotalQty = computed(
+    () => stockFilteredLines.value.reduce((sum, l) => sum + (Math.floor(Number(l.qty)) || 0), 0),
+);
+
+function toggleAllStock(v) {
+    stockFilteredLines.value.forEach((l) => { l.checked = v; });
+}
+
+// Kelompokkan per kode (read_group per produk+lokasi bisa dobel saat
+// multi-lokasi dipilih) dan buang yang qty-nya nol.
+function mapStockRows(list) {
+    const seen = new Map();
+    (Array.isArray(list) ? list : []).forEach((m, i) => {
+        const code = String(m.code ?? '').trim();
+        if (!code) {
+            return;
+        }
+        const q = Math.floor(Number(m.quantity ?? 0));
+        if (!(q > 0)) {
+            return;
+        }
+        if (!seen.has(code)) {
+            seen.set(code, { key: `${i}`, code, name: m.name ?? '', qty: 0, akl: '', checked: false });
+        }
+        seen.get(code).qty += q;
+    });
+    return [...seen.values()]
+        .map((g) => ({ ...g, qty: String(g.qty) }))
+        .sort((a, b) => a.code.localeCompare(b.code, 'id-ID', { numeric: true }));
+}
+
+async function loadStock() {
+    if (importLocations.value.length === 0) {
+        toast.warning('Pilih dulu minimal satu lokasi.');
+        return;
+    }
+    importBusy.value = true;
+    try {
+        const res = await api.get('/stock', { params: { location: importLocations.value }, silent: true, block: true });
+        const body = res.data?.data ?? res.data ?? [];
+        const list = Array.isArray(body) ? body : (body.data ?? []);
+        importLines.value = mapStockRows(list);
+        if (importLines.value.length === 0) {
+            toast.warning('Tidak ada stock dengan qty > 0 di lokasi ini.');
+        }
+    } catch (e) {
+        importLines.value = [];
+        toast.error(e.response?.data?.message ?? 'Gagal memuat stock.');
+    } finally {
+        importBusy.value = false;
+    }
+}
 
 const sourceLabel = computed(() => SOURCES[importSource.value]?.label ?? '');
 
@@ -213,6 +294,10 @@ function mapDocDetail(body, source) {
                 checked: true,
             }))
             .filter((l) => l.code);
+    }
+    if (kind === 'stock') {
+        const list = Array.isArray(body) ? body : (body.data ?? []);
+        return mapStockRows(list);
     }
     const moves = body[SOURCES[source]?.moves] ?? [];
     // Gabung per kode produk (qty dijumlah, 1 strip per kode).
@@ -294,6 +379,15 @@ function openImport(source) {
     docOptions.value = [];
     docDetail.value = null;
     importLines.value = [];
+    stockSearch.value = '';
+    if (importSource.value === 'stock') {
+        if (importLocations.value.length === 0) {
+            importLocations.value = ['center'];
+        }
+        importOpen.value = true;
+        loadStock();
+        return;
+    }
     importOpen.value = true;
 }
 
@@ -449,7 +543,7 @@ function onPrint() {
                 <span class="mr-1 text-sm font-semibold">Import dari:</span>
                 <Button v-for="s in sourceList" :key="s.value" variant="outline" size="sm" @click="openImport(s.value)"><Download /> {{ s.label }}</Button>
             </div>
-            <p class="mt-2 text-xs text-muted-foreground">Ambil produk + AKL dari dokumen sumber. Tiap baris tercentang = 1 strip (qty dokumen diabaikan).</p>
+            <p class="mt-2 text-xs text-muted-foreground">Ambil produk + AKL dari dokumen sumber atau stock on-hand. Tiap baris tercentang = 1 strip (qty dokumen/stock diabaikan, hanya info).</p>
         </Card>
 
         <Card class="mb-4 p-4">
@@ -535,6 +629,65 @@ function onPrint() {
 
         <AppModal v-model:open="importOpen" :title="`Import dari ${sourceLabel}`" size="2xl" persistent>
             <div class="space-y-3">
+                <template v-if="importSource === 'stock'">
+                    <p class="text-xs text-muted-foreground">
+                        Centang produk yang mau dijadikan stiker. Tiap baris = 1 strip (qty stock hanya info, AKL dilengkapi otomatis dari DB).
+                    </p>
+                    <FormField label="Lokasi">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <MultiSelect v-model="importLocations" :options="stockLocationOptions" placeholder="Pilih lokasi..." class="min-w-0 flex-1" />
+                            <Button size="sm" :disabled="importBusy || importLocations.length === 0" @click="loadStock">Muat Stock</Button>
+                        </div>
+                    </FormField>
+                    <FormField label="Cari produk">
+                        <Input v-model="stockSearch" type="search" placeholder="Ketik kode / nama..." />
+                    </FormField>
+                    <div v-if="importBusy" class="rounded-lg border p-6 text-center text-sm text-muted-foreground">
+                        Memuat stock...
+                    </div>
+                    <div v-else-if="importLines.length === 0" class="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                        Belum ada data. Pilih lokasi lalu klik Muat Stock.
+                    </div>
+                    <div v-else class="space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
+                            <span><b>{{ stockFilteredLines.length }}</b> produk / <b>{{ stockTotalQty }}</b> qty — <b>{{ selectedImportLines.length }}</b> dipilih</span>
+                            <label class="flex cursor-pointer items-center gap-1.5 text-xs font-medium">
+                                <input :checked="allStockChecked" type="checkbox" class="size-4 accent-primary" @change="toggleAllStock($event.target.checked)" />
+                                Pilih semua (hasil cari)
+                            </label>
+                        </div>
+                        <div class="max-h-[50vh] overflow-y-auto rounded-lg border">
+                            <table class="w-full text-sm">
+                                <thead class="sticky top-0 bg-slate-50">
+                                    <tr class="text-left text-xs text-muted-foreground">
+                                        <th class="w-10 px-3 py-2 text-center">Pilih</th>
+                                        <th class="px-3 py-2">Kode</th>
+                                        <th class="px-3 py-2">Nama</th>
+                                        <th class="w-20 px-3 py-2 text-right">Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="l in stockFilteredLines"
+                                        :key="l.key"
+                                        class="border-t hover:bg-slate-50"
+                                    >
+                                        <td class="px-3 py-2 text-center">
+                                            <input v-model="l.checked" type="checkbox" class="size-4 align-middle accent-primary" />
+                                        </td>
+                                        <td class="px-3 py-2 font-mono text-xs font-bold">{{ l.code }}</td>
+                                        <td class="px-3 py-2">{{ l.name }}</td>
+                                        <td class="px-3 py-2 text-right font-semibold">{{ l.qty }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p v-if="stockFilteredLines.length === 0" class="p-6 text-center text-sm text-muted-foreground">
+                                Tidak ada produk yang cocok dengan pencarian.
+                            </p>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
                 <p class="text-xs text-muted-foreground">
                     Centang baris yang mau dijadikan stiker. Tiap baris = 1 strip.
                 </p>
@@ -585,6 +738,7 @@ function onPrint() {
                         </span>
                     </label>
                 </div>
+                </template>
             </div>
             <template #footer>
                 <Button variant="ghost" @click="importOpen = false">Batal</Button>
