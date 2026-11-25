@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class IzinEdarSyncService
 {
@@ -162,8 +165,11 @@ class IzinEdarSyncService
 
     // ── Log helpers ──────────────────────────────────────────────────
 
+    /** Status yang dianggap "sedang jalan" (aktif). */
+    public const ACTIVE_STATUSES = ['pending', 'downloading', 'importing'];
+
     /** Max minutes before a sync is considered stuck/stale. */
-    private const STALE_TIMEOUT_MINUTES = 30;
+    private const STALE_TIMEOUT_MINUTES = 120;
 
     public function getLogPath(): string
     {
@@ -204,7 +210,7 @@ class IzinEdarSyncService
             return false;
         }
 
-        $isActive = in_array($log['status'] ?? '', ['pending', 'downloading']);
+        $isActive = in_array($log['status'] ?? '', self::ACTIVE_STATUSES);
         if (! $isActive) {
             return false;
         }
@@ -225,7 +231,7 @@ class IzinEdarSyncService
      */
     public function isStale(array $log): bool
     {
-        $activeStatuses = ['pending', 'downloading'];
+        $activeStatuses = self::ACTIVE_STATUSES;
         if (! in_array($log['status'] ?? '', $activeStatuses)) {
             return false;
         }
@@ -253,7 +259,7 @@ class IzinEdarSyncService
     {
         $log = $this->readLog();
 
-        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading'])) {
+        if ($log && in_array($log['status'] ?? '', self::ACTIVE_STATUSES)) {
             // Try to delete the queue job so the worker releases it immediately
             $this->deleteQueueJob($log['job_id'] ?? null);
 
@@ -280,7 +286,7 @@ class IzinEdarSyncService
     {
         $log = $this->readLog();
 
-        if ($log && in_array($log['status'] ?? '', ['pending', 'downloading'])) {
+        if ($log && in_array($log['status'] ?? '', self::ACTIVE_STATUSES)) {
             $this->deleteQueueJob($log['job_id'] ?? null);
 
             $log['status'] = 'failed';
@@ -310,15 +316,15 @@ class IzinEdarSyncService
 
     // ── Start a new sync session ─────────────────────────────────────
 
-    public function startSync(): array
+    public function startSync(bool $withImport = true): array
     {
-        return $this->startSession();
+        return $this->startSession($withImport);
     }
 
     /**
      * Start a download session for all categories.
      */
-    private function startSession(): array
+    private function startSession(bool $withImport = true): array
     {
         $categories = array_keys(self::CATEGORIES);
         $log = [
@@ -331,7 +337,7 @@ class IzinEdarSyncService
 
         foreach ($categories as $cat) {
             $log['categories'][$cat] = [
-                'status' => 'pending',  // pending | downloading | downloaded | failed
+                'status' => 'pending',  // pending | downloading | downloaded | importing | imported | failed
                 'file' => self::CATEGORIES[$cat]['file'],
                 'error' => null,
                 'started_at' => null,
@@ -343,7 +349,7 @@ class IzinEdarSyncService
 
         // Dispatch the sync job to the queue and store the job ID so we can
         // target it for deletion when the user requests a stop.
-        $jobId = $this->launchCommand();
+        $jobId = $this->launchCommand($withImport);
         if ($jobId) {
             $log['job_id'] = $jobId;
             $this->writeLog($log);
@@ -429,14 +435,261 @@ class IzinEdarSyncService
     }
 
     /**
-     * Dispatch the download job onto the queue.
+     * Dispatch the download (+ optional import) job onto the queue.
+     * Response HTTP selalu cepat: dengan driver sync pun job dijalankan
+     * setelah response terkirim (afterResponse), bukan inline.
      *
      * @return string|null The dispatched job ID (for tracking/deletion).
      */
-    private function launchCommand(): ?string
+    private function launchCommand(bool $withImport = true): ?string
     {
-        $jobId = Queue::push(new SyncIzinEdarJob);
+        // Driver sync mengeksekusi job inline saat push — HTTP akan ketahan
+        // sampai 4 file selesai download+import. afterResponse mengirim
+        // response dulu, job jalan setelahnya. Driver sync memang tidak
+        // menghasilkan job ID (tidak ada baris di tabel jobs).
+        if (config('queue.default') === 'sync') {
+            SyncIzinEdarJob::dispatch($withImport)->afterResponse();
+
+            return null;
+        }
+
+        $jobId = Queue::push(new SyncIzinEdarJob($withImport));
 
         return $jobId ? (string) $jobId : null;
+    }
+
+    // ── Server-side import (dipakai scheduler jam 01:00) ─────────────
+
+    /**
+     * Header Excel Kemkes (uppercase, trim) → kolom DB.
+     * Disamakan dengan HEADER_TRANSLATION di resources/js/Pages/IzinEdar/Index.vue.
+     */
+    private const HEADER_MAP = [
+        'NOMOR' => 'nomor_izin_edar',
+        'TGL TERBIT' => 'tgl_terbit',
+        'TGL EXP' => 'tgl_exp',
+        'MERK' => 'merk',
+        'JENIS PRODUK' => 'jenis_produk',
+        'PENDAFTAR' => 'pendaftar',
+        'ALAMAT PENDAFTAR' => 'alamat_pendaftar',
+        'PABRIK' => 'pabrik',
+        'ALAMAT PABRIK' => 'alamat_pabrik',
+        'SUB KATEGORI' => 'sub_kategori',
+        'KELOMPOK PRODUK' => 'kelompok_produk',
+        'TIPE' => 'tipe',
+        'KELAS' => 'kelas',
+        'KELAS RESIKO' => 'kelas_resiko',
+        'PABRIK2' => 'pabrik2',
+    ];
+
+    private const IMPORT_COLUMNS = [
+        'kategori',
+        'nomor_izin_edar',
+        'tgl_terbit',
+        'tgl_exp',
+        'merk',
+        'jenis_produk',
+        'pendaftar',
+        'alamat_pendaftar',
+        'pabrik',
+        'alamat_pabrik',
+        'sub_kategori',
+        'kelompok_produk',
+        'tipe',
+        'kelas',
+        'kelas_resiko',
+        'pabrik2',
+    ];
+
+    private const IMPORT_CAP_255 = [
+        'tipe', 'merk', 'jenis_produk', 'pendaftar',
+        'pabrik', 'sub_kategori', 'kelompok_produk', 'kelas_resiko',
+    ];
+
+    /**
+     * Import satu file xlsx kategori ke tabel izin_edars via upsert.
+     * Dipanggil SyncIzinEdarJob setelah download selesai.
+     *
+     * @return array{imported: int, total: int}
+     */
+    public function importFile(string $kategori, ?callable $shouldStop = null): array
+    {
+        $kategori = strtoupper($kategori);
+        $path = $this->getFilePath($kategori);
+
+        if (! $path || ! File::exists($path)) {
+            throw new \RuntimeException("File {$kategori} belum di-download.");
+        }
+
+        $this->updateCategory($kategori, [
+            'status' => 'importing',
+            'started_at' => now()->toIso8601String(),
+        ]);
+
+        $reader = new Xlsx;
+        $reader->setReadDataOnly(true);
+        $spreadsheet = $reader->load($path);
+        try {
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = (int) $sheet->getHighestDataRow();
+            $highestCol = Coordinate::columnIndexFromString(
+                (string) $sheet->getHighestDataColumn()
+            );
+
+            // 1. Cari baris header (maks 100 baris pertama, samakan dengan frontend).
+            $headerRow = null;
+            $colMap = [];
+            $scanMax = min($highestRow, 100);
+            for ($r = 1; $r <= $scanMax; $r++) {
+                $norm = [];
+                for ($c = 1; $c <= $highestCol; $c++) {
+                    $v = $sheet->getCell([$c, $r])->getValue();
+                    $norm[$c] = strtoupper(trim((string) ($v ?? '')));
+                }
+                if (in_array('NOMOR', $norm, true) || in_array('MERK', $norm, true)) {
+                    $headerRow = $r;
+                    foreach ($norm as $c => $h) {
+                        if (isset(self::HEADER_MAP[$h])) {
+                            $colMap[$c] = self::HEADER_MAP[$h];
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if ($headerRow === null || empty($colMap)) {
+                throw new \RuntimeException("Header tidak ditemukan di file {$kategori}.");
+            }
+
+            $total = 0;
+            $imported = 0;
+            $batch = [];
+
+            $flush = function () use (&$batch, &$imported, $kategori) {
+                if (empty($batch)) {
+                    return;
+                }
+                DB::table('izin_edars')->upsert(
+                    $batch,
+                    ['nomor_izin_edar'],
+                    array_diff(self::IMPORT_COLUMNS, ['nomor_izin_edar'])
+                );
+                $imported += count($batch);
+                $batch = [];
+                $this->updateCategory($kategori, [
+                    'imported' => $imported,
+                    'status' => 'importing',
+                ]);
+            };
+
+            $dateCols = ['tgl_terbit', 'tgl_exp'];
+
+            for ($r = $headerRow + 1; $r <= $highestRow; $r++) {
+                if ($shouldStop && $shouldStop()) {
+                    $flush();
+                    throw new \RuntimeException('Stop requested.');
+                }
+
+                $record = ['kategori' => $kategori];
+                $hasAny = false;
+                foreach ($colMap as $c => $col) {
+                    $cell = $sheet->getCell([$c, $r]);
+                    $v = $cell->getValue();
+
+                    if (Date::isDateTime($cell)) {
+                        try {
+                            $v = Date::excelToDateTimeObject($v)->format('Y-m-d');
+                        } catch (\Throwable $e) {
+                            $v = null;
+                        }
+                    } elseif (in_array($col, $dateCols, true)) {
+                        $v = $this->normalizeDate($v);
+                    } elseif (is_string($v)) {
+                        $v = trim($v);
+                        $v = $v === '' ? null : $v;
+                    }
+
+                    if ($v !== null && $v !== '') {
+                        $hasAny = true;
+                    }
+                    if (is_string($v) && in_array($col, self::IMPORT_CAP_255, true)) {
+                        $v = mb_substr($v, 0, 255);
+                    }
+
+                    $record[$col] = $v;
+                }
+
+                if (! $hasAny) {
+                    continue;
+                }
+                if (empty($record['nomor_izin_edar'])) {
+                    continue;
+                }
+                $record['nomor_izin_edar'] = trim((string) $record['nomor_izin_edar']);
+
+                // Lengkapi kolom yang tidak ada di file dengan null.
+                foreach (self::IMPORT_COLUMNS as $col) {
+                    if (! array_key_exists($col, $record)) {
+                        $record[$col] = null;
+                    }
+                }
+
+                $total++;
+                $batch[] = $record;
+
+                if (count($batch) >= 1000) {
+                    $flush();
+                }
+            }
+
+            $flush();
+
+            $this->updateCategory($kategori, [
+                'status' => 'imported',
+                'imported' => $imported,
+                'total' => $total,
+                'finished_at' => now()->toIso8601String(),
+                'error' => null,
+            ]);
+
+            Log::info("[SyncIzinEdar] Imported {$kategori}: {$imported}/{$total} rows.");
+
+            return ['imported' => $imported, 'total' => $total];
+        } finally {
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet);
+        }
+    }
+
+    private function normalizeDate(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        if (is_numeric($value)) {
+            $num = (float) $value;
+            // Serial Excel yang wajar: 1990-01-01 (~32874) s/d 2100 (~73050).
+            if ($num > 20000 && $num < 80000) {
+                try {
+                    return Date::excelToDateTimeObject($num)->format('Y-m-d');
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            }
+
+            return null;
+        }
+        $s = trim((string) $value);
+        if ($s === '' || $s === '-' || $s === '0') {
+            return null;
+        }
+        try {
+            return Carbon::parse($s)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

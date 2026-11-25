@@ -448,7 +448,7 @@ async function triggerSync() {
     }
     syncStarting.value = true;
     try {
-        const res = await api.post('/izin-edars/sync', {}, { silent: true, block: true });
+        const res = await api.post('/izin-edars/sync', {}, { silent: true });
         if (res.data?.success === false) {
             if (res.data?.can_stop) {
                 syncBusyToast();

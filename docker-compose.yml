@@ -67,7 +67,8 @@ services:
       retries: 3
       start_period: 20s
 
-  # Worker antrean. Timeout 600 dtk agar import file besar tidak terputus.
+  # Worker antrean. Timeout 3600 dtk agar download 4 file + import otomatis
+  # (SyncIzinEdarJob timeout 3500) tidak terputus.
   # Aktif kalau QUEUE_CONNECTION=database di .env (default lokal masih sync).
   who-worker:
     build:
@@ -82,7 +83,7 @@ services:
         max-file: '3'
     # NOTE: sama seperti who-app — jangan pakai env_file (Compose merusak
     # nilai mengandung $, mis. ADMIN_PASS). .env dibaca via mount di bawah.
-    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=600", "--max-time=3600"]
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=1", "--timeout=3600", "--max-time=7200"]
     volumes:
       - ./storage:/var/www/html/storage
       - ./database:/var/www/html/database

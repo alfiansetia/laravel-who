@@ -13,31 +13,34 @@ class SyncIzinEdarJob implements ShouldQueue
     use Queueable;
 
     /**
-     * Overall job timeout. Each category download can take up to 10 minutes
-     * (CURLOPT_TIMEOUT = 600s) and there are 4 files.
+     * Overall job timeout. Download 4 file @ maks 10 menit + import
+     * server-side (upsert ribuan baris per file).
      *
-     * NOTE: the queue worker must run with at least this timeout, e.g.
-     *   php artisan queue:work database --timeout=2500 --tries=1
+     * NOTE: queue worker harus jalan dengan timeout minimal sebesar ini, e.g.
+     *   php artisan queue:work database --timeout=3600 --tries=1
+     * Docker: sesuaikan --timeout di docker-compose.yml (who-worker).
      *
      * retry_after must be GREATER than $timeout so the queue driver
      * doesn't reclaim this job while it is still legitimately running.
      */
-    public int $timeout = 2400;
+    public int $timeout = 3500;
 
     /** Only attempt once — retries won't help for download failures. */
     public int $tries = 1;
 
     /** Must be greater than $timeout. */
-    public int $retryAfter = 2500;
+    public int $retryAfter = 3600;
 
-    public function __construct()
+    public bool $shouldImport;
+
+    public function __construct(bool $shouldImport = true)
     {
-        // No parameters needed — always downloads all categories.
+        $this->shouldImport = $shouldImport;
     }
 
     /**
-     * Execute the job: download all Excel files from Kemkes.
-     * No DB import is performed here — that is handled client-side via SheetJS.
+     * Execute the job: download all Excel files from Kemkes,
+     * lalu import otomatis ke DB bila $shouldImport true (jadwal jam 01:00).
      */
     public function handle(IzinEdarSyncService $syncService): void
     {
@@ -68,6 +71,34 @@ class SyncIzinEdarJob implements ShouldQueue
                 ]);
 
                 $failedCategories[] = $kategori;
+
+                continue;
+            }
+
+            // Import otomatis server-side (jadwal jam 01:00). Stop request
+            // dicek juga di dalam importFile per baris via callback.
+            if ($this->shouldImport) {
+                try {
+                    $syncService->updateGlobalStatus('importing');
+                    $syncService->importFile($kategori, fn () => $this->isStopRequested($syncService));
+                } catch (\Throwable $e) {
+                    if (str_contains($e->getMessage(), 'Stop requested')) {
+                        Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori} import selesai.");
+                        $syncService->updateGlobalStatus('stopped');
+
+                        return;
+                    }
+
+                    Log::error("[SyncIzinEdar] Failed importing {$kategori}: {$e->getMessage()}");
+
+                    $syncService->updateCategory($kategori, [
+                        'status' => 'failed',
+                        'error' => $e->getMessage(),
+                        'finished_at' => now()->toIso8601String(),
+                    ]);
+
+                    $failedCategories[] = $kategori;
+                }
             }
         }
 

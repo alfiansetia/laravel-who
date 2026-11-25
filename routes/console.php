@@ -29,6 +29,13 @@ Schedule::command('app:odoo-login')
         // Log::error('Cronjob Monitor DO Gagal dijalankan');
     });
 
+// Izin Edar: download + auto-import tiap jam 01:00 malam.
+// Job jalan di queue (who-worker), scheduler hanya dispatch command singkat.
+Schedule::command('sync:izin-edar')
+    ->dailyAt('01:00')
+    ->withoutOverlapping(120)
+    ->onOneServer();
+
 // Idempotent: pastikan token lama / yang subscribe-nya gagal diam-diam tetap
 // terdaftar ke topic agar sendToTopic() menjangkau semua perangkat.
 Schedule::command('app:subscribe-fcm-topic')
