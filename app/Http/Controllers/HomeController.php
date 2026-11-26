@@ -100,6 +100,7 @@ class HomeController extends Controller
                 'menus' => $build([
                     ['route' => 'tools.stt', 'icon' => 'Mic', 'title' => 'STT', 'desc' => 'Ucapan ke teks'],
                     ['route' => 'tools.ocr', 'icon' => 'ScanText', 'title' => 'OCR', 'desc' => 'Ekstrak teks gambar'],
+                    ['route' => 'tools.barcode_reader', 'icon' => 'QrCode', 'title' => 'Barcode Reader', 'desc' => 'Pindai barcode/QR via kamera & gambar'],
                     ['route' => 'tools.scoreboard', 'icon' => 'Trophy', 'title' => 'Scoreboard', 'desc' => 'Papan skor digital'],
                     ['route' => 'tools.file_search', 'icon' => 'Search', 'title' => 'File Search', 'desc' => 'Cari file di server'],
                 ]),

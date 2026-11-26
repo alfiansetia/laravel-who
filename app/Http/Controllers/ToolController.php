@@ -73,6 +73,13 @@ class ToolController extends Controller
         ]);
     }
 
+    public function barcodeReader(): Response
+    {
+        return Inertia::render('BarcodeReader/Index', [
+            'title' => 'Barcode / QR Reader',
+        ]);
+    }
+
     public function spreadsheet(): Response
     {
         return Inertia::render('Spreadsheet/Index', [

@@ -1,14 +1,16 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { Camera, ChevronLeft, ChevronRight, Copy, FileImage, Layers, RotateCcw, SwitchCamera, Trash2, Upload } from '@lucide/vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Camera, ChevronLeft, ChevronRight, Copy, Crop, Download, FileImage, Layers, RotateCcw, RotateCw, ScanLine, SwitchCamera, Trash2, Upload } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
+import DataTable from '@/components/DataTable.vue';
 import PageHeader from '@/components/PageHeader.vue';
+import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
-import Textarea from '@/components/ui/Textarea.vue';
+import { useClientTable } from '@/composables/useClientTable';
 import { useToast } from '@/composables/useToast';
-import { copyText } from '@/lib/export';
+import { copyRows, copyText, downloadCsv } from '@/lib/export';
 
 const props = defineProps({
     title: { type: String, default: 'OCR Tool' },
@@ -16,7 +18,9 @@ const props = defineProps({
 
 const TESSERACT_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 const PDFJS_SRC = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
-const PDFJS_WORKER_SRC = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+const PDFJS_WORKER_SRC = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.worker.js';
+const CROPPER_JS_SRC = 'https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js';
+const CROPPER_CSS_HREF = 'https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css';
 
 const toast = useToast();
 
@@ -33,8 +37,10 @@ const totalPages = ref(0);
 const processing = ref(false);
 const progressPercent = ref(0);
 const progressStatus = ref('');
-const resultText = ref('');
-const confidence = ref(null);
+
+const cropImg = ref(null);
+const cropReady = ref(false);
+let cropper = null;
 
 const cameraOpen = ref(false);
 const facingMode = ref('environment');
@@ -42,7 +48,22 @@ const hasMultiCam = ref(false);
 let stream = null;
 let worker = null;
 let pdfDoc = null;
-let pdfFile = null;
+
+const table = useClientTable(null, { searchKeys: ['teks', 'sumber'] });
+const searchBox = ref('');
+const scans = ref([]);
+let seq = 0;
+
+const columns = [
+    { key: 'no', label: 'No', align: 'center' },
+    { key: 'teks', label: 'Teks', mono: true, wrap: true },
+    { key: 'keyakinan', label: 'Keyakinan', align: 'center' },
+    { key: 'sumber', label: 'Sumber' },
+    { key: 'waktu', label: 'Waktu', mono: true },
+];
+const exportColumns = ['no', 'teks', 'keyakinan', 'sumber', 'waktu'];
+
+const exportRows = computed(() => table.filtered.value.map((r) => ({ no: r.no, teks: r.teks, keyakinan: r.keyakinan, sumber: r.sumber, waktu: r.waktu })));
 
 const hasSource = computed(() => previewSrc.value !== '');
 
@@ -56,6 +77,21 @@ function loadScript(src) {
         el.src = src;
         el.onload = () => resolve();
         el.onerror = () => reject(new Error(`Gagal memuat pustaka: ${src}`));
+        document.head.appendChild(el);
+    });
+}
+
+function loadCss(href) {
+    return new Promise((resolve) => {
+        if (document.querySelector(`link[href="${href}"]`)) {
+            resolve();
+            return;
+        }
+        const el = document.createElement('link');
+        el.rel = 'stylesheet';
+        el.href = href;
+        el.onload = () => resolve();
+        el.onerror = () => resolve();
         document.head.appendChild(el);
     });
 }
@@ -87,43 +123,162 @@ async function ensurePdfjs() {
     return window.pdfjsLib;
 }
 
+async function ensureCropper() {
+    await Promise.all([loadScript(CROPPER_JS_SRC), loadCss(CROPPER_CSS_HREF)]);
+    if (!window.Cropper) {
+        throw new Error('Pustaka crop tidak tersedia.');
+    }
+    return window.Cropper;
+}
+
 function setProgress(percent, status) {
     progressPercent.value = percent;
     progressStatus.value = status;
 }
 
-function clearResults() {
-    resultText.value = '';
-    confidence.value = null;
+function pushRow(teks, confidence, sumber) {
+    const value = String(teks ?? '').trim();
+    if (value === '') {
+        return false;
+    }
+    seq += 1;
+    scans.value.unshift({
+        id: seq,
+        no: seq,
+        teks: value,
+        keyakinan: `${confidence ?? 0}%`,
+        sumber,
+        waktu: new Date().toLocaleString('id-ID'),
+    });
+    table.setRows(scans.value);
+    return true;
 }
 
-async function recognizeText(imageData) {
-    clearResults();
+function sourceLabel(pageNum = null) {
+    const base = fileLabel.value || 'Gambar';
+    if (pageNum !== null) {
+        return `${base} · Hal ${pageNum}`;
+    }
+    return base;
+}
+
+async function recognizeImage(imageData) {
     processing.value = true;
     try {
         setProgress(10, 'Membangunkan AI...');
         const w = await ensureWorker();
         const { data } = await w.recognize(imageData);
-        resultText.value = data.text ?? '';
-        confidence.value = Number(Number(data.confidence ?? 0).toFixed(1));
-        if (resultText.value.trim() !== '') {
-            toast.success('Pemindaian selesai.');
-        } else {
-            toast.warning('Tidak ada teks yang terbaca dari gambar.');
-        }
-    } catch (e) {
-        toast.error(e.message ?? 'Gagal memindai gambar.');
+        return { text: (data.text ?? '').trim(), confidence: Number(Number(data.confidence ?? 0).toFixed(1)) };
     } finally {
         processing.value = false;
         setProgress(0, '');
     }
 }
 
+// ---------- Cropper ----------
+
+function destroyCropper() {
+    try {
+        cropper?.destroy();
+    } catch {
+        // abaikan
+    }
+    cropper = null;
+    cropReady.value = false;
+}
+
+function waitImageLoaded(img) {
+    return new Promise((resolve, reject) => {
+        if (img.complete && img.naturalWidth > 0) {
+            resolve();
+            return;
+        }
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Gambar tidak bisa dimuat ke cropper.'));
+    });
+}
+
+async function initCropper() {
+    destroyCropper();
+    try {
+        const Cropper = await ensureCropper();
+        await nextTick();
+        const img = cropImg.value;
+        if (!img) {
+            return;
+        }
+        await waitImageLoaded(img);
+        cropper = new Cropper(img, {
+            viewMode: 1,
+            dragMode: 'crop',
+            autoCropArea: 0.8,
+            responsive: true,
+            guides: true,
+        });
+        cropReady.value = true;
+    } catch (e) {
+        toast.error(e.message ?? 'Gagal menyiapkan cropper.');
+    }
+}
+
+async function scanCrop() {
+    if (!cropper) {
+        toast.warning('Cropper belum siap.');
+        return;
+    }
+    const canvas = cropper.getCroppedCanvas({ maxWidth: 2048, maxHeight: 2048 });
+    if (!canvas) {
+        toast.warning('Area potongan tidak valid.');
+        return;
+    }
+    try {
+        const r = await recognizeImage(canvas.toDataURL('image/png'));
+        if (pushRow(r.text, r.confidence, sourceLabel(isPdf.value ? currentPage.value : null))) {
+            toast.success('Pemindaian selesai.');
+        } else {
+            toast.warning('Tidak ada teks yang terbaca dari potongan.');
+        }
+    } catch (e) {
+        toast.error(e.message ?? 'Gagal memindai gambar.');
+    }
+}
+
+async function scanFull() {
+    if (!previewSrc.value) {
+        toast.warning('Belum ada gambar.');
+        return;
+    }
+    try {
+        const r = await recognizeImage(previewSrc.value);
+        if (pushRow(r.text, r.confidence, sourceLabel(isPdf.value ? currentPage.value : null))) {
+            toast.success('Pemindaian selesai.');
+        } else {
+            toast.warning('Tidak ada teks yang terbaca dari gambar.');
+        }
+    } catch (e) {
+        toast.error(e.message ?? 'Gagal memindai gambar.');
+    }
+}
+
+function rotateCrop() {
+    cropper?.rotate(90);
+}
+
+function resetCrop() {
+    cropper?.reset();
+}
+
+// ---------- Sumber: file / PDF ----------
+
 function readImageFile(file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
+        destroyCropper();
+        totalPages.value = 0;
+        pdfDoc = null;
+        isPdf.value = false;
         previewSrc.value = e.target.result;
-        recognizeText(e.target.result);
+        await initCropper();
     };
     reader.readAsDataURL(file);
 }
@@ -135,13 +290,13 @@ async function loadPdf(file) {
         pdfDoc = await pdfjs.getDocument({ data: buffer }).promise;
         totalPages.value = pdfDoc.numPages;
         currentPage.value = 1;
-        await renderPdfPage(1);
+        await showPage(1);
     } catch (e) {
         toast.error(e.message ?? 'Gagal membuka PDF.');
     }
 }
 
-async function renderPdfPage(pageNum, autoProcess = true) {
+async function renderPdfPage(pageNum) {
     if (!pdfDoc) {
         return null;
     }
@@ -153,10 +308,14 @@ async function renderPdfPage(pageNum, autoProcess = true) {
     await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
     const dataUrl = canvas.toDataURL('image/png');
     previewSrc.value = dataUrl;
-    if (autoProcess) {
-        await recognizeText(dataUrl);
-    }
     return dataUrl;
+}
+
+async function showPage(pageNum) {
+    destroyCropper();
+    await renderPdfPage(pageNum);
+    currentPage.value = pageNum;
+    await initCropper();
 }
 
 async function changePage(delta) {
@@ -164,10 +323,9 @@ async function changePage(delta) {
     if (next < 1 || next > totalPages.value || processing.value) {
         return;
     }
-    currentPage.value = next;
     processing.value = true;
     try {
-        await renderPdfPage(next);
+        await showPage(next);
     } catch (e) {
         toast.error(e.message ?? 'Gagal merender halaman PDF.');
     } finally {
@@ -179,26 +337,24 @@ async function processAllPages() {
     if (!pdfDoc || processing.value) {
         return;
     }
-    clearResults();
+    destroyCropper();
     processing.value = true;
     try {
         const w = await ensureWorker();
-        const parts = [];
         for (let i = 1; i <= totalPages.value; i++) {
             setProgress(Math.round((i / totalPages.value) * 100), `Memindai halaman ${i}/${totalPages.value}...`);
-            const dataUrl = await renderPdfPage(i, false);
+            const dataUrl = await renderPdfPage(i);
             currentPage.value = i;
             const { data } = await w.recognize(dataUrl);
-            parts.push(`\n\n[HALAMAN ${i}]\n${data.text ?? ''}`);
+            pushRow(data.text ?? '', Number(Number(data.confidence ?? 0).toFixed(1)), sourceLabel(i));
         }
-        resultText.value = parts.join('').trim();
-        confidence.value = null;
         toast.success('Semua halaman selesai dipindai.');
     } catch (e) {
         toast.error(e.message ?? 'Gagal memindai semua halaman.');
     } finally {
         processing.value = false;
         setProgress(0, '');
+        await showPage(currentPage.value);
     }
 }
 
@@ -209,15 +365,10 @@ async function handleFile(file) {
     fileLabel.value = file.name;
     isPdf.value = file.type === 'application/pdf';
     if (isPdf.value) {
-        pdfFile.value = file;
+        destroyCropper();
         previewSrc.value = '';
-        clearResults();
-        processing.value = true;
         await loadPdf(file);
-        processing.value = false;
     } else {
-        totalPages.value = 0;
-        pdfDoc = null;
         readImageFile(file);
     }
 }
@@ -247,12 +398,14 @@ function onPaste(e) {
                 pdfDoc = null;
                 fileLabel.value = 'Tempelan clipboard';
                 readImageFile(file);
-                toast.info('Gambar dari clipboard dimuat.');
+                toast.info('Gambar dari clipboard dimuat. Sesuaikan potongan lalu pindai.');
             }
             break;
         }
     }
 }
+
+// ---------- Kamera ----------
 
 async function startCamera() {
     try {
@@ -297,7 +450,7 @@ async function switchCamera() {
     }
 }
 
-function captureImage() {
+async function captureImage() {
     const video = videoRef.value;
     const canvas = captureCanvas.value;
     if (!video || !canvas || !video.videoWidth) {
@@ -311,28 +464,49 @@ function captureImage() {
     totalPages.value = 0;
     pdfDoc = null;
     fileLabel.value = 'Hasil jepretan kamera';
+    destroyCropper();
     previewSrc.value = dataUrl;
     stopCamera();
-    recognizeText(dataUrl);
+    await initCropper();
 }
 
 function resetSource() {
+    destroyCropper();
     previewSrc.value = '';
     fileLabel.value = '';
     isPdf.value = false;
     currentPage.value = 1;
     totalPages.value = 0;
     pdfDoc = null;
-    pdfFile.value = null;
     if (fileInput.value) {
         fileInput.value.value = '';
     }
-    clearResults();
     toast.info('Sumber dibersihkan.');
 }
 
-function onCopy() {
-    copyText(resultText.value.trim(), 'Teks hasil OCR disalin ke clipboard.');
+// ---------- Tabel hasil ----------
+
+function onCopyItem(row) {
+    copyText(row.teks, 'Teks hasil OCR disalin ke clipboard.');
+}
+
+function onCopyTable() {
+    copyRows(exportRows.value, exportColumns, 'hasil OCR');
+}
+
+function onDownload() {
+    downloadCsv('ocr-hasil', exportRows.value, exportColumns);
+}
+
+function removeItem(id) {
+    scans.value = scans.value.filter((s) => s.id !== id);
+    table.setRows(scans.value);
+}
+
+function clearHistory() {
+    scans.value = [];
+    table.setRows([]);
+    toast.info('Riwayat hasil dibersihkan.');
 }
 
 onMounted(() => {
@@ -341,6 +515,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('paste', onPaste);
+    destroyCropper();
     stopStream();
     worker?.terminate?.().catch(() => {});
 });
@@ -348,7 +523,12 @@ onBeforeUnmount(() => {
 
 <template>
     <AppLayout>
-        <PageHeader :title="props.title" />
+        <PageHeader :title="props.title">
+            <template #actions>
+                <Button variant="outline" size="sm" :disabled="table.total.value === 0" @click="onCopyTable"><Copy /> Salin Tabel</Button>
+                <Button variant="outline" size="sm" :disabled="table.total.value === 0" @click="onDownload"><Download /> CSV</Button>
+            </template>
+        </PageHeader>
 
         <div class="grid gap-4 xl:grid-cols-[7fr_5fr]">
             <Card class="p-4 sm:p-6">
@@ -373,10 +553,18 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div v-else class="mt-3 space-y-3">
-                    <div class="overflow-hidden rounded-lg border bg-slate-50">
-                        <img :src="previewSrc" alt="Pratinjau dokumen" class="max-h-[60vh] w-full object-contain" />
+                    <div class="max-h-[60vh] overflow-hidden rounded-lg border bg-slate-100">
+                        <img ref="cropImg" :src="previewSrc" alt="Potong area dokumen" class="block max-w-full" />
                     </div>
                     <p v-if="fileLabel" class="truncate text-xs text-muted-foreground">{{ fileLabel }}</p>
+                    <p class="text-xs text-muted-foreground">Seret untuk mengatur kotak potongan pada area teks, lalu pindai. Ulangi untuk memindai berkali-kali.</p>
+
+                    <div class="flex flex-wrap gap-2">
+                        <Button size="sm" :disabled="!cropReady || processing" @click="scanCrop"><Crop /> Pindai Potongan</Button>
+                        <Button variant="secondary" size="sm" :disabled="processing" @click="scanFull"><ScanLine /> Pindai Penuh</Button>
+                        <Button variant="outline" size="sm" :disabled="!cropReady" @click="rotateCrop"><RotateCw /> Putar</Button>
+                        <Button variant="outline" size="sm" :disabled="!cropReady" @click="resetCrop"><RotateCcw /> Reset Potongan</Button>
+                    </div>
 
                     <div v-if="isPdf" class="flex flex-wrap items-center gap-2">
                         <Button variant="outline" size="sm" :disabled="processing || currentPage <= 1" @click="changePage(-1)">
@@ -405,11 +593,7 @@ onBeforeUnmount(() => {
 
             <Card class="p-4 sm:p-6">
                 <div class="flex items-center justify-between gap-2">
-                    <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Hasil Ekstraksi</h2>
-                    <div class="flex gap-1">
-                        <Button variant="outline" size="sm" :disabled="!resultText" @click="onCopy"><Copy /> Salin</Button>
-                        <Button variant="ghost" size="sm" :disabled="!resultText && confidence === null" @click="clearResults"><Trash2 /></Button>
-                    </div>
+                    <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Hasil Ekstraksi ({{ table.total.value }})</h2>
                 </div>
 
                 <div v-if="processing" class="mt-3 space-y-2">
@@ -425,11 +609,35 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <div class="mt-3 space-y-2">
-                    <Textarea v-model="resultText" rows="14" class="font-mono text-sm" placeholder="Hasil ekstraksi teks akan tampil di sini..." />
-                    <span v-if="confidence !== null" class="inline-flex items-center rounded-md border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-                        Keyakinan: {{ confidence }}%
-                    </span>
+                <div class="mt-3">
+                    <TableToolbar v-model="searchBox" placeholder="Cari teks atau sumber..." @search="table.setSearch">
+                        <Button variant="ghost" size="sm" :disabled="table.total.value === 0" @click="clearHistory"><Trash2 /> Hapus</Button>
+                    </TableToolbar>
+                    <DataTable
+                        :columns="columns"
+                        :rows="table.rows.value"
+                        :loading="table.loading.value"
+                        :error="table.error.value"
+                        :page="table.page.value"
+                        :total-pages="table.totalPages.value"
+                        :total="table.total.value"
+                        :per-page="table.perPage.value"
+                        row-key="id"
+                        empty-title="Belum ada hasil"
+                        empty-message="Potong area teks lalu pindai, atau pindai penuh gambar / halaman PDF."
+                        @update:page="table.setPage"
+                        @update:per-page="table.setPerPage"
+                    >
+                        <template #cell-teks="{ row }">
+                            <div class="max-h-32 overflow-y-auto whitespace-pre-wrap break-words font-mono text-xs">{{ row.teks }}</div>
+                        </template>
+                        <template #actions="{ row }">
+                            <div class="flex justify-end gap-1">
+                                <Button variant="outline" size="sm" @click="onCopyItem(row)"><Copy /> Salin</Button>
+                                <Button variant="ghost" size="sm" @click="removeItem(row.id)"><Trash2 /></Button>
+                            </div>
+                        </template>
+                    </DataTable>
                 </div>
 
                 <p class="mt-3 text-xs text-muted-foreground">Pemrosesan lokal di browser. Data Anda tetap privat.</p>

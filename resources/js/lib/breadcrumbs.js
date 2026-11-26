@@ -54,6 +54,7 @@ const INDEX = {
     'tools/sn': { label: 'SN Tools', href: '/tools/sn' },
     'tools/scoreboard': { label: 'Scoreboard', href: '/tools/scoreboard' },
     'tools/ocr': { label: 'OCR Tool', href: '/tools/ocr' },
+    'tools/barcode-reader': { label: 'Barcode / QR Reader', href: '/tools/barcode-reader' },
     'tools/spreadsheet': { label: 'Spreadsheet PLTBB', href: '/tools/spreadsheet' },
     'tools/print-resi': { label: 'Print Resi', href: '/tools/print-resi' },
     'tools/tempelan-dus': { label: 'Tempelan Dus', href: '/tools/tempelan-dus' },
