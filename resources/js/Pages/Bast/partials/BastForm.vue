@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, Download, FilePlus, Printer, RefreshCw, Save, Search, Stamp, Trash2, X } from '@lucide/vue';
+import { ArrowDown, ArrowLeft, ArrowRightLeft, ArrowUp, ChevronDown, Download, FilePlus, Printer, RefreshCw, Save, Search, Stamp, Trash2, X } from '@lucide/vue';
 import PageHeader from '@/components/PageHeader.vue';
 import AppModal from '@/components/AppModal.vue';
 import FormField from '@/components/FormField.vue';
@@ -43,6 +43,33 @@ const doOptions = ref([]);
 const doLoading = ref(false);
 const selectedDoId = ref('');
 
+// Bill To (pemesan) kadang beda dari Ship To (penerima); BAST kadang harus
+// atas nama Bill To, jadi tampilkan kartunya saat berbeda.
+const billTo = ref(null);
+
+function billAddressOf(detail) {
+    if (!detail || !detail.id) {
+        return '';
+    }
+    return [detail.street, detail.street2, detail.city, detail.zip]
+        .filter((v) => v && v !== '-' && v !== false)
+        .join(', ');
+}
+
+function useBillTo() {
+    if (!billTo.value) {
+        return;
+    }
+    form.value.name = parseTujuan(billTo.value.name) || form.value.name;
+    if (billTo.value.address) {
+        form.value.address = billTo.value.address;
+    }
+    if (billTo.value.city) {
+        form.value.city = billTo.value.city;
+    }
+    toast.success('Kepada diisi dari Bill To.');
+}
+
 function doLabel(d) {
     let name = d.name ?? d.do ?? d.id;
     if (d.group_id) {
@@ -82,6 +109,7 @@ async function searchDo(keyword, overlay = false) {
 
 async function pickDo(val) {
     selectedDoId.value = val;
+    billTo.value = null;
     if (!val) {
         return;
     }
@@ -98,6 +126,18 @@ async function pickDo(val) {
             const city = d.partner_address3 ?? '';
             if (city) {
                 form.value.city = city;
+            }
+            const shipName = odooName(d.partner_id);
+            const billName = d.bill_to_detail?.name || (d.bill_to ? odooName(d.bill_to) : '');
+            if (billName && billName !== '-' && billName !== shipName) {
+                billTo.value = {
+                    name: billName,
+                    address: billAddressOf(d.bill_to_detail),
+                    city: d.bill_to_detail?.city && d.bill_to_detail.city !== '-' ? d.bill_to_detail.city : '',
+                    phone: [d.bill_to_detail?.phone, d.bill_to_detail?.mobile]
+                        .filter((v) => v && v !== '-' && v !== false)
+                        .join(' / '),
+                };
             }
             toast.success('Data DO dimuat.');
         } catch (e) {
@@ -299,6 +339,15 @@ if (isEdit.value) {
                 <FormField label="Pilih Hasil Pencarian">
                     <SearchableSelect :model-value="selectedDoId" :options="doOptions" :loading="doLoading" placeholder="--- Pilih Hasil Pencarian ---" @update:model-value="pickDo" @search="searchDo" />
                 </FormField>
+                <div v-if="billTo" class="rounded-lg border border-amber-200 bg-amber-50 p-3 sm:col-span-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <b class="text-sm">Bill To (pemesan) beda dari Ship To</b>
+                        <Button variant="outline" size="sm" class="ml-auto bg-white" @click="useBillTo"><ArrowRightLeft /> Pakai sebagai Kepada</Button>
+                    </div>
+                    <p class="mt-1 text-sm font-semibold">{{ billTo.name }}</p>
+                    <p v-if="billTo.address" class="text-sm text-slate-600">{{ billTo.address }}</p>
+                    <p v-if="billTo.phone" class="text-sm text-slate-600">{{ billTo.phone }}</p>
+                </div>
                 <FormField label="Kepada" required :error="errors.name?.[0]">
                     <Textarea v-model="form.name" rows="4" placeholder="Nama Penerima" />
                 </FormField>
