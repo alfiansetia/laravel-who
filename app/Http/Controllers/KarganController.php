@@ -6,6 +6,7 @@ use App\Models\Kargan;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -56,6 +57,9 @@ class KarganController extends Controller
         return Inertia::render('Kargan/Index', [
             'title' => 'List Kargan',
             'filters' => $request->only(['search', 'page']),
+            'products' => Product::orderBy('code')->get(['id', 'code', 'name']),
+            'picOptions' => ['Karim Ash Shidik', 'Sofyan Saputra'],
+            'defaultDate' => now()->format('Y-m-d'),
         ]);
     }
 
@@ -186,6 +190,60 @@ class KarganController extends Controller
         }
 
         return redirect()->back()->with('success', 'Success Duplicate!');
+    }
+
+    public function import(Request $request)
+    {
+        $this->validate($request, [
+            'items' => 'required|array|min:1|max:200',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.sn' => 'nullable|string|max:200',
+            'items.*.date' => 'nullable|date_format:Y-m-d',
+            'items.*.pic' => 'nullable|string|max:200',
+            'source' => 'nullable|string|max:50',
+            'source_no' => 'nullable|string|max:100',
+        ]);
+
+        $defaultDate = now()->format('Y-m-d');
+        $defaultPic = Kargan::getDefaultPicAttribute();
+        $masa = Kargan::getDefaultMasaAttribute();
+        $items = $request->input('items');
+        $baseDate = $items[0]['date'] ?? $defaultDate;
+
+        $created = DB::transaction(function () use ($items, $baseDate, $defaultDate, $defaultPic, $masa) {
+            $numbers = Kargan::generateNumbersForDate($baseDate, count($items));
+            $rows = [];
+            foreach ($items as $i => $item) {
+                $rows[] = Kargan::create([
+                    'product_id' => $item['product_id'],
+                    'date' => $item['date'] ?? $defaultDate,
+                    'number' => $numbers[$i],
+                    'sn' => $item['sn'] ?? null,
+                    'masa' => $masa,
+                    'pic' => $item['pic'] ?? $defaultPic,
+                ]);
+            }
+
+            return $rows;
+        });
+
+        if ($this->isApi($request)) {
+            return $this->sendResponse($created, count($created).' kargan dibuat.');
+        }
+
+        return redirect()->back()->with('success', count($created).' kargan dibuat.');
+    }
+
+    public function nextNumbers(Request $request)
+    {
+        $data = $request->validate([
+            'count' => 'required|integer|min:1|max:200',
+            'date' => 'nullable|date_format:Y-m-d',
+        ]);
+
+        $numbers = Kargan::generateNumbersForDate($data['date'] ?? now()->format('Y-m-d'), (int) $data['count']);
+
+        return $this->sendResponse($numbers, 'OK');
     }
 
     public function download(Kargan $kargan)

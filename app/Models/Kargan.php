@@ -33,23 +33,45 @@ class Kargan extends Model
 
     public static function generateNumber()
     {
-        $last = self::latest()->first();
-        $number = 1;
+        return static::generateNumbersForDate(date('Y-m-d'), 1)[0];
+    }
 
+    /**
+     * Bangun $count nomor berurutan untuk tanggal $dateYmd (Y-m-d).
+     * Prefix roman/tahun mengikuti tanggal (samakan refreshNumber di form),
+     * sequence tahunan lanjut dari record terakhir (reset tiap tahun).
+     * Tanpa write DB — aman untuk preview maupun bulk import.
+     *
+     * @return string[]
+     */
+    public static function generateNumbersForDate(string $dateYmd, int $count): array
+    {
+        $count = max(1, min($count, 200));
+        try {
+            $dt = new \DateTimeImmutable($dateYmd);
+        } catch (\Throwable) {
+            $dt = new \DateTimeImmutable(date('Y-m-d'));
+        }
+        $month = (int) $dt->format('n');
+        $year = $dt->format('Y');
+
+        $last = self::latest()->first();
+        $seq = 1;
         if ($last) {
-            $explode = explode('/', $last->number);
-            if (count($explode) == 4) {
-                if ($explode[2] == date('Y')) {
-                    $number = intval($explode[3]) + 1;
-                }
+            $explode = explode('/', (string) $last->number);
+            if (count($explode) == 4 && $explode[2] == $year) {
+                $seq = intval($explode[3]) + 1;
             }
         }
 
         $month_romans = [1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V', 6 => 'VI', 7 => 'VII', 8 => 'VIII', 9 => 'IX', 10 => 'X', 11 => 'XI', 12 => 'XII'];
-        $roman_month = $month_romans[date('n')];
-        $year = date('Y');
-        $number_formatted = str_pad($number, 3, '0', STR_PAD_LEFT);
+        $roman_month = $month_romans[$month] ?? $month_romans[(int) date('n')];
 
-        return "SUPP-GAR/$roman_month/$year/$number_formatted";
+        $out = [];
+        for ($i = 0; $i < $count; $i++) {
+            $out[] = 'SUPP-GAR/'.$roman_month.'/'.$year.'/'.str_pad($seq + $i, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $out;
     }
 }

@@ -1,12 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { Copy, Download, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import Button from '@/components/ui/Button.vue';
+import KarganImportModal from './partials/KarganImportModal.vue';
 import { useTableQuery } from '@/composables/useTableQuery';
 import { useConfirm } from '@/composables/useConfirm';
 import { useToast } from '@/composables/useToast';
@@ -16,6 +17,9 @@ import { copyRows } from '@/lib/export';
 const props = defineProps({
     title: { type: String, default: 'List Kargan' },
     filters: { type: Object, default: () => ({}) },
+    products: { type: Array, default: () => [] },
+    picOptions: { type: Array, default: () => [] },
+    defaultDate: { type: String, default: '' },
 });
 
 const toast = useToast();
@@ -25,6 +29,7 @@ const query = useTableQuery((p) => api.get('/kargans', { params: p }), {
     page: Number(props.filters.page ?? 1),
 });
 const selected = ref([]);
+const importOpen = ref(false);
 
 const searchBox = ref(props.filters.search ?? '');
 const columns = [
@@ -84,6 +89,7 @@ query.fetch();
             <template #actions>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['number', 'date', 'sn', 'product'], 'kargan')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
+                <Button variant="outline" size="sm" @click="importOpen = true"><Download /> Import DO/IT</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah Data</Button>
             </template>
         </PageHeader>
@@ -117,5 +123,12 @@ query.fetch();
                 <template #cell-product="{ row }">{{ row.product ? `[${row.product.code}] ${row.product.name}` : (row.product_id ?? '-') }}</template>
             </DataTable>
         </div>
+        <KarganImportModal
+            v-model:open="importOpen"
+            :products="props.products"
+            :pic-options="props.picOptions"
+            :default-date="props.defaultDate"
+            @imported="query.fetch()"
+        />
     </AppLayout>
 </template>

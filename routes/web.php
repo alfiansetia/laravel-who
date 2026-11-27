@@ -235,6 +235,10 @@ Route::get('settings/', [SettingController::class, 'index'])
 
 Route::delete('kargans', [KarganController::class, 'destroy_batch'])
     ->name('kargans.destroy_batch');
+Route::post('kargans/import', [KarganController::class, 'import'])
+    ->name('kargans.import');
+Route::get('kargans/next-numbers', [KarganController::class, 'nextNumbers'])
+    ->name('kargans.next_numbers');
 Route::post('kargans/{kargan}/duplicate', [KarganController::class, 'duplicate'])
     ->name('kargans.duplicate');
 Route::get('kargans/{kargan}/download', [KarganController::class, 'download'])
