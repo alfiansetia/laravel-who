@@ -6,6 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import DetailMeta from '@/components/DetailMeta.vue';
 import FormField from '@/components/FormField.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
@@ -16,7 +17,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyRows, downloadCsv } from '@/lib/export';
-import { getCode, getDesc, odooName, truncate } from '@/lib/odoo';
+import { formatOdooDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'PO' },
@@ -113,6 +114,64 @@ function downloadCekImport() {
     }
     window.open(`/api/po/${encodeURIComponent(id)}/cek-import`, '_blank');
 }
+
+function textOf(value) {
+    if (value === false || value === null || value === undefined || value === '') {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return odooName(value);
+    }
+    return String(value);
+}
+
+function fmt(value) {
+    if (!value || value === false) {
+        return '';
+    }
+    return formatOdooDate(value);
+}
+
+function moneyOf(value, currency) {
+    const n = Number(value ?? 0);
+    if (!Number.isFinite(n) || n === 0) {
+        return '-';
+    }
+    const cur = textOf(currency);
+    const num = n.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    return cur && cur !== '-' ? `${cur} ${num}` : num;
+}
+
+// Info header PO di modal: semua copyable via DetailMeta.
+const poMetaItems = computed(() => {
+    const d = detail.value ?? {};
+    const pd = d.partner_detail ?? {};
+    const addr = [pd.street, pd.street2, pd.city, pd.zip].filter((v) => v && v !== '-' && v !== false).join(', ');
+    return [
+        { label: 'Vendor', value: textOf(d.partner_id) },
+        { label: 'Alamat Vendor', value: addr || '-' },
+        { label: 'Telp Vendor', value: [pd.phone, pd.mobile].filter((v) => v && v !== '-' && v !== false).join(' / ') || '-' },
+        { label: 'Vendor Ref', value: textOf(d.partner_ref) || '-' },
+        { label: 'Order Date', value: fmt(d.date_order) || '-' },
+        { label: 'Planned', value: fmt(d.date_planned) || '-' },
+        { label: 'Approve', value: fmt(d.date_approve) || '-' },
+        { label: 'User', value: textOf(d.user_id) },
+        { label: 'Untaxed', value: moneyOf(d.amount_untaxed, d.currency_id) },
+        { label: 'Tax', value: moneyOf(d.amount_tax, d.currency_id) },
+        { label: 'Total', value: moneyOf(d.amount_total, d.currency_id) },
+        { label: 'Payment Term', value: textOf(d.payment_term_id) },
+        { label: 'Incoterm', value: textOf(d.incoterm_id) },
+        { label: 'Ship To', value: textOf(d.ship_to) },
+        { label: 'Ship By', value: textOf(d.ship_by) },
+        { label: 'Divisi', value: textOf(d.divisi) },
+        { label: 'Origin', value: textOf(d.origin) || '-', mono: true },
+        { label: 'Picking', value: textOf(d.picking_ids) },
+        { label: 'Invoice', value: `${textOf(d.invoice_status)}${d.invoice_count ? ` (${d.invoice_count})` : ''}`.trim() || '-' },
+        { label: 'ETA', value: textOf(d.eta) || '-' },
+        { label: 'Ket ETA', value: textOf(d.keterangan_eta) || '-' },
+        { label: 'Terbilang', value: textOf(d.terbilang) || '-' },
+    ];
+});
 
 async function openDetail(row) {
     const seq = ++detailSeq;
@@ -216,7 +275,11 @@ query.fetch();
                 <template #cell-qty_received="{ row }">{{ row.qty_received ?? 0 }}</template>
                 <template #cell-qty_sisa="{ row }">{{ Number(row.product_qty ?? 0) - Number(row.qty_received ?? 0) }}</template>
             </DataTable>
-            <p class="mt-2 border-t pt-2 text-sm"><b>Notes:</b> {{ detail?.notes ?? '-' }} <CopyButton :text="detail?.notes ?? ''" label="Notes" /></p>
+            <div class="mt-2 space-y-2 border-t pt-2 text-sm">
+                <p><b>Status:</b> <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800">{{ detail?.state ?? '-' }}</span></p>
+                <DetailMeta :items="poMetaItems" />
+                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ detail?.notes ?? '-' }} <CopyButton :text="detail?.notes ?? ''" label="Notes" /></p>
+            </div>
         </AppModal>
     </AppLayout>
 </template>

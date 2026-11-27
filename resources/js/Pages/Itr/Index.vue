@@ -6,6 +6,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import DetailMeta from '@/components/DetailMeta.vue';
 import FormField from '@/components/FormField.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
@@ -102,6 +103,33 @@ const labelItems = computed(() => {
 const labelTitle = computed(() => `Label ITR ${detail?.value?.name ?? activeRow?.value?.name ?? ''}`);
 
 let detailSeq = 0;
+
+function textOf(value) {
+    if (value === false || value === null || value === undefined || value === '') {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return odooName(value);
+    }
+    return String(value);
+}
+
+// Info header ITR di modal: semua copyable via DetailMeta.
+const itrMetaItems = computed(() => {
+    const d = detail.value ?? {};
+    return [
+        { label: 'Tanggal', value: textOf(d.tanggal) || '-' },
+        { label: 'Ref', value: textOf(d.ref) || '-', mono: true },
+        { label: 'Warehouse Asal', value: textOf(d.warehouse_src) },
+        { label: 'Lokasi Asal', value: textOf(d.locs_src) },
+        { label: 'Warehouse Tujuan', value: textOf(d.warehouse) },
+        { label: 'Lokasi Tujuan', value: textOf(d.locs) },
+        { label: 'Picking', value: `${textOf(d.picking)}${d.state_picking && d.state_picking !== '-' ? ` (${d.state_picking})` : ''}`.trim() || '-' },
+        { label: 'Picking Terima', value: `${textOf(d.picking_terima)}${d.state_picking_terima && d.state_picking_terima !== '-' ? ` (${d.state_picking_terima})` : ''}`.trim() || '-' },
+        { label: 'User', value: textOf(d.user_id) },
+        { label: 'Status', value: textOf(d.state) || '-' },
+    ];
+});
 
 async function openDetail(row) {
     const seq = ++detailSeq;
@@ -204,10 +232,8 @@ query.fetch();
                 <template #cell-qty="{ row }">{{ row.qty ?? 0 }}</template>
                 <template #cell-satuan="{ row }">{{ odooName(row.satuan) }}</template>
             </DataTable>
-            <div class="mt-2 space-y-1 border-t pt-2 text-sm">
-                <p><b>Asal:</b> {{ odooName(detail?.warehouse_src) }} / {{ odooName(detail?.locs_src) }} → <b>Tujuan:</b> {{ odooName(detail?.warehouse) }} / {{ odooName(detail?.locs) }}</p>
-                <p><b>Picking:</b> {{ odooName(detail?.picking) }} ({{ detail?.state_picking ?? '-' }}) → <b>Terima:</b> {{ odooName(detail?.picking_terima) }} ({{ detail?.state_picking_terima ?? '-' }})</p>
-                <p><b>Tanggal:</b> {{ detail?.tanggal ?? '-' }} | <b>User:</b> {{ odooName(detail?.user_id) }} | <b>Status:</b> {{ detail?.state ?? '-' }}</p>
+            <div class="mt-2 space-y-2 border-t pt-2 text-sm">
+                <DetailMeta :items="itrMetaItems" />
                 <p class="whitespace-pre-wrap"><b>Keterangan:</b> {{ detail?.ket || detail?.ref || '-' }} <CopyButton :text="detail?.ket || detail?.ref || ''" label="Keterangan" /></p>
             </div>
         </AppModal>

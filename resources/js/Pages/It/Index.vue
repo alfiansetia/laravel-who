@@ -7,6 +7,7 @@ import DataTable from '@/components/DataTable.vue';
 import AppModal from '@/components/AppModal.vue';
 import ModalTabs from '@/components/ModalTabs.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import DetailMeta from '@/components/DetailMeta.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
@@ -192,6 +193,59 @@ function lotLabel(row) {
     return exp ? `${lot}/${exp}` : lot;
 }
 
+// Nilai relasi/many2one Odoo bisa `[id, nama]`, string, atau `false`.
+function textOf(value) {
+    if (value === false || value === null || value === undefined || value === '') {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return odooName(value);
+    }
+    return String(value);
+}
+
+function fmt(value) {
+    if (!value || value === false) {
+        return '';
+    }
+    return formatOdooDate(value);
+}
+
+function joinAddr(parts) {
+    return (parts ?? [])
+        .filter((v) => v && v !== '-' && v !== false && String(v).trim() !== '')
+        .map((v) => String(v).trim())
+        .join(', ');
+}
+
+// Info header IT di modal: semua copyable via DetailMeta.
+const itMetaItems = computed(() => {
+    const d = detail.value ?? {};
+    const kurir = textOf(d.kurir_id);
+    return [
+        { label: 'No IT Manual', value: textOf(d.x_studio_no_do_manual) || '-' },
+        { label: 'Origin / SC', value: textOf(d.origin) || '-', mono: true },
+        { label: 'Partner', value: textOf(d.partner_id) },
+        { label: 'Alamat', value: joinAddr([d.partner_address, d.partner_address2, d.partner_address3, d.partner_address4]) || '-' },
+        { label: 'Bill To', value: textOf(d.bill_to) },
+        { label: 'Ekspedisi', value: textOf(d.ekspedisi_id) },
+        { label: 'Kurir', value: kurir === '' ? '-' : (d.kurir_state && d.kurir_state !== '-' ? `${kurir} (${d.kurir_state})` : kurir) },
+        { label: 'Source', value: textOf(d.location_id) },
+        { label: 'Destination', value: textOf(d.location_dest_id) },
+        { label: 'Scheduled', value: fmt(d.scheduled_date) || '-' },
+        { label: 'Force Date', value: fmt(d.force_date) || '-' },
+        { label: 'Done', value: fmt(d.date_done) || '-' },
+        { label: 'Tgl BAST', value: fmt(d.tgl_bast) || '-' },
+        { label: 'Tgl Sampai', value: fmt(d.tanggal_sampai) || '-' },
+        { label: 'Backorder', value: textOf(d.backorder_id) },
+        { label: 'Group', value: textOf(d.group_id) },
+        { label: 'Invoice', value: textOf(d.invoice_state) },
+        { label: 'No PO', value: textOf(d.no_po ?? d.x_studio_no_po) || '-' },
+        { label: 'No SKA', value: textOf(d.no_ska ?? d.x_studio_no_ska) || '-' },
+        { label: 'ITR', value: textOf(d.itr_id) },
+    ];
+});
+
 async function openDetail(row) {
     const seq = ++detailSeq;
     activeRow.value = row;
@@ -353,9 +407,11 @@ query.fetch();
                     <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
                 </DataTable>
             </div>
-            <div class="mt-2 space-y-1 border-t pt-2 text-sm">
+            <div class="mt-2 space-y-2 border-t pt-2 text-sm">
                 <p><b>Status:</b> <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800">{{ detail?.state ?? '-' }}</span></p>
-                <p><b>Notes:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Notes" /></p>
+                <DetailMeta :items="itMetaItems" />
+                <p><b>Note WH:</b> {{ detail?.note_to_wh ?? '-' }} <CopyButton :text="detail?.note_to_wh ?? ''" label="Note WH" /></p>
+                <p><b>Note IT:</b> {{ detail?.note_itr ?? '-' }} <CopyButton :text="detail?.note_itr ?? ''" label="Note IT" /></p>
             </div>
             <template #footer>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>

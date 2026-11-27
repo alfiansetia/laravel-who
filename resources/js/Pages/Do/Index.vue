@@ -8,6 +8,7 @@ import DateTimePicker from '@/components/DateTimePicker.vue';
 import AppModal from '@/components/AppModal.vue';
 import ModalTabs from '@/components/ModalTabs.vue';
 import CopyButton from '@/components/CopyButton.vue';
+import DetailMeta from '@/components/DetailMeta.vue';
 import TableToolbar from '@/components/TableToolbar.vue';
 import FormField from '@/components/FormField.vue';
 import LabelPrint from '@/components/LabelPrint.vue';
@@ -510,6 +511,52 @@ function sistemOf(row) {
     return s && s !== '-' ? s : '';
 }
 
+// Alamat jalan: gabungkan bagian non-kosong Odoo (`false`/`-` dilewati).
+function joinAddr(parts) {
+    return (parts ?? [])
+        .filter((v) => v && v !== '-' && v !== false && String(v).trim() !== '')
+        .map((v) => String(v).trim())
+        .join(', ');
+}
+
+// Info header DO di modal: semua copyable via DetailMeta.
+const doMetaItems = computed(() => {
+    const d = detail.value ?? {};
+    const bill = d.bill_to_detail ?? {};
+    const ship = d.partner_detail ?? {};
+    const kurir = textOf(d.kurir_id);
+    return [
+        { label: 'No DO Manual', value: cellText(d.x_studio_no_do_manual), mono: true },
+        { label: 'SO / Origin', value: cellText(d.origin), mono: true },
+        { label: 'Tgl SO', value: fmt(d.x_studio_field_0rSR5) || fmt(d.confirmation_date_so) || '-' },
+        { label: 'Ship To', value: textOf(d.partner_id) },
+        { label: 'Alamat Ship To', value: joinAddr([d.partner_address, d.partner_address2, d.partner_address3, d.partner_address4]) || '-' },
+        { label: 'Telp Ship To', value: joinAddr([ship.phone, ship.mobile]) || '-' },
+        { label: 'Bill To', value: bill.name || textOf(d.bill_to) },
+        { label: 'Alamat Bill To', value: joinAddr([bill.street, bill.street2, bill.city, bill.zip]) || '-' },
+        { label: 'Telp Bill To', value: joinAddr([bill.phone, bill.mobile]) || '-' },
+        { label: 'Ekspedisi', value: textOf(d.ekspedisi_id) },
+        { label: 'Kurir', value: kurir === '' ? '-' : (d.kurir_state && d.kurir_state !== '-' ? `${kurir} (${d.kurir_state})` : kurir) },
+        { label: 'Source', value: textOf(d.location_id) },
+        { label: 'Destination', value: textOf(d.location_dest_id) },
+        { label: 'Scheduled', value: fmt(d.scheduled_date) || '-' },
+        { label: 'Force Date', value: fmt(d.force_date) || '-' },
+        { label: 'Done', value: fmt(d.date_done) || '-' },
+        { label: 'Tgl BAST', value: fmt(d.tgl_bast) || '-' },
+        { label: 'Tgl Sampai', value: fmt(d.tanggal_sampai) || '-' },
+        { label: 'Backorder', value: textOf(d.backorder_id) },
+        { label: 'Group', value: textOf(d.group_id) },
+        { label: 'Invoice', value: cellText(d.invoice_state) },
+        { label: 'No PO', value: cellText(d.no_po ?? d.x_studio_no_po) },
+        { label: 'No SKA', value: cellText(d.no_ska ?? d.x_studio_no_ska) },
+        { label: 'No SPH', value: cellText(d.no_sph) },
+        { label: 'No SI', value: cellText(d.no_si) },
+        { label: 'No AKS', value: cellText(d.no_aks) },
+        { label: 'ITR', value: textOf(d.itr_id) },
+        { label: 'Cancel Reason', value: cellText(d.cancel_reason) },
+    ];
+});
+
 let detailSeq = 0;
 
 async function openDetail(row) {
@@ -704,9 +751,11 @@ query.fetch();
                     <template #cell-qty="{ row }">{{ row.qty_done ?? 0 }}</template>
                 </DataTable>
             </div>
-            <div class="mt-2 space-y-1 border-t pt-2 text-sm">
+            <div class="mt-2 space-y-2 border-t pt-2 text-sm">
                 <p><b>Status:</b> <span class="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800">{{ cellText(detail?.state, '-') }}</span></p>
-                <p class="whitespace-pre-wrap"><b>Notes:</b> {{ cellText(detail?.note_to_wh, '-') }} <CopyButton :text="cellText(detail?.note_to_wh)" label="Notes" /></p>
+                <DetailMeta :items="doMetaItems" />
+                <p class="whitespace-pre-wrap"><b>Note WH:</b> {{ cellText(detail?.note_to_wh, '-') }} <CopyButton :text="cellText(detail?.note_to_wh)" label="Note WH" /></p>
+                <p class="whitespace-pre-wrap"><b>Note ITR:</b> {{ cellText(detail?.note_itr, '-') }} <CopyButton :text="cellText(detail?.note_itr)" label="Note ITR" /></p>
             </div>
             <template #footer>
                 <Button variant="ghost" @click="detailOpen = false">Tutup</Button>
