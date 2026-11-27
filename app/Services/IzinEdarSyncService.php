@@ -106,6 +106,7 @@ class IzinEdarSyncService
         foreach (self::CATEGORIES as $kategori => $config) {
             $filePath = $dir.DIRECTORY_SEPARATOR.$config['file'];
             $exists = File::exists($filePath);
+            $mtime = $exists ? File::lastModified($filePath) : 0;
 
             $results[$kategori] = [
                 'file' => $config['file'],
@@ -113,6 +114,10 @@ class IzinEdarSyncService
                 'size' => $exists ? File::size($filePath) : 0,
                 'size_human' => $exists ? $this->formatBytes(File::size($filePath)) : '-',
                 'path' => $exists ? $filePath : null,
+                'modified_at' => $mtime > 0 ? $mtime : null,
+                'modified_human' => $mtime > 0
+                    ? Carbon::createFromTimestamp($mtime)->setTimezone(config('app.timezone'))->format('d/m/Y H:i')
+                    : '-',
             ];
         }
 

@@ -1006,6 +1006,7 @@ loadProgress(true).then(() => {
                         <XCircle v-else class="mx-auto my-2 size-8 text-red-500" />
                         <p class="text-xs font-bold" :class="fl.exists ? 'text-green-700' : 'text-red-600'">{{ fl.exists ? (fl.size_human ?? fileSize(fl.size)) : 'Tidak ada' }}</p>
                         <p class="truncate text-xs text-muted-foreground">{{ fl.file ?? '' }}</p>
+                        <p v-if="fl.exists" class="text-xs text-muted-foreground">Diunduh: {{ fl.modified_human ?? '-' }}</p>
                         <div v-if="fl.exists" class="mt-2 flex justify-center gap-1">
                             <Button variant="outline" size="sm" title="Download file" @click="downloadFile(fl.kategori)"><Download /></Button>
                             <Button variant="outline" size="sm" title="Hapus file" @click="deleteFile(fl.kategori)"><Trash2 /></Button>
