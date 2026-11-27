@@ -13,6 +13,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { odooName } from '@/lib/odoo';
+import { parseTujuan } from '@/lib/tujuan';
 
 const props = defineProps({
     title: { type: String, default: 'Alamat Baru' },
@@ -135,7 +136,7 @@ async function pickDo(val) {
             let epur = '';
             let noteToWh = '';
             if (d.partner_id !== false && d.partner_id != null) {
-                tujuan = d.partner_id[1] ?? '';
+                tujuan = parseTujuan(d.partner_id[1] ?? '');
             }
             if (d.ekspedisi_id !== false && d.ekspedisi_id != null) {
                 ekspedisi = d.ekspedisi_id[1] ?? '';
