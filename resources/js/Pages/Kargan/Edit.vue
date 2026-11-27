@@ -5,6 +5,7 @@ import { ArrowLeft, Copy, Download, Save, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
+import DatePicker from '@/components/DatePicker.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -102,7 +103,7 @@ function download() {
                     <Input v-model="form.number" />
                 </FormField>
                 <FormField label="Tanggal" required :error="errors.date?.[0]">
-                    <Input v-model="form.date" type="date" />
+                    <DatePicker v-model="form.date" />
                 </FormField>
                 <FormField label="Product" required :error="errors.product_id?.[0]">
                     <SearchableSelect v-model="form.product_id" :options="productOptions" placeholder="Pilih product..." />

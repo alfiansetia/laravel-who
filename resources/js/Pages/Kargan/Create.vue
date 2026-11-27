@@ -5,6 +5,7 @@ import { ArrowLeft, Save } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import FormField from '@/components/FormField.vue';
+import DatePicker from '@/components/DatePicker.vue';
 import SearchableSelect from '@/components/SearchableSelect.vue';
 import Button from '@/components/ui/Button.vue';
 import Input from '@/components/ui/Input.vue';
@@ -22,12 +23,14 @@ const props = defineProps({
 });
 
 const toast = useToast();
+const defaultPic =
+    props.picOptions.find((p) => String(p).toLowerCase().includes('karim')) ?? props.picOptions[0] ?? '';
 const form = ref({
     number: props.newNumber,
     date: props.defaultDate,
     product_id: '',
     sn: '',
-    pic: '',
+    pic: defaultPic,
 });
 const errors = ref({});
 const saving = ref(false);
@@ -86,7 +89,7 @@ refreshNumber();
                     <Input v-model="form.number" placeholder="SUPP-GAR/..." />
                 </FormField>
                 <FormField label="Tanggal" required :error="errors.date?.[0]">
-                    <Input v-model="form.date" type="date" @change="refreshNumber" />
+                    <DatePicker v-model="form.date" @change="refreshNumber" />
                 </FormField>
                 <FormField label="Product" required :error="errors.product_id?.[0]">
                     <SearchableSelect v-model="form.product_id" :options="productOptions" placeholder="Pilih product..." />
