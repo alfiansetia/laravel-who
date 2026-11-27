@@ -15,6 +15,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { odooName } from '@/lib/odoo';
+import { parseTujuan } from '@/lib/tujuan';
 
 const props = defineProps({
     title: { type: String, default: 'BAST' },
@@ -89,7 +90,7 @@ async function pickDo(val) {
             const res = await api.get(`/do/${val}`, { block: true, silent: true });
             const d = res.data?.data ?? res.data;
             form.value.do = d.name ?? form.value.do;
-            form.value.name = odooName(d.partner_id) ?? form.value.name;
+            form.value.name = parseTujuan(odooName(d.partner_id)) || form.value.name;
             const addr = [d.partner_address, d.partner_address2, d.partner_address3, d.partner_address4].filter(Boolean).join(', ');
             if (addr) {
                 form.value.address = addr;
