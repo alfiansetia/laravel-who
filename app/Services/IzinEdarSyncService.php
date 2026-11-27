@@ -168,8 +168,8 @@ class IzinEdarSyncService
     /** Status yang dianggap "sedang jalan" (aktif). */
     public const ACTIVE_STATUSES = ['pending', 'downloading', 'importing'];
 
-    /** Max minutes before a sync is considered stuck/stale. */
-    private const STALE_TIMEOUT_MINUTES = 120;
+    /** Max minutes without any progress before a sync is considered stuck/stale. */
+    public const STALE_TIMEOUT_MINUTES = 120;
 
     public function getLogPath(): string
     {
@@ -227,28 +227,72 @@ class IzinEdarSyncService
     }
 
     /**
-     * Check if a log entry is stale (running too long without finishing).
+     * Check if a log entry is stale (no progress for STALE_TIMEOUT_MINUTES).
+     * Uses last activity (log file mtime, updated on every progress write)
+     * instead of started_at, so a slow-but-progressing sync (e.g. AKL 5.5MB)
+     * is NOT wrongly marked as timed out.
      */
     public function isStale(array $log): bool
     {
-        $activeStatuses = self::ACTIVE_STATUSES;
-        if (! in_array($log['status'] ?? '', $activeStatuses)) {
+        if (! in_array($log['status'] ?? '', self::ACTIVE_STATUSES)) {
             return false;
         }
 
-        // Check against started_at
-        $startedAt = $log['started_at'] ?? null;
-        if (! $startedAt) {
-            return true;
-        } // No start time = definitely stale
-
-        try {
-            $start = new Carbon($startedAt);
-
-            return $start->diffInMinutes(now()) >= self::STALE_TIMEOUT_MINUTES;
-        } catch (\Throwable $e) {
-            return true; // Parse error = stale
+        $lastActivity = $this->resolveLastActivity($log);
+        if ($lastActivity === null) {
+            return true; // No timestamp at all = definitely stale
         }
+
+        return $lastActivity->diffInMinutes(now()) >= self::STALE_TIMEOUT_MINUTES;
+    }
+
+    /**
+     * Resolve the most recent activity timestamp for a sync log:
+     * max(file mtime, started_at, per-category started_at/finished_at).
+     */
+    private function resolveLastActivity(array $log): ?Carbon
+    {
+        $candidates = [];
+
+        // File mtime = bumped on every updateCategory/updateGlobalStatus.
+        try {
+            $mtime = File::lastModified($this->getLogPath());
+            if ($mtime > 0) {
+                $candidates[] = Carbon::createFromTimestamp($mtime);
+            }
+        } catch (\Throwable $e) {
+            // fall through to timestamp fields
+        }
+
+        foreach (['started_at', 'finished_at'] as $field) {
+            if (! empty($log[$field])) {
+                try {
+                    $candidates[] = new Carbon($log[$field]);
+                } catch (\Throwable $e) {
+                    // ignore unparseable
+                }
+            }
+        }
+
+        foreach (($log['categories'] ?? []) as $cat) {
+            foreach (['started_at', 'finished_at'] as $field) {
+                if (! empty($cat[$field])) {
+                    try {
+                        $candidates[] = new Carbon($cat[$field]);
+                    } catch (\Throwable $e) {
+                        // ignore unparseable
+                    }
+                }
+            }
+        }
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        usort($candidates, fn (Carbon $a, Carbon $b) => $a->getTimestamp() <=> $b->getTimestamp());
+
+        return end($candidates) ?: null;
     }
 
     /**

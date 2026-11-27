@@ -113,6 +113,22 @@ class SyncIzinEdarJob implements ShouldQueue
     }
 
     /**
+     * Called by Laravel when the job exhausts tries or the worker kills it
+     * via exception. Guarantees the JSON log doesn't stay stuck in
+     * downloading/importing forever (which the stale-checker would later
+     * report as "timed out — process was likely interrupted").
+     */
+    public function failed(\Throwable $exception): void
+    {
+        try {
+            app(IzinEdarSyncService::class)->markFailed('Job failed: '.$exception->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('[SyncIzinEdar] failed() handler error: '.$e->getMessage());
+        }
+        Log::error('[SyncIzinEdar] Job failed: '.$exception->getMessage());
+    }
+
+    /**
      * Check whether the user has requested a stop via the sync log flag.
      */
     protected function isStopRequested(IzinEdarSyncService $syncService): bool
@@ -134,7 +150,7 @@ class SyncIzinEdarJob implements ShouldQueue
             'started_at' => now()->toIso8601String(),
         ]);
 
-        $filePath = $this->downloadFile($kategori, $config['url']);
+        $filePath = $this->downloadFile($kategori, $config['url'], $syncService);
 
         $syncService->updateCategory($kategori, [
             'status' => 'downloaded',
@@ -147,8 +163,10 @@ class SyncIzinEdarJob implements ShouldQueue
 
     /**
      * Download the Excel file using a stream with a generous timeout.
+     * Sends a heartbeat to the sync log every ~10s so the stale-checker
+     * (based on last activity) doesn't kill a slow-but-alive download.
      */
-    protected function downloadFile(string $kategori, string $url): string
+    protected function downloadFile(string $kategori, string $url, ?IzinEdarSyncService $syncService = null): string
     {
         $destDir = storage_path('app/izin_edar');
         File::makeDirectory($destDir, 0755, true, true);
@@ -162,6 +180,26 @@ class SyncIzinEdarJob implements ShouldQueue
             throw new \RuntimeException("Cannot open file for writing: {$filePath}");
         }
 
+        $lastBeat = 0;
+        $progressFn = function ($ch, $dlTotal, $downloaded) use ($kategori, $syncService, &$lastBeat) {
+            $now = time();
+            // Throttle: max 1 log write per 10s to avoid disk churn.
+            if ($syncService && $now - $lastBeat >= 10) {
+                $lastBeat = $now;
+                try {
+                    $syncService->updateCategory($kategori, [
+                        'status' => 'downloading',
+                        'downloaded_bytes' => (int) $downloaded,
+                        'expected_bytes' => $dlTotal > 0 ? (int) $dlTotal : null,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Never let heartbeat break the download.
+                }
+            }
+
+            return 0; // return non-zero aborts transfer
+        };
+
         curl_setopt_array($ch, [
             CURLOPT_FILE => $fp,
             CURLOPT_FOLLOWLOCATION => true,
@@ -171,6 +209,7 @@ class SyncIzinEdarJob implements ShouldQueue
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             CURLOPT_NOPROGRESS => false,
+            CURLOPT_PROGRESSFUNCTION => $progressFn,
         ]);
 
         $success = curl_exec($ch);

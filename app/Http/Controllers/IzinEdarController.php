@@ -190,10 +190,11 @@ class IzinEdarController extends Controller
 
         // If stale, auto-mark as failed
         if (($log['is_stale'] ?? false) && in_array($log['status'] ?? '', ['pending', 'downloading', 'importing'])) {
-            $this->syncService->markFailed('Sync timed out — no progress for 30 minutes. Process was likely interrupted.');
+            $msg = 'Sync timed out — no progress for '.IzinEdarSyncService::STALE_TIMEOUT_MINUTES.' minutes. Process was likely interrupted.';
+            $this->syncService->markFailed($msg);
             $log['status'] = 'failed';
             $log['is_stale'] = false;
-            $log['error'] = 'Sync timed out — no progress for 30 minutes.';
+            $log['error'] = $msg;
         }
 
         return response()->json($log);

@@ -367,11 +367,17 @@ const syncCats = computed(() => {
     return Object.entries(cats).map(([name, c]) => ({ name, ...(c ?? {}) }));
 });
 const syncPct = computed(() => {
+    // Row-based percent from backend is most accurate during long imports
+    // (e.g. AKL 5.5MB); fall back to file-count when no totals yet.
+    const backendPct = syncLog.value?.progress_percent;
+    if (typeof backendPct === 'number' && (syncLog.value?.total_expected ?? 0) > 0) {
+        return Math.round(backendPct);
+    }
     const cats = syncCats.value;
     if (cats.length === 0) {
         return 0;
     }
-    const done = cats.filter((c) => ['downloaded', 'failed'].includes(c.status)).length;
+    const done = cats.filter((c) => ['downloaded', 'imported', 'failed'].includes(c.status)).length;
     return Math.round((done / cats.length) * 100);
 });
 const syncText = computed(() => {
@@ -380,13 +386,13 @@ const syncText = computed(() => {
     if (cats.length === 0) {
         return label;
     }
-    const done = cats.filter((c) => ['downloaded', 'failed'].includes(c.status)).length;
+    const done = cats.filter((c) => ['downloaded', 'imported', 'failed'].includes(c.status)).length;
     return `${label} — ${done} / ${cats.length} file`;
 });
 const showReset = computed(() => {
     const st = syncLog.value?.status ?? 'idle';
     return syncLog.value?.is_running || syncLog.value?.can_stop
-        || (syncLog.value?.is_stale && ['pending', 'downloading'].includes(st))
+        || (syncLog.value?.is_stale && ['pending', 'downloading', 'importing'].includes(st))
         || st === 'failed' || st === 'stopped';
 });
 
@@ -980,6 +986,8 @@ loadProgress(true).then(() => {
                         <p class="text-sm font-bold">{{ c.name }}</p>
                         <span :class="`mb-1 inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${statusClass(c.status)}`">{{ statusLabel(c.status) }}</span>
                         <p v-if="c.size" class="text-xs text-muted-foreground">{{ fileSize(c.size) }}</p>
+                        <p v-else-if="c.status === 'downloading' && c.downloaded_bytes" class="text-xs text-muted-foreground">{{ fileSize(c.downloaded_bytes) }}{{ c.expected_bytes ? ' / ' + fileSize(c.expected_bytes) : '' }}</p>
+                        <p v-else-if="c.imported" class="text-xs text-muted-foreground">{{ c.imported }}{{ c.total ? ' / ' + c.total : '' }} baris</p>
                         <p v-if="c.error" class="text-xs text-red-600">{{ String(c.error).substring(0, 80) }}</p>
                     </div>
                 </div>
