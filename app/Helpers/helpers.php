@@ -153,6 +153,17 @@ function parseDecimal($value, $decimals = 2)
     return number_format($num, $decimals, '.', '');
 }
 
+/**
+ * Bersihkan penanda unik Odoo di ujung nama lot.
+ * Odoo menolak lot sama dalam satu receipt, sehingga lot duplikat ditandai
+ * dengan titik/koma di ujung ("22E2.", "22E2,") agar unique. Lot aslinya
+ * tanpa tanda itu, jadi kupas sebelum disimpan/ditampilkan.
+ */
+function clean_lot_name(mixed $lot): string
+{
+    return rtrim(trim((string) ($lot ?? '')), '.,');
+}
+
 function odoo_datetime($datetime, string $format = 'd/m/Y H:i'): string
 {
     if (empty($datetime) || $datetime === false || $datetime === 'False') {
@@ -161,9 +172,10 @@ function odoo_datetime($datetime, string $format = 'd/m/Y H:i'): string
 
     $value = trim((string) $datetime);
 
-    // Field date-only Odoo (Y-m-d) tidak mengandung jam: tak perlu shift timezone.
+    // Field date-only Odoo (Y-m-d) tidak mengandung jam: paksa jam 00:00
+    // (`!`) agar tidak memakai jam server saat ini lalu kena shift +7.
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-        return Carbon::createFromFormat('Y-m-d', $value, 'UTC')
+        return Carbon::createFromFormat('!Y-m-d', $value, 'UTC')
             ->setTimezone(config('app.timezone'))
             ->format($format);
     }

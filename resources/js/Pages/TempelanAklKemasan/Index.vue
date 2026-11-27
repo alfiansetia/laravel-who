@@ -15,7 +15,7 @@ import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { printAklKemasanLabels } from '@/lib/labelPrint';
-import { formatExpDate, getCode, getDesc, odooName } from '@/lib/odoo';
+import { cleanLotName, formatExpDate, getCode, getDesc, odooName } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'Tempelan AKL Kemasan' },
@@ -37,9 +37,9 @@ function odooStr(value) {
 // SN = nomor lot digabung expired jadi satu: `aaa/2028.01.31`.
 // Exp kosong/false → cukup nomor lot saja (sama seperti Tempelan Dus).
 function snLabel(lotId, lotName, expired) {
-    let lot = odooStr(odooName(lotId));
+    let lot = cleanLotName(odooStr(odooName(lotId)));
     if (!lot) {
-        lot = odooStr(lotName);
+        lot = cleanLotName(odooStr(lotName));
     }
     if (!lot) {
         return '';

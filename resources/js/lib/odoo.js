@@ -94,6 +94,37 @@ export function formatExpDate(value) {
     return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
 }
 
+/** Bersihkan penanda unik Odoo di ujung nama lot ("22E2.", "22E2," → "22E2"). */
+export function cleanLotName(value) {
+    if (value === false || value === null || value === undefined) {
+        return '';
+    }
+    return String(value).trim().replace(/[.,]+$/, '').trim();
+}
+
+/**
+ * Cerminan BE `odoo_datetime($v, 'd/m/Y')` untuk ED: naive UTC → WIB (+7),
+ * hasil ` Ed. dd/mm/yyyy` atau '' bila kosong/invalid. Dipakai di tempat
+ * yang harus identik dengan sync BE (KoliManager).
+ */
+export function formatEdOdoo(value) {
+    const s = String(value ?? '').trim();
+    if (!s || s === 'False' || s === 'false') {
+        return '';
+    }
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+    if (!m) {
+        return '';
+    }
+    const utc = Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] ?? '00'), +(m[5] ?? '00'), +(m[6] ?? '00'));
+    if (Number.isNaN(utc)) {
+        return '';
+    }
+    const d = new Date(utc + 7 * 3600 * 1000);
+    const pad = (v) => String(v).padStart(2, '0');
+    return ` Ed. ${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+}
+
 /** Ekstrak [KODE] dari label Odoo "[KODE] Nama". */
 export function getCode(label) {
     const s = String(label ?? '');

@@ -174,7 +174,7 @@ class BastController extends Controller
 
             if ($lot->count() <= 10) {
                 $values = $lot->map(function ($item) {
-                    $lot = $item['lot_id'][1] ?? '';
+                    $lot = clean_lot_name($item['lot_id'][1] ?? '');
                     $ed = $item['expired_date_do'] ?? '';
                     if ($lot && $ed) {
                         $ed = odoo_datetime($ed, 'd/m/Y');

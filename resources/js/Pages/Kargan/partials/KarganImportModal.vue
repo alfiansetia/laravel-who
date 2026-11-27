@@ -12,7 +12,7 @@ import Input from '@/components/ui/Input.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
-import { getCode, getDesc, odooName, formatExpDate } from '@/lib/odoo';
+import { getCode, getDesc, odooName, cleanLotName, formatExpDate } from '@/lib/odoo';
 import { useClientTable } from '@/composables/useClientTable';
 
 const props = defineProps({
@@ -133,7 +133,8 @@ async function searchDoc(val, overlay = false) {
 }
 
 function lotLabel(row) {
-    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : row.lot_name || '';
+    const raw = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : row.lot_name || '';
+    const lot = cleanLotName(raw);
     const exp = formatExpDate(sourceTab.value === 'do' ? row.expired_date_do : row.expired_date);
     if (!lot || lot === '-') {
         return exp || '';

@@ -14,7 +14,7 @@ import EditableCell from '@/components/EditableCell.vue';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { printDusLabels } from '@/lib/labelPrint';
-import { formatExpDate, getCode, getDesc, odooName } from '@/lib/odoo';
+import { cleanLotName, formatExpDate, getCode, getDesc, odooName } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'Tempelan Dus' },
@@ -299,9 +299,9 @@ async function searchDocs(kw) {
 }
 
 function lotLabel(lotId, lotName, expired) {
-    let lot = odooName(lotId);
-    if (lot === '-') {
-        lot = lotName ?? '';
+    let lot = cleanLotName(odooName(lotId));
+    if (lot === '-' || !lot) {
+        lot = cleanLotName(lotName ?? '');
     }
     const exp = formatExpDate(expired);
     if (!lot) {

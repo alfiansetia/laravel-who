@@ -19,7 +19,7 @@ class LotResource extends JsonResource
         // return parent::toArray($request);
 
         $loc = get_name($this['location_id']);
-        $lot = get_name($this['lot_id']);
+        $lot = clean_lot_name(get_name($this['lot_id']));
         $pecah_code = pecah_code($this['product_id']);
         $id = $pecah_code[0];
         $code = $pecah_code[1];

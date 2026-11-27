@@ -15,7 +15,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyText } from '@/lib/export';
-import { formatExpDate, formatOdooDate, formatQtyUS, odooName } from '@/lib/odoo';
+import { cleanLotName, formatExpDate, formatOdooDate, formatQtyUS, odooName } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'Product Odoo' },
@@ -184,7 +184,7 @@ query.fetch();
                 <DataTable :columns="moveColumns" :rows="onhandRows" :loading="onhandLoading" :total="onhandRows.length" :total-pages="1" empty-title="Riwayat move tidak ditemukan">
                     <template #cell-date="{ row }">{{ formatOdooDate(row.date) }}</template>
                     <template #cell-reference="{ row }">{{ row.reference ?? '-' }}</template>
-                    <template #cell-lot="{ row }">{{ odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '-') }}</template>
+                    <template #cell-lot="{ row }">{{ cleanLotName(odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '-')) }}</template>
                     <template #cell-source="{ row }">{{ odooName(row.location_id) }}</template>
                     <template #cell-dest="{ row }">{{ odooName(row.location_dest_id) }}</template>
                     <template #cell-qty="{ row }">{{ formatQtyUS(row.qty_done) }}</template>

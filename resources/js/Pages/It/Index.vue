@@ -18,7 +18,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyRows, downloadCsv } from '@/lib/export';
-import { formatExpDate, formatOdooDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
+import { cleanLotName, formatExpDate, formatOdooDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'IT' },
@@ -184,7 +184,7 @@ const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {
 // Lot/SN digabung dengan ED: `LOT/2028.01.31`.
 // IT memakai `expired_date`; bila kosong/false cukup lot saja.
 function lotLabel(row) {
-    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '');
+    const lot = cleanLotName(odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || ''));
     const exp = formatExpDate(row.expired_date);
     if (!lot) {
         return exp || '';

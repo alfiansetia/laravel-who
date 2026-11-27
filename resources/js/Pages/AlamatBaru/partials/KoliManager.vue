@@ -15,7 +15,7 @@ import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import web from '@/lib/web';
 import { formatNumber } from '@/lib/format';
-import { getCode } from '@/lib/odoo';
+import { cleanLotName, formatEdOdoo, getCode } from '@/lib/odoo';
 
 const props = defineProps({
     alamatId: { type: [Number, String], required: true },
@@ -210,27 +210,46 @@ function refLabel(item) {
     return `${item.name ?? ''} - ${item.origin ?? ''} - (${partner})`;
 }
 
-function formatEd(expired) {
-    if (!expired || expired === 'False' || expired === false) {
-        return '';
-    }
-    const d = new Date(expired);
-    if (Number.isNaN(d.getTime())) {
-        return '';
-    }
-    const pad = (v) => String(v).padStart(2, '0');
-    return ` Ed. ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+function mapMoveLines(detail) {
+    return (detail.move_line_detail ?? []).map((item) => {
+        const sn = cleanLotName(item.lot_id && item.lot_id !== false ? item.lot_id[1] : '');
+        return {
+            product_code: getCode(Array.isArray(item.product_id) ? item.product_id[1] : ''),
+            product: Array.isArray(item.product_id) ? item.product_id[1] : (item.product ?? ''),
+            qty: `${item.qty_done ?? ''} Ea`,
+            sn,
+            lot: sn ? `${sn}${formatEdOdoo(item.expired_date_do ?? item.expired_date)}` : '',
+            id: item.id,
+        };
+    });
 }
 
-function mapMoveLines(detail) {
-    return (detail.move_line_detail ?? []).map((item) => ({
-        product_code: getCode(Array.isArray(item.product_id) ? item.product_id[1] : ''),
-        product: Array.isArray(item.product_id) ? item.product_id[1] : (item.product ?? ''),
-        qty: `${item.qty_done ?? ''} Ea`,
-        lot: `${item.lot_id && item.lot_id !== false ? item.lot_id[1] : ''}${formatEd(item.expired_date_do)}`,
-        id: item.id,
+// Kelompokkan baris lot per produk seperti hasil sync BE: 1 produk = 1 baris,
+// qty dijumlah, lot digabung (maks 2 baris ber-SN, lebih dari itu dikosongkan).
+function groupMoveLines(lines) {
+    const map = new Map();
+    for (const l of lines) {
+        const key = l.product_code || l.product || '-';
+        if (!map.has(key)) {
+            map.set(key, { product_code: l.product_code, product: l.product, qty: 0, lots: [] });
+        }
+        const g = map.get(key);
+        g.qty += Number(String(l.qty ?? '').split(' ')[0]) || 0;
+        if (l.sn) {
+            g.lots.push(l.lot);
+        }
+    }
+    return [...map.values()].map((g, i) => ({
+        id: `g-${i}`,
+        product_code: g.product_code,
+        product: g.product,
+        qty: g.qty > 0 ? `${g.qty} Ea` : '',
+        lot: g.lots.length > 0 && g.lots.length <= 2 ? [...new Set(g.lots)].join(', ') : '',
     }));
 }
+
+const groupedDoLines = computed(() => groupMoveLines(doLines.value));
+const groupedItLines = computed(() => groupMoveLines(itLines.value));
 
 async function searchDo(kw) {
     if (!kw || kw.length < 1) {
@@ -606,8 +625,8 @@ defineExpose({ openAddKoli });
                 <div v-else-if="doLines.length === 0" class="text-sm text-slate-500">Pilih DO dulu.</div>
                 <div v-else class="max-h-64 divide-y overflow-y-auto rounded border text-sm">
                     <div class="flex gap-2 bg-slate-50 px-2 py-1.5 font-semibold"><span class="flex-1">Produk</span><span class="w-32">Lot/ED</span><span class="w-20 text-center">Qty</span><span class="w-16 text-center">#</span></div>
-                    <div v-for="(l, i) in doLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
-                        <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot ?? '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
+                    <div v-for="(l, i) in groupedDoLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
+                        <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot || '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
                         <span class="w-16 text-center"><Button size="sm" :disabled="addingLine" @click="pickDoLine(l)">Pilih</Button></span>
                     </div>
                 </div>
@@ -626,8 +645,8 @@ defineExpose({ openAddKoli });
                 <div v-else-if="itLines.length === 0" class="text-sm text-slate-500">Pilih IT dulu.</div>
                 <div v-else class="max-h-64 divide-y overflow-y-auto rounded border text-sm">
                     <div class="flex gap-2 bg-slate-50 px-2 py-1.5 font-semibold"><span class="flex-1">Produk</span><span class="w-32">Lot/ED</span><span class="w-20 text-center">Qty</span><span class="w-16 text-center">#</span></div>
-                    <div v-for="(l, i) in itLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
-                        <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot ?? '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
+                    <div v-for="(l, i) in groupedItLines" :key="i" class="flex items-center gap-2 px-2 py-1.5">
+                        <span class="flex-1">{{ l.product ?? '-' }}</span><span class="w-32">{{ l.lot || '-' }}</span><span class="w-20 text-center">{{ l.qty ?? '' }}</span>
                         <span class="w-16 text-center"><Button size="sm" :disabled="addingLine" @click="pickItLine(l)">Pilih</Button></span>
                     </div>
                 </div>

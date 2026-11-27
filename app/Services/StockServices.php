@@ -131,7 +131,7 @@ class StockServices
     private static function mapQuantRow(array $item): array
     {
         $loc = get_name($item['location_id'] ?? null);
-        $lot = get_name($item['lot_id'] ?? null);
+        $lot = clean_lot_name(get_name($item['lot_id'] ?? null));
         $pecah_code = pecah_code($item['product_id'] ?? null);
         $id = $pecah_code[0];
         $code = $pecah_code[1];

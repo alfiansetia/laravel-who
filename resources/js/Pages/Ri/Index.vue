@@ -18,7 +18,7 @@ import { useTableQuery } from '@/composables/useTableQuery';
 import { useToast } from '@/composables/useToast';
 import api from '@/lib/axios';
 import { copyRows, downloadCsv } from '@/lib/export';
-import { formatExpDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
+import { cleanLotName, formatExpDate, getCode, getDesc, odooName, truncate } from '@/lib/odoo';
 
 const props = defineProps({
     title: { type: String, default: 'RI' },
@@ -180,7 +180,7 @@ const lotExportRows = computed(() => lotTable.filtered.value.map((row) => {    c
 }));
 
 function lotLabel(row) {
-    const lot = odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || '');
+    const lot = cleanLotName(odooName(row.lot_id) !== '-' ? odooName(row.lot_id) : (row.lot_name || ''));
     const exp = formatExpDate(row.expired_date);
     if (!lot) {
         return exp || '';
