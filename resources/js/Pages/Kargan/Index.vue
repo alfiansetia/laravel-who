@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Copy, Download, Plus, RefreshCw, Trash2 } from '@lucide/vue';
+import { ChevronDown, Copy, Download, FileDown, Files, Plus, RefreshCw, Trash2 } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -56,6 +56,28 @@ function goEdit(row) {
     router.visit(`/kargans/${row.id}/edit`);
 }
 
+function downloadZip() {
+    if (selected.value.length === 0) {
+        toast.warning('Pilih minimal 1 data untuk diunduh.');
+        return;
+    }
+    const qs = selected.value.map((id) => `ids[]=${encodeURIComponent(id)}`).join('&');
+    window.open(`/kargans/download-zip?${qs}`, '_blank');
+    dlMenuOpen.value = false;
+}
+
+function downloadMerged() {
+    if (selected.value.length === 0) {
+        toast.warning('Pilih minimal 1 data untuk diunduh.');
+        return;
+    }
+    const qs = selected.value.map((id) => `ids[]=${encodeURIComponent(id)}`).join('&');
+    window.open(`/kargans/download-docx?${qs}`, '_blank');
+    dlMenuOpen.value = false;
+}
+
+const dlMenuOpen = ref(false);
+
 async function deleteBatch() {
     if (selected.value.length === 0) {
         toast.warning('Pilih minimal 1 data untuk dihapus.');
@@ -89,6 +111,15 @@ query.fetch();
             <template #actions>
                 <Button variant="outline" size="sm" @click="copyRows(exportRows, ['number', 'date', 'sn', 'product'], 'kargan')"><Copy /> Salin</Button>
                 <Button variant="destructive" size="sm" :disabled="selected.length === 0" @click="deleteBatch"><Trash2 /> Hapus Terpilih{{ selected.length ? ` (${selected.length})` : '' }}</Button>
+                <span class="relative">
+                    <Button variant="outline" size="sm" :disabled="selected.length === 0" @click="dlMenuOpen = !dlMenuOpen"><Download /> Unduh{{ selected.length ? ` (${selected.length})` : '' }} <ChevronDown /></Button>
+                    <span v-if="dlMenuOpen" class="fixed inset-0 z-40" @click="dlMenuOpen = false" />
+                    <span v-if="dlMenuOpen" class="absolute right-0 z-50 mt-1 w-64 rounded-lg border bg-white p-1 text-left shadow-lg">
+                        <p class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Batch download</p>
+                        <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="downloadZip"><FileDown class="size-4 text-slate-500" /> ZIP — file terpisah</button>
+                        <button type="button" class="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent" @click="downloadMerged"><Files class="size-4 text-slate-500" /> DOCX gabungan — 1 file, {{ selected.length }} halaman</button>
+                    </span>
+                </span>
                 <Button variant="outline" size="sm" @click="importOpen = true"><Download /> Import DO/IT</Button>
                 <Button size="sm" @click="goCreate"><Plus /> Tambah Data</Button>
             </template>

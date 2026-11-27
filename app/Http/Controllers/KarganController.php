@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use PhpOffice\PhpWord\TemplateProcessor;
+use ZipArchive;
 
 class KarganController extends Controller
 {
@@ -248,6 +249,160 @@ class KarganController extends Controller
 
     public function download(Kargan $kargan)
     {
+        $kargan->loadMissing('product');
+        $path = $this->buildDocxPath($kargan);
+
+        return response()->download($path)->deleteFileAfterSend();
+    }
+
+    public function downloadZip(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+        $ids = collect((array) $ids)->map(fn ($v) => (int) $v)->filter(fn ($v) => $v > 0)->unique()->take(100)->values()->all();
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Pilih minimal 1 kargan.');
+        }
+
+        $kargans = Kargan::with('product:id,code,name')->whereIn('id', $ids)->get()->keyBy('id');
+        $ordered = collect($ids)->map(fn ($id) => $kargans->get($id))->filter();
+        if ($ordered->isEmpty()) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
+
+        $zipName = 'kargan-batch-'.now()->format('Ymd-His').'.zip';
+        $zipPath = storage_path('app/'.$zipName);
+        $files = [];
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()->with('error', 'Gagal membuat file ZIP.');
+        }
+
+        foreach ($ordered as $kargan) {
+            $path = $this->buildDocxPath($kargan);
+            $files[] = $path;
+            $zip->addFile($path, basename($path));
+        }
+        $zip->close();
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+
+        return response()->download($zipPath)->deleteFileAfterSend();
+    }
+
+    public function downloadMerged(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+        $ids = collect((array) $ids)->map(fn ($v) => (int) $v)->filter(fn ($v) => $v > 0)->unique()->take(100)->values()->all();
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Pilih minimal 1 kargan.');
+        }
+
+        $kargans = Kargan::with('product:id,code,name')->whereIn('id', $ids)->get()->keyBy('id');
+        $ordered = collect($ids)->map(fn ($id) => $kargans->get($id))->filter()->values();
+        if ($ordered->isEmpty()) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
+
+        $files = [];
+        foreach ($ordered as $kargan) {
+            $files[] = $this->buildDocxPath($kargan);
+        }
+
+        $mergedName = 'kargan-gabungan-'.now()->format('Ymd-His').'.docx';
+        $mergedPath = storage_path('app/'.$mergedName);
+        $this->mergeDocxBodies($files, $mergedPath);
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+
+        return response()->download($mergedPath)->deleteFileAfterSend();
+    }
+
+    /**
+     * Gabung N docx satu template jadi 1 file: body digabung dengan
+     * page break antar dokumen. Aman karena semua dari template sama
+     * (styles/header/footer identik) — cukup merge word/document.xml.
+     */
+    private function mergeDocxBodies(array $files, string $output): void
+    {
+        $wordNs = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+        copy($files[0], $output);
+
+        foreach (array_slice($files, 1) as $file) {
+            $this->appendDocxBody($output, $file, $wordNs);
+        }
+    }
+
+    private function appendDocxBody(string $basePath, string $appendPath, string $wordNs): void
+    {
+        $zipBase = new ZipArchive;
+        $zipBase->open($basePath);
+        $base = new \DOMDocument;
+        $base->loadXML($zipBase->getFromName('word/document.xml'));
+        $xp = new \DOMXPath($base);
+        $xp->registerNamespace('w', $wordNs);
+        $baseBody = $xp->query('/w:document/w:body')->item(0);
+        $baseSect = $xp->query('w:sectPr', $baseBody)->item(0);
+
+        $zipApp = new ZipArchive;
+        $zipApp->open($appendPath);
+        $app = new \DOMDocument;
+        $app->loadXML($zipApp->getFromName('word/document.xml'));
+        $zipApp->close();
+        $axp = new \DOMXPath($app);
+        $axp->registerNamespace('w', $wordNs);
+        $appBody = $axp->query('/w:document/w:body')->item(0);
+
+        // Page break sebelum isi dokumen berikutnya.
+        $br = $base->createElementNS($wordNs, 'w:p');
+        $r = $base->createElementNS($wordNs, 'w:r');
+        $brEl = $base->createElementNS($wordNs, 'w:br');
+        $brEl->setAttributeNS($wordNs, 'type', 'page');
+        $r->appendChild($brEl);
+        $br->appendChild($r);
+        if ($baseSect) {
+            $baseBody->insertBefore($br, $baseSect);
+        } else {
+            $baseBody->appendChild($br);
+        }
+
+        foreach (iterator_to_array($appBody->childNodes) as $node) {
+            if ($node->nodeType !== XML_ELEMENT_NODE) {
+                continue;
+            }
+            if ($node->localName === 'sectPr') {
+                continue;
+            }
+            $imported = $base->importNode($node, true);
+            if ($baseSect) {
+                $baseBody->insertBefore($imported, $baseSect);
+            } else {
+                $baseBody->appendChild($imported);
+            }
+        }
+
+        $zipBase->addFromString('word/document.xml', $base->saveXML());
+        $zipBase->close();
+    }
+
+    private function buildDocxPath(Kargan $kargan): string
+    {
         $file = public_path('master/kargan.docx');
         Carbon::setLocale('id');
         $date = Carbon::parse($kargan->date)->translatedFormat('d F Y');
@@ -263,6 +418,6 @@ class KarganController extends Controller
         $path = storage_path('app/'.$name.'.docx');
         $template->saveAs($path);
 
-        return response()->download($path)->deleteFileAfterSend();
+        return $path;
     }
 }
