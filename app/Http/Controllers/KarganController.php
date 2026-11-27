@@ -178,6 +178,7 @@ class KarganController extends Controller
     public function duplicate(Request $request, Kargan $kargan)
     {
         $data = $kargan->replicate();
+        $data->number = Kargan::generateNumber();
         $data->save();
 
         if ($request->wantsJson()) {
