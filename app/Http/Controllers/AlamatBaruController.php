@@ -413,14 +413,15 @@ class AlamatBaruController extends Controller
 
     public function koliSync(Request $request, Koli $koli, DoServices $doServices)
     {
-        $id = 0;
-        $do = $koli->alamatBaru->do;
-        $json = $doServices->getAll($do);
-        if (count($json['records'] ?? []) > 0) {
-            $id = intval($json['records'][0]['id']);
+        $doRaw = $koli->alamatBaru->do;
+        $doNumbers = AlamatBaru::parseDoNumbers($doRaw);
+        if (empty($doNumbers)) {
+            if ($request->wantsJson()) {
+                return $this->sendError('Nomor DO tidak ditemukan!', 404);
+            }
+
+            return redirect()->back()->with('error', 'Nomor DO tidak ditemukan!');
         }
-        $detail = $doServices->detail($id);
-        $pd_jd = [];
 
         $last_key = 0;
         $details = KoliItem::query()
@@ -433,53 +434,83 @@ class AlamatBaruController extends Controller
             ]);
             $last_key++;
         }
-        foreach (($detail['move_ids_detail'] ?? []) as $item) {
-            $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
-                if (isset($item['product_id'][0], $value['product_id'][0])) {
-                    return $item['product_id'][0] === $value['product_id'][0];
-                }
-            });
 
-            if ($lot->count() <= 2) {
-                $values = $lot->map(function ($item) {
-                    $lot = $item['lot_id'][1] ?? '';
-                    $ed = $item['expired_date_do'] ?? '';
-                    if ($lot && $ed) {
-                        $ed = odoo_datetime($ed, 'd/m/Y');
+        $pd_jd = [];
+        $missing = [];
+        $synced = [];
+        foreach ($doNumbers as $doNumber) {
+            $json = $doServices->getAll($doNumber, 1);
+            if (count($json['records'] ?? []) === 0) {
+                $missing[] = $doNumber;
 
-                        return $lot.' Ed. '.$ed;
-                    } elseif ($lot) {
-                        return $lot;
-                    }
-                })->implode(', ');
-            } else {
-                $values = '';
+                continue;
             }
+            $id = intval($json['records'][0]['id']);
+            $detail = $doServices->detail($id);
+            $synced[] = $doNumber;
 
-            preg_match('/\[(.*?)\]/', ($item['product_id'][1] ?? ''), $matches);
-            if (isset($matches[1])) {
-                $pro = Product::query()->where('code', $matches[1])->first();
-                if ($pro) {
-                    array_push($pd_jd, [
-                        'code' => $matches[1],
-                        'qty' => $item['quantity_done'].' Ea',
-                        'default' => $item['product_id'][1],
-                        'lot' => $values,
-                    ]);
-                    KoliItem::create([
-                        'koli_id' => $koli->id,
-                        'product_id' => $pro->id,
-                        'qty' => $item['quantity_done'].' Ea',
-                        'lot' => $values,
-                        'order' => $last_key,
-                    ]);
-                    $last_key++;
+            foreach (($detail['move_ids_detail'] ?? []) as $item) {
+                $lot = collect(($detail['move_line_detail'] ?? []))->filter(function ($value) use ($item) {
+                    if (isset($item['product_id'][0], $value['product_id'][0])) {
+                        return $item['product_id'][0] === $value['product_id'][0];
+                    }
+                });
+
+                if ($lot->count() <= 2) {
+                    $values = $lot->map(function ($item) {
+                        $lot = $item['lot_id'][1] ?? '';
+                        $ed = $item['expired_date_do'] ?? '';
+                        if ($lot && $ed) {
+                            $ed = odoo_datetime($ed, 'd/m/Y');
+
+                            return $lot.' Ed. '.$ed;
+                        } elseif ($lot) {
+                            return $lot;
+                        }
+                    })->implode(', ');
+                } else {
+                    $values = '';
+                }
+
+                preg_match('/\[(.*?)\]/', ($item['product_id'][1] ?? ''), $matches);
+                if (isset($matches[1])) {
+                    $pro = Product::query()->where('code', $matches[1])->first();
+                    if ($pro) {
+                        array_push($pd_jd, [
+                            'code' => $matches[1],
+                            'qty' => $item['quantity_done'].' Ea',
+                            'default' => $item['product_id'][1],
+                            'lot' => $values,
+                        ]);
+                        KoliItem::create([
+                            'koli_id' => $koli->id,
+                            'product_id' => $pro->id,
+                            'qty' => $item['quantity_done'].' Ea',
+                            'lot' => $values,
+                            'order' => $last_key,
+                        ]);
+                        $last_key++;
+                    }
                 }
             }
         }
 
+        if (empty($pd_jd)) {
+            $message = 'Data DO tidak ditemukan di Odoo! ('.implode(', ', $missing).')';
+            if ($request->wantsJson()) {
+                return $this->sendError($message, 404);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        $message = 'Success! ('.count($synced).' DO, '.count($pd_jd).' item)';
+        if (! empty($missing)) {
+            $message .= ' — tak ditemukan: '.implode(', ', $missing);
+        }
+
         if ($request->wantsJson()) {
-            return $this->sendResponse(['message' => 'Success!', 'pd_jd' => $pd_jd, 'do' => $do, 'detail' => $detail]);
+            return $this->sendResponse(['message' => $message, 'pd_jd' => $pd_jd, 'do' => $doRaw, 'do_numbers' => $synced, 'missing' => $missing]);
         }
 
         return redirect()->back()->with('success', 'Success!');
@@ -517,9 +548,9 @@ class AlamatBaruController extends Controller
             return redirect()->back()->with('error', 'Koli ini belum memiliki data barang!');
         }
 
-        // 1. Get DO number from alamat_baru
-        $doNumber = $koli->alamatBaru->do ?? null;
-        if (empty($doNumber)) {
+        // 1. Get DO numbers from alamat_baru (bisa gabungan: "A & B", "A, B")
+        $doNumbers = AlamatBaru::parseDoNumbers($koli->alamatBaru->do ?? null);
+        if (empty($doNumbers)) {
             if ($request->wantsJson()) {
                 return $this->sendError('Nomor DO tidak ditemukan!', 404);
             }
@@ -527,52 +558,54 @@ class AlamatBaruController extends Controller
             return redirect()->back()->with('error', 'Nomor DO tidak ditemukan!');
         }
 
-        // 2. Fetch DO from Odoo
-        try {
-            $doRecords = $doServices->getAll($doNumber);
-        } catch (\Throwable $th) {
-            if ($request->wantsJson()) {
-                return $this->sendError('Gagal mengambil data DO dari Odoo!', 500);
-            }
-
-            return redirect()->back()->with('error', 'Gagal mengambil data DO dari Odoo!');
-        }
-
-        $doId = 0;
-        if (count($doRecords['records'] ?? []) > 0) {
-            $doId = intval($doRecords['records'][0]['id']);
-        }
-        if ($doId === 0) {
-            if ($request->wantsJson()) {
-                return $this->sendError('Data DO tidak ditemukan di Odoo!', 404);
-            }
-
-            return redirect()->back()->with('error', 'Data DO tidak ditemukan di Odoo!');
-        }
-
-        // 3. Get DO detail (includes so_detail.order_line_detail)
-        try {
-            $doDetail = $doServices->detail($doId);
-        } catch (\Throwable $th) {
-            if ($request->wantsJson()) {
-                return $this->sendError('Gagal mengambil detail DO dari Odoo!', 500);
-            }
-
-            return redirect()->back()->with('error', 'Gagal mengambil detail DO dari Odoo!');
-        }
-
-        $soLines = $doDetail['so_detail']['order_line_detail'] ?? [];
-
-        // 4. Build lookup map: default_code => order_line
+        // 2. Fetch tiap DO dari Odoo + gabung SO lines (first-wins per kode produk)
         $soLineMap = [];
-        foreach ($soLines as $line) {
-            $code = $line['default_code'] ?? null;
-            if ($code) {
-                $soLineMap[$code] = $line;
+        $found = [];
+        $missing = [];
+        foreach ($doNumbers as $doNumber) {
+            try {
+                $doRecords = $doServices->getAll($doNumber, 1);
+            } catch (\Throwable $th) {
+                $missing[] = $doNumber;
+
+                continue;
+            }
+
+            if (count($doRecords['records'] ?? []) === 0) {
+                $missing[] = $doNumber;
+
+                continue;
+            }
+            $doId = intval($doRecords['records'][0]['id']);
+
+            // 3. Get DO detail (includes so_detail.order_line_detail)
+            try {
+                $doDetail = $doServices->detail($doId);
+            } catch (\Throwable $th) {
+                $missing[] = $doNumber;
+
+                continue;
+            }
+
+            $found[] = $doNumber;
+            foreach (($doDetail['so_detail']['order_line_detail'] ?? []) as $line) {
+                $code = $line['default_code'] ?? null;
+                if ($code && ! isset($soLineMap[$code])) {
+                    $soLineMap[$code] = $line;
+                }
             }
         }
 
-        // 5. Calculate value for each koli item
+        if (empty($found)) {
+            $message = 'Data DO tidak ditemukan di Odoo! ('.implode(', ', $missing).')';
+            if ($request->wantsJson()) {
+                return $this->sendError($message, 404);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        // 4. Calculate value for each koli item (harga per kode dari gabungan SO)
         $totalNilai = 0;
         foreach ($koli->items as $item) {
             $productCode = $item->product->code ?? null;
@@ -598,11 +631,16 @@ class AlamatBaruController extends Controller
         $nilai = (int) round($totalNilai);
         $koli->update(['nilai' => $nilai]);
 
-        if ($request->wantsJson()) {
-            return $this->sendResponse($koli->load('items'), 'Koli berhasil dihitung!');
+        $message = 'Koli berhasil dihitung! ('.count($found).' DO)';
+        if (! empty($missing)) {
+            $message .= ' — DO tak ditemukan: '.implode(', ', $missing);
         }
 
-        return redirect()->back()->with('success', 'Koli berhasil dihitung!');
+        if ($request->wantsJson()) {
+            return $this->sendResponse($koli->load('items'), $message);
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     public function koliItemIndex(Request $request)
