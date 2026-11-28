@@ -644,21 +644,35 @@ class IzinEdarSyncService
     ];
 
     /**
+     * Batas memori proses import: kalau file kebesaran, yang mati hanya job
+     * ini (masuk failed + log failed) — bukan seluruh VPS. Hanya menaikkan,
+     * tidak menurunkan (limit admin yang lebih besar tetap dihormati),
+     * dan mengikat limit unlimited (-1, default CLI) yang paling berbahaya.
+     */
+    private const JOB_MEMORY_LIMIT = '1G';
+
+    /**
      * Import satu file xlsx kategori ke tabel izin_edars via upsert.
-     * Dibaca per chunk (default 1000 baris) agar file besar tidak full di RAM:
-     * tiap chunk load ulang file dengan ChunkReadFilter, parse, upsert,
-     * lalu disconnect sebelum chunk berikutnya.
+     * File dibaca per WINDOW (default 10.000 baris per load): tiap load
+     * mem-parse ulang seluruh file, jadi makin sedikit load makin hemat
+     * CPU+RAM. Upsert + heartbeat tetap per 1000 baris.
      * Dipanggil SyncIzinEdarJob setelah download selesai.
      *
      * @return array{imported: int, total: int}
      */
-    public function importFile(string $kategori, ?callable $shouldStop = null, int $chunkSize = 1000): array
+    public function importFile(string $kategori, ?callable $shouldStop = null, int $chunkSize = 1000, int $loadWindow = 10000): array
     {
         $kategori = strtoupper($kategori);
         $path = $this->getFilePath($kategori);
 
         if (! $path || ! File::exists($path)) {
             throw new \RuntimeException("File {$kategori} belum di-download.");
+        }
+
+        $cap = $this->memoryLimitBytes(self::JOB_MEMORY_LIMIT);
+        $current = $this->memoryLimitBytes();
+        if ($current < 0 || $current < $cap) {
+            ini_set('memory_limit', self::JOB_MEMORY_LIMIT);
         }
 
         $this->updateCategory($kategori, [
@@ -763,27 +777,30 @@ class IzinEdarSyncService
         $emptyStreak = 0;
         $processed = 0;
 
-        // 2. Loop data per chunk: load, parse, upsert, disconnect.
-        // Cek stop per chunk (bukan per baris) agar tidak baca log dari disk tiap baris.
-        // Heartbeat ditulis TIAP chunk (bukan cuma tiap flush): chunk yang
-        // isinya baris kosong tidak memicu flush, tanpa ini log beku dan
-        // stale-checker buta selama worker masih memindai.
-        for ($startRow = $headerRow + 1; $startRow <= $highestRow; $startRow += $chunkSize) {
+        // 2. Loop data per WINDOW: satu load untuk N baris (bukan satu load
+        // per 1000 baris). Tiap load mem-parse ulang seluruh file, jadi 64
+        // load untuk AKL dipadatkan menjadi ~7 load — jauh lebih hemat CPU
+        // dan menumpuk lebih sedikit kebocoran memori. Upsert + heartbeat
+        // tetap per 1000 baris. Cek stop per window + per 1000 baris.
+        $loadWindow = max($loadWindow, $chunkSize);
+        for ($winStart = $headerRow + 1; $winStart <= $highestRow; $winStart += $loadWindow) {
             if ($shouldStop && $shouldStop()) {
                 $flush();
                 throw new \RuntimeException('Stop requested.');
             }
 
             // Gagal cepat dengan pesan jelas bila memori hampir habis,
-            // supaya tercatat `failed` — bukan beku `importing` + job reserved.
-            $this->assertMemoryForChunk($kategori, $startRow);
+            // supaya tercatat `failed` — bukan beku `importing` + job reserved,
+            // dan yang mati hanya proses ini, bukan VPS.
+            $this->assertMemoryForWindow($kategori, $winStart);
 
-            $spreadsheet = $loadChunk($startRow, $chunkSize);
+            $winEnd = min($winStart + $loadWindow - 1, $highestRow);
+            $spreadsheet = $loadChunk($winStart, $winEnd - $winStart + 1);
             try {
                 $sheet = $spreadsheet->getSheetByName($sheetName) ?? $spreadsheet->getActiveSheet();
-                $endRow = min($startRow + $chunkSize - 1, $highestRow);
 
-                for ($r = $startRow; $r <= $endRow; $r++) {
+                for ($r = $winStart; $r <= $winEnd; $r++) {
+                    $processed++;
                     $record = ['kategori' => $kategori];
                     $hasAny = false;
                     foreach ($colMap as $c => $col) {
@@ -841,15 +858,30 @@ class IzinEdarSyncService
                     if (count($batch) >= 1000) {
                         $flush();
                     }
+
+                    // Heartbeat tiap 1000 baris terpindai (bukan cuma tiap
+                    // flush): baris kosong tidak memicu flush, tanpa ini log
+                    // beku dan stale-checker buta selama worker masih memindai.
+                    if ($processed % 1000 === 0) {
+                        if ($shouldStop && $shouldStop()) {
+                            $flush();
+                            throw new \RuntimeException('Stop requested.');
+                        }
+                        $this->updateCategory($kategori, [
+                            'status' => 'importing',
+                            'imported' => $imported,
+                            'processed' => $processed,
+                            'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
+                        ]);
+                    }
                 }
             } finally {
                 $spreadsheet->disconnectWorksheets();
-                unset($spreadsheet);
+                unset($spreadsheet, $sheet);
+                gc_collect_cycles();
             }
 
-            // Heartbeat pemindaian: jumlah baris yang sudah dilewati chunk
-            // (bukan cuma yang ter-upsert), + memori worker untuk diagnosa.
-            $processed += min($chunkSize, max($highestRow - $startRow + 1, 0));
+            // Heartbeat per window: menangkap sisa < 1000 baris terakhir.
             $this->updateCategory($kategori, [
                 'status' => 'importing',
                 'imported' => $imported,
@@ -881,7 +913,7 @@ class IzinEdarSyncService
      * ini PHP mati fatal: tidak ada exception, log beku `importing`, dan
      * job tertinggal `reserved` selamanya.
      */
-    private function assertMemoryForChunk(string $kategori, int $startRow): void
+    private function assertMemoryForWindow(string $kategori, int $startRow): void
     {
         $limit = $this->memoryLimitBytes();
         if ($limit <= 0) {
@@ -899,9 +931,9 @@ class IzinEdarSyncService
         );
     }
 
-    private function memoryLimitBytes(): int
+    private function memoryLimitBytes(?string $raw = null): int
     {
-        $raw = trim((string) ini_get('memory_limit'));
+        $raw = $raw ?? trim((string) ini_get('memory_limit'));
         if ($raw === '' || $raw === '-1') {
             return -1;
         }
