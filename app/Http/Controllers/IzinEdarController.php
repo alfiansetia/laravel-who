@@ -249,6 +249,54 @@ class IzinEdarController extends Controller
     }
 
     /**
+     * Import-only dari file Excel yang sudah tersimpan di server (tanpa download ulang).
+     * POST /api/izin-edars/sync/import {kategori?}
+     */
+    public function syncImport(Request $request): JsonResponse
+    {
+        // Prevent duplicate runs
+        if ($this->syncService->isRunning()) {
+            $log = $this->syncService->readLog();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'A sync is already in progress.',
+                'log' => $log,
+                'can_stop' => true,
+            ], 409);
+        }
+
+        $kategori = $request->input('kategori');
+        $kategori = $kategori ? strtoupper(trim((string) $kategori)) : null;
+        if ($kategori && ! isset(IzinEdarSyncService::CATEGORIES[$kategori])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Kategori {$kategori} tidak dikenal.",
+            ], 422);
+        }
+
+        $files = $this->syncService->checkExistingFiles();
+        $targets = $kategori ? [$kategori] : array_keys($files);
+        $available = array_filter($targets, fn ($k) => ($files[$k]['exists'] ?? false));
+        if (empty($available)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada file Excel yang tersimpan. Sync/download dulu.',
+            ], 422);
+        }
+
+        $log = $this->syncService->startSync(true, false, $kategori);
+
+        return response()->json([
+            'success' => true,
+            'message' => $kategori
+                ? "Import {$kategori} dimulai dari file tersimpan."
+                : 'Import dimulai dari file tersimpan.',
+            'log' => $log,
+        ]);
+    }
+
+    /**
      * Stop a running sync and allow the user to restart.
      * POST /api/izin-edars/sync/stop
      *

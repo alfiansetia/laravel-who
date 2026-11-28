@@ -555,6 +555,27 @@ async function deleteFile(kat) {
     }
 }
 
+// ── Import-only: import file tersimpan ke DB tanpa download ulang ──
+async function importStoredFiles(kat = null) {
+    const label = kat ?? 'semua file tersimpan';
+    const ok = await confirm({ title: `Import ${label} ke DB?`, message: 'Data diimport dari file Excel di server (tanpa download ulang).', confirmText: 'Ya, import' });
+    if (!ok) {
+        return;
+    }
+    try {
+        const res = await api.post('/izin-edars/sync/import', kat ? { kategori: kat } : {}, { silent: true, block: true });
+        toast.success(res.data?.message ?? 'Import dimulai.');
+        syncVisible.value = true;
+        startPolling();
+    } catch (e) {
+        if (e.response?.status === 409) {
+            syncBusyToast();
+        } else {
+            toast.error(e.response?.data?.message ?? 'Gagal memulai import.');
+        }
+    }
+}
+
 // ── Hapus data per kategori ──
 async function deleteKategori(kat) {
     const ok = await confirm({ title: `Hapus data ${kat}?`, message: 'Seluruh baris kategori ini dihapus permanen.', confirmText: 'Ya, hapus', tone: 'destructive' });
@@ -1005,9 +1026,12 @@ loadProgress(true).then(() => {
             </Card>
 
             <Card v-if="filesVisible" class="p-4">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-2">
                     <b class="text-sm">File Excel Tersimpan</b>
-                    <Button variant="ghost" size="sm" @click="filesVisible = false"><X /></Button>
+                    <div class="flex items-center gap-1">
+                        <Button variant="outline" size="sm" @click="importStoredFiles()"><FileSpreadsheet /> Import ke DB</Button>
+                        <Button variant="ghost" size="sm" @click="filesVisible = false"><X /></Button>
+                    </div>
                 </div>
                 <div class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                     <div v-for="fl in files" :key="fl.kategori" class="rounded-xl border bg-white p-3 text-center shadow-sm">
@@ -1018,6 +1042,7 @@ loadProgress(true).then(() => {
                         <p class="truncate text-xs text-muted-foreground">{{ fl.file ?? '' }}</p>
                         <p v-if="fl.exists" class="text-xs text-muted-foreground">Diunduh: {{ fl.modified_human ?? '-' }}</p>
                         <div v-if="fl.exists" class="mt-2 flex justify-center gap-1">
+                            <Button variant="outline" size="sm" title="Import file ini ke DB (tanpa download ulang)" @click="importStoredFiles(fl.kategori)"><FileSpreadsheet /></Button>
                             <Button variant="outline" size="sm" title="Download file" @click="downloadFile(fl.kategori)"><Download /></Button>
                             <Button variant="outline" size="sm" title="Hapus file" @click="deleteFile(fl.kategori)"><Trash2 /></Button>
                         </div>

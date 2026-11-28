@@ -33,9 +33,15 @@ class SyncIzinEdarJob implements ShouldQueue
 
     public bool $shouldImport;
 
-    public function __construct(bool $shouldImport = true)
+    public bool $shouldDownload;
+
+    public ?string $kategori;
+
+    public function __construct(bool $shouldImport = true, bool $shouldDownload = true, ?string $kategori = null)
     {
         $this->shouldImport = $shouldImport;
+        $this->shouldDownload = $shouldDownload;
+        $this->kategori = $kategori ? strtoupper(trim($kategori)) : null;
     }
 
     /**
@@ -45,39 +51,72 @@ class SyncIzinEdarJob implements ShouldQueue
      * Dua fase terpisah (bukan download-import per kategori) karena
      * server Kemkes lemot: download yang lambat dibereskan semua di awal,
      * import lokal yang cepat jalan belakangan.
+     *
+     * Mode import-only ($shouldDownload false): lewati fase download,
+     * langsung import file yang sudah tersimpan di storage.
+     * $kategori membatasi ke satu kategori bila diisi.
      */
     public function handle(IzinEdarSyncService $syncService): void
     {
-        Log::info('[SyncIzinEdar] Starting download...');
-        $syncService->updateGlobalStatus('downloading');
-
         $categories = IzinEdarSyncService::CATEGORIES;
-        $failedCategories = [];
-        $downloaded = [];
-
-        // Fase 1: download semua file dulu.
-        foreach ($categories as $kategori => $config) {
-            // Check if the user requested a stop between categories
-            if ($this->isStopRequested($syncService)) {
-                Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori}.");
-                $syncService->updateGlobalStatus('stopped');
+        if ($this->kategori) {
+            if (! isset($categories[$this->kategori])) {
+                $syncService->markFailed("Kategori {$this->kategori} tidak dikenal.");
 
                 return;
             }
+            $categories = [$this->kategori => $categories[$this->kategori]];
+        }
 
-            try {
-                $this->downloadCategory($kategori, $config, $syncService);
-                $downloaded[] = $kategori;
-            } catch (\Throwable $e) {
-                Log::error("[SyncIzinEdar] Failed downloading {$kategori}: {$e->getMessage()}");
+        $failedCategories = [];
+        $downloaded = [];
 
-                $syncService->updateCategory($kategori, [
-                    'status' => 'failed',
-                    'error' => $e->getMessage(),
-                    'finished_at' => now()->toIso8601String(),
-                ]);
+        if ($this->shouldDownload) {
+            Log::info('[SyncIzinEdar] Starting download...');
+            $syncService->updateGlobalStatus('downloading');
 
-                $failedCategories[] = $kategori;
+            // Fase 1: download semua file dulu.
+            foreach ($categories as $kategori => $config) {
+                // Check if the user requested a stop between categories
+                if ($this->isStopRequested($syncService)) {
+                    Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori}.");
+                    $syncService->updateGlobalStatus('stopped');
+
+                    return;
+                }
+
+                try {
+                    $this->downloadCategory($kategori, $config, $syncService);
+                    $downloaded[] = $kategori;
+                } catch (\Throwable $e) {
+                    Log::error("[SyncIzinEdar] Failed downloading {$kategori}: {$e->getMessage()}");
+
+                    $syncService->updateCategory($kategori, [
+                        'status' => 'failed',
+                        'error' => $e->getMessage(),
+                        'finished_at' => now()->toIso8601String(),
+                    ]);
+
+                    $failedCategories[] = $kategori;
+                }
+            }
+        } else {
+            // Mode import-only: pakai file yang sudah ada di storage.
+            Log::info('[SyncIzinEdar] Import-only mode, skipping download...');
+            foreach ($categories as $kategori => $config) {
+                $path = $syncService->getFilePath($kategori);
+                if ($path && File::exists($path)) {
+                    $downloaded[] = $kategori;
+                    $syncService->updateCategory($kategori, ['status' => 'downloaded']);
+                } else {
+                    $syncService->updateCategory($kategori, [
+                        'status' => 'failed',
+                        'error' => "File {$kategori} belum ada di server.",
+                        'finished_at' => now()->toIso8601String(),
+                    ]);
+
+                    $failedCategories[] = $kategori;
+                }
             }
         }
 
@@ -119,9 +158,9 @@ class SyncIzinEdarJob implements ShouldQueue
 
         if (empty($failedCategories)) {
             $syncService->markCompleted();
-            Log::info('[SyncIzinEdar] All files downloaded successfully!');
+            Log::info('[SyncIzinEdar] All files processed successfully!');
         } else {
-            $msg = 'Failed downloads: '.implode(', ', $failedCategories);
+            $msg = 'Failed categories: '.implode(', ', $failedCategories);
             $syncService->markFailed($msg);
             Log::error("[SyncIzinEdar] {$msg}");
         }

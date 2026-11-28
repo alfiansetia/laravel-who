@@ -365,17 +365,22 @@ class IzinEdarSyncService
 
     // ── Start a new sync session ─────────────────────────────────────
 
-    public function startSync(bool $withImport = true): array
+    public function startSync(bool $withImport = true, bool $withDownload = true, ?string $kategori = null): array
     {
-        return $this->startSession($withImport);
+        return $this->startSession($withImport, $withDownload, $kategori);
     }
 
     /**
-     * Start a download session for all categories.
+     * Start a download (+ optional import) session for all categories,
+     * atau satu kategori bila $kategori diisi (untuk import-only per file).
      */
-    private function startSession(bool $withImport = true): array
+    private function startSession(bool $withImport = true, bool $withDownload = true, ?string $kategori = null): array
     {
-        $categories = array_keys(self::CATEGORIES);
+        $kategori = $kategori ? strtoupper(trim($kategori)) : null;
+        if ($kategori && ! isset(self::CATEGORIES[$kategori])) {
+            throw new \InvalidArgumentException("Kategori {$kategori} tidak dikenal.");
+        }
+        $categories = $kategori ? [$kategori] : array_keys(self::CATEGORIES);
         $log = [
             'id' => uniqid('sync_', true),
             'status' => 'pending',
@@ -398,7 +403,7 @@ class IzinEdarSyncService
 
         // Dispatch the sync job to the queue and store the job ID so we can
         // target it for deletion when the user requests a stop.
-        $jobId = $this->launchCommand($withImport);
+        $jobId = $this->launchCommand($withImport, $withDownload, $kategori);
         if ($jobId) {
             $log['job_id'] = $jobId;
             $this->writeLog($log);
@@ -567,19 +572,19 @@ class IzinEdarSyncService
      *
      * @return string|null The dispatched job ID (for tracking/deletion).
      */
-    private function launchCommand(bool $withImport = true): ?string
+    private function launchCommand(bool $withImport = true, bool $withDownload = true, ?string $kategori = null): ?string
     {
         // Driver sync mengeksekusi job inline saat push — HTTP akan ketahan
         // sampai 4 file selesai download+import. afterResponse mengirim
         // response dulu, job jalan setelahnya. Driver sync memang tidak
         // menghasilkan job ID (tidak ada baris di tabel jobs).
         if (config('queue.default') === 'sync') {
-            SyncIzinEdarJob::dispatch($withImport)->afterResponse();
+            SyncIzinEdarJob::dispatch($withImport, $withDownload, $kategori)->afterResponse();
 
             return null;
         }
 
-        $jobId = Queue::push(new SyncIzinEdarJob($withImport));
+        $jobId = Queue::push(new SyncIzinEdarJob($withImport, $withDownload, $kategori));
 
         return $jobId ? (string) $jobId : null;
     }

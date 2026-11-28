@@ -229,6 +229,8 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
         ->name('api.izin_edars.index');
     Route::post('izin-edars/sync', [IzinEdarController::class, 'sync'])
         ->name('api.izin_edars.sync');
+    Route::post('izin-edars/sync/import', [IzinEdarController::class, 'syncImport'])
+        ->name('api.izin_edars.sync_import');
     Route::post('izin-edars/sync/stop', [IzinEdarController::class, 'syncStop'])
         ->name('api.izin_edars.sync_stop');
     Route::get('izin-edars/sync/progress', [IzinEdarController::class, 'syncProgress'])
