@@ -1,12 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { ArrowLeft, Activity, Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, KeyRound, Laptop, LogOut, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi, Wrench, X } from '@lucide/vue';
+import { ArrowLeft, Activity, Bell, Building2, CircleCheck, CircleX, Cog, Copy, Download, Eye, EyeOff, FileText, History, Hourglass, KeyRound, Laptop, LogOut, RefreshCw, Save, Search, Server, SlidersHorizontal, Trash2, User, Wifi, Wrench, X } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import AppModal from '@/components/AppModal.vue';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import DataTable from '@/components/DataTable.vue';
 import FormField from '@/components/FormField.vue';
+import ModalTabs from '@/components/ModalTabs.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import Button from '@/components/ui/Button.vue';
 import Card from '@/components/ui/Card.vue';
@@ -86,6 +87,14 @@ const ntfyServerInput = ref('');
 const ntfyTopicInput = ref('');
 const ntfyBusy = ref(false);
 const ntfyError = ref('');
+
+const opsTab = ref('monitor');
+const opsTabs = computed(() => [
+    { value: 'monitor', label: 'Monitor DO' },
+    { value: 'logs', label: 'File Log', count: logFiles.value.length },
+    { value: 'devices', label: 'List Device', count: deviceTotal.value },
+    { value: 'ntfy', label: 'ntfy' },
+]);
 
 const deviceTotalPages = computed(() => Math.max(1, Math.ceil(deviceTotal.value / devicePerPage.value)));
 
@@ -726,15 +735,27 @@ fetchNtfy();
             </Card>
         </div>
 
-        <Card class="mt-4 p-4">
-            <div class="flex flex-wrap items-center gap-3">
-                <h2 class="flex items-center gap-2 text-sm font-semibold"><History class="size-4 text-amber-500" /> History Notifikasi DO</h2>
-                <p class="w-full text-xs text-muted-foreground">Catatan pengiriman push Monitor DO via Firebase, lengkap dengan waktu kirim, status, dan tombol blast ulang.</p>
-                <Button variant="outline" size="sm" as="a" :href="route('notif_histories.index')"><History /> Buka History</Button>
-            </div>
-        </Card>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <Card class="p-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="flex items-center gap-2 text-sm font-semibold"><History class="size-4 text-amber-500" /> History Notifikasi DO</h2>
+                    <p class="w-full text-xs text-muted-foreground">Catatan pengiriman push Monitor DO via Firebase, lengkap dengan waktu kirim, status, dan tombol blast ulang.</p>
+                    <Button variant="outline" size="sm" as="a" :href="route('notif_histories.index')"><History /> Buka History</Button>
+                </div>
+            </Card>
+
+            <Card class="p-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h2 class="flex items-center gap-2 text-sm font-semibold"><Hourglass class="size-4 text-sky-500" /> Queue Manager</h2>
+                    <p class="w-full text-xs text-muted-foreground">Daftar job antrean database: detail payload, retry yang gagal, lepas yang macet reserved, hapus satuan, atau kosongkan tabel + refresh.</p>
+                    <Button variant="outline" size="sm" as="a" :href="route('queue.index')"><Hourglass /> Buka Queue</Button>
+                </div>
+            </Card>
+        </div>
 
         <Card class="mt-4 p-4">
+            <ModalTabs v-model="opsTab" :tabs="opsTabs" class="mb-3" />
+            <div v-if="opsTab === 'monitor'">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-sm font-semibold"><Activity class="size-4 text-emerald-500" /> Monitor DO</h2>
                 <Button variant="outline" size="sm" :disabled="monitorBusy" @click="fetchMonitor"><RefreshCw /> Refresh</Button>
@@ -768,34 +789,8 @@ fetchNtfy();
                     </div>
                 </div>
             </div>
-        </Card>
-
-        <Card class="mt-4 p-4">
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 text-sm font-semibold"><Bell class="size-4 text-orange-500" /> ntfy</h2>
-                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="fetchNtfy"><RefreshCw /> Refresh</Button>
             </div>
-            <p class="text-xs text-muted-foreground">Push notifikasi DO Baru ke topic ntfy (<span class="font-mono">storage/app/ntfy.json</span>). Monitor DO otomatis push ke topic ini setiap ada DO baru.</p>
-            <div v-if="ntfyBusy && !ntfy" class="mt-3 space-y-2">
-                <div class="h-4 animate-pulse rounded bg-slate-100" />
-                <div class="h-4 animate-pulse rounded bg-slate-100" />
-            </div>
-            <p v-else-if="ntfyError" class="mt-3 text-sm text-red-600">{{ ntfyError }}</p>
-            <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
-                <FormField label="Server" hint="Contoh: https://ntfy.sh">
-                    <Input v-model="ntfyServerInput" placeholder="https://ntfy.sh" class="font-mono text-xs" />
-                </FormField>
-                <FormField label="Topic" required hint="Huruf, angka, underscore, dash. Maks 64 karakter.">
-                    <Input v-model="ntfyTopicInput" placeholder="cth. who-do-x7k9p2m4" class="font-mono text-xs" />
-                </FormField>
-            </div>
-            <div v-if="!ntfyBusy || ntfy" class="mt-3 flex flex-wrap gap-2">
-                <Button size="sm" :disabled="ntfyBusy" @click="saveNtfy"><Save /> Simpan</Button>
-                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="testNtfy"><Bell class="text-orange-600" /> <span class="text-orange-700">Tes Topic</span></Button>
-            </div>
-        </Card>
-
-        <Card class="mt-4 p-4">
+            <div v-else-if="opsTab === 'logs'">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-sm font-semibold">
                     <FileText class="size-4 text-slate-500" /> File Log
@@ -837,9 +832,8 @@ fetchNtfy();
                 </template>
             </DataTable>
             <p class="mt-2 text-xs text-muted-foreground">Mendukung rotasi harian (mis. laravel-2026-10-09.log). Klik ikon kaca pembesar untuk melihat isi readable dan mentah.</p>
-        </Card>
-
-        <div class="mt-4">
+            </div>
+            <div v-else-if="opsTab === 'devices'">
             <div class="mb-2 flex flex-wrap items-center gap-2">
                 <h2 class="flex items-center gap-2 text-sm font-semibold"><Laptop class="size-4 text-amber-500" /> List Device</h2>
                 <Input v-model="deviceSearchBox" type="search" placeholder="Cari device..." class="max-w-xs" @input="onDeviceSearch" />
@@ -890,7 +884,32 @@ fetchNtfy();
                     </div>
                 </template>
             </DataTable>
-        </div>
+            </div>
+            <div v-else>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><Bell class="size-4 text-orange-500" /> ntfy</h2>
+                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="fetchNtfy"><RefreshCw /> Refresh</Button>
+            </div>
+            <p class="text-xs text-muted-foreground">Push notifikasi DO Baru ke topic ntfy (<span class="font-mono">storage/app/ntfy.json</span>). Monitor DO otomatis push ke topic ini setiap ada DO baru.</p>
+            <div v-if="ntfyBusy && !ntfy" class="mt-3 space-y-2">
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+                <div class="h-4 animate-pulse rounded bg-slate-100" />
+            </div>
+            <p v-else-if="ntfyError" class="mt-3 text-sm text-red-600">{{ ntfyError }}</p>
+            <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
+                <FormField label="Server" hint="Contoh: https://ntfy.sh">
+                    <Input v-model="ntfyServerInput" placeholder="https://ntfy.sh" class="font-mono text-xs" />
+                </FormField>
+                <FormField label="Topic" required hint="Huruf, angka, underscore, dash. Maks 64 karakter.">
+                    <Input v-model="ntfyTopicInput" placeholder="cth. who-do-x7k9p2m4" class="font-mono text-xs" />
+                </FormField>
+            </div>
+            <div v-if="!ntfyBusy || ntfy" class="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" :disabled="ntfyBusy" @click="saveNtfy"><Save /> Simpan</Button>
+                <Button variant="outline" size="sm" :disabled="ntfyBusy" @click="testNtfy"><Bell class="text-orange-600" /> <span class="text-orange-700">Tes Topic</span></Button>
+            </div>
+            </div>
+        </Card>
 
         <AppModal v-model:open="detailOpen" title="Detail Device" size="lg" persistent>
             <div v-if="detailRow" class="space-y-2 text-sm">

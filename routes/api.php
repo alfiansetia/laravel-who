@@ -18,6 +18,7 @@ use App\Http\Controllers\NotificationHistoryController;
 use App\Http\Controllers\POController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductOdooController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
@@ -151,6 +152,30 @@ Route::middleware(['stateful', 'throttle:api'])->group(function () {
         ->name('api.tokens.store');
     Route::delete('tokens/{token}', [SettingController::class, 'tokenDestroy'])
         ->name('api.tokens.destroy');
+
+    // Queue manager (Server Config)
+    Route::get('queue/stats', [QueueController::class, 'stats'])
+        ->name('api.queue.stats');
+    Route::get('queue/jobs', [QueueController::class, 'jobs'])
+        ->name('api.queue.jobs');
+    Route::get('queue/failed', [QueueController::class, 'failed'])
+        ->name('api.queue.failed');
+    Route::get('queue/jobs/{id}', [QueueController::class, 'jobShow'])
+        ->name('api.queue.jobs.show');
+    Route::get('queue/failed/{uuid}', [QueueController::class, 'failedShow'])
+        ->name('api.queue.failed.show');
+    Route::post('queue/failed/{uuid}/retry', [QueueController::class, 'retry'])
+        ->name('api.queue.failed.retry');
+    Route::post('queue/jobs/{id}/release', [QueueController::class, 'release'])
+        ->name('api.queue.jobs.release');
+    Route::delete('queue/jobs/{id}', [QueueController::class, 'destroyJob'])
+        ->name('api.queue.jobs.destroy');
+    Route::delete('queue/failed/{uuid}', [QueueController::class, 'destroyFailed'])
+        ->name('api.queue.failed.destroy');
+    Route::delete('queue/jobs', [QueueController::class, 'flushJobs'])
+        ->name('api.queue.jobs.flush');
+    Route::delete('queue/failed', [QueueController::class, 'flushFailed'])
+        ->name('api.queue.failed.flush');
 
     // TIKI Tracking (digabung ke ToolController)
     Route::get('tiki/track', [ToolController::class, 'tikiTrack'])->name('api.tiki.track');

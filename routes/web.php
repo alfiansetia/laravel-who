@@ -27,6 +27,7 @@ use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ProductOdooController;
 use App\Http\Controllers\QcController;
 use App\Http\Controllers\QcLotController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RIController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingEstimateController;
@@ -232,6 +233,9 @@ Route::resource('form-qc', QcController::class)
 
 Route::get('settings/', [SettingController::class, 'index'])
     ->name('settings.index');
+
+Route::get('queue', [QueueController::class, 'index'])
+    ->name('queue.index');
 
 Route::delete('kargans', [KarganController::class, 'destroy_batch'])
     ->name('kargans.destroy_batch');
