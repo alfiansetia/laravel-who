@@ -158,12 +158,28 @@ class QueueController extends Controller
     /**
      * Lepaskan job yang macet berstatus reserved (worker mati)
      * agar bisa dikerjakan ulang worker.
+     *
+     * Ditolak untuk job yang BARU diklaim (< 10 menit): itu hampir pasti
+     * masih dieksekusi worker. Melepasnya tidak mempercepat — malah
+     * menciptakan eksekusi ganda (proses lama tetap jalan + antrean baru),
+     * yang merusak progres/ETA dan melipatgandakan memori.
      */
     public function release(int $id): JsonResponse
     {
         $row = DB::table('jobs')->where('id', $id)->first();
         if (! $row) {
             return $this->sendError('Job tidak ditemukan.', 404);
+        }
+
+        $reservedAt = (int) ($row->reserved_at ?? 0);
+        if ($reservedAt > 0 && $reservedAt > time() - 600) {
+            $ago = max(time() - $reservedAt, 1);
+
+            return $this->sendError(
+                "Job baru diklaim {$ago} detik lalu — kemungkinan masih berjalan. ".
+                'Lepas hanya untuk job macet (reserved lama + tidak ada progres).',
+                422
+            );
         }
 
         DB::table('jobs')->where('id', $id)->update([

@@ -472,6 +472,53 @@ class IzinEdarSyncService
         $this->writeLog($log);
     }
 
+    /**
+     * Heartbeat import dengan laju EMA (baris/detik) dari selisih progres
+     * terhadap heartbeat sebelumnya — bukan rata-rata sejak awal import.
+     * Rata-rata seumur hidup kacau saat timer ke-reset (retry / Lepas /
+     * job ganda) atau fase awal cepat lalu fase AKL lambat: ETA mentok
+     * "± 1 detik" padahal sisa masih menit. Di sini counter turun
+     * (restart) me-reset laju, dan selisih waktu < 1 detik dilewati agar
+     * tidak meledak.
+     */
+    public function pushImportHeartbeat(string $kategori, int $imported, int $processed): void
+    {
+        $log = $this->readLog();
+        if (! $log) {
+            return;
+        }
+
+        $cat = $log['categories'][$kategori] ?? [];
+        $now = microtime(true);
+        $rate = isset($cat['rate_per_sec']) ? (float) $cat['rate_per_sec'] : null;
+        $prevAt = isset($cat['heartbeat_at']) ? (float) $cat['heartbeat_at'] : 0.0;
+        $prevImported = isset($cat['imported']) ? (int) $cat['imported'] : 0;
+
+        if ($imported < $prevImported) {
+            // Counter turun = import dimulai ulang: buang laju lama.
+            $rate = null;
+        } elseif ($prevAt > 0 && ($now - $prevAt) >= 1.0) {
+            $inst = ($imported - $prevImported) / ($now - $prevAt);
+            if ($inst >= 0) {
+                $rate = $rate === null ? $inst : (0.3 * $inst) + (0.7 * $rate);
+            }
+        }
+
+        $updates = [
+            'status' => 'importing',
+            'imported' => $imported,
+            'processed' => $processed,
+            'heartbeat_at' => $now,
+            'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
+        ];
+        if ($rate !== null && $rate > 0) {
+            $updates['rate_per_sec'] = round($rate, 1);
+        }
+
+        $log['categories'][$kategori] = array_merge($cat, $updates);
+        $this->writeLog($log);
+    }
+
     public function updateGlobalStatus(string $status): void
     {
         $log = $this->readLog();
@@ -687,7 +734,6 @@ class IzinEdarSyncService
             'status' => 'importing',
             'started_at' => now()->toIso8601String(),
         ]);
-
         // Dimensi sheet tanpa memuat isi sel (murah, tidak makan RAM).
         $worksheetInfo = (new Xlsx)->listWorksheetInfo($path);
         if (empty($worksheetInfo)) {
@@ -764,7 +810,7 @@ class IzinEdarSyncService
         $imported = 0;
         $batch = [];
 
-        $flush = function () use (&$batch, &$imported, $kategori) {
+        $flush = function () use (&$batch, &$imported, &$processed, $kategori) {
             if (empty($batch)) {
                 return;
             }
@@ -775,10 +821,7 @@ class IzinEdarSyncService
             );
             $imported += count($batch);
             $batch = [];
-            $this->updateCategory($kategori, [
-                'imported' => $imported,
-                'status' => 'importing',
-            ]);
+            $this->pushImportHeartbeat($kategori, $imported, $processed);
         };
 
         $dateCols = ['tgl_terbit', 'tgl_exp'];
@@ -875,12 +918,7 @@ class IzinEdarSyncService
                             $flush();
                             throw new \RuntimeException('Stop requested.');
                         }
-                        $this->updateCategory($kategori, [
-                            'status' => 'importing',
-                            'imported' => $imported,
-                            'processed' => $processed,
-                            'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
-                        ]);
+                        $this->pushImportHeartbeat($kategori, $imported, $processed);
                     }
                 }
             } finally {
@@ -890,12 +928,7 @@ class IzinEdarSyncService
             }
 
             // Heartbeat per window: menangkap sisa < 1000 baris terakhir.
-            $this->updateCategory($kategori, [
-                'status' => 'importing',
-                'imported' => $imported,
-                'processed' => $processed,
-                'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
-            ]);
+            $this->pushImportHeartbeat($kategori, $imported, $processed);
         }
 
         $flush();

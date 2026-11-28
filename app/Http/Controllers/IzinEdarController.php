@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\IzinEdar;
 use App\Services\IzinEdarSyncService;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -184,20 +183,19 @@ class IzinEdarController extends Controller
         $log['total_expected'] = $totalExpected;
         $log['total_files'] = $totalFiles;
 
-        // Sisa baris + ETA: kecepatan dihitung dari fase import saja
-        // (waktu download Kemkes yang lemot tidak ikut menekan rate).
+        // Sisa baris + ETA: laju = jumlah EMA baris/detik kategori yang
+        // sedang importing (dihitung per heartbeat, bukan rata-rata seumur
+        // hidup — rata-rata lifetime kacau saat timer ke-reset retry/Lepas).
         $remaining = max($totalExpected - $totalImported, 0);
         $etaSeconds = null;
-        if (($log['status'] ?? '') === 'importing' && $remaining > 0 && $totalImported > 0) {
-            try {
-                $base = $log['import_started_at'] ?? $log['started_at'] ?? null;
-                if ($base) {
-                    $elapsed = max(now()->diffInSeconds(new Carbon($base)), 1);
-                    $etaSeconds = (int) ceil($remaining / ($totalImported / $elapsed));
-                }
-            } catch (\Throwable $e) {
-                $etaSeconds = null;
+        $rate = 0.0;
+        foreach (($log['categories'] ?? []) as $cat) {
+            if (($cat['status'] ?? '') === 'importing' && isset($cat['rate_per_sec'])) {
+                $rate += (float) $cat['rate_per_sec'];
             }
+        }
+        if (($log['status'] ?? '') === 'importing' && $remaining > 0 && $rate > 0) {
+            $etaSeconds = (int) ceil($remaining / $rate);
         }
         $log['remaining'] = $remaining;
         $log['eta_seconds'] = $etaSeconds;
