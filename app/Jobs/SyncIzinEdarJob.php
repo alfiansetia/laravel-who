@@ -31,11 +31,15 @@ class SyncIzinEdarJob implements ShouldQueue
     /** Must be greater than $timeout. */
     public int $retryAfter = 3600;
 
-    public bool $shouldImport;
+    // Default = perilaku lama (download + import semua kategori) agar
+    // payload yang diserial sebelum properti baru ada tetap bisa jalan
+    // (unserialize tidak memanggil constructor; tanpa default, akses
+    // properti melempar "must not be accessed before initialization").
+    public bool $shouldImport = true;
 
-    public bool $shouldDownload;
+    public bool $shouldDownload = true;
 
-    public ?string $kategori;
+    public ?string $kategori = null;
 
     public function __construct(bool $shouldImport = true, bool $shouldDownload = true, ?string $kategori = null)
     {

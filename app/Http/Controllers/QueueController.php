@@ -316,7 +316,16 @@ class QueueController extends Controller
             if ($p->isStatic()) {
                 continue;
             }
-            $props[$p->getName()] = $this->shorten($p->getValue($obj));
+            // Payload lama (diserial sebelum properti baru ditambahkan)
+            // menghasilkan typed property yang belum diinisialisasi —
+            // getValue() melempar Error untuk kasus itu.
+            try {
+                $props[$p->getName()] = $p->isInitialized($obj)
+                    ? $this->shorten($p->getValue($obj))
+                    : null;
+            } catch (\Throwable) {
+                $props[$p->getName()] = null;
+            }
         }
 
         return $props;
