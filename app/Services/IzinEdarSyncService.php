@@ -671,8 +671,16 @@ class IzinEdarSyncService
 
         $cap = $this->memoryLimitBytes(self::JOB_MEMORY_LIMIT);
         $current = $this->memoryLimitBytes();
-        if ($current < 0 || $current < $cap) {
+        // Selalu enforce (bukan cuma menaikkan): limit PHP yang lebih besar
+        // dari cap — mis. 2G di image production — tetap berbahaya di VPS
+        // kecil serumah MySQL. Yang butuh lebih, ubah konstantanya.
+        if ($current !== $cap) {
             ini_set('memory_limit', self::JOB_MEMORY_LIMIT);
+        }
+        // Turunkan prioritas CPU proses ini: import tetap full speed saat
+        // box idle, tapi mengalah ke web/SSH/MySQL saat berebut CPU.
+        if (function_exists('proc_nice')) {
+            @proc_nice(10);
         }
 
         $this->updateCategory($kategori, [

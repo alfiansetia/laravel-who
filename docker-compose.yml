@@ -76,6 +76,10 @@ services:
       target: app
     container_name: who-worker
     restart: unless-stopped
+    # Jaring pengaman lapis-2: kalau proses import lolos dari cap PHP 1G
+    # (mis. alokasi di luar Zend MM), yang mati hanya container ini —
+    # bukan seluruh VPS. Nilai di atas cap PHP agar tidak false-trip.
+    mem_limit: 1536m
     logging:
       driver: json-file
       options:
