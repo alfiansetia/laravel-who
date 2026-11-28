@@ -409,6 +409,47 @@ class IzinEdarSyncService
 
     // ── Update category status ───────────────────────────────────────
 
+    /**
+     * Progres satu kategori (0–100) untuk rata-rata progres global.
+     * Berbasis baris saat import, berbasis byte saat download, jadi bar
+     * tidak pernah klaim 100% sebelum kategorinya benar-benar selesai.
+     */
+    public function categoryProgress(array $cat): float
+    {
+        $status = $cat['status'] ?? 'pending';
+
+        if (in_array($status, ['imported', 'failed'], true)) {
+            return 100.0;
+        }
+
+        if ($status === 'importing') {
+            $total = (int) ($cat['total'] ?? 0);
+            $imported = (int) ($cat['imported'] ?? 0);
+            if ($total > 0) {
+                return min(($imported / $total) * 100, 99.9);
+            }
+
+            return 50.0;
+        }
+
+        // Download beres, antre import (sync jalan 2 fase).
+        if ($status === 'downloaded') {
+            return 50.0;
+        }
+
+        if ($status === 'downloading') {
+            $expected = (int) ($cat['expected_bytes'] ?? 0);
+            $got = (int) ($cat['downloaded_bytes'] ?? 0);
+            if ($expected > 0 && $got >= 0) {
+                return min(($got / $expected) * 50, 49.9);
+            }
+
+            return 25.0;
+        }
+
+        return 0.0;
+    }
+
     public function updateCategory(string $kategori, array $updates): void
     {
         $log = $this->readLog();
@@ -441,6 +482,42 @@ class IzinEdarSyncService
         $log['status'] = 'completed';
         $log['finished_at'] = now()->toIso8601String();
         $this->writeLog($log);
+    }
+
+    /**
+     * Tandai fase import dimulai + catat waktunya untuk hitung ETA.
+     */
+    public function markImporting(): void
+    {
+        $log = $this->readLog();
+        if (! $log) {
+            return;
+        }
+
+        $log['status'] = 'importing';
+        $log['import_started_at'] = now()->toIso8601String();
+        $this->writeLog($log);
+    }
+
+    /**
+     * Format detik ETA ke bahasa manusia: "45 detik", "12 menit", "1 jam 5 menit".
+     */
+    public static function formatEta(?int $seconds): string
+    {
+        if ($seconds === null || $seconds < 0) {
+            return '-';
+        }
+        if ($seconds < 60) {
+            return "± {$seconds} detik lagi";
+        }
+        $minutes = (int) floor($seconds / 60);
+        if ($minutes < 60) {
+            return "± {$minutes} menit lagi";
+        }
+        $hours = (int) floor($minutes / 60);
+        $rest = $minutes % 60;
+
+        return $rest > 0 ? "± {$hours} jam {$rest} menit lagi" : "± {$hours} jam lagi";
     }
 
     public function markFailed(string $error): void
@@ -557,11 +634,14 @@ class IzinEdarSyncService
 
     /**
      * Import satu file xlsx kategori ke tabel izin_edars via upsert.
+     * Dibaca per chunk (default 1000 baris) agar file besar tidak full di RAM:
+     * tiap chunk load ulang file dengan ChunkReadFilter, parse, upsert,
+     * lalu disconnect sebelum chunk berikutnya.
      * Dipanggil SyncIzinEdarJob setelah download selesai.
      *
      * @return array{imported: int, total: int}
      */
-    public function importFile(string $kategori, ?callable $shouldStop = null): array
+    public function importFile(string $kategori, ?callable $shouldStop = null, int $chunkSize = 1000): array
     {
         $kategori = strtoupper($kategori);
         $path = $this->getFilePath($kategori);
@@ -575,19 +655,34 @@ class IzinEdarSyncService
             'started_at' => now()->toIso8601String(),
         ]);
 
-        $reader = new Xlsx;
-        $reader->setReadDataOnly(true);
-        $spreadsheet = $reader->load($path);
-        try {
-            $sheet = $spreadsheet->getActiveSheet();
-            $highestRow = (int) $sheet->getHighestDataRow();
-            $highestCol = Coordinate::columnIndexFromString(
-                (string) $sheet->getHighestDataColumn()
-            );
+        // Dimensi sheet tanpa memuat isi sel (murah, tidak makan RAM).
+        $worksheetInfo = (new Xlsx)->listWorksheetInfo($path);
+        if (empty($worksheetInfo)) {
+            throw new \RuntimeException("Sheet tidak ditemukan di file {$kategori}.");
+        }
+        $sheetName = (string) $worksheetInfo[0]['worksheetName'];
+        $highestRow = max((int) $worksheetInfo[0]['totalRows'], 1);
+        $highestCol = Coordinate::columnIndexFromString(
+            (string) $worksheetInfo[0]['lastColumnLetter']
+        );
 
-            // 1. Cari baris header (maks 100 baris pertama, samakan dengan frontend).
-            $headerRow = null;
-            $colMap = [];
+        $loadChunk = function (int $startRow, int $rows) use ($path, $sheetName) {
+            $filter = new ChunkReadFilter;
+            $filter->setRows($startRow, $rows);
+            $reader = new Xlsx;
+            $reader->setReadDataOnly(true);
+            $reader->setLoadSheetsOnly([$sheetName]);
+            $reader->setReadFilter($filter);
+
+            return $reader->load($path);
+        };
+
+        // 1. Cari baris header: muat 100 baris pertama saja (samakan dengan frontend).
+        $headerRow = null;
+        $colMap = [];
+        $spreadsheet = $loadChunk(1, 100);
+        try {
+            $sheet = $spreadsheet->getSheetByName($sheetName) ?? $spreadsheet->getActiveSheet();
             $scanMax = min($highestRow, 100);
             for ($r = 1; $r <= $scanMax; $r++) {
                 $norm = [];
@@ -605,109 +700,135 @@ class IzinEdarSyncService
                     break;
                 }
             }
-
-            if ($headerRow === null || empty($colMap)) {
-                throw new \RuntimeException("Header tidak ditemukan di file {$kategori}.");
-            }
-
-            $total = 0;
-            $imported = 0;
-            $batch = [];
-
-            $flush = function () use (&$batch, &$imported, $kategori) {
-                if (empty($batch)) {
-                    return;
-                }
-                DB::table('izin_edars')->upsert(
-                    $batch,
-                    ['nomor_izin_edar'],
-                    array_diff(self::IMPORT_COLUMNS, ['nomor_izin_edar'])
-                );
-                $imported += count($batch);
-                $batch = [];
-                $this->updateCategory($kategori, [
-                    'imported' => $imported,
-                    'status' => 'importing',
-                ]);
-            };
-
-            $dateCols = ['tgl_terbit', 'tgl_exp'];
-
-            for ($r = $headerRow + 1; $r <= $highestRow; $r++) {
-                if ($shouldStop && $shouldStop()) {
-                    $flush();
-                    throw new \RuntimeException('Stop requested.');
-                }
-
-                $record = ['kategori' => $kategori];
-                $hasAny = false;
-                foreach ($colMap as $c => $col) {
-                    $cell = $sheet->getCell([$c, $r]);
-                    $v = $cell->getValue();
-
-                    if (Date::isDateTime($cell)) {
-                        try {
-                            $v = Date::excelToDateTimeObject($v)->format('Y-m-d');
-                        } catch (\Throwable $e) {
-                            $v = null;
-                        }
-                    } elseif (in_array($col, $dateCols, true)) {
-                        $v = $this->normalizeDate($v);
-                    } elseif (is_string($v)) {
-                        $v = trim($v);
-                        $v = $v === '' ? null : $v;
-                    }
-
-                    if ($v !== null && $v !== '') {
-                        $hasAny = true;
-                    }
-                    if (is_string($v) && in_array($col, self::IMPORT_CAP_255, true)) {
-                        $v = mb_substr($v, 0, 255);
-                    }
-
-                    $record[$col] = $v;
-                }
-
-                if (! $hasAny) {
-                    continue;
-                }
-                if (empty($record['nomor_izin_edar'])) {
-                    continue;
-                }
-                $record['nomor_izin_edar'] = trim((string) $record['nomor_izin_edar']);
-
-                // Lengkapi kolom yang tidak ada di file dengan null.
-                foreach (self::IMPORT_COLUMNS as $col) {
-                    if (! array_key_exists($col, $record)) {
-                        $record[$col] = null;
-                    }
-                }
-
-                $total++;
-                $batch[] = $record;
-
-                if (count($batch) >= 1000) {
-                    $flush();
-                }
-            }
-
-            $flush();
-
-            $this->updateCategory($kategori, [
-                'status' => 'imported',
-                'imported' => $imported,
-                'total' => $total,
-                'finished_at' => now()->toIso8601String(),
-                'error' => null,
-            ]);
-
-            Log::info("[SyncIzinEdar] Imported {$kategori}: {$imported}/{$total} rows.");
-
-            return ['imported' => $imported, 'total' => $total];
         } finally {
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
         }
+
+        if ($headerRow === null || empty($colMap)) {
+            throw new \RuntimeException("Header tidak ditemukan di file {$kategori}.");
+        }
+
+        // Estimasi total baris untuk progres (angka aktual ditimpa saat import selesai).
+        $this->updateCategory($kategori, [
+            'total' => max($highestRow - $headerRow, 0),
+        ]);
+
+        $total = 0;
+        $imported = 0;
+        $batch = [];
+
+        $flush = function () use (&$batch, &$imported, $kategori) {
+            if (empty($batch)) {
+                return;
+            }
+            DB::table('izin_edars')->upsert(
+                $batch,
+                ['nomor_izin_edar'],
+                array_diff(self::IMPORT_COLUMNS, ['nomor_izin_edar'])
+            );
+            $imported += count($batch);
+            $batch = [];
+            $this->updateCategory($kategori, [
+                'imported' => $imported,
+                'status' => 'importing',
+            ]);
+        };
+
+        $dateCols = ['tgl_terbit', 'tgl_exp'];
+        $emptyStreak = 0;
+
+        // 2. Loop data per chunk: load, parse, upsert, disconnect.
+        // Cek stop per chunk (bukan per baris) agar tidak baca log dari disk tiap baris.
+        for ($startRow = $headerRow + 1; $startRow <= $highestRow; $startRow += $chunkSize) {
+            if ($shouldStop && $shouldStop()) {
+                $flush();
+                throw new \RuntimeException('Stop requested.');
+            }
+
+            $spreadsheet = $loadChunk($startRow, $chunkSize);
+            try {
+                $sheet = $spreadsheet->getSheetByName($sheetName) ?? $spreadsheet->getActiveSheet();
+                $endRow = min($startRow + $chunkSize - 1, $highestRow);
+
+                for ($r = $startRow; $r <= $endRow; $r++) {
+                    $record = ['kategori' => $kategori];
+                    $hasAny = false;
+                    foreach ($colMap as $c => $col) {
+                        $cell = $sheet->getCell([$c, $r]);
+                        $v = $cell->getValue();
+
+                        if (Date::isDateTime($cell)) {
+                            try {
+                                $v = Date::excelToDateTimeObject($v)->format('Y-m-d');
+                            } catch (\Throwable $e) {
+                                $v = null;
+                            }
+                        } elseif (in_array($col, $dateCols, true)) {
+                            $v = $this->normalizeDate($v);
+                        } elseif (is_string($v)) {
+                            $v = trim($v);
+                            $v = $v === '' ? null : $v;
+                        }
+
+                        if ($v !== null && $v !== '') {
+                            $hasAny = true;
+                        }
+                        if (is_string($v) && in_array($col, self::IMPORT_CAP_255, true)) {
+                            $v = mb_substr($v, 0, 255);
+                        }
+
+                        $record[$col] = $v;
+                    }
+
+                    if (! $hasAny) {
+                        // Ekor file sering berisi baris kosong terformat:
+                        // berhenti setelah 500 baris kosong beruntun.
+                        if (++$emptyStreak >= 500) {
+                            break 2;
+                        }
+
+                        continue;
+                    }
+                    $emptyStreak = 0;
+                    if (empty($record['nomor_izin_edar'])) {
+                        continue;
+                    }
+                    $record['nomor_izin_edar'] = trim((string) $record['nomor_izin_edar']);
+
+                    // Lengkapi kolom yang tidak ada di file dengan null.
+                    foreach (self::IMPORT_COLUMNS as $col) {
+                        if (! array_key_exists($col, $record)) {
+                            $record[$col] = null;
+                        }
+                    }
+
+                    $total++;
+                    $batch[] = $record;
+
+                    if (count($batch) >= 1000) {
+                        $flush();
+                    }
+                }
+            } finally {
+                $spreadsheet->disconnectWorksheets();
+                unset($spreadsheet);
+            }
+        }
+
+        $flush();
+
+        $this->updateCategory($kategori, [
+            'status' => 'imported',
+            'imported' => $imported,
+            'total' => $total,
+            'finished_at' => now()->toIso8601String(),
+            'error' => null,
+        ]);
+
+        Log::info("[SyncIzinEdar] Imported {$kategori}: {$imported}/{$total} rows.");
+
+        return ['imported' => $imported, 'total' => $total];
     }
 
     private function normalizeDate(mixed $value): ?string

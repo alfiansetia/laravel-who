@@ -367,10 +367,10 @@ const syncCats = computed(() => {
     return Object.entries(cats).map(([name, c]) => ({ name, ...(c ?? {}) }));
 });
 const syncPct = computed(() => {
-    // Row-based percent from backend is most accurate during long imports
-    // (e.g. AKL 5.5MB); fall back to file-count when no totals yet.
+    // Persen blended dari backend (rata-rata per kategori: byte saat
+    // download, baris saat import). Selalu ada begitu sync dimulai.
     const backendPct = syncLog.value?.progress_percent;
-    if (typeof backendPct === 'number' && (syncLog.value?.total_expected ?? 0) > 0) {
+    if (typeof backendPct === 'number') {
         return Math.round(backendPct);
     }
     const cats = syncCats.value;
@@ -517,6 +517,11 @@ function fileSize(bytes) {
     const units = ['B', 'KB', 'MB', 'GB'];
     const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+}
+
+function fmtNum(v) {
+    const n = Number(v ?? 0);
+    return Number.isFinite(n) ? n.toLocaleString('id-ID') : '0';
 }
 async function checkFiles() {
     try {
@@ -971,6 +976,11 @@ loadProgress(true).then(() => {
                 <div class="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span>{{ syncText }}</span>
                     <b>{{ syncPct }}%</b>
+                </div>
+                <div v-if="(syncLog?.total_expected ?? 0) > 0" class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                    <span><b class="text-foreground">{{ fmtNum(syncLog.total_imported) }}</b> / {{ fmtNum(syncLog.total_expected) }} baris</span>
+                    <span v-if="(syncLog?.remaining ?? 0) > 0">sisa {{ fmtNum(syncLog.remaining) }} baris</span>
+                    <span v-if="syncLog?.eta_seconds !== null && syncLog?.eta_seconds !== undefined">estimasi {{ syncLog.eta_human }}</span>
                 </div>
                 <div class="mt-1 h-5 overflow-hidden rounded-full bg-slate-100">
                     <div

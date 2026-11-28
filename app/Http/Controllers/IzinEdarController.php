@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\IzinEdar;
 use App\Services\IzinEdarSyncService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -165,22 +166,42 @@ class IzinEdarController extends Controller
             ]);
         }
 
-        // Compute overall progress percentage
+        // Progres global = rata-rata progres per kategori (0–100).
+        // Jangan pakai totalImported/totalExpected mentah: kategori yang
+        // masih jalan belum punya `total`, jadi rasionya bisa 100% prematur.
+        $pcts = [];
         $totalImported = 0;
         $totalExpected = 0;
         $totalFiles = count($log['categories'] ?? []);
-
         foreach (($log['categories'] ?? []) as $cat) {
+            $pcts[] = $this->syncService->categoryProgress(is_array($cat) ? $cat : []);
             $totalImported += $cat['imported'] ?? 0;
             $totalExpected += $cat['total'] ?? 0;
         }
 
-        $log['progress_percent'] = $totalExpected > 0
-            ? round(($totalImported / $totalExpected) * 100, 1)
-            : 0;
+        $log['progress_percent'] = $pcts ? round(array_sum($pcts) / count($pcts), 1) : 0;
         $log['total_imported'] = $totalImported;
         $log['total_expected'] = $totalExpected;
         $log['total_files'] = $totalFiles;
+
+        // Sisa baris + ETA: kecepatan dihitung dari fase import saja
+        // (waktu download Kemkes yang lemot tidak ikut menekan rate).
+        $remaining = max($totalExpected - $totalImported, 0);
+        $etaSeconds = null;
+        if (($log['status'] ?? '') === 'importing' && $remaining > 0 && $totalImported > 0) {
+            try {
+                $base = $log['import_started_at'] ?? $log['started_at'] ?? null;
+                if ($base) {
+                    $elapsed = max(now()->diffInSeconds(new Carbon($base)), 1);
+                    $etaSeconds = (int) ceil($remaining / ($totalImported / $elapsed));
+                }
+            } catch (\Throwable $e) {
+                $etaSeconds = null;
+            }
+        }
+        $log['remaining'] = $remaining;
+        $log['eta_seconds'] = $etaSeconds;
+        $log['eta_human'] = IzinEdarSyncService::formatEta($etaSeconds);
 
         // Convenience flags for the frontend
         $activeStatuses = ['pending', 'downloading', 'importing'];

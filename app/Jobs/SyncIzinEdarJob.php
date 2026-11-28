@@ -39,8 +39,12 @@ class SyncIzinEdarJob implements ShouldQueue
     }
 
     /**
-     * Execute the job: download all Excel files from Kemkes,
-     * lalu import otomatis ke DB bila $shouldImport true (jadwal jam 01:00).
+     * Execute the job: download semua file Excel dari Kemkes dulu,
+     * baru import otomatis ke DB bila $shouldImport true (jadwal jam 01:00).
+     *
+     * Dua fase terpisah (bukan download-import per kategori) karena
+     * server Kemkes lemot: download yang lambat dibereskan semua di awal,
+     * import lokal yang cepat jalan belakangan.
      */
     public function handle(IzinEdarSyncService $syncService): void
     {
@@ -49,7 +53,9 @@ class SyncIzinEdarJob implements ShouldQueue
 
         $categories = IzinEdarSyncService::CATEGORIES;
         $failedCategories = [];
+        $downloaded = [];
 
+        // Fase 1: download semua file dulu.
         foreach ($categories as $kategori => $config) {
             // Check if the user requested a stop between categories
             if ($this->isStopRequested($syncService)) {
@@ -61,6 +67,7 @@ class SyncIzinEdarJob implements ShouldQueue
 
             try {
                 $this->downloadCategory($kategori, $config, $syncService);
+                $downloaded[] = $kategori;
             } catch (\Throwable $e) {
                 Log::error("[SyncIzinEdar] Failed downloading {$kategori}: {$e->getMessage()}");
 
@@ -71,19 +78,27 @@ class SyncIzinEdarJob implements ShouldQueue
                 ]);
 
                 $failedCategories[] = $kategori;
-
-                continue;
             }
+        }
 
-            // Import otomatis server-side (jadwal jam 01:00). Stop request
-            // dicek juga di dalam importFile per baris via callback.
-            if ($this->shouldImport) {
+        // Fase 2: import semua file yang berhasil di-download.
+        // Stop request dicek juga di dalam importFile per baris via callback.
+        if ($this->shouldImport) {
+            $syncService->markImporting();
+
+            foreach ($downloaded as $kategori) {
+                if ($this->isStopRequested($syncService)) {
+                    Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori} import.");
+                    $syncService->updateGlobalStatus('stopped');
+
+                    return;
+                }
+
                 try {
-                    $syncService->updateGlobalStatus('importing');
                     $syncService->importFile($kategori, fn () => $this->isStopRequested($syncService));
                 } catch (\Throwable $e) {
                     if (str_contains($e->getMessage(), 'Stop requested')) {
-                        Log::info("[SyncIzinEdar] Stop requested — aborting before {$kategori} import selesai.");
+                        Log::info("[SyncIzinEdar] Stop requested — aborting, {$kategori} import belum selesai.");
                         $syncService->updateGlobalStatus('stopped');
 
                         return;
