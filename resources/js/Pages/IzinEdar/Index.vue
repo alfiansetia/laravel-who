@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { CheckCircle2, Copy, Download, Eye, RefreshCw, Save, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
+import { CheckCircle2, Copy, Download, Eye, FileSpreadsheet, RefreshCw, Save, Share, Trash2, Upload, X, XCircle } from '@lucide/vue';
 import AppLayout from '@/components/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -1019,6 +1019,10 @@ loadProgress(true).then(() => {
                         <p v-if="c.size" class="text-xs text-muted-foreground">{{ fileSize(c.size) }}</p>
                         <p v-else-if="c.status === 'downloading' && c.downloaded_bytes" class="text-xs text-muted-foreground">{{ fileSize(c.downloaded_bytes) }}{{ c.expected_bytes ? ' / ' + fileSize(c.expected_bytes) : '' }}</p>
                         <p v-else-if="c.imported" class="text-xs text-muted-foreground">{{ c.imported }}{{ c.total ? ' / ' + c.total : '' }} baris</p>
+                        <p v-else-if="c.status === 'importing'" class="text-xs text-muted-foreground">
+                            <span v-if="c.processed && c.total">memindai {{ c.processed }} / {{ c.total }} baris…</span>
+                            <span v-else>memindai file…</span>
+                        </p>
                         <p v-if="c.error" class="text-xs text-red-600">{{ String(c.error).substring(0, 80) }}</p>
                     </div>
                 </div>

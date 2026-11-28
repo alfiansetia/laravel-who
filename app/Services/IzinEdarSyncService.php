@@ -430,10 +430,16 @@ class IzinEdarSyncService
         if ($status === 'importing') {
             $total = (int) ($cat['total'] ?? 0);
             $imported = (int) ($cat['imported'] ?? 0);
+            // Baris terpindai (termasuk baris kosong yang dilewati) agar bar
+            // bergerak tiap chunk, bukan cuma tiap flush 1000 baris.
+            $processed = (int) ($cat['processed'] ?? $imported);
             if ($total > 0) {
-                return min(($imported / $total) * 100, 99.9);
+                $done = max($imported, min($processed, $total));
+
+                return min(($done / $total) * 100, 99.9);
             }
 
+            // Estimasi total belum tertulis (fase awal scan header).
             return 50.0;
         }
 
@@ -671,6 +677,17 @@ class IzinEdarSyncService
             (string) $worksheetInfo[0]['lastColumnLetter']
         );
 
+        // Tulis estimasi total SEBELUM scan header: kalau worker mati saat
+        // load pertama (file besar), log tidak beku tanpa total/imported —
+        // UI menampilkan 0% + "memindai…", bukan rasio 100% palsu.
+        // Angka aktual ditimpa saat import selesai.
+        $this->updateCategory($kategori, [
+            'total' => max($highestRow - 1, 0),
+            'total_estimated' => true,
+            'imported' => 0,
+            'processed' => 0,
+        ]);
+
         $loadChunk = function (int $startRow, int $rows) use ($path, $sheetName) {
             $filter = new ChunkReadFilter;
             $filter->setRows($startRow, $rows);
@@ -714,9 +731,11 @@ class IzinEdarSyncService
             throw new \RuntimeException("Header tidak ditemukan di file {$kategori}.");
         }
 
-        // Estimasi total baris untuk progres (angka aktual ditimpa saat import selesai).
+        // Persempit estimasi total setelah baris header ketemu
+        // (tetap estimasi sampai import selesai: ekor kosong difinalkan nanti).
         $this->updateCategory($kategori, [
             'total' => max($highestRow - $headerRow, 0),
+            'total_estimated' => true,
         ]);
 
         $total = 0;
@@ -742,14 +761,22 @@ class IzinEdarSyncService
 
         $dateCols = ['tgl_terbit', 'tgl_exp'];
         $emptyStreak = 0;
+        $processed = 0;
 
         // 2. Loop data per chunk: load, parse, upsert, disconnect.
         // Cek stop per chunk (bukan per baris) agar tidak baca log dari disk tiap baris.
+        // Heartbeat ditulis TIAP chunk (bukan cuma tiap flush): chunk yang
+        // isinya baris kosong tidak memicu flush, tanpa ini log beku dan
+        // stale-checker buta selama worker masih memindai.
         for ($startRow = $headerRow + 1; $startRow <= $highestRow; $startRow += $chunkSize) {
             if ($shouldStop && $shouldStop()) {
                 $flush();
                 throw new \RuntimeException('Stop requested.');
             }
+
+            // Gagal cepat dengan pesan jelas bila memori hampir habis,
+            // supaya tercatat `failed` — bukan beku `importing` + job reserved.
+            $this->assertMemoryForChunk($kategori, $startRow);
 
             $spreadsheet = $loadChunk($startRow, $chunkSize);
             try {
@@ -819,6 +846,16 @@ class IzinEdarSyncService
                 $spreadsheet->disconnectWorksheets();
                 unset($spreadsheet);
             }
+
+            // Heartbeat pemindaian: jumlah baris yang sudah dilewati chunk
+            // (bukan cuma yang ter-upsert), + memori worker untuk diagnosa.
+            $processed += min($chunkSize, max($highestRow - $startRow + 1, 0));
+            $this->updateCategory($kategori, [
+                'status' => 'importing',
+                'imported' => $imported,
+                'processed' => $processed,
+                'memory_mb' => round(memory_get_usage(true) / 1048576, 1),
+            ]);
         }
 
         $flush();
@@ -827,6 +864,7 @@ class IzinEdarSyncService
             'status' => 'imported',
             'imported' => $imported,
             'total' => $total,
+            'total_estimated' => false,
             'finished_at' => now()->toIso8601String(),
             'error' => null,
         ]);
@@ -834,6 +872,52 @@ class IzinEdarSyncService
         Log::info("[SyncIzinEdar] Imported {$kategori}: {$imported}/{$total} rows.");
 
         return ['imported' => $imported, 'total' => $total];
+    }
+
+    /**
+     * Gagal cepat bila memori hampir habis sebelum load chunk berikutnya.
+     * PhpSpreadsheet mem-parse shared-strings seluruh file tiap load, jadi
+     * file besar (mis. AKL) bisa menghabiskan RAM di tengah jalan. Tanpa
+     * ini PHP mati fatal: tidak ada exception, log beku `importing`, dan
+     * job tertinggal `reserved` selamanya.
+     */
+    private function assertMemoryForChunk(string $kategori, int $startRow): void
+    {
+        $limit = $this->memoryLimitBytes();
+        if ($limit <= 0) {
+            return; // unlimited (-1): tidak bisa diprediksi, lewati.
+        }
+        $used = memory_get_usage(true);
+        if ($used / $limit < 0.85) {
+            return;
+        }
+        $usedMb = round($used / 1048576, 1);
+        $limitMb = round($limit / 1048576, 1);
+        throw new \RuntimeException(
+            "Memori hampir habis saat import {$kategori} baris {$startRow} ({$usedMb}/{$limitMb} MB). ".
+            'Naikkan memory_limit worker queue lalu ulangi import-only kategori ini.'
+        );
+    }
+
+    private function memoryLimitBytes(): int
+    {
+        $raw = trim((string) ini_get('memory_limit'));
+        if ($raw === '' || $raw === '-1') {
+            return -1;
+        }
+        if (preg_match('/^(\d+(?:\.\d+)?)\s*([KMG]?)/i', $raw, $m)) {
+            $num = (float) $m[1];
+            $mult = match (strtoupper($m[2] ?? '')) {
+                'G' => 1073741824,
+                'M' => 1048576,
+                'K' => 1024,
+                default => 1,
+            };
+
+            return (int) ($num * $mult);
+        }
+
+        return -1;
     }
 
     private function normalizeDate(mixed $value): ?string
